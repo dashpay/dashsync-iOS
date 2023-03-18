@@ -186,8 +186,15 @@
     if (!(self = [self initWithChain:chain])) return nil;
     self.uniqueIDString = uniqueID;
     __weak typeof(self) weakSelf = self;
-    self.seedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
+    self.seedRequestBlock = ^void(SeedCompletionBlock seedCompletion) {
         //this happens when we request the seed
+        NSString *seed = [weakSelf seedPhrase];
+        NSData *seedData = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seed withPassphrase:nil];
+        seedCompletion(seedData, false);
+    };
+
+    self.secureSeedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
+        //this happens when we request the seed and want to auth with pin
         [weakSelf seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
     };
     if (store) {
@@ -781,6 +788,7 @@
 
         BOOL usingBiometricAuthentication = amount ? [[DSAuthenticationManager sharedInstance] canUseBiometricAuthenticationForAmount:amount] : NO;
 
+        __weak typeof(self) weakSelf = self;
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt
                                             usingBiometricAuthentication:usingBiometricAuthentication
                                                           alertIfLockout:YES
@@ -795,7 +803,7 @@
                                                                               return;
                                                                           }
                                                                       }
-                                                                      completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil], cancelled);
+                                                                      weakSelf.seedRequestBlock(completion);
                                                                   }
                                                               }];
     }
@@ -803,10 +811,14 @@
 
 - (NSString *)seedPhraseIfAuthenticated {
     if (![DSAuthenticationManager sharedInstance].usesAuthentication || [DSAuthenticationManager sharedInstance].didAuthenticate) {
-        return getKeychainString(self.mnemonicUniqueID, nil);
-    } else {
-        return nil;
+        return [self seedPhrase];
     }
+
+    return nil;
+}
+
+- (NSString *)seedPhrase {
+    return getKeychainString(self.mnemonicUniqueID, nil);
 }
 
 // authenticates user and returns seedPhrase
@@ -829,7 +841,7 @@
 - (void)authPrivateKey:(void (^_Nullable)(NSString *_Nullable authKey))completion;
 {
     @autoreleasepool {
-        self.seedRequestBlock(@"Please authorize", 0, ^(NSData *_Nullable seed, BOOL cancelled) {
+        self.secureSeedRequestBlock(@"Please authorize", 0, ^(NSData *_Nullable seed, BOOL cancelled) {
             @autoreleasepool {
                 NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
                 if (!privKey) {

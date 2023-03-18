@@ -77,7 +77,7 @@
     uint16_t type = entry->mn_type;
     uint16_t platformHTTPPort = entry->platform_http_port;
     UInt160 platformNodeID = *((UInt160 *)entry->platform_node_id);
-    return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash
+   return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash
                                                                     confirmedHash:confirmedHash
                                                                           address:address
                                                                              port:port

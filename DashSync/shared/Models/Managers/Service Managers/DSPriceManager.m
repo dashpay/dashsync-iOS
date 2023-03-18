@@ -112,11 +112,7 @@
                                     withString:@"-#"];
     }
     self.dashFormat.currencyCode = @"DASH";
-    if (@available(iOS 13.0, *)) {
-        self.dashFormat.currencySymbol = DASH;
-    } else {
-        self.dashFormat.currencySymbol = DASH NARROW_NBSP;
-    }
+    self.dashFormat.currencySymbol = DASH;
     self.dashFormat.maximumFractionDigits = 8;
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
@@ -137,11 +133,7 @@
                                     withString:@"-#"];
     }
     self.dashSignificantFormat.currencyCode = @"DASH";
-    if (@available(iOS 13.0, *)) {
-        self.dashSignificantFormat.currencySymbol = DASH;
-    } else {
-        self.dashSignificantFormat.currencySymbol = DASH NARROW_NBSP;
-    }
+    self.dashSignificantFormat.currencySymbol = DASH;
     self.dashSignificantFormat.usesSignificantDigits = TRUE;
     self.dashSignificantFormat.minimumSignificantDigits = 1;
     self.dashSignificantFormat.maximumSignificantDigits = 6;
@@ -160,11 +152,7 @@
                                     withString:@"-#"];
     }
     self.bitcoinFormat.currencyCode = @"BTC";
-    if (@available(iOS 13.0, *)) {
-        self.bitcoinFormat.currencySymbol = BTC;
-    } else {
-        self.bitcoinFormat.currencySymbol = BTC NARROW_NBSP;
-    }
+    self.bitcoinFormat.currencySymbol = BTC;
     self.bitcoinFormat.maximumFractionDigits = 8;
     self.bitcoinFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.bitcoinFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.bitcoinFormat.maximumFractionDigits));
@@ -513,7 +501,13 @@
     if (n == nil) {
         return DSLocalizedString(@"Updating Price", @"Updating Price");
     }
-    return [self.localFormat stringFromNumber:n];
+    
+    NSString *saved = self.localFormat.currencyCode;
+    self.localFormat.currencyCode = currencyCode;
+    NSString *formatted = [self.localFormat stringFromNumber:n];
+    self.localFormat.currencyCode = saved;
+    
+    return formatted;
 }
 
 - (NSString *)localCurrencyStringForBitcoinAmount:(int64_t)amount {
@@ -579,51 +573,6 @@
     if ([n compare:min] == NSOrderedAscending) n = min;
     if (amount < 0) n = [n decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithInt:-1]];
     return n;
-}
-
-// MARK: - floating fees
-
-- (void)updateFeePerKb {
-    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
-
-#if (!!FEE_PER_KB_URL)
-
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
-                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                                   timeoutInterval:10.0];
-
-    //    DSLogPrivate(@"%@", req.URL.absoluteString);
-
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                                         if (error != nil) {
-                                             DSLog(@"unable to fetch fee-per-kb: %@", error);
-                                             return;
-                                         }
-
-                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-
-                                         if (error || ![json isKindOfClass:[NSDictionary class]] ||
-                                             ![json[@"fee_per_kb"] isKindOfClass:[NSNumber class]]) {
-                                             DSLogPrivate(@"unexpected response from %@:\n%@", req.URL.host,
-                                                 [[NSString alloc] initWithData:data
-                                                                       encoding:NSUTF8StringEncoding]);
-                                             return;
-                                         }
-
-                                         uint64_t newFee = [json[@"fee_per_kb"] unsignedLongLongValue];
-                                         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-
-                                         if (newFee >= MIN_FEE_PER_KB && newFee <= MAX_FEE_PER_KB && newFee != [defs doubleForKey:FEE_PER_KB_KEY]) {
-                                             DSLog(@"setting new fee-per-kb %lld", newFee);
-                                             [defs setDouble:newFee forKey:FEE_PER_KB_KEY]; // use setDouble since setInteger won't hold a uint64_t
-                                             _wallet.feePerKb = newFee;
-                                         }
-                                     }] resume];
-
-#else
-    return;
-#endif
 }
 
 + (NSArray<DSCurrencyPriceObject *> *)sortPrices:(NSArray<DSCurrencyPriceObject *> *)prices

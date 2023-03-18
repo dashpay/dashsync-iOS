@@ -148,7 +148,7 @@
 
 #if TARGET_OS_IOS
 - (UIViewController *)presentingViewController {
-    return [[[UIApplication sharedApplication] keyWindow] ds_presentingViewController];
+    return [[UIWindow keyWindow] ds_presentingViewController];
 }
 #endif
 

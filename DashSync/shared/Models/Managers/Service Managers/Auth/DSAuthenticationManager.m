@@ -957,7 +957,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 - (void)presentController:(UIViewController *)controller
                  animated:(BOOL)animated
                completion:(void (^_Nullable)(void))completion {
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    UIWindow *window = [UIWindow keyWindow];
     UIViewController *presentingController = [window ds_presentingViewController];
     NSParameterAssert(presentingController);
     [presentingController presentViewController:controller animated:animated completion:completion];
