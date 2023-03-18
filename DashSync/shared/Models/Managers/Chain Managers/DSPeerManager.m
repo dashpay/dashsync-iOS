@@ -315,7 +315,7 @@
 
                             uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                             NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
-                            NSLog(@"---- addPeer: %@: %u", uint128_hex(addr), port);
+//                            NSLog(@"---- addPeer: %@: %u", uint128_hex(addr), port);
                             [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr
                                                                            port:port
                                                                         onChain:self.chain

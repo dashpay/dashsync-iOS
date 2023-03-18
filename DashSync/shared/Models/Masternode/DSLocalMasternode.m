@@ -71,17 +71,20 @@
                      inFundsWallet:wallet
                   inOperatorWallet:wallet
                      inOwnerWallet:wallet
-                    inVotingWallet:wallet];
+                    inVotingWallet:wallet
+              inPlatformNodeWallet:wallet];
 }
-- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
+- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet inPlatformNodeWallet:(DSWallet *)platformNodeWallet {
     if (!(self = [super init])) return nil;
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = fundsWallet;
     self.ownerKeysWallet = ownerWallet;
     self.votingKeysWallet = votingWallet;
+    self.platformNodeKeysWallet = platformNodeWallet;
     self.ownerWalletIndex = UINT32_MAX;
     self.operatorWalletIndex = UINT32_MAX;
     self.votingWalletIndex = UINT32_MAX;
+    self.platformNodeWalletIndex = UINT32_MAX;
     self.holdingWalletIndex = UINT32_MAX;
     self.ipAddress = ipAddress;
     self.port = port;
@@ -94,15 +97,17 @@
     return self;
 }
 
-- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex inPlatformNodeWallet:(DSWallet *_Nullable)platformNodeWallet platformNodeWalletIndex:(uint32_t)platformNodeWalletIndex {
     if (!(self = [super init])) return nil;
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = fundsWallet;
     self.ownerKeysWallet = ownerWallet;
     self.votingKeysWallet = votingWallet;
+    self.platformNodeKeysWallet = platformNodeWallet;
     self.ownerWalletIndex = ownerWalletIndex;
     self.operatorWalletIndex = operatorWalletIndex;
     self.votingWalletIndex = votingWalletIndex;
+    self.platformNodeWalletIndex = platformNodeWalletIndex;
     self.holdingWalletIndex = fundsWalletIndex;
     self.ipAddress = ipAddress;
     self.port = port;

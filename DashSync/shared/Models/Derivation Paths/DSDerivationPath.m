@@ -783,7 +783,6 @@
 - (NSString *)serializedExtendedPublicKey {
     //todo make sure this works with BLS keys
     NSData *extPubKeyData = self.extendedPublicKeyData;
-    NoTimeLog(@"serialized_extended_public_key.key_data: %@", extPubKeyData.hexString);
     if (extPubKeyData.length < 36) return nil;
     uint32_t fingerprint = [extPubKeyData UInt32AtOffset:0];
     UInt256 chain = [extPubKeyData UInt256AtOffset:4];

@@ -26,6 +26,7 @@
 @property (nonatomic, strong) DSKeyValueTableViewCell *ownerIndexTableViewCell;
 @property (nonatomic, strong) DSKeyValueTableViewCell *operatorIndexTableViewCell;
 @property (nonatomic, strong) DSKeyValueTableViewCell *votingIndexTableViewCell;
+@property (nonatomic, strong) DSKeyValueTableViewCell *platformNodeIndexTableViewCell;
 @property (nonatomic, strong) DSAccountChooserTableViewCell *accountChooserTableViewCell;
 @property (nonatomic, strong) DSWalletChooserTableViewCell *walletChooserTableViewCell;
 @property (nonatomic, strong) DSAccount *account;
@@ -49,6 +50,7 @@
     self.walletChooserTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeWalletCellIdentifier"];
     self.ownerIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeOwnerIndexCellIdentifier"];
     self.votingIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeVotingIndexCellIdentifier"];
+    self.platformNodeIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodePlatformNodeIndexCellIdentifier"];
     self.operatorIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeOperatorIndexCellIdentifier"];
 }
 
@@ -81,10 +83,12 @@
                 case 6:
                     return self.votingIndexTableViewCell;
                 case 7:
-                    return self.payToAddressTableViewCell;
+                    return self.platformNodeIndexTableViewCell;
                 case 8:
-                    return self.accountChooserTableViewCell;
+                    return self.payToAddressTableViewCell;
                 case 9:
+                    return self.accountChooserTableViewCell;
+                case 10:
                     return self.walletChooserTableViewCell;
             }
         }
@@ -127,6 +131,7 @@
     uint32_t ownerWalletIndex = UINT32_MAX;
     uint32_t votingWalletIndex = UINT32_MAX;
     uint32_t operatorWalletIndex = UINT32_MAX;
+    uint32_t platformNodeWalletIndex = UINT32_MAX;
 
     if (self.ownerIndexTableViewCell.valueTextField.text && ![self.ownerIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
         ownerWalletIndex = (uint32_t)[self.ownerIndexTableViewCell.valueTextField.text integerValue];
@@ -139,8 +144,12 @@
     if (self.votingIndexTableViewCell.valueTextField.text && ![self.votingIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
         votingWalletIndex = (uint32_t)[self.votingIndexTableViewCell.valueTextField.text integerValue];
     }
+    
+    if (self.platformNodeIndexTableViewCell.valueTextField.text && ![self.platformNodeIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
+        platformNodeWalletIndex = (uint32_t)[self.platformNodeIndexTableViewCell.valueTextField.text integerValue];
+    }
 
-    DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
+    DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex inPlatformNodeWallet:self.wallet platformNodeWalletIndex:platformNodeWalletIndex];
 
     NSString *payoutAddress = [self.payToAddressTableViewCell.valueTextField.text isValidDashAddressOnChain:self.chain] ? self.payToAddressTableViewCell.textLabel.text : self.account.receiveAddress;
 

@@ -91,6 +91,8 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 //the voting key can either be private or public key
 - (BOOL)forceVotingKey:(DSECDSAKey *)votingKey;
 
+- (BOOL)forcePlatformNodeKey:(DSECDSAKey *)platformNodeKey;
+
 @end
 
 NS_ASSUME_NONNULL_END
