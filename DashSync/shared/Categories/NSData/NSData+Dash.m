@@ -1034,6 +1034,16 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 
 @implementation NSData (Dash)
 
++ (instancetype)dataWithBlockInfo:(DSBlockInfo)blockInfo {
+    return [self dataWithBytes:&blockInfo length:sizeof(blockInfo)];
+}
+
++ (instancetype)dataWithBlockHash:(UInt256)blockHash height:(uint32_t)height {
+    NSMutableData *d = [NSMutableData dataWithUInt256:blockHash];
+    [d appendUInt32:height];
+    return d;
+}
+
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq {
     return [self dataWithBytes:&llmq length:sizeof(llmq)];
 }
@@ -1359,6 +1369,11 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 - (DSLLMQ)llmq {
     if (self.length < sizeof(DSLLMQ)) return DSLLMQ_ZERO;
     return *(DSLLMQ *)(self.bytes);
+}
+
+- (DSBlockInfo)blockInfo {
+    if (self.length < sizeof(DSBlockInfo)) return DSBlockInfo_ZERO;
+    return *(DSBlockInfo *)(self.bytes);
 }
 
 

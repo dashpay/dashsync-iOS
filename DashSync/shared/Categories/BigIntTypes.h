@@ -90,6 +90,15 @@ typedef struct {
     uint8_t p[33];
 } DSECPoint;
 
+typedef union _DSBlockInfo {
+    uint8_t u8[288 / 8]; // 36
+    uint16_t u16[288 / 16]; // 18
+    uint32_t u32[288 / 32]; // 9
+} DSBlockInfo;
+
+#define dsblockinfo_data(u) [NSData dataWithBlockInfo:u]
+#define dsblockinfo_from(hash, height) [NSData dataWithBlockHash:hash height:height]
+
 typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
@@ -214,6 +223,7 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define DSUTXO_ZERO ((DSUTXO){.hash = UINT256_ZERO, .n = 0})
 #define DSLLMQ_ZERO ((DSLLMQ){.type = 0, .hash = UINT256_ZERO})
 #define DSECPOINT_ZERO ((DSECPoint){.p = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}})
+#define DSBlockInfo_ZERO ((DSBlockInfo){.u32 = {0, 0, 0, 0, 0, 0, 0, 0, 0}})
 
 #define dsutxo_eq(a, b) (uint256_eq(a.hash, b.hash) && (a.n == b.n))
 #define dsutxo_is_zero(a) (uint256_is_zero(a.hash) && (a.n == 0))

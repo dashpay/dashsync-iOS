@@ -32,8 +32,8 @@
     for (i = 0; i < skipListLength; i++) {
         [skipList addObject:[NSNumber numberWithInteger:quorumSnapshot->skip_list[i]]];
     }
-    [snapshot setMemberList:[memberList copy]];
-    [snapshot setSkipList:[skipList copy]];
+    [snapshot setMemberList:memberList];
+    [snapshot setSkipList:skipList];
     [snapshot setSkipListMode:quorumSnapshot->skip_list_mode];
     [snapshot setBlockHash:blockHash];
     return snapshot;

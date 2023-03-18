@@ -201,6 +201,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSString *_Nullable)seedPhraseIfAuthenticated;
 
 - (DSKey *_Nullable)privateKeyForAddress:(NSString *_Nonnull)address fromSeed:(NSData *_Nonnull)seed;
+- (NSString *_Nullable)privateKeyAddressForAddress:(NSString *)address fromSeed:(NSData *)seed;
 
 //generate a random Mnemonic seed
 + (NSString *_Nullable)generateRandomSeedPhrase;

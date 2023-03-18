@@ -32,9 +32,9 @@
             DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
             [quorumsOfType setObject:entry forKey:hash];
         }
-        [quorums setObject:[quorumsOfType copy] forKey:@(llmqType)];
+        [quorums setObject:quorumsOfType forKey:@(llmqType)];
     }
-    return [quorums copy];
+    return quorums;
 }
 
 - (LLMQEntry *)ffi_malloc {

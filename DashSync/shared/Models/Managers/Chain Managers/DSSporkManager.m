@@ -194,10 +194,10 @@
     } else {
         [self setSporkValue:spork forKeyIdentifier:spork.identifier];
     }
-    [dictionary setObject:spork
-                   forKey:@"new"];
-    [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
     if (!currentSpork || updatedSpork) {
+        [dictionary setObject:spork
+                       forKey:@"new"];
+        [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
         [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
                 DSSporkHashEntity *hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChainEntity:[spork.chain chainEntityInContext:self.managedObjectContext]];

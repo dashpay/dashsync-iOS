@@ -2570,7 +2570,6 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // MARK: Terminal Blocks
-
 - (NSMutableDictionary *)mTerminalBlocks {
     if (_mTerminalBlocks.count > 0) {
         if (!_checkpointsByHashDictionary) _checkpointsByHashDictionary = [NSMutableDictionary dictionary];

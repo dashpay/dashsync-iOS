@@ -125,7 +125,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     if (entry->commitment_hash) {
         self.commitmentHash = *((UInt256 *)entry->commitment_hash);
     }
-//    self.length = (uint32_t)entry->length;
     self.llmqType = (DSLLMQType)entry->llmq_type;
     self.quorumEntryHash = *((UInt256 *)entry->entry_hash);
     self.quorumHash = *((UInt256 *)entry->llmq_hash);
@@ -141,7 +140,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     self.verified = entry->verified;
     self.version = entry->version;
     self.chain = chain;
-    //NSLog(@"DSQuorumEntry.initWithEntry. validateBitsets %d", [self validateBitsets]);
     return self;
 }
 
@@ -150,6 +148,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     [data appendUInt16:self.version];
     [data appendUInt8:self.llmqType];
     [data appendUInt256:self.quorumHash];
+    // LLMQVersion::Indexed || LLMQVersion::BLSBasicIndexed
     if (self.version == 2 || self.version == 4)
         [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.signersCount];
@@ -309,9 +308,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     }
 
     BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:self.useLegacyBLSScheme];
-
-    //    NSLog(@"validateQuorumCallback verifySecureAggregated = %i, with: commitmentHash: %@, allCommitmentAggregatedSignature: %@, publicKeys: %lu", allCommitmentAggregatedSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.allCommitmentAggregatedSignature), [publicKeyArray count]);
-
     if (!allCommitmentAggregatedSignatureValidated) {
         DSLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
 #if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE

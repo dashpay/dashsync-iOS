@@ -1612,7 +1612,8 @@
     //DSLogPrivate(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (!self.chain.needsInitialTerminalHeadersSync &&
-        (block.timestamp + DAY_TIME_INTERVAL * 2 > self.chain.earliestWalletCreationTime) && !self.chainManager.chainSynchronizationFingerprint) {
+        (self.chain.earliestWalletCreationTime < block.timestamp + DAY_TIME_INTERVAL * 2) &&
+        !self.chainManager.chainSynchronizationFingerprint) {
         DSLog(@"ignoring header %@", uint256_hex(block.blockHash));
         return;
     }
@@ -1723,6 +1724,7 @@
 
     if (block) {
         [self.chain addChainLock:chainLock];
+        // TODO: duplicate saving check occurs in chain.addChainLock
         [chainLock saveInitial];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];

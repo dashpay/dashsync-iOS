@@ -97,9 +97,7 @@
     uint32_t collateralIndex = 0;
     DSUTXO reversedCollateral = (DSUTXO){.hash = collateralHash.hexToData.reverse.UInt256, .n = collateralIndex};
     NSString *payoutAddress = @"yTb47qEBpNmgXvYYsHEN4nh8yJwa5iC4Cs";
-    DSECDSAKey *inputPrivateKey0 = (DSECDSAKey *)[wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
-
-    NSString *checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
+    NSString *checkInputAddress0 = [wallet privateKeyAddressForAddress:inputAddress0 fromSeed:seed];
     XCTAssertEqualObjects(checkInputAddress0, inputAddress0, @"Private key does not match input address");
 
     DSAccount *collateralAccount = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:collateralAddress];

@@ -741,7 +741,7 @@
         UInt512 I;
 
         HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), derivedKeyData.bytes, derivedKeyData.length);
-
+            
         NSData *publicKey = [DSECDSAKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKeyData;
         NSMutableData *uniqueIDData = [[NSData dataWithUInt256:chain.genesisHash] mutableCopy];
         [uniqueIDData appendData:publicKey];
@@ -1094,6 +1094,11 @@
     if (!derivationPath) return nil;
     NSIndexPath *indexPath = [derivationPath indexPathForKnownAddress:address];
     return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
+}
+
+- (NSString *)privateKeyAddressForAddress:(NSString *)address fromSeed:(NSData *)seed {
+    NSString *addressString = [[self privateKeyForAddress:address fromSeed:seed] addressForChain:self.chain];
+    return addressString;
 }
 
 - (void)reloadDerivationPaths {

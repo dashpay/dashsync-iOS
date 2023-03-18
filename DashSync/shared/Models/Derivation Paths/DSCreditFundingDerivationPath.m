@@ -82,7 +82,6 @@
                 if (completion) completion(NO, cancelled);
             } else {
                 DSECDSAKey *key = (DSECDSAKey *)[self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
-
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[key]];
                 if (completion) completion(signedSuccessfully, NO);
             }

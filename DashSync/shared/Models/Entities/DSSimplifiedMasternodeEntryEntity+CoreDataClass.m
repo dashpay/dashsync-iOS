@@ -205,34 +205,36 @@
     return [self anyObjectInContext:chainEntity.managedObjectContext matching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)", simplifiedMasternodeEntryHash, chainEntity];
 }
 
-- (NSDictionary<DSBlock *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
+- (NSDictionary<NSData *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
     return [self blockDictionaryFromBlockHashDictionary:blockHashDictionary blockHeightLookup:nil];
 }
 
-- (NSDictionary<DSBlock *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+- (NSDictionary<NSData *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
     DSChain *chain = self.chain.chain;
     for (NSData *blockHash in blockHashDictionary) {
-        DSBlock *block = [chain blockForBlockHash:blockHash.UInt256];
+        UInt256 hash = *(UInt256 *)(blockHash.bytes);
+        DSBlock *block = [chain blockForBlockHash:hash];
         if (block) {
-            rDictionary[block] = blockHashDictionary[blockHash];
+            rDictionary[[NSData dataWithBlockHash:hash height:block.height]] = blockHashDictionary[blockHash];
         } else if (blockHeightLookup) {
             uint32_t blockHeight = blockHeightLookup(blockHash.UInt256);
             if (blockHeight && blockHeight != UINT32_MAX) {
-                DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash.UInt256 height:blockHeight onChain:chain];
-                rDictionary[block] = blockHashDictionary[blockHash];
+                rDictionary[[NSData dataWithBlockHash:hash height:blockHeight]] = blockHashDictionary[blockHash];
             }
         }
     }
     return rDictionary;
 }
 
-- (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<DSBlock *, id> *)blockHashDictionary {
+- (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
-    for (DSBlock *block in blockHashDictionary) {
-        NSData *blockHash = uint256_data(block.blockHash);
+    for (NSData *blockInfo in blockHashDictionary) {
+        UInt256 blockInfoHash = *(UInt256 *)&blockInfo;
+//        uint32_t blockHeight = *(uint32_t *)(const uint8_t *)blockInfo.bytes + sizeof(UInt256);
+        NSData *blockHash = uint256_data(blockInfoHash);
         if (blockHash) {
-            rDictionary[blockHash] = blockHashDictionary[block];
+            rDictionary[blockHash] = blockHashDictionary[blockInfo];
         }
     }
     return rDictionary;

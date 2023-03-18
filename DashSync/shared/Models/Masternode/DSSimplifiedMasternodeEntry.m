@@ -48,9 +48,9 @@
 @property (null_resettable, nonatomic, copy) NSString *ipAddressString;
 @property (null_resettable, nonatomic, copy) NSString *portString;
 @property (nonatomic, strong) DSBLSKey *operatorPublicBLSKey;
-@property (nonatomic, strong) NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeys;
-@property (nonatomic, strong) NSDictionary<DSBlock *, NSNumber *> *previousValidity;
-@property (nonatomic, strong) NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes;
+@property (nonatomic, strong) NSDictionary<NSData *, NSData *> *previousOperatorPublicKeys;
+@property (nonatomic, strong) NSDictionary<NSData *, NSNumber *> *previousValidity;
+@property (nonatomic, strong) NSDictionary<NSData *, NSData *> *previousSimplifiedMasternodeEntryHashes;
 @property (nonatomic, assign) uint64_t platformPing;
 @property (nonatomic, strong) NSDate *platformPingDate;
 
@@ -75,7 +75,7 @@
     return [self payloadData].SHA256_2;
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey operatorPublicKeyVersion:(uint16_t)operatorPublicKeyVersion previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid type:(uint16_t)type platformHTTPPort:(uint16_t)platformHTTPPort platformNodeID:(UInt160)platformNodeID previousValidity:(NSDictionary<DSBlock *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey operatorPublicKeyVersion:(uint16_t)operatorPublicKeyVersion previousOperatorBLSPublicKeys:(NSDictionary<NSData *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid type:(uint16_t)type platformHTTPPort:(uint16_t)platformHTTPPort platformNodeID:(UInt160)platformNodeID previousValidity:(NSDictionary<NSData *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<NSData *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
@@ -125,15 +125,17 @@
     if (blockHeight == UINT32_MAX) {
         return self.isValid;
     }
-    NSDictionary<DSBlock *, NSNumber *> *previousValidity = self.previousValidity;
+    NSDictionary<NSData *, NSNumber *> *previousValidity = self.previousValidity;
     uint32_t minDistance = UINT32_MAX;
     BOOL isValid = self.isValid;
-    for (DSBlock *previousBlock in previousValidity) {
-        if (previousBlock.height <= blockHeight) continue;
-        uint32_t distance = previousBlock.height - blockHeight;
+    for (NSData *previousBlock in previousValidity) {
+        DSBlockInfo blockInfo = *(DSBlockInfo *)(previousBlock.bytes);
+        uint32_t prevHeight = blockInfo.u32[8];
+        if (prevHeight <= blockHeight) continue;
+        uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDSMNELog(@"Validity for proTxHash %@ : Using %@ instead of %@ for list at block height %u (previousBlock.height %u)", uint256_hex(self.providerRegistrationTransactionHash), previousValidity[previousBlock].boolValue ? @"YES" : @"NO", isValid ? @"YES" : @"NO", blockHeight, previousBlock.height);
+            DSDSMNELog(@"Validity for proTxHash %@ : Using %@ instead of %@ for list at block height %u (previousBlock.height %u)", uint256_hex(self.providerRegistrationTransactionHash), previousValidity[previousBlock].boolValue ? @"YES" : @"NO", isValid ? @"YES" : @"NO", blockHeight, prevHeight);
             isValid = [previousValidity[previousBlock] boolValue];
         }
     }
@@ -167,18 +169,19 @@
     if (blockHeight == UINT32_MAX) {
         return self.simplifiedMasternodeEntryHash;
     }
-    NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
+    NSDictionary<NSData *, NSData *> *previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
     uint32_t minDistance = UINT32_MAX;
     UInt256 usedSimplifiedMasternodeEntryHash = self.simplifiedMasternodeEntryHash;
-    for (DSBlock *previousBlock in previousSimplifiedMasternodeEntryHashes) {
-        //NSLog(@"simplifiedMasternodeEntryHashAtBlockHeight: %u %@: prev: %u: %@", blockHeight, uint256_hex(usedSimplifiedMasternodeEntryHash), previousBlock.height, uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256));
-        if (previousBlock.height <= blockHeight) continue;
-        uint32_t distance = previousBlock.height - blockHeight;
+    for (NSData *previousBlock in previousSimplifiedMasternodeEntryHashes) {
+        DSBlockInfo blockInfo = *(DSBlockInfo *)(previousBlock.bytes);
+        uint32_t prevHeight = blockInfo.u32[8];
+        if (prevHeight <= blockHeight) continue;
+        uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(*(UInt256 *)(blockInfo.u8)), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
-        }
+       }
     }
     return usedSimplifiedMasternodeEntryHash;
 }
@@ -206,12 +209,15 @@
 
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight {
     if (![self.previousOperatorPublicKeys count]) return self.operatorPublicKey;
-    NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
+    //[self.chain heightForBlockHash:<#(UInt256)#>]
+    NSDictionary<NSData *, NSData *> *previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
     uint32_t minDistance = UINT32_MAX;
     UInt384 usedPreviousOperatorPublicKeyAtBlockHash = self.operatorPublicKey;
-    for (DSBlock *previousBlock in previousOperatorPublicKeyAtBlockHashes) {
-        if (previousBlock.height <= blockHeight) continue;
-        uint32_t distance = previousBlock.height - blockHeight;
+    for (NSData *previousBlock in previousOperatorPublicKeyAtBlockHashes) {
+        DSBlockInfo blockInfo = *(DSBlockInfo *)(previousBlock.bytes);
+        uint32_t prevHeight = blockInfo.u32[8];
+        if (prevHeight <= blockHeight) continue;
+        uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
             DSDSMNELog(@"OperatorKey : Using %@ instead of %@ for list at block height %u", uint384_hex(previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384), uint384_hex(usedPreviousOperatorPublicKeyAtBlockHash), blockHeight);
@@ -519,12 +525,14 @@
     }
 }
 
-- (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<DSBlock *, id> *)blockHashDictionary {
+- (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
-    for (DSBlock *block in blockHashDictionary) {
-        NSData *blockHash = uint256_data(block.blockHash);
-        if (blockHash) {
-            rDictionary[blockHash] = blockHashDictionary[block];
+    for (NSData *block in blockHashDictionary) {
+        DSBlockInfo blockInfo = *(DSBlockInfo *)(block.bytes);
+        UInt256 blockHash = *(UInt256 *)(blockInfo.u8);
+        NSData *blockHashData = uint256_data(blockHash);
+        if (blockHashData) {
+            rDictionary[blockHashData] = blockHashDictionary[block];
         }
     }
     return rDictionary;

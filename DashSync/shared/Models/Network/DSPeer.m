@@ -259,7 +259,7 @@
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
-
+    self.knownInstantSendLockDHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownChainLockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
@@ -843,24 +843,19 @@
 
 - (void)acceptVersionMessage:(NSData *)message {
     NSNumber *l = nil;
-
     if (message.length < 85) {
         [self error:@"malformed version message, length is %u, should be > 84", (int)message.length];
         return;
     }
-
     _version = [message UInt32AtOffset:0];
     _services = [message UInt64AtOffset:4];
     _timestamp = [message UInt64AtOffset:12];
     _useragent = [message stringAtOffset:80 length:&l];
-
     if (message.length < 80 + l.unsignedIntegerValue + sizeof(uint32_t)) {
         [self error:@"malformed version message, length is %u, should be %u", (int)message.length, (int)(80 + l.unsignedIntegerValue + 4)];
         return;
     }
-
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
-
     if (self.version < self.chain.minProtocolVersion) {
 #if MESSAGE_LOGGING
         DSLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
@@ -872,7 +867,6 @@
         DSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif
     }
-
     [self sendVerackMessage];
 }
 

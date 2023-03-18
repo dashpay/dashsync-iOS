@@ -32,6 +32,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef union _UInt256 UInt256;
+typedef union _DSBlockInfo DSBlockInfo;
 
 @class DSChain, DSChainLock, DSCheckpoint;
 
@@ -62,6 +63,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly, getter=isMerkleTreeValid) BOOL merkleTreeValid;
 
 @property (nonatomic, readonly, getter=toData) NSData *data;
+//@property (nonatomic, readonly) DSBlockInfo blockInfo;
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height chainWork:(UInt256)chainWork onChain:(DSChain *)chain;
 
