@@ -8,7 +8,7 @@
 #import "BigIntTypes.h"
 #import "DSTransition.h"
 
-@class DSECDSAKey, DSChain;
+@class DSChain;
 
 @interface DSBlockchainIdentityTopupTransition : DSTransition
 

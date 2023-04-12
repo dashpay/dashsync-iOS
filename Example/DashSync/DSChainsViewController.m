@@ -322,10 +322,10 @@
          minProtocolVersion:70219
             protocolVersion:70220
     minimumDifficultyBlocks:4032
-           ISLockQuorumType:DSLLMQType_10_60
-          ISDLockQuorumType:DSLLMQType_DevnetDIP0024
-        chainLockQuorumType:DSLLMQType_10_60
-         platformQuorumType:DSLLMQType_10_60
+           ISLockQuorumType:LLMQType_LlmqtypeDevnet
+          ISDLockQuorumType:LLMQType_LlmqtypeDevnetDIP0024
+        chainLockQuorumType:LLMQType_LlmqtypeDevnet
+         platformQuorumType:LLMQType_LlmqtypeDevnet
          masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.220.200.8",

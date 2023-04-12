@@ -105,8 +105,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     NSData *transientExtendedPublicKey = transientDerivationPath.extendedPublicKeyData;
 
     if (transientExtendedPublicKey &&
-        ![transientExtendedPublicKey isEqual:oldData] &&
-        ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]) {
+        ![transientExtendedPublicKey isEqual:oldData] /*&& ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]*/) {
         [textView ds_shakeView];
 
         [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];

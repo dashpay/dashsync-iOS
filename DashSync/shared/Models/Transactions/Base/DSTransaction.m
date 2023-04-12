@@ -32,7 +32,6 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSCreditFundingTransaction.h"
-#import "DSECDSAKey.h"
 #import "DSIdentitiesManager.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager.h"
@@ -571,10 +570,11 @@
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
 
     for (NSString *pk in privateKeys) {
-        DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:pk onChain:self.chain];
+        OpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
+//        DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:pk onChain:self.chain];
 
         if (!key) continue;
-        [keys addObject:key];
+        [keys addObject:[NSValue valueWithPointer:key]];
     }
 
     return [self signWithPrivateKeys:keys];
@@ -582,29 +582,31 @@
 
 - (BOOL)signWithPrivateKeys:(NSArray *)keys {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
+    // TODO: avoid double looping: defer getting address into signWithPrivateKeys key <-> address
 
-    for (DSECDSAKey *key in keys) {
-        [addresses addObject:[key addressForChain:self.chain]];
+    for (NSValue *key in keys) {
+        [addresses addObject:[DSKeyManager addressForKey:key.pointerValue forChainType:self.chain.chainType]];
     }
-
-    return [self signWithPrivateKeys:keys forAddresses:addresses];
-}
-
-- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
     @synchronized (self) {
-        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
+       for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSMutableData *sig = [NSMutableData data];
+           
+            NSString *addr = [NSString addressWithScriptPubKey:transactionInput.inScript onChain:self.chain];
+            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
+            if (keyIdx == NSNotFound) continue;
             NSData *data = [self toDataWithSubscriptIndex:i];
+            NSMutableData *sig = [NSMutableData data];
+            NSValue *keyValue = keys[keyIdx];
+            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
             UInt256 hash = data.SHA256_2;
-            NSMutableData *s = [NSMutableData dataWithData:[keys[i] sign:hash]];
-            NSArray *elem = [transactionInput.inScript scriptElements];
-
+            NSData *signedData = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, hash.u8, 32)];
+            
+            NSMutableData *s = [NSMutableData dataWithData:signedData];
             [s appendUInt8:SIGHASH_ALL];
             [sig appendScriptPushData:s];
-
+            NSArray *elem = [transactionInput.inScript scriptElements];
             if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-                [sig appendScriptPushData:[keys[i] publicKeyData]];
+                [sig appendScriptPushData:[DSKeyManager publicKeyData:key]];
             }
 
             transactionInput.signature = sig;
@@ -616,26 +618,24 @@
     }
 }
 
-- (BOOL)signWithPrivateKeys:(NSArray *)keys forAddresses:(NSArray *)addresses {
+- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
     @synchronized (self) {
-       for (NSUInteger i = 0; i < self.mInputs.count; i++) {
+        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSString *addr = [NSString addressWithScriptPubKey:transactionInput.inScript onChain:self.chain];
-            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
-
-            if (keyIdx == NSNotFound) continue;
-
             NSMutableData *sig = [NSMutableData data];
             NSData *data = [self toDataWithSubscriptIndex:i];
             UInt256 hash = data.SHA256_2;
-            NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
+            NSValue *keyValue = keys[i];
+            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
+            NSData *signedData = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, hash.u8, 32)];
+            NSMutableData *s = [NSMutableData dataWithData:signedData];
             NSArray *elem = [transactionInput.inScript scriptElements];
 
             [s appendUInt8:SIGHASH_ALL];
             [sig appendScriptPushData:s];
 
             if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-                [sig appendScriptPushData:[keys[keyIdx] publicKeyData]];
+                [sig appendScriptPushData:[DSKeyManager publicKeyData:key]];
             }
 
             transactionInput.signature = sig;

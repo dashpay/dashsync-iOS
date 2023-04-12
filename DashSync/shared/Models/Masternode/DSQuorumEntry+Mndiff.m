@@ -24,7 +24,7 @@
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
         LLMQMap *llmq_map = entries[i];
-        DSLLMQType llmqType = (DSLLMQType)llmq_map->llmq_type;
+        LLMQType llmqType = (LLMQType)llmq_map->llmq_type;
         NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
         for (NSUInteger j = 0; j < llmq_map->count; j++) {
             LLMQEntry *quorum_entry = llmq_map->values[j];
@@ -41,7 +41,7 @@
     LLMQEntry *quorum_entry = malloc(sizeof(LLMQEntry));
     quorum_entry->all_commitment_aggregated_signature = uint768_malloc([self allCommitmentAggregatedSignature]);
     quorum_entry->commitment_hash = uint256_malloc([self commitmentHash]);
-    quorum_entry->llmq_type = [self llmqType];
+    quorum_entry->llmq_type = (int8_t) [self llmqType];
     quorum_entry->entry_hash = uint256_malloc([self quorumEntryHash]);
     quorum_entry->llmq_hash = uint256_malloc([self quorumHash]);
     quorum_entry->public_key = uint384_malloc([self quorumPublicKey]);

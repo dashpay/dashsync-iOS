@@ -52,17 +52,49 @@ NSString const *localMasternodesDictionaryKey = @"localMasternodesDictionaryKey"
     return [self createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet inPlatformNodeWallet:wallet];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet inPlatformNodeWallet:(DSWallet *)platformNodeWallet {
+- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress
+                                                 onPort:(uint32_t)port
+                                          inFundsWallet:(DSWallet *)fundsWallet
+                                       inOperatorWallet:(DSWallet *)operatorWallet
+                                          inOwnerWallet:(DSWallet *)ownerWallet
+                                         inVotingWallet:(DSWallet *)votingWallet
+                                   inPlatformNodeWallet:(DSWallet *)platformNodeWallet {
     DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet inPlatformNodeWallet:platformNodeWallet];
     return localMasternode;
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex inPlatformNodeWallet:(DSWallet *_Nullable)platformNodeWallet platformNodeWalletIndex:(uint32_t)platformNodeWalletIndex {
+- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress
+                                                 onPort:(uint32_t)port
+                                          inFundsWallet:(DSWallet *_Nullable)fundsWallet
+                                       fundsWalletIndex:(uint32_t)fundsWalletIndex
+                                       inOperatorWallet:(DSWallet *_Nullable)operatorWallet
+                                    operatorWalletIndex:(uint32_t)operatorWalletIndex
+                                          inOwnerWallet:(DSWallet *_Nullable)ownerWallet
+                                       ownerWalletIndex:(uint32_t)ownerWalletIndex
+                                         inVotingWallet:(DSWallet *_Nullable)votingWallet
+                                      votingWalletIndex:(uint32_t)votingWalletIndex
+                                   inPlatformNodeWallet:(DSWallet *_Nullable)platformNodeWallet
+                                platformNodeWalletIndex:(uint32_t)platformNodeWalletIndex {
     DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex inPlatformNodeWallet:platformNodeWallet platformNodeWalletIndex:platformNodeWalletIndex];
     return localMasternode;
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey inPlatformNodeWallet:(DSWallet *_Nullable)platformNodeWallet platformNodeWalletIndex:(uint32_t)platformNodeWalletIndex platformNodeKey:(DSECDSAKey *)platformNodeKey {
+- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress
+                                                 onPort:(uint32_t)port
+                                          inFundsWallet:(DSWallet *_Nullable)fundsWallet
+                                       fundsWalletIndex:(uint32_t)fundsWalletIndex
+                                       inOperatorWallet:(DSWallet *_Nullable)operatorWallet
+                                    operatorWalletIndex:(uint32_t)operatorWalletIndex
+                                      operatorPublicKey:(OpaqueKey *)operatorPublicKey
+                                          inOwnerWallet:(DSWallet *_Nullable)ownerWallet
+                                       ownerWalletIndex:(uint32_t)ownerWalletIndex
+                                        ownerPrivateKey:(OpaqueKey *)ownerPrivateKey
+                                         inVotingWallet:(DSWallet *_Nullable)votingWallet
+                                      votingWalletIndex:(uint32_t)votingWalletIndex
+                                              votingKey:(OpaqueKey *)votingKey
+                                   inPlatformNodeWallet:(DSWallet *_Nullable)platformNodeWallet
+                                platformNodeWalletIndex:(uint32_t)platformNodeWalletIndex
+                                        platformNodeKey:(OpaqueKey *)platformNodeKey {
     DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex inPlatformNodeWallet:platformNodeWallet platformNodeWalletIndex:platformNodeWalletIndex];
 
     if (operatorWalletIndex == UINT32_MAX && operatorPublicKey) {

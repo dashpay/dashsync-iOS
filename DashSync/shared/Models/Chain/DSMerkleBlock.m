@@ -30,6 +30,7 @@
 #import "DSBlock+Protected.h"
 #import "DSChain.h"
 #import "DSChainLock.h"
+#import "DSKeyManager.h"
 #import "DSMerkleTree.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -89,7 +90,7 @@
     [d appendUInt32:self.timestamp];
     [d appendUInt32:self.target];
     [d appendUInt32:self.nonce];
-    self.blockHash = d.x11;
+    self.blockHash = [DSKeyManager x11:d];
     self.chain = chain;
 
 #if LOG_MERKLE_BLOCKS || LOG_MERKLE_BLOCKS_FULL

@@ -18,11 +18,12 @@
 #import <Foundation/Foundation.h>
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSUInt256IndexPath : NSObject <NSCopying, NSCoding> {
-  @private
+  @protected
     UInt256 *_indexes;
     NSUInteger _hash;
     NSUInteger _length;

@@ -11,14 +11,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSECDSAKey, DSBLSKey;
-
 @interface DSBlockchainIdentityRegistrationTransition : DSTransition
 
-@property (nonatomic, readonly) NSDictionary<NSNumber *, DSKey *> *publicKeys;
+@property (nonatomic, readonly) NSDictionary<NSNumber *, NSValue *> *publicKeys;
 @property (nonatomic, readonly) DSUTXO lockedOutpoint;
 
-- (instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary<NSNumber *, DSKey *> *)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction *)creditFundingTransaction onChain:(DSChain *)chain;
+- (instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary<NSNumber *, NSValue *> *)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction *)creditFundingTransaction onChain:(DSChain *)chain;
 
 @end
 

@@ -36,6 +36,7 @@
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSKeyManager.h"
 #import "DSPaymentProtocol.h"
 #import "DSPriceManager.h"
 #import "NSError+Dash.h"
@@ -96,7 +97,9 @@
     NSURL *url = [NSURL URLWithString:s];
 
     if (!url || !url.scheme) {
-        if ([s isValidDashAddressOnChain:self.chain] || [s isValidDashPrivateKeyOnChain:self.chain] || [s isValidDashBIP38Key]) {
+        if ([s isValidDashAddressOnChain:self.chain] ||
+            [s isValidDashPrivateKeyOnChain:self.chain] ||
+            [DSKeyManager isValidDashBIP38Key:s]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
         }

@@ -59,6 +59,7 @@
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) DSSporkManager *sporkManager;
 @property (nonatomic, strong) DSMasternodeManager *masternodeManager;
+@property (nonatomic, strong) DSKeyManager *keyManager;
 @property (nonatomic, strong) DSGovernanceSyncManager *governanceSyncManager;
 @property (nonatomic, strong) DSIdentitiesManager *identitiesManager;
 @property (nonatomic, strong) DSDAPIClient *DAPIClient;
@@ -86,6 +87,7 @@
     self.chain = chain;
     self.syncPhase = DSChainSyncPhase_Offline;
     chain.chainManager = self;
+    self.keyManager = [[DSKeyManager alloc] initWithChain:chain];
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
     self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain]; //this must be

@@ -33,6 +33,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
+#import "dash_shared_core.h"
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
     NSCParameterAssert(key);
@@ -1498,6 +1499,7 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 }
 
 - (NSString *)shortHexString {
+    // TODO: cut length before hexify for efficiency
     NSString *hexData = [NSString hexWithData:self];
     if (hexData.length > 7) {
         return [hexData substringToIndex:7];
@@ -1680,6 +1682,16 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     [self writeToFile:dataPath atomically:YES];
 }
 
+- (BOOL)isZeroBytes {
+    const uint8_t *bytes = self.bytes;
+    NSUInteger length = self.length;
+    for (NSUInteger i = 0; i < length; i++) {
+        if (bytes[i] != 0) {
+            return NO;
+        }
+    }
+    return YES;
+}
 @end
 
 

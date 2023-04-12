@@ -5,6 +5,7 @@
 //  Created by Sam Westrich on 2/10/19.
 //
 
+#import "dash_shared_core.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSSimpleIndexedDerivationPath.h"
 
@@ -23,12 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)blockchainIdentitiesECDSAKeysDerivationPathForWallet:(DSWallet *)wallet;
 
 - (NSData *)firstUnusedPublicKey;
-- (DSKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed;
-- (DSKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed;
-- (DSKey *)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData *)seed;
+- (OpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed;
+- (OpaqueKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed;
+- (OpaqueKey *)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData *)seed;
 - (NSData *)publicKeyDataForHash160:(UInt160)hash160;
 
-- (DSKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath;
+- (OpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

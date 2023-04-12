@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DSChainConstants.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
@@ -58,22 +59,22 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
     DSTransactionDirection_NotAccountFunds,
 };
 
-typedef NS_ENUM(uint16_t, DSLLMQType)
-{
-    DSLLMQType_Unknown = 0,
-    DSLLMQType_50_60 = 1,  //every 24 blocks
-    DSLLMQType_400_60 = 2, //288 blocks
-    DSLLMQType_400_85 = 3, //576 blocks
-    DSLLMQType_100_67 = 4, //every 24 blocks
-    DSLLMQType_60_75 = 5,
-    DSLLMQType_5_60 = 100, //24 blocks // LLmqtypeTest
-    DSLLMQType_10_60 = 101, //24 blocks // LLmqtypeDevnet
-    DSLLMQType_TestV17 = 102, // 3 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
-    DSLLMQType_TestDIP0024 = 103, // 4 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
-    DSLLMQType_DevnetDIP0024 = 105, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
-    DSLLMQType_Devnet333DIP0024 = 106, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
-    DSLLMQType_Chacha_v19 = 205, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
-};
+//typedef NS_ENUM(uint16_t, DSLLMQType)
+//{
+//    DSLLMQType_Unknown = 0,
+//    DSLLMQType_50_60 = 1,  //every 24 blocks
+//    DSLLMQType_400_60 = 2, //288 blocks
+//    DSLLMQType_400_85 = 3, //576 blocks
+//    DSLLMQType_100_67 = 4, //every 24 blocks
+//    DSLLMQType_60_75 = 5,
+//    DSLLMQType_5_60 = 100, //24 blocks // LLmqtypeTest
+//    DSLLMQType_10_60 = 101, //24 blocks // LLmqtypeDevnet
+//    DSLLMQType_TestV17 = 102, // 3 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
+//    DSLLMQType_TestDIP0024 = 103, // 4 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
+//    DSLLMQType_DevnetDIP0024 = 105, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
+//    DSLLMQType_Devnet333DIP0024 = 106, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
+//    DSLLMQType_Chacha_v19 = 205, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
+//};
 
 typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 {
@@ -215,22 +216,22 @@ typedef NS_ENUM(uint16_t, DSMasternodeSyncMode)
 @property (nonatomic, assign) uint32_t minimumDifficultyBlocks;
 
 /*! @brief The type of quorum used for Instant Send Locks.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForISLocks;
+@property (nonatomic, assign) LLMQType quorumTypeForISLocks;
 
 /*! @brief The type of quorum used for Deterministic Instant Send Locks.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForISDLocks;
+@property (nonatomic, assign) LLMQType quorumTypeForISDLocks;
 
 /*! @brief The type of quorum used for Chain Locks.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForChainLocks;
+@property (nonatomic, assign) LLMQType quorumTypeForChainLocks;
 
 /*! @brief The type of quorum used for Platform.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForPlatform;
+@property (nonatomic, assign) LLMQType quorumTypeForPlatform;
 
 /*! @brief The flag represents whether the quorum rotation is enabled in this chain.  */
 @property (nonatomic, assign) BOOL isRotatedQuorumsPresented;
 
 /*! @brief Whether chain should process this type of quorum.  */
-- (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType;
+- (BOOL)shouldProcessQuorumOfType:(LLMQType)llmqType;
 
 /*! @brief Returns all standard derivaton paths used for the chain based on the account number.  */
 - (NSArray<DSDerivationPath *> *)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
@@ -523,10 +524,10 @@ typedef NS_ENUM(uint16_t, DSMasternodeSyncMode)
                withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort
                         dpnsContractID:(UInt256)dpnsContractID
                      dashpayContractID:(UInt256)dashpayContractID
-                      ISLockQuorumType:(DSLLMQType)ISLockQuorumType
-                     ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-                   chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                    platformQuorumType:(DSLLMQType)platformQuorumType
+                      ISLockQuorumType:(LLMQType)ISLockQuorumType
+                     ISDLockQuorumType:(LLMQType)ISDLockQuorumType
+                   chainLockQuorumType:(LLMQType)chainLockQuorumType
+                    platformQuorumType:(LLMQType)platformQuorumType
                     masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                           isTransient:(BOOL)isTransient;
 

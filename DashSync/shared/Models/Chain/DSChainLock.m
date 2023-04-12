@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 
 #import "DSChainLock.h"
-#import "DSBLSKey.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
@@ -117,24 +116,8 @@
 }
 
 - (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
-    UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey useLegacy:quorumEntry.useLegacyBLSScheme];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-#if DEBUG
-    DSLogPrivate(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",
-        [NSData dataWithUInt768:self.signature].hexString,
-        [NSData dataWithUInt384:publicKey].hexString,
-        [NSData dataWithUInt256:self.blockHash].hexString,
-        quorumEntry);
-#else
-    DSLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",
-        @"<REDACTED>",
-        @"<REDACTED>",
-        @"<REDACTED>",
-        @"<REDACTED>",
-        quorumEntry);
-#endif /* DEBUG */
-    return [blsKey verify:signId signature:self.signature];
+    return key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
 }
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {

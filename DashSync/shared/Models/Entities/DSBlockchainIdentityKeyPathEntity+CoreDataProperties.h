@@ -8,7 +8,6 @@
 
 #import "DSBlockchainIdentity.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
-#import "DSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

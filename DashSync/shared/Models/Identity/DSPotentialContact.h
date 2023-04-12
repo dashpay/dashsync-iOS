@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSDashpayUserEntity, DSKey;
+@class DSDashpayUserEntity;
 
 @interface DSPotentialContact : NSObject
 
@@ -36,9 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDashpayUser:(DSDashpayUserEntity *)contactEntity;
 
-- (void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index;
+- (void)addPublicKey:(NSValue *)key atIndex:(NSUInteger)index;
 
-- (DSKey *)publicKeyAtIndex:(NSUInteger)index;
+- (NSValue *)publicKeyAtIndex:(NSUInteger)index;
 
 @end
 

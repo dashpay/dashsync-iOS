@@ -106,28 +106,30 @@
     id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
     NSInteger quorumType = [[sectionInfo name] integerValue];
     switch (quorumType) {
-        case LlmqtypeUnknown:
+        case LLMQType_LlmqtypeUnknown:
             return @"Unknown Quorums (0)";
-        case Llmqtype50_60:
+        case LLMQType_Llmqtype50_60:
             return @"1 Hour Quorums (1)";
-        case Llmqtype400_60:
+        case LLMQType_Llmqtype400_60:
             return @"Day Quorums (2)";
-        case Llmqtype400_85:
+        case LLMQType_Llmqtype400_85:
             return @"2 Day Quorums (3)";
-        case Llmqtype100_67:
+        case LLMQType_Llmqtype100_67:
             return @"1 Hour Platform Quorums (4)";
-        case Llmqtype60_75:
-            return @"1 Hour Rotated Quorums (5)";
-        case LlmqtypeTest:
+        case LLMQType_Llmqtype60_75:
+            return @"1 Hour Rotated Quorums (v0.18) (5)";
+        case LLMQType_Llmqtype25_67:
+            return @"1 Hour Platform Quorums (v0.19) (6)";
+        case LLMQType_LlmqtypeTest:
             return @"Test Quorums (100)";
-        case LlmqtypeDevnet:
+        case LLMQType_LlmqtypeDevnet:
             return @"10 Member Devnet Quorums (101)";
-        case LlmqtypeTestV17:
+        case LLMQType_LlmqtypeTestV17:
             return @"Test V17 Quorums (102)";
-        case LlmqtypeTestDIP0024:
-        case LlmqtypeDevnetDIP0024:
-        case LlmqtypeTestnetPlatform:
-        case LlmqtypeDevnetPlatform:
+        case LLMQType_LlmqtypeTestDIP0024:
+        case LLMQType_LlmqtypeDevnetDIP0024:
+        case LLMQType_LlmqtypeTestnetPlatform:
+        case LLMQType_LlmqtypeDevnetPlatform:
             return [NSString stringWithFormat:@"Test DIP-0024 & DIP-0027 Quorums (%ld)", quorumType] ;
         default:
             return [NSString stringWithFormat:@"Unknown Quorum Type (%ld)", quorumType];

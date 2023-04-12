@@ -104,7 +104,8 @@
         if (![self.platformNodeKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath platformNodeKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            if (derivationPath.hasExtendedPublicKey) {
+            if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
+//            if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
             [self.platformNodeKeysDerivationPathByWallet setObject:derivationPath

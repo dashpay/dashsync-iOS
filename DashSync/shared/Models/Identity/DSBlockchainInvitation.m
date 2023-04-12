@@ -188,14 +188,13 @@
     NSURLComponents *components = [NSURLComponents componentsWithString:invitationLink];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
-    DSECDSAKey *fundingPrivateKey = nil;
+//    ECDSAKey *fundingPrivateKey = nil;
+    BOOL isEmptyFundingPrivateKey = true;
     for (NSURLQueryItem *queryItem in queryItems) {
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
-            NSString *assetLockTransactionHashString = queryItem.value;
-            assetLockTransactionHash = assetLockTransactionHashString.hexToData.UInt256;
+            assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-            NSString *fundingPrivateKeyString = queryItem.value;
-            fundingPrivateKey = [DSECDSAKey keyWithPrivateKey:fundingPrivateKeyString onChain:chain];
+            isEmptyFundingPrivateKey = key_ecdsa_secret_key_is_empty([queryItem.value UTF8String], chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
@@ -204,7 +203,8 @@
         }
         return;
     }
-    if (!fundingPrivateKey || uint256_is_zero(*fundingPrivateKey.secretKey)) {
+    
+    if (isEmptyFundingPrivateKey) {
         if (completion) {
             completion(nil, NO, [NSError errorWithCode:400 localizedDescriptionKey:@"Funding private key is not valid"]);
         }
@@ -237,14 +237,16 @@
     NSURLComponents *components = [NSURLComponents componentsWithString:self.link];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
-    DSECDSAKey *fundingPrivateKey = nil;
+    OpaqueKey *fundingPrivateKey = nil;
     for (NSURLQueryItem *queryItem in queryItems) {
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             NSString *assetLockTransactionHashString = queryItem.value;
             assetLockTransactionHash = assetLockTransactionHashString.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
             NSString *fundingPrivateKeyString = queryItem.value;
-            fundingPrivateKey = [DSECDSAKey keyWithPrivateKey:fundingPrivateKeyString onChain:self.chain];
+            fundingPrivateKey = [DSKeyManager keyWithPrivateKeyString:fundingPrivateKeyString ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
+//            fundingPrivateKey = [DSKeyManager ecdsaKeyWithPrivateKey:fundingPrivateKeyString forChainType:self.chain.chainType];
+//            fundingPrivateKey = [DSECDSAKey keyWithPrivateKey:fundingPrivateKeyString onChain:self.chain];
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
@@ -253,7 +255,7 @@
         }
         return;
     }
-    if (!fundingPrivateKey || uint256_is_zero(*fundingPrivateKey.secretKey)) {
+    if (!fundingPrivateKey || !key_has_private_key(fundingPrivateKey)) {
         if (completion) {
             completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:400 localizedDescriptionKey:@"Funding private key is not valid"]);
         }
@@ -275,6 +277,8 @@
             [self.identity addDashpayUsername:dashpayUsername save:NO];
             [self.identity registerInWalletForRegistrationFundingTransaction: (DSCreditFundingTransaction *)transaction];
             BOOL success = [self.identity setExternalFundingPrivateKey:fundingPrivateKey];
+            if (!success && fundingPrivateKey != NULL)
+                processor_destroy_opaque_key(fundingPrivateKey);
             NSAssert(success, @"We must be able to set the external funding private key");
             if (success) {
                 [self.identity generateBlockchainIdentityExtendedPublicKeysWithPrompt:authenticationMessage
@@ -311,7 +315,7 @@
         NSString *senderDisplayName = identity.displayName;
         NSString *senderAvatarPath = identity.avatarPath;
         NSString *fundingTransactionHexString = uint256_reverse_hex(self.identity.registrationCreditFundingTransaction.txHash);
-        __block DSECDSAKey *registrationFundingPrivateKey = self.identity.registrationFundingPrivateKey;
+        __block OpaqueKey *registrationFundingPrivateKey = self.identity.registrationFundingPrivateKey;
         __block BOOL rCancelled = FALSE;
 
         if (!registrationFundingPrivateKey) {
@@ -322,18 +326,18 @@
                                                                forAmount:0
                                                      forceAuthentication:NO
                                                               completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                                                  rCancelled = cancelled;
-                                                                  if (seed) {
-                                                                      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                                                                          DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
-
-                                                                          registrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index] fromSeed:seed];
-                                                                          dispatch_semaphore_signal(sem);
-                                                                      });
-                                                                  } else {
-                                                                      dispatch_semaphore_signal(sem);
-                                                                  }
-                                                              }];
+                    rCancelled = cancelled;
+                    if (seed) {
+                        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                            DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
+                            // TODO: cleanup?
+                            registrationFundingPrivateKey = [derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index] fromSeed:seed];
+                            dispatch_semaphore_signal(sem);
+                        });
+                    } else {
+                        dispatch_semaphore_signal(sem);
+                    }
+                }];
             });
             dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
         }
@@ -345,7 +349,8 @@
             });
             return;
         }
-        NSString *registrationFundingPrivateKeyString = [registrationFundingPrivateKey serializedPrivateKeyForChain:self.chain]; //in WIF format
+        //in WIF format
+        NSString *registrationFundingPrivateKeyString = [DSKeyManager serializedPrivateKey:registrationFundingPrivateKey chainType:self.chain.chainType];
 
         NSString *serializedISLock = [self.identity.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing.toData hexString];
 

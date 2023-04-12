@@ -6,7 +6,6 @@
 //
 
 #import "DSProviderUpdateRevocationTransaction.h"
-#import "DSBLSKey.h"
 #import "DSChainManager.h"
 #import "DSLocalMasternode.h"
 #import "DSMasternodeManager.h"
@@ -105,16 +104,25 @@
 
 - (BOOL)checkPayloadSignature {
     NSAssert(self.providerRegistrationTransaction, @"We need a provider registration transaction");
-    return [self checkPayloadSignature:[DSBLSKey keyWithPublicKey:self.providerRegistrationTransaction.operatorKey
-                                       useLegacy:[self.chain useLegacyBLS]]];
+    return key_bls_verify(self.providerRegistrationTransaction.operatorKey.u8,
+                          ![self.providerRegistrationTransaction usesBasicBLS],
+                          [self payloadHash].u8,
+                          [self payloadSignature].bytes);
 }
 
-- (BOOL)checkPayloadSignature:(DSBLSKey *)publicKey {
-    return [publicKey verify:[self payloadHash] signature:[self payloadSignature].UInt768];
+- (BOOL)checkPayloadSignature:(OpaqueKey *)publicKey {
+    return [DSKeyManager verifyMessageDigest:publicKey digest:[self payloadHash] signature:[self payloadSignature]];
 }
 
-- (void)signPayloadWithKey:(DSBLSKey *)privateKey {
-    self.payloadSignature = [NSData dataWithUInt768:[privateKey signData:[self payloadDataForHash]]];
+- (void)signPayloadWithKey:(OpaqueKey *)privateKey {
+    NSData *payload = [self payloadDataForHash];
+    BLSKey *bls;
+    if (privateKey->tag == OpaqueKey_BLSBasic)
+        bls = privateKey->bls_basic;
+    else
+        bls = privateKey->bls_legacy;
+
+    self.payloadSignature = [DSKeyManager NSDataFrom:key_bls_sign_data(bls, payload.bytes, payload.length)];
 }
 
 - (NSData *)basePayloadData {

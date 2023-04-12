@@ -9,7 +9,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSKey.h"
+#import "DSKeyManager.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
@@ -31,7 +31,7 @@
         self.votingKeyHash = [NSData dataWithUInt160:providerUpdateRegistrarTransaction.votingKeyHash];
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
 
-        NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
+        NSString *operatorAddress = [DSKeyManager addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
         NSString *votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
         NSString *payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
 

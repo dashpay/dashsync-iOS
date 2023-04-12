@@ -15,10 +15,6 @@
 #import "DSPeerManager.h"
 #import "DSReachabilityManager.h"
 
-#import "DSBLSKey.h"
-#import "DSECDSAKey.h"
-#import "DSKey.h"
-
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSCreditFundingDerivationPath.h"
 #import "DSDerivationPath.h"
@@ -48,6 +44,7 @@
 #import "DSGovernanceVote.h"
 #import "DSIdentitiesManager.h"
 #import "DSInsightManager.h"
+#import "DSKeyManager.h"
 #import "DSMasternodeListStore.h"
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListDiffService.h"

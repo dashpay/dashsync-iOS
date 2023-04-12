@@ -170,10 +170,10 @@
        minProtocolVersion:(uint32_t)minProtocolVersion
              sporkAddress:(NSString *)sporkAddress
           sporkPrivateKey:(NSString *)sporkPrivateKey
-         ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
-        ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-      chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-       platformQuorumType:(DSLLMQType)platformQuorumType
+         ISLockQuorumType:(LLMQType)ISLockQuorumsType
+        ISDLockQuorumType:(LLMQType)ISDLockQuorumType
+      chainLockQuorumType:(LLMQType)chainLockQuorumType
+       platformQuorumType:(LLMQType)platformQuorumType
        masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
@@ -281,10 +281,10 @@
                                      minProtocolVersion:(uint32_t)minProtocolVersion
                                            sporkAddress:(NSString *_Nullable)sporkAddress
                                         sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey
-                                       ISLockQuorumType:(DSLLMQType)ISQuorumLockType
-                                      ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
-                                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                                     platformQuorumType:(DSLLMQType)platformQuorumType
+                                       ISLockQuorumType:(LLMQType)ISQuorumLockType
+                                      ISDLockQuorumType:(LLMQType)ISDQuorumLockType
+                                    chainLockQuorumType:(LLMQType)chainLockQuorumType
+                                     platformQuorumType:(LLMQType)platformQuorumType
                                      masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode {
     NSParameterAssert(identifier);
     NSParameterAssert(serviceLocations);

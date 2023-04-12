@@ -18,9 +18,11 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSAccount.h"
 #import "DSBlockchainIdentity.h"
+#import "DSChainManager.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
 #import "NSError+Dash.h"
+#import "dash_shared_core.h"
 
 @interface DSIncomingFundsDerivationPath ()
 
@@ -40,7 +42,7 @@
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber), sourceBlockchainIdentityUniqueId, destinationBlockchainIdentityUniqueId};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES, NO, NO};
     //todo full uint256 derivation
-    DSIncomingFundsDerivationPath *derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    DSIncomingFundsDerivationPath *derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
 
     derivationPath.contactSourceBlockchainIdentityUniqueId = sourceBlockchainIdentityUniqueId;
     derivationPath.contactDestinationBlockchainIdentityUniqueId = destinationBlockchainIdentityUniqueId;
@@ -48,10 +50,13 @@
     return derivationPath;
 }
 
-+ (instancetype)externalDerivationPathWithExtendedPublicKey:(DSKey *)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId onChain:(DSChain *)chain {
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(OpaqueKey *)extendedPublicKey
+                  withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId
+                           sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId
+                                                    onChain:(DSChain *)chain {
     UInt256 indexes[] = {};
     BOOL hardenedIndexes[] = {};
-    DSIncomingFundsDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
+    DSIncomingFundsDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
     derivationPath.extendedPublicKey = extendedPublicKey;
 
     derivationPath.contactSourceBlockchainIdentityUniqueId = sourceBlockchainIdentityUniqueId;
@@ -63,7 +68,7 @@
 + (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString *)extendedPublicKeyUniqueId withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId onChain:(DSChain *)chain {
     UInt256 indexes[] = {};
     BOOL hardenedIndexes[] = {};
-    DSIncomingFundsDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
+    DSIncomingFundsDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
     derivationPath.standaloneExtendedPublicKeyUniqueID = extendedPublicKeyUniqueId;
 
     derivationPath.contactSourceBlockchainIdentityUniqueId = sourceBlockchainIdentityUniqueId;
@@ -72,7 +77,7 @@
     return derivationPath;
 }
 
-- (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
+- (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
 
     self.externalAddresses = [NSMutableArray array];
@@ -206,10 +211,7 @@
 
         NSUInteger upperLimit = gapLimit;
         while (a.count < upperLimit) { // generate new addresses up to gapLimit
-            NSData *pubKeyData = [self publicKeyDataAtIndex:n];
-            DSECDSAKey *pubKey = [DSECDSAKey keyWithPublicKeyData:pubKeyData];
-            NSString *address = [pubKey addressForChain:self.chain];
-
+            NSString *address = [self addressAtIndex:n];
             if (!address) {
                 DSLog(@"error generating keys");
                 if (error) {
@@ -217,7 +219,6 @@
                 }
                 return nil;
             }
-
 
             __block BOOL isUsed = FALSE;
 
@@ -253,7 +254,7 @@
 // gets an address at an index path
 - (NSString *)addressAtIndex:(uint32_t)index {
     NSData *pubKey = [self publicKeyDataAtIndex:index];
-    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
+    return [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
 }
 
 // returns the first unused external address

@@ -8,7 +8,7 @@
 #import "DSGovernanceVote.h"
 #import "DSChain.h"
 #import "DSChainsManager.h"
-#import "DSECDSAKey.h"
+#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
@@ -146,10 +146,10 @@
     return _masternode;
 }
 
-- (void)signWithKey:(DSECDSAKey *)key {
+- (void)signWithKey:(OpaqueKey *)key {
     NSParameterAssert(key);
-
-    self.signature = [key sign:self.governanceVoteHash];
+    // ECDSA
+    self.signature = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, self.governanceVoteHash.u8, 32)];
 }
 
 - (BOOL)isValid {

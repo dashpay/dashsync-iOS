@@ -19,6 +19,7 @@
 #import "DSBlock+Protected.h"
 #import "DSChain.h"
 #import "DSChainLock.h"
+#import "DSKeyManager.h"
 #import "DSTransactionFactory.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -76,7 +77,7 @@
     [d appendUInt32:self.timestamp];
     [d appendUInt32:self.target];
     [d appendUInt32:self.nonce];
-    self.blockHash = d.x11;
+    self.blockHash = [DSKeyManager x11:d];
     self.chain = chain;
     self.mTransactions = transactions;
     self.totalTransactions = (uint32_t)transactions.count;
@@ -177,7 +178,7 @@
     do {
         NSMutableData *d = [preNonceMutableData mutableCopy];
         [d appendUInt32:i];
-        UInt256 potentialBlockHash = d.x11;
+        UInt256 potentialBlockHash = [DSKeyManager x11:d];
 
         if (!uint256_sup(potentialBlockHash, fullTarget)) {
             //We found a block

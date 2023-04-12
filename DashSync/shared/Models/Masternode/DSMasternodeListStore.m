@@ -674,7 +674,7 @@
     return block ? [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block] : nil;
 }
 
-- (DSQuorumEntry *_Nullable)activeQuorumForTypeQuorumHash:(UInt256)quorumHash ofQuorumType:(DSLLMQType)quorumType {
+- (DSQuorumEntry *_Nullable)activeQuorumForTypeQuorumHash:(UInt256)quorumHash ofQuorumType:(LLMQType)quorumType {
     for (DSQuorumEntry *quorumEntry in self.activeQuorums) {
         if (uint256_eq(quorumEntry.quorumHash, quorumHash) && quorumEntry.llmqType == quorumType) {
             return quorumEntry;
@@ -708,7 +708,7 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForLockRequestID:(UInt256)requestID
-                                  ofQuorumType:(DSLLMQType)quorumType
+                                  ofQuorumType:(LLMQType)quorumType
                                 forMerkleBlock:(DSMerkleBlock *)merkleBlock
                           withExpirationOffset:(uint32_t)offset {
     UInt256 blockHash = merkleBlock.blockHash;

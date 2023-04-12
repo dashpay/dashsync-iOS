@@ -46,6 +46,7 @@
 #import "DSGovernanceSyncRequest.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSInvRequest.h"
+#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
 #import "DSNotFoundRequest.h"
@@ -1410,7 +1411,7 @@
         _relayStartTime = 0;
     }
     //    for (int i = 0; i < count; i++) {
-    //        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
+    //        UInt256 locator = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(l + 81*i, 80)]];
     //        DSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
     //    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
@@ -1426,8 +1427,8 @@
     }
     if (!count) return;
     if (count >= self.chain.headersMaxAmount || (((lastTimestamp + DAY_TIME_INTERVAL * 2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync))) {
-        UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
-        UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81 * (count - 1), 80)].x11;
+        UInt256 firstBlockHash = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(l, 80)]];
+        UInt256 lastBlockHash = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(l + 81 * (count - 1), 80)]];
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         if (((lastTimestamp + DAY_TIME_INTERVAL * 2) >= self.earliestKeyTime) &&
@@ -1438,7 +1439,7 @@
                 off += 81;
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
-            lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
+            lastBlockHash = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(off, 80)]];
             lastHashData = uint256_data(lastBlockHash);
             DSLog(@"%@:%u calling getblocks with locators: [%@, %@]", self.host, self.port, lastHashData.reverse.hexString, firstHashData.reverse.hexString);
             [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];

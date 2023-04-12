@@ -6,6 +6,7 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DPBaseObject.h"
 #import "DSBlockchainIdentity.h"
 
@@ -26,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType)
 
 #define TS_VERSION 0x00000001u
 
-@class DSKey, DSBlockchainIdentity;
+@class DSBlockchainIdentity;
 
 @interface DSTransition : DPBaseObject
 
@@ -41,7 +42,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType)
 @property (nonatomic, readonly) NSTimeInterval createdTimestamp;
 @property (nonatomic, readonly) NSTimeInterval registeredTimestamp;
 
-@property (nonatomic, readonly) DSKeyType signatureType;
+@property (nonatomic, readonly) KeyKind signatureType;
 @property (nonatomic, readonly) NSData *signatureData;
 @property (nonatomic, readonly) uint32_t signaturePublicKeyId;
 
@@ -49,7 +50,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType)
 
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain;
 
-- (void)signWithKey:(DSKey *)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity;
+- (void)signWithKey:(OpaqueKey *)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity;
 
 @end
 

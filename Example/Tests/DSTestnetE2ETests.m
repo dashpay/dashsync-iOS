@@ -17,25 +17,24 @@
 
 #import <XCTest/XCTest.h>
 
+#import "dash_shared_core.h"
+#import "DashSync.h"
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBLSKey.h"
 #import "DSBlockchainIdentity.h"
 #import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
-#import "DSECDSAKey.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransactionManager.h"
 #import "DSWallet.h"
-#import "DashSync.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSTestnetE2ETests : XCTestCase
 @property (strong, nonatomic) DSChain *chain;
-@property (strong, nonatomic) DSECDSAKey *sweepKey;
+@property (assign, nonatomic) ECDSAKey *sweepKey;
 @property (strong, nonatomic) DSTransactionManager *transactionManager;
 @property (strong, nonatomic) DSIdentitiesManager *identitiesManager;
 @property (strong, nonatomic) DSWallet *faucetWallet;
@@ -51,12 +50,18 @@
 
 #define TE2ERESETNETWORK 1
 
+- (void)dealloc {
+    if (self.sweepKey != NULL)
+        processor_destroy_ecdsa_key(self.sweepKey);
+}
+
 - (void)setUp {
     self.chain = [DSChain testnet];
     // this will only be run once before all tests
     uint8_t seed[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     NSData *seedData = [NSData dataWithBytes:seed length:12];
-    self.sweepKey = [DSECDSAKey keyWithSeedData:seedData];
+    
+    self.sweepKey = key_ecdsa_with_seed_data(seedData.bytes, seedData.length);
     self.transactionManager = self.chain.chainManager.transactionManager;
     self.identitiesManager = self.chain.chainManager.identitiesManager;
 
@@ -190,8 +195,9 @@
 }
 
 - (void)testDSendTransactionToKey {
-    NSString *addressToSendTo = [self.sweepKey addressForChain:self.chain];
-
+    char *c_address = address_for_ecdsa_key(self.sweepKey, self.chain.chainType);
+    NSString *addressToSendTo = [NSString stringWithUTF8String:c_address];
+    processor_destroy_string(c_address);
     DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:addressToSendTo onChain:self.chain];
     paymentRequest.amount = 10000;
     DSPaymentProtocolRequest *protocolRequest = paymentRequest.protocolRequest;
@@ -223,7 +229,10 @@
     XCTestExpectation *transactionFinishedExpectation = [[XCTestExpectation alloc] init];
     // we need to wait a few seconds for the transaction to propagate on the network
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.fundingAccount1 sweepPrivateKey:[self.sweepKey serializedPrivateKeyForChain:self.chain]
+        char *c_string = key_ecdsa_serialized_private_key_for_chain(self.sweepKey, self.chain.chainType);
+        NSString *stringKey = [NSString stringWithUTF8String:c_string];
+        processor_destroy_string(c_string);
+        [self.fundingAccount1 sweepPrivateKey:stringKey
                                       withFee:YES
                                    completion:^(DSTransaction *_Nonnull sweepTransaction, uint64_t fee, NSError *_Null_unspecified error) {
                                        XCTAssert(error == nil, @"There should not be an error");

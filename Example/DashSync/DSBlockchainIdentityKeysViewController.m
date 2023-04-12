@@ -17,6 +17,7 @@
 
 #import "DSBlockchainIdentityKeysViewController.h"
 #import "DSBlockchainIdentityKeyTableViewCell.h"
+#import "DSKeyManager.h"
 
 @interface DSBlockchainIdentityKeysViewController ()
 
@@ -47,11 +48,12 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSBlockchainIdentityKeyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BlockchainIdentityKeyCellIdentifier" forIndexPath:indexPath];
 
-    DSKey *key = [self.blockchainIdentity keyAtIndex:indexPath.row];
+    OpaqueKey *key = [self.blockchainIdentity keyAtIndex:indexPath.row];
+    NSData *publicKeyData = [DSKeyManager publicKeyData:key];
     cell.indexLabel.text = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
-    cell.publicKeyLabel.text = key.publicKeyData.base64String;
+    cell.publicKeyLabel.text = publicKeyData.base64String;
     cell.statusLabel.text = [self.blockchainIdentity localizedStatusOfKeyAtIndex:indexPath.row];
-    cell.typeLabel.text = key.localizedKeyType;
+    cell.typeLabel.text = [DSKeyManager localizedKeyType:key];
     return cell;
 }
 

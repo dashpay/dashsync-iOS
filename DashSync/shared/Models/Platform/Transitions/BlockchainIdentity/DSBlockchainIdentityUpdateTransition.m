@@ -6,7 +6,6 @@
 //
 
 #import "DSBlockchainIdentityUpdateTransition.h"
-#import "DSECDSAKey.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"

@@ -10,6 +10,8 @@
 #import "DSBlockchainIdentity.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
+#import "DSKeyManager.h"
+#import "DSLogger.h"
 #import "NSError+Dash.h"
 
 #define DERIVATION_PATH_IS_USED_KEY @"DERIVATION_PATH_IS_USED_KEY"
@@ -28,16 +30,16 @@
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(accountNumber)};
     BOOL hardenedIndexes[] = {YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
     UInt256 indexes[] = {uint256_from_long(44), uint256_from_long(coinType), uint256_from_long(accountNumber)};
     BOOL hardenedIndexes[] = {YES, YES, YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
 
-- (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
+- (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
 
     UInt256 lastIndex = indexes[length - 1];
@@ -172,7 +174,8 @@
 
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
-            NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
+            NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+//            NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 
             if (!addr) {
                 DSLog(@"error generating keys");
@@ -214,13 +217,15 @@
     NSMutableArray *addresses = [NSMutableArray array];
     for (NSUInteger i = exportInternalRange.location; i < exportInternalRange.length + exportInternalRange.location; i++) {
         NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:YES];
-        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
+        NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+//        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
 
     for (NSUInteger i = exportExternalRange.location; i < exportExternalRange.location + exportExternalRange.length; i++) {
         NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:NO];
-        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
+        NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+//        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
 
@@ -230,7 +235,9 @@
 // gets an address at an index path
 - (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal {
     NSData *pubKey = [self publicKeyDataAtIndex:index internal:internal];
-    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
+    NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+    return addr;
+//    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 }
 
 // returns the first unused external address

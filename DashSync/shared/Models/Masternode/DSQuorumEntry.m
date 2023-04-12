@@ -6,12 +6,13 @@
 //
 
 #import "DSQuorumEntry.h"
-#import "DSBLSKey.h"
 #import "DSBlock.h"
 #import "DSChainManager.h"
 #import "DSMasternodeList.h"
+#import "DSMasternodeList+Mndiff.h"
 #import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
+#import "DSQuorumEntry+Mndiff.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "NSData+Dash.h"
@@ -28,7 +29,7 @@
 @property (nonatomic, assign) UInt256 quorumVerificationVectorHash;
 @property (nonatomic, assign) UInt768 allCommitmentAggregatedSignature;
 @property (nonatomic, assign) int32_t signersCount;
-@property (nonatomic, assign) DSLLMQType llmqType;
+@property (nonatomic, assign) LLMQType llmqType;
 @property (nonatomic, assign) int32_t validMembersCount;
 @property (nonatomic, strong) NSData *signersBitset;
 @property (nonatomic, strong) NSData *validMembersBitset;
@@ -69,7 +70,7 @@
 }
 
 - (instancetype)initWithVersion:(uint16_t)version
-                           type:(DSLLMQType)type
+                           type:(LLMQType)type
                      quorumHash:(UInt256)quorumHash
                     quorumIndex:(uint32_t)quorumIndex
                    signersCount:(int32_t)signersCount
@@ -103,7 +104,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     return self;
 }
 
-- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
+- (instancetype)initWithVersion:(uint16_t)version type:(LLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
     self.llmqType = type;
@@ -125,7 +126,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     if (entry->commitment_hash) {
         self.commitmentHash = *((UInt256 *)entry->commitment_hash);
     }
-    self.llmqType = (DSLLMQType)entry->llmq_type;
+    self.llmqType = entry->llmq_type;
     self.quorumEntryHash = *((UInt256 *)entry->entry_hash);
     self.quorumHash = *((UInt256 *)entry->llmq_hash);
     self.quorumPublicKey = *((UInt384 *)entry->public_key);
@@ -186,18 +187,19 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 
 - (uint32_t)quorumThreshold {
     switch (self.llmqType) { //!OCLINT
-        case DSLLMQType_Unknown: return 2;
-        case DSLLMQType_50_60: return 30;
-        case DSLLMQType_400_60: return 240;
-        case DSLLMQType_400_85: return 340;
-        case DSLLMQType_100_67: return 67;
-        case DSLLMQType_5_60: return 3;
-        case DSLLMQType_10_60: return 6;
-        case DSLLMQType_60_75: return 48;
-        case DSLLMQType_TestV17: return 2;
-        case LlmqtypeDevnetDIP0024: return 4;
-        case LlmqtypeTestnetPlatform: return 2;
-        case LlmqtypeDevnetPlatform: return 8;
+        case LLMQType_LlmqtypeUnknown: return 2;
+        case LLMQType_Llmqtype50_60: return 30;
+        case LLMQType_Llmqtype400_60: return 240;
+        case LLMQType_Llmqtype400_85: return 340;
+        case LLMQType_Llmqtype100_67: return 67;
+        case LLMQType_Llmqtype60_75: return 48;
+        case LLMQType_Llmqtype25_67: return 17;
+        case LLMQType_LlmqtypeTest: return 3;
+        case LLMQType_LlmqtypeDevnet: return 6;
+        case LLMQType_LlmqtypeTestV17: return 2;
+        case LLMQType_LlmqtypeDevnetDIP0024: return 4;
+        case LLMQType_LlmqtypeTestnetPlatform: return 8;
+        case LLMQType_LlmqtypeDevnetPlatform: return 8;
         default:
             NSAssert(FALSE, @"Unknown llmq type");
             return UINT32_MAX;
@@ -223,170 +225,114 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
                           }];
 }
 
-- (BOOL)validateBitsets {
-    //The byte size of the signers and validMembers bitvectors must match “(quorumSize + 7) / 8”
-    if (self.signersBitset.length != (self.signersCount + 7) / 8) {
-        DSLog(@"Error: The byte size of the signers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", (unsigned long)self.signersBitset.length, (self.signersCount + 7) / 8);
-        return NO;
-    }
-    if (self.validMembersBitset.length != (self.validMembersCount + 7) / 8) {
-        DSLog(@"Error: The byte size of the validMembers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", (unsigned long)self.validMembersBitset.length, (self.validMembersCount + 7) / 8);
-        return NO;
-    }
-
-    //No out-of-range bits should be set in byte representation of the signers and validMembers bitvectors
-    uint32_t signersOffset = self.signersCount / 8;
-    uint8_t signersLastByte = [self.signersBitset UInt8AtOffset:signersOffset];
-    uint8_t signersMask = UINT8_MAX >> (8 - signersOffset) << (8 - signersOffset);
-    if (signersLastByte & signersMask) {
-        DSLog(@"Error: No out-of-range bits should be set in byte representation of the signers bitvector");
-        return NO;
-    }
-
-    uint32_t validMembersOffset = self.validMembersCount / 8;
-    uint8_t validMembersLastByte = [self.validMembersBitset UInt8AtOffset:validMembersOffset];
-    uint8_t validMembersMask = UINT8_MAX >> (8 - validMembersOffset) << (8 - validMembersOffset);
-    if (validMembersLastByte & validMembersMask) {
-        DSLog(@"Error: No out-of-range bits should be set in byte representation of the validMembers bitvector");
-        return NO;
-    }
-    return YES;
-}
+//- (BOOL)validateBitsets {
+//    //The byte size of the signers and validMembers bitvectors must match “(quorumSize + 7) / 8”
+//    if (self.signersBitset.length != (self.signersCount + 7) / 8) {
+//        DSLog(@"Error: The byte size of the signers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", (unsigned long)self.signersBitset.length, (self.signersCount + 7) / 8);
+//        return NO;
+//    }
+//    if (self.validMembersBitset.length != (self.validMembersCount + 7) / 8) {
+//        DSLog(@"Error: The byte size of the validMembers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", (unsigned long)self.validMembersBitset.length, (self.validMembersCount + 7) / 8);
+//        return NO;
+//    }
+//
+//    //No out-of-range bits should be set in byte representation of the signers and validMembers bitvectors
+//    uint32_t signersOffset = self.signersCount / 8;
+//    uint8_t signersLastByte = [self.signersBitset UInt8AtOffset:signersOffset];
+//    uint8_t signersMask = UINT8_MAX >> (8 - signersOffset) << (8 - signersOffset);
+//    if (signersLastByte & signersMask) {
+//        DSLog(@"Error: No out-of-range bits should be set in byte representation of the signers bitvector");
+//        return NO;
+//    }
+//
+//    uint32_t validMembersOffset = self.validMembersCount / 8;
+//    uint8_t validMembersLastByte = [self.validMembersBitset UInt8AtOffset:validMembersOffset];
+//    uint8_t validMembersMask = UINT8_MAX >> (8 - validMembersOffset) << (8 - validMembersOffset);
+//    if (validMembersLastByte & validMembersMask) {
+//        DSLog(@"Error: No out-of-range bits should be set in byte representation of the validMembers bitvector");
+//        return NO;
+//    }
+//    return YES;
+//}
 
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (!masternodeList) {
         DSLog(@"Trying to validate a quorum without a masternode list");
         return NO;
     }
-
-    //The quorumHash must match the current DKG session
-    //todo
-    BOOL hasValidBitsets = [self validateBitsets];
-    if (!hasValidBitsets) {
-        return NO;
-    }
-
-    //The number of set bits in the signers and validMembers bitvectors must be at least >= quorumThreshold
-    if ([self.signersBitset trueBitsCount] < [self quorumThreshold]) {
-        DSLog(@"Error: The number of set bits in the signers bitvector %llu must be at least >= quorumThreshold %d", [self.signersBitset trueBitsCount], [self quorumThreshold]);
-        return NO;
-    }
-    if ([self.validMembersBitset trueBitsCount] < [self quorumThreshold]) {
-        DSLog(@"Error: The number of set bits in the validMembers bitvector %llu must be at least >= quorumThreshold %d", [self.validMembersBitset trueBitsCount], [self quorumThreshold]);
-        return NO;
-    }
-
-    //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
-
-#define LOG_COMMITMENT_DATA (0 && DEBUG)
-#define SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE (0 && DEBUG)
-#define SAVE_MNL_ERROR_TO_FILE (0 && DEBUG)
-#define MASTERNODELIST_HEIGHT_TO_SAVE_DATA 1377216
-
-    NSArray<DSSimplifiedMasternodeEntry *> *masternodes = [masternodeList validMasternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType] blockHeightLookup:blockHeightLookup];
-#if SAVE_MNL_ERROR_TO_FILE
-    NSArray<DSSimplifiedMasternodeEntry *> *allMasternodes = [masternodeList allMasternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType] blockHeightLookup:blockHeightLookup];
-#endif
-    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
-    uint32_t i = 0;
-    uint32_t blockHeight = blockHeightLookup(masternodeList.blockHash);
-#if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE
-    NSMutableDictionary<NSData *, NSData *> *proTxHashForPublicKeys = [NSMutableDictionary dictionary];
-#endif
-    for (DSSimplifiedMasternodeEntry *masternodeEntry in masternodes) {
-        if ([self.signersBitset bitIsTrueAtLEIndex:i]) {
-            UInt384 pkData = [masternodeEntry operatorPublicKeyAtBlockHeight:blockHeight];
-            //                        NSLog(@"validateQuorumCallback addPublicKey: %@", uint384_hex(pkData));
-            DSBLSKey *masternodePublicKey = [DSBLSKey keyWithPublicKey:pkData useLegacy:self.useLegacyBLSScheme];
-            [publicKeyArray addObject:masternodePublicKey];
-#if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE
-            [proTxHashForPublicKeys setObject:uint256_data(masternodeEntry.providerRegistrationTransactionHash)
-                                       forKey:uint384_data(masternodePublicKey.publicKey)];
-#endif
-        }
-        i++;
-    }
-
-    BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:self.useLegacyBLSScheme];
-    if (!allCommitmentAggregatedSignatureValidated) {
-        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
-#if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE
-        {
-            NSMutableData *message = [NSMutableData data];
-            for (DSBLSKey *publicKey in publicKeyArray) {
-                NSData *publicKeyData = publicKey.publicKeyData;
-                NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashForPublicKeys[publicKeyData] hexString], [publicKeyData hexString]];
-                [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
-            }
-            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_ERROR_KEYS_%d.txt", masternodeList.height];
-            [message saveToFile:fileName inDirectory:NSCachesDirectory];
-        }
-#endif
-#if SAVE_MNL_ERROR_TO_FILE
-        {
-            NSMutableData *message = [NSMutableData data];
-            for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in allMasternodes) {
-                NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), [simplifiedMasternodeEntry isValidAtBlockHeight:masternodeList.height] ? @"VALID" : @"NOT VALID"];
-                [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
-            }
-            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_ERROR_MNS_%d.txt", masternodeList.height];
-            [message saveToFile:fileName inDirectory:NSCachesDirectory];
-        }
-#endif
-        return NO;
-    }
-#if LOG_COMMITMENT_DATA || SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE || SAVE_MNL_ERROR_TO_FILE
-    else {
-#if LOG_COMMITMENT_DATA
-        DSLog(@"No Issue with Checking allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
-#endif
-#if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE
-        if (MASTERNODELIST_HEIGHT_TO_SAVE_DATA == masternodeList.height) {
-            NSMutableData *message = [NSMutableData data];
-            for (DSBLSKey *publicKey in publicKeyArray) {
-                NSData *publicKeyData = publicKey.publicKeyData;
-                NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashForPublicKeys[publicKeyData] hexString], [publicKeyData hexString]];
-                [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
-            }
-            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_NO_ERROR_KEYS_%d.txt", masternodeList.height];
-            [message saveToFile:fileName inDirectory:NSCachesDirectory];
-        }
-#endif
-#if SAVE_MNL_ERROR_TO_FILE
-        if (MASTERNODELIST_HEIGHT_TO_SAVE_DATA == masternodeList.height) {
-            NSMutableData *message = [NSMutableData data];
-            for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in allMasternodes) {
-                NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), [simplifiedMasternodeEntry isValidAtBlockHeight:masternodeList.height] ? @"VALID" : @"NOT VALID"];
-                [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
-            }
-            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_NO_ERROR_MNS_%d.txt", masternodeList.height];
-            [message saveToFile:fileName inDirectory:NSCachesDirectory];
-        }
-#endif
-    }
-#endif
-
-    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-
-    BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey useLegacy:self.useLegacyBLSScheme];
-    //    NSLog(@"validateQuorumCallback verify = %i, with: commitmentHash: %@, quorumThresholdSignature: %@, quorumPublicKey: %@", quorumSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.quorumThresholdSignature), uint384_hex(self.quorumPublicKey));
-
-    if (!quorumSignatureValidated) {
-        DSLog(@"Issue with quorumSignatureValidated");
-        return NO;
-    }
-    //    NSLog(@"validateQuorumCallback true");
-
-    self.verified = YES;
-
-    return YES;
+    MasternodeList *list = [masternodeList ffi_malloc];
+    LLMQEntry *quorum = [self ffi_malloc];
+    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash));
+    [DSMasternodeList ffi_free:list];
+    [DSQuorumEntry ffi_free:quorum];
+    self.verified = is_valid;
+    return is_valid;
+//
+//    //The quorumHash must match the current DKG session
+//    //todo
+//    BOOL hasValidBitsets = [self validateBitsets];
+//    if (!hasValidBitsets) {
+//        return NO;
+//    }
+//
+//    //The number of set bits in the signers and validMembers bitvectors must be at least >= quorumThreshold
+//    if ([self.signersBitset trueBitsCount] < [self quorumThreshold]) {
+//        DSLog(@"Error: The number of set bits in the signers bitvector %llu must be at least >= quorumThreshold %d", [self.signersBitset trueBitsCount], [self quorumThreshold]);
+//        return NO;
+//    }
+//    if ([self.validMembersBitset trueBitsCount] < [self quorumThreshold]) {
+//        DSLog(@"Error: The number of set bits in the validMembers bitvector %llu must be at least >= quorumThreshold %d", [self.validMembersBitset trueBitsCount], [self quorumThreshold]);
+//        return NO;
+//    }
+//
+//    //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
+//
+//    NSArray<DSSimplifiedMasternodeEntry *> *masternodes = [masternodeList validMasternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType] blockHeightLookup:blockHeightLookup];
+//    uint32_t blockHeight = blockHeightLookup(masternodeList.blockHash);
+//    // TODO: rust migration LLMQEntry.validate_payload()
+//    // LLMQEntry.validate(&mut self, valid_masternodes: Vec<models::MasternodeEntry>, block_height: u32) -> bool;
+//
+//    NSMutableArray<NSValue *> *publicKeyArray = [NSMutableArray array];
+////    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
+//    uint32_t i = 0;
+//    for (DSSimplifiedMasternodeEntry *masternodeEntry in masternodes) {
+//        if ([self.signersBitset bitIsTrueAtLEIndex:i]) {
+//            UInt384 pkData = [masternodeEntry operatorPublicKeyAtBlockHeight:blockHeight];
+//            OpaqueKey *key = key_create_with_public_key_data(pkData.u8, 48, self.useLegacyBLSScheme ? DSKeyType_BLS : DSKeyType_BLS_BASIC);
+//            NSValue *masternodePublicKey = [NSValue valueWithPointer:key];
+////            DSBLSKey *masternodePublicKey = [DSBLSKey keyWithPublicKey:pkData useLegacy:self.useLegacyBLSScheme];
+//            [publicKeyArray addObject:masternodePublicKey];
+//        }
+//        i++;
+//    }
+//
+//    BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:self.useLegacyBLSScheme];
+//    if (!allCommitmentAggregatedSignatureValidated) {
+//        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
+//        return NO;
+//    }
+//
+//    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
+//
+//    BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey useLegacy:self.useLegacyBLSScheme];
+//    //    NSLog(@"validateQuorumCallback verify = %i, with: commitmentHash: %@, quorumThresholdSignature: %@, quorumPublicKey: %@", quorumSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.quorumThresholdSignature), uint384_hex(self.quorumPublicKey));
+//
+//    if (!quorumSignatureValidated) {
+//        DSLog(@"Issue with quorumSignatureValidated");
+//        return NO;
+//    }
+//    //    NSLog(@"validateQuorumCallback true");
+//
+//    self.verified = YES;
+//
+//    return YES;
 }
 
 - (DSQuorumEntryEntity *)matchingQuorumEntryEntityInContext:(NSManagedObjectContext *)context {
     return [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", uint384_data(self.quorumPublicKey)];
 }
 
-- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType {
+- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(LLMQType)quorumType {
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:quorumType];
     [data appendUInt256:self.quorumHash];
@@ -394,20 +340,22 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     return [data SHA256_2];
 }
 
-+ (uint32_t)quorumSizeForType:(DSLLMQType)type {
++ (uint32_t)quorumSizeForType:(LLMQType)type {
     switch (type) { //!OCLINT
-        case DSLLMQType_Unknown: return 50;
-        case DSLLMQType_50_60: return 50;
-        case DSLLMQType_400_60: return 400;
-        case DSLLMQType_400_85: return 400;
-        case DSLLMQType_100_67: return 100;
-        case DSLLMQType_60_75: return 60;
-        case DSLLMQType_5_60: return 4;
-        case DSLLMQType_10_60: return 12;
-        case DSLLMQType_TestV17: return 3;
-        case DSLLMQType_TestDIP0024: return 4;
-        case DSLLMQType_DevnetDIP0024: return 8;
-        case DSLLMQType_Devnet333DIP0024: return 8;
+        case LLMQType_LlmqtypeUnknown: return 50;
+        case LLMQType_Llmqtype50_60: return 50;
+        case LLMQType_Llmqtype400_60: return 400;
+        case LLMQType_Llmqtype400_85: return 400;
+        case LLMQType_Llmqtype100_67: return 100;
+        case LLMQType_Llmqtype60_75: return 60;
+        case LLMQType_Llmqtype25_67: return 25;
+        case LLMQType_LlmqtypeTest: return 4;
+        case LLMQType_LlmqtypeDevnet: return 12;
+        case LLMQType_LlmqtypeTestV17: return 3;
+        case LLMQType_LlmqtypeTestDIP0024: return 4;
+        case LLMQType_LlmqtypeDevnetDIP0024: return 8;
+        case LLMQType_LlmqtypeTestnetPlatform: return 8;
+        case LLMQType_LlmqtypeDevnetPlatform: return 8;
         default:
             NSAssert(FALSE, @"Unknown quorum type");
             return 50;

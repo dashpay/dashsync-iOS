@@ -28,7 +28,6 @@
 
 #import "DSChain.h"
 #import "DSDerivationPath.h"
-#import "DSECDSAKey.h"
 #import "DSPriceManager.h"
 #import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
@@ -134,8 +133,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
         } else {
             v = DASH_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v
-                length:1];
+        [d appendBytes:&v length:1];
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     } else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-pubkey scriptSig
         [d appendBytes:&v length:1];
@@ -214,24 +212,6 @@ static NSString *DashCurrencySymbolAssetName = nil;
         return FALSE;
     }
     return TRUE;
-}
-
-// BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
-- (BOOL)isValidDashBIP38Key {
-    NSData *d = self.base58checkToData;
-
-    if (d.length != 39) return NO; // invalid length
-
-    uint16_t prefix = CFSwapInt16BigToHost(*(const uint16_t *)d.bytes);
-    uint8_t flag = ((const uint8_t *)d.bytes)[2];
-
-    if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
-        return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQUENCE_FLAG) == 0 &&
-                (flag & BIP38_INVALID_FLAG) == 0);
-    } else if (prefix == BIP38_EC_PREFIX) { // EC multiplied key
-        return ((flag & BIP38_NOEC_FLAG) == 0 && (flag & BIP38_INVALID_FLAG) == 0);
-    } else
-        return NO; // invalid prefix
 }
 
 #if TARGET_OS_IOS

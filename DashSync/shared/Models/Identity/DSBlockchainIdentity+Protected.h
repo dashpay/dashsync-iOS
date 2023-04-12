@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSBlockchainIdentityEntity *blockchainIdentityEntity;
 @property (nullable, nonatomic, strong) DSTransientDashpayUser *transientDashpayUser;
 @property (nonatomic, weak) DSBlockchainInvitation *associatedInvitation;
-@property (nonatomic, readonly) DSECDSAKey *registrationFundingPrivateKey;
+@property (nonatomic, assign) OpaqueKey *registrationFundingPrivateKey;
 @property (nonatomic, assign) BOOL isLocal;
 @property (nonatomic, assign) UInt256 registrationCreditFundingTransactionHash;
 
@@ -59,11 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addUsername:(NSString *)username inDomain:(NSString *)domain status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork;
 
-- (void)addKey:(DSKey *)key atIndex:(uint32_t)index ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
-- (void)addKey:(DSKey *)key atIndexPath:(NSIndexPath *)indexPath ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
-- (BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath *)indexPath ofType:(DSKeyType)type;
-- (DSKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type;
-- (DSKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData *)seed;
+- (void)addKey:(OpaqueKey *)key atIndex:(uint32_t)index ofType:(KeyKind)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
+- (void)addKey:(OpaqueKey *)key atIndexPath:(NSIndexPath *)indexPath ofType:(KeyKind)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
+- (BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath *)indexPath ofType:(KeyKind)type;
+- (OpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(KeyKind)type;
+- (OpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(KeyKind)type forSeed:(NSData *)seed;
 - (void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext *)context;
 
 - (void)saveInitial;

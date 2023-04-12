@@ -28,7 +28,7 @@
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainsManager.h"
-#import "DSECDSAKey.h"
+//#import "DSECDSAKey.h"
 #import "DSGetGovernanceObjectsRequest.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"

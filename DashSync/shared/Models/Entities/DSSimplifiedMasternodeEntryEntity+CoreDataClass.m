@@ -10,7 +10,7 @@
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSDictionary+Dash.h"
-#import "DSKey.h"
+#import "DSKeyManager.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSSimplifiedMasternodeEntry.h"
@@ -84,7 +84,8 @@
             ? [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)]
             : [DSLocalMasternodeEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
         self.localMasternode = localMasternode;
-        NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
+        NSString *operatorAddress = [DSKeyManager addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
+//        NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
         NSString *votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
         DSAddressEntity *operatorAddressEntity = knownOperatorAddresses
             ? [knownOperatorAddresses objectForKey:operatorAddress]
@@ -166,7 +167,8 @@
         ? [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)]
         : [DSLocalMasternodeEntity anyObjectInContext:chainEntity.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     self.localMasternode = localMasternode;
-    NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
+//    NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
+    NSString *operatorAddress = [DSKeyManager addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
     NSString *votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
     DSAddressEntity *operatorAddressEntity = knownOperatorAddresses
         ? [knownOperatorAddresses objectForKey:operatorAddress]
@@ -230,8 +232,7 @@
 - (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
     for (NSData *blockInfo in blockHashDictionary) {
-        UInt256 blockInfoHash = *(UInt256 *)&blockInfo;
-//        uint32_t blockHeight = *(uint32_t *)(const uint8_t *)blockInfo.bytes + sizeof(UInt256);
+        UInt256 blockInfoHash = [blockInfo UInt256AtOffset:0];
         NSData *blockHash = uint256_data(blockInfoHash);
         if (blockHash) {
             rDictionary[blockHash] = blockHashDictionary[blockInfo];
@@ -248,5 +249,37 @@
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] operatorPublicKeyVersion:self.operatorPublicKeyVersion previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid type:self.type platformHTTPPort:self.platformHTTPPort platformNodeID:[self.platformNodeID UInt160] previousValidity:[self blockDictionaryFromBlockHashDictionary:self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
+
+
+- (NSString *)debugDescription {
+    NSMutableString *str = [NSMutableString string];
+    [str appendFormat:@"---------------------- \n"];
+    [str appendFormat:@"pro_reg_tx_hash: %@ \n", self.providerRegistrationTransactionHash.hexString];
+    [str appendFormat:@"confirmed_hash: %@ \n", self.confirmedHash.hexString];
+    [str appendFormat:@"address: %@ \n", self.ipv6Address.hexString];
+    [str appendFormat:@"port: %u \n", self.port];
+    [str appendFormat:@"operator_public_key: %@ \n", self.operatorBLSPublicKey.hexString];
+    [str appendFormat:@"operator_public_key_version: %u \n", self.operatorPublicKeyVersion];
+    for (NSData *hash in self.previousOperatorBLSPublicKeys) {
+        [str appendFormat:@"prev_operator_public_key [%@]: %@ \n", hash.hexString, ((NSData *) self.previousOperatorBLSPublicKeys[hash]).hexString];
+    }
+    [str appendFormat:@"key_id_voting: %@ \n", self.keyIDVoting.hexString];
+    [str appendFormat:@"is_valid: %u \n", self.isValid];
+    [str appendFormat:@"type: %u \n", self.type];
+    [str appendFormat:@"platform_http_port: %u \n", self.platformHTTPPort];
+    [str appendFormat:@"platform_node_id: %@ \n", self.platformNodeID.hexString];
+    for (NSData *hash in self.previousValidity) {
+        [str appendFormat:@"prev_validity [%@]: %u \n", hash.hexString, ((NSNumber *) self.previousValidity[hash]).boolValue];
+    }
+    [str appendFormat:@"known_confirmed_at_height: %u \n", self.knownConfirmedAtHeight];
+    [str appendFormat:@"update_height: %u \n", self.updateHeight];
+    [str appendFormat:@"entry_hash: %@ \n", self.simplifiedMasternodeEntryHash.hexString];
+    for (NSData *hash in self.previousSimplifiedMasternodeEntryHashes) {
+        [str appendFormat:@"prev_entry_hash [%@]: %@ \n", hash.hexString, ((NSData *) self.previousSimplifiedMasternodeEntryHashes[hash]).hexString];
+    }
+    [str appendFormat:@"---------------------- \n"];
+    return [[super debugDescription] stringByAppendingString:str];
+}
+
 
 @end

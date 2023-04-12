@@ -38,7 +38,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS 100000000LL
 #define MAX_MONEY (21000000LL * DUFFS)
 
-@class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSKey, DSSpecialTransactionsWalletHolder, DSBLSKey, DSECDSAKey, DSBlockchainInvitation;
+@class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSSpecialTransactionsWalletHolder, DSBlockchainInvitation;
 
 @interface DSWallet : NSObject
 
@@ -201,7 +201,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (NSString *_Nullable)seedPhraseIfAuthenticated;
 
-- (DSKey *_Nullable)privateKeyForAddress:(NSString *_Nonnull)address fromSeed:(NSData *_Nonnull)seed;
+- (OpaqueKey *_Nullable)privateKeyForAddress:(NSString *_Nonnull)address fromSeed:(NSData *_Nonnull)seed;
 - (NSString *_Nullable)privateKeyAddressForAddress:(NSString *)address fromSeed:(NSData *)seed;
 
 //generate a random Mnemonic seed
@@ -256,16 +256,16 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)copyForChain:(DSChain *)chain completion:(void (^_Nonnull)(DSWallet *_Nullable copiedWallet))completion;
 
 - (void)registerMasternodeOperator:(DSLocalMasternode *)masternode;                                               //will use indexes
-- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode withOperatorPublicKey:(DSBLSKey *)operatorKey; //will use defined key
+- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode withOperatorPublicKey:(OpaqueKey *)operatorKey; //will use defined key
 
 - (void)registerMasternodeOwner:(DSLocalMasternode *)masternode;
-- (void)registerMasternodeOwner:(DSLocalMasternode *)masternode withOwnerPrivateKey:(DSECDSAKey *)ownerKey; //will use defined key
+- (void)registerMasternodeOwner:(DSLocalMasternode *)masternode withOwnerPrivateKey:(OpaqueKey *)ownerKey; //will use defined key
 
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode;
-- (void)registerMasternodeVoter:(DSLocalMasternode *)masternode withVotingKey:(DSECDSAKey *)votingKey; //will use defined key
+- (void)registerMasternodeVoter:(DSLocalMasternode *)masternode withVotingKey:(OpaqueKey *)votingKey; //will use defined key
 
 - (void)registerPlatformNode:(DSLocalMasternode *)masternode;
-- (void)registerPlatformNode:(DSLocalMasternode *)masternode withKey:(DSECDSAKey *)key; //will use defined key
+- (void)registerPlatformNode:(DSLocalMasternode *)masternode withKey:(OpaqueKey *)key; //will use defined key
 
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;

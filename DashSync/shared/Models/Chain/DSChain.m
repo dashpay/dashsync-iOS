@@ -51,7 +51,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSIdentitiesManager+Protected.h"
 #import "DSInsightManager.h"
-#import "DSKey.h"
+#import "DSKeyManager.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
@@ -271,10 +271,10 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
                               dapiGRPCPort:(uint32_t)dapiGRPCPort
                             dpnsContractID:(UInt256)dpnsContractID
                          dashpayContractID:(UInt256)dashpayContractID
-                          ISLockQuorumType:(DSLLMQType)ISLockQuorumType
-                         ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-                       chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                        platformQuorumType:(DSLLMQType)platformQuorumType
+                          ISLockQuorumType:(LLMQType)ISLockQuorumType
+                         ISDLockQuorumType:(LLMQType)ISDLockQuorumType
+                       chainLockQuorumType:(LLMQType)chainLockQuorumType
+                        platformQuorumType:(LLMQType)platformQuorumType
                         masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                                isTransient:(BOOL)isTransient {
     //for devnet the genesis checkpoint is really the second block
@@ -393,10 +393,10 @@ static dispatch_once_t devnetToken = 0;
                withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort
                         dpnsContractID:(UInt256)dpnsContractID
                      dashpayContractID:(UInt256)dashpayContractID
-                      ISLockQuorumType:(DSLLMQType)ISLockQuorumType
-                     ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-                   chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                    platformQuorumType:(DSLLMQType)platformQuorumType
+                      ISLockQuorumType:(LLMQType)ISLockQuorumType
+                     ISDLockQuorumType:(LLMQType)ISDLockQuorumType
+                   chainLockQuorumType:(LLMQType)chainLockQuorumType
+                    platformQuorumType:(LLMQType)platformQuorumType
                     masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                            isTransient:(BOOL)isTransient {
     dispatch_once(&devnetToken, ^{
@@ -500,6 +500,10 @@ static dispatch_once_t devnetToken = 0;
     return [[DSChainsManager sharedInstance] chainManagerForChain:self];
 }
 
+- (DSKeyManager *)keyManager {
+    return [[self chainManager] keyManager];
+}
+
 + (NSMutableArray *)createCheckpointsArrayFromCheckpoints:(checkpoint *)checkpoints count:(NSUInteger)checkpointCount {
     NSMutableArray *checkpointMutableArray = [NSMutableArray array];
     for (int i = 0; i < checkpointCount; i++) {
@@ -558,7 +562,7 @@ static dispatch_once_t devnetToken = 0;
     [d appendUInt32:timestamp];
     [d appendUInt32:target];
     [d appendUInt32:nonce];
-    return d.x11;
+    return [DSKeyManager x11:d];
 }
 
 - (DSCheckpoint *)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint *)checkpoint withIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion {
@@ -815,41 +819,41 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
-- (DSLLMQType)quorumTypeForISLocks {
+- (LLMQType)quorumTypeForISLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return DSLLMQType_50_60;
+            return LLMQType_Llmqtype50_60;
         case DSChainType_TestNet:
-            return DSLLMQType_50_60;
+            return LLMQType_Llmqtype50_60;
         case DSChainType_DevNet: {
             NSError *error = nil;
-            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISLOCK_QUORUM_TYPE], &error);
+            LLMQType quorumType = (LLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISLOCK_QUORUM_TYPE], &error);
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_DevnetDIP0024;
+                return LLMQType_LlmqtypeDevnetDIP0024;
         }
     }
 }
 
-- (DSLLMQType)quorumTypeForISDLocks {
+- (LLMQType)quorumTypeForISDLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return DSLLMQType_60_75;
+            return LLMQType_Llmqtype60_75;
         case DSChainType_TestNet:
-            return DSLLMQType_60_75;
+            return LLMQType_Llmqtype60_75;
         case DSChainType_DevNet: {
             NSError *error = nil;
-            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISDLOCK_QUORUM_TYPE], &error);
+            LLMQType quorumType = (LLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISDLOCK_QUORUM_TYPE], &error);
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_Chacha_v19;
+                return LLMQType_LlmqtypeTestDIP0024;
         }
     }
 }
 
-- (void)setQuorumTypeForISLocks:(DSLLMQType)quorumTypeForISLocks {
+- (void)setQuorumTypeForISLocks:(LLMQType)quorumTypeForISLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return;
@@ -862,7 +866,7 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
-- (void)setQuorumTypeForISDLocks:(DSLLMQType)quorumTypeForISDLocks {
+- (void)setQuorumTypeForISDLocks:(LLMQType)quorumTypeForISDLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return;
@@ -875,24 +879,24 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
-- (DSLLMQType)quorumTypeForChainLocks {
+- (LLMQType)quorumTypeForChainLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return DSLLMQType_400_60;
+            return LLMQType_Llmqtype400_60;
         case DSChainType_TestNet:
-            return DSLLMQType_50_60;
+            return LLMQType_Llmqtype50_60;
         case DSChainType_DevNet: {
             NSError *error = nil;
-            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, CHAINLOCK_QUORUM_TYPE], &error);
+            LLMQType quorumType = (LLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, CHAINLOCK_QUORUM_TYPE], &error);
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_10_60;
+                return LLMQType_LlmqtypeDevnet;
         }
     }
 }
 
-- (void)setQuorumTypeForChainLocks:(DSLLMQType)quorumTypeForChainLocks {
+- (void)setQuorumTypeForChainLocks:(LLMQType)quorumTypeForChainLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return;
@@ -905,24 +909,24 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
-- (DSLLMQType)quorumTypeForPlatform {
+- (LLMQType)quorumTypeForPlatform {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return DSLLMQType_100_67;
+            return LLMQType_Llmqtype100_67;
         case DSChainType_TestNet:
-            return DSLLMQType_100_67;
+            return LLMQType_Llmqtype100_67;
         case DSChainType_DevNet: {
             NSError *error = nil;
-            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_QUORUM_TYPE], &error);
+            LLMQType quorumType = (LLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_QUORUM_TYPE], &error);
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_10_60;
+                return LLMQType_LlmqtypeTestnetPlatform;
         }
     }
 }
 
-- (void)setQuorumTypeForPlatform:(DSLLMQType)quorumTypeForPlatform {
+- (void)setQuorumTypeForPlatform:(LLMQType)quorumTypeForPlatform {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return;
@@ -935,7 +939,7 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
-- (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType {
+- (BOOL)shouldProcessQuorumOfType:(LLMQType)llmqType {
     return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType || self.quorumTypeForISDLocks == llmqType;
 }
 

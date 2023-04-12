@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-#import "DSBLSKey.h"
 #import "DSBlock.h"
 #import "DSBlockOperation.h"
 #import "DSChain+Protected.h"
@@ -173,9 +172,6 @@ void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
     processor_destroy_block_hash(block_hash);
 }
 
-void logRustMessage(const char *message, const void *context) {
-    //DSLog(@"••• %@", [NSString stringWithUTF8String:message]);
-}
 //None = 0,
 //Skipped = 1,
 //ParseError = 2,
@@ -192,6 +188,7 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
         DSMasternodeManager *manager = chain.chainManager.masternodeManager;
         uint32_t baseBlockHeight = processorContext.blockHeightLookup(baseBlockHash);
         uint32_t blockHeight = processorContext.blockHeightLookup(blockHash);
+        DSLog(@"•••• shouldProcessDiffWithRange: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
         if (blockHeight == UINT32_MAX) {
             DSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
             return 5; // ProcessingError::UnknownBlockHash
@@ -225,7 +222,7 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
 }
 
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
-    DSLLMQType llmqType = (DSLLMQType)quorum_type;
+    LLMQType llmqType = (LLMQType)quorum_type;
     DSMasternodeProcessorContext *processorContext = NULL;
     BOOL should = NO;
     @synchronized (context) {
@@ -243,37 +240,37 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     return should;
 }
 
-bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
-    uintptr_t count = data->count;
-    OperatorPublicKey **items = data->items;
-    UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
-    UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
-    UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
-    UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
-    uint16_t version = data->version;
-    BOOL useLegacy = version <= 2;
-    //NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
-    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
-    for (NSUInteger i = 0; i < count; i++) {
-        OperatorPublicKey *key = items[i];
-        UInt384 publicKey = *((UInt384 *)key->data);
-        BOOL useLegacy = key->version < 2;
-        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey useLegacy:useLegacy]];
-    }
-    processor_destroy_llmq_validation_data(data);
-    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:useLegacy];
-    if (!allCommitmentAggregatedSignatureValidated) {
-        DSLog(@"••• Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
-        return false;
-    }
-    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey useLegacy:useLegacy];
-    if (!quorumSignatureValidated) {
-        DSLog(@"••• Issue with quorumSignatureValidated");
-        return false;
-    }
-    return true;
-};
+//bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
+//    uintptr_t count = data->count;
+//    OperatorPublicKey **items = data->items;
+//    UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
+//    UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
+//    UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
+//    UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
+//    uint16_t version = data->version;
+//    BOOL useLegacy = version <= 2;
+//    //NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
+//    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
+//    for (NSUInteger i = 0; i < count; i++) {
+//        OperatorPublicKey *key = items[i];
+//        UInt384 publicKey = *((UInt384 *)key->data);
+//        BOOL useLegacy = key->version < 2;
+//        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey useLegacy:useLegacy]];
+//    }
+//    processor_destroy_llmq_validation_data(data);
+//    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:useLegacy];
+//    if (!allCommitmentAggregatedSignatureValidated) {
+//        DSLog(@"••• Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
+//        return false;
+//    }
+//    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
+//    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey useLegacy:useLegacy];
+//    if (!quorumSignatureValidated) {
+//        DSLog(@"••• Issue with quorumSignatureValidated");
+//        return false;
+//    }
+//    return true;
+//};
 
 ///
 /// MARK: Registering/unregistering processor (which is responsible for callback processing)
@@ -291,11 +288,9 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
                               destroyMasternodeList,
                               addInsightForBlockHash,
                               shouldProcessLLMQType,
-                              validateLLMQ,
                               destroyHash,
                               destroyLLMQSnapshot,
-                              shouldProcessDiffWithRange,
-                              logRustMessage);
+                              shouldProcessDiffWithRange);
 }
 
 + (void)unregisterProcessor:(MasternodeProcessor *)processor {

@@ -9,7 +9,6 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSKey.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"

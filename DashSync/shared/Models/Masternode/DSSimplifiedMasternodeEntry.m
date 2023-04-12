@@ -6,8 +6,8 @@
 //
 
 #import "DSSimplifiedMasternodeEntry.h"
-#import "DSBLSKey.h"
 #import "DSBlock.h"
+#import "DSKeyManager.h"
 #import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
@@ -47,7 +47,7 @@
 @property (null_resettable, nonatomic, copy) NSString *host;
 @property (null_resettable, nonatomic, copy) NSString *ipAddressString;
 @property (null_resettable, nonatomic, copy) NSString *portString;
-@property (nonatomic, strong) DSBLSKey *operatorPublicBLSKey;
+//@property (nonatomic, strong) DSBLSKey *operatorPublicBLSKey;
 @property (nonatomic, strong) NSDictionary<NSData *, NSData *> *previousOperatorPublicKeys;
 @property (nonatomic, strong) NSDictionary<NSData *, NSNumber *> *previousValidity;
 @property (nonatomic, strong) NSDictionary<NSData *, NSData *> *previousSimplifiedMasternodeEntryHashes;
@@ -357,7 +357,8 @@
 }
 
 - (NSString *)operatorAddress {
-    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorPublicKey] forChain:self.chain];
+    return [DSKeyManager addressWithPublicKeyData:uint384_data(self.operatorPublicKey) forChain:self.chain];
+//    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorPublicKey] forChain:self.chain];
 }
 
 - (NSString *)description {

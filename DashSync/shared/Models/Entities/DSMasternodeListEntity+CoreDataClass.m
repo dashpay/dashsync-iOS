@@ -32,6 +32,12 @@
         if (!masternodeEntry) {
             masternodeEntry = [masternodeEntity simplifiedMasternodeEntryWithBlockHeightLookup:blockHeightLookup];
         }
+        if ([masternodeEntity.providerRegistrationTransactionHash.reverse.hexString isEqual:@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f"]) {
+            NoTimeLog(@"yeaahh: %@", masternodeEntity.debugDescription);
+        } else if ([masternodeEntity.providerRegistrationTransactionHash.hexString isEqual:@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f"]) {
+            NoTimeLog(@"yeaahh %@", masternodeEntity.debugDescription);
+        }
+        
         [masternodeEntriesArray addObject:masternodeEntry];
     }
     NSMutableArray *quorumEntriesArray = [NSMutableArray array];

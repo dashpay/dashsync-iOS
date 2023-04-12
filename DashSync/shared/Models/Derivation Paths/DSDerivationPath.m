@@ -24,11 +24,14 @@
 
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSChainManager.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "NSIndexPath+FFI.h"
 #import "NSManagedObject+Sugar.h"
+#import "NSMutableData+Dash.h"
 
 #define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DP_EPK_WBL"
 #define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DP_EPK_SBL"
@@ -51,7 +54,6 @@
 
 @implementation DSDerivationPath
 
-
 // MARK: - Derivation Path initialization
 
 + (instancetype)masterBlockchainIdentityContactsDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
@@ -59,24 +61,24 @@
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber)};
     //todo full uint256 derivation
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_PartialPath signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsRoot onChain:chain];
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_PartialPath signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_ContactBasedFundsRoot onChain:chain];
 }
 
 
 + (instancetype _Nullable)derivationPathWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type
-                                   signingAlgorithm:(DSKeyType)signingAlgorithm
+                                   signingAlgorithm:(KeyKind)signingAlgorithm
                                           reference:(DSDerivationPathReference)reference
                                             onChain:(DSChain *)chain {
     return [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain];
 }
 
-+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString *)serializedExtendedPrivateKey fundsType:(DSDerivationPathType)fundsType signingAlgorithm:(DSKeyType)signingAlgorithm onChain:(DSChain *)chain {
-    NSData *extendedPrivateKey = [self deserializedExtendedPrivateKey:serializedExtendedPrivateKey onChain:chain];
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString *)serializedExtendedPrivateKey fundsType:(DSDerivationPathType)fundsType signingAlgorithm:(KeyKind)signingAlgorithm onChain:(DSChain *)chain {
     UInt256 indexes[] = {};
     BOOL hardenedIndexes[] = {};
-    DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:fundsType signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain];
-    derivationPath.extendedPublicKey = [DSECDSAKey keyWithSecret:*(UInt256 *)extendedPrivateKey.bytes compressed:YES];
+    DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:fundsType signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain];
+    NSData *extendedPrivateKey = [self deserializedExtendedPrivateKey:serializedExtendedPrivateKey onChain:chain];
+    derivationPath.extendedPublicKey = key_create_ecdsa_from_secret(extendedPrivateKey.bytes, 32, true);
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
 }
@@ -88,8 +90,8 @@
     NSData *extendedPublicKeyData = [self deserializedExtendedPublicKey:serializedExtendedPublicKey onChain:chain rDepth:&depth rTerminalHardened:&terminalHardened rTerminalIndex:&terminalIndex];
     UInt256 indexes[] = {terminalIndex};
     BOOL hardenedIndexes[] = {terminalHardened};
-    DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain]; //we are going to assume this is only ecdsa for now
-    derivationPath.extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:DSKeyType_ECDSA];
+    DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain]; //we are going to assume this is only ecdsa for now
+    derivationPath.extendedPublicKey = key_create_ecdsa_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length);
     derivationPath.depth = @(depth);
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     [derivationPath loadAddresses];
@@ -105,12 +107,11 @@
     BOOL terminalHardened = [((NSNumber *)infoDictionary[DERIVATION_PATH_STANDALONE_INFO_TERMINAL_HARDENED]) boolValue];
     UInt256 indexes[] = {terminalIndex};
     BOOL hardenedIndexes[] = {terminalHardened};
-    if (!(self = [self initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain])) return nil;
+    if (!(self = [self initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain])) return nil;
     _walletBasedExtendedPublicKeyLocationString = extendedPublicKeyIdentifier;
     NSData *data = getKeychainData([DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
     if (error) return nil;
-    _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:data forKeyType:DSKeyType_ECDSA];
-
+    _extendedPublicKey = key_create_ecdsa_from_extended_public_key_data(data.bytes, data.length);
     _depth = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_DEPTH];
 
     [self loadAddresses];
@@ -119,7 +120,7 @@
 
 - (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length
                            type:(DSDerivationPathType)type
-               signingAlgorithm:(DSKeyType)signingAlgorithm
+               signingAlgorithm:(KeyKind)signingAlgorithm
                       reference:(DSDerivationPathReference)reference
                         onChain:(DSChain *)chain {
     if (length) {
@@ -156,6 +157,10 @@
     if (_hardenedIndexes != NULL) {
         free(_hardenedIndexes);
     }
+    if (_extendedPublicKey != NULL) {
+        processor_destroy_opaque_key(_extendedPublicKey);
+    }
+
 }
 
 // MARK: - Hardening
@@ -246,16 +251,21 @@
 }
 
 - (NSData *)extendedPublicKeyData {
-    return self.extendedPublicKey.extendedPublicKeyData;
+    if (self.extendedPublicKey != NULL)
+        return [DSKeyManager extendedPublicKeyData:self.extendedPublicKey];
+    else
+        return nil;
 }
 
-- (DSKey *)extendedPublicKey {
+//- (DSKey *)extendedPublicKey {
+- (OpaqueKey *)extendedPublicKey {
     if (!_extendedPublicKey) {
         if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
             NSData *extendedPublicKeyData = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
 //            NSAssert(extendedPublicKeyData, @"extended public key data not set");
             if (extendedPublicKeyData) {
-                _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
+                _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
+//                _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
                 NSAssert(_extendedPublicKey, @"extended public key not set");
             }
         } else {
@@ -281,7 +291,8 @@
             }
 #endif
 //            NSAssert(extendedPublicKeyData, @"extended public key data not set");
-            _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
+            _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
+//            _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
 //            NSAssert(_extendedPublicKey, @"extended public key not set");
         }
     }
@@ -307,7 +318,8 @@
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath {
     NSData *pubKey = [self publicKeyDataAtIndexPath:indexPath];
-    return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
+    return [DSKeyManager NSStringFrom:key_address_with_public_key_data(pubKey.bytes, pubKey.length, self.chain.chainType)];
+//    return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
 // true if the address is controlled by the wallet
@@ -493,6 +505,7 @@
 //Derivation paths can be stored based on the wallet and derivation or based solely on the public key
 
 - (NSString *)createIdentifierForDerivationPath {
+    // TODO: rust migration u64
     return [NSData dataWithUInt256:[[self extendedPublicKeyData] SHA256]].shortHexString;
 }
 
@@ -534,7 +547,10 @@
     for (NSInteger i = 0; i < self.length; i++) {
         [mutableString appendFormat:@"_%lu", (unsigned long)([self isHardenedAtPosition:i] ? [self indexAtPosition:i].u64[0] | BIP32_HARD : [self indexAtPosition:i].u64[0])];
     }
-    return [NSString stringWithFormat:@"%@%@%@", [DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID], self.signingAlgorithm == DSKeyType_ECDSA ? @"" : @"_BLS_", mutableString];
+    return [NSString stringWithFormat:@"%@%@%@",
+            [DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID],
+            [DSKeyManager keyStoragePrefix:self.signingAlgorithm],
+            mutableString];
 }
 
 - (NSString *)walletBasedExtendedPublicKeyLocationString {
@@ -552,7 +568,11 @@
     for (NSInteger i = 0; i < self.length; i++) {
         [mutableString appendFormat:@"_%lu", (unsigned long)([self isHardenedAtPosition:i] ? [self indexAtPosition:i].u64[0] | BIP32_HARD : [self indexAtPosition:i].u64[0])];
     }
-    return [NSString stringWithFormat:@"%@%@%@", [DSDerivationPath walletBasedExtendedPrivateKeyLocationStringForUniqueID:uniqueID], self.signingAlgorithm == DSKeyType_ECDSA ? @"" : @"_BLS_", mutableString];
+    // TODO: ED25519 has own prefix
+    return [NSString stringWithFormat:@"%@%@%@",
+            [DSDerivationPath walletBasedExtendedPrivateKeyLocationStringForUniqueID:uniqueID],
+            [DSKeyManager keyStoragePrefix:self.signingAlgorithm],
+            mutableString];
 }
 
 - (NSString *)walletBasedExtendedPrivateKeyLocationString {
@@ -563,32 +583,37 @@
 
 // MARK: - Key Generation
 
-- (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString *)walletUniqueId {
+- (OpaqueKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString *)walletUniqueId {
     return [self generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:NO];
 }
 
-- (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString *)walletUniqueId storePrivateKey:(BOOL)storePrivateKey {
+- (OpaqueKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString *)walletUniqueId storePrivateKey:(BOOL)storePrivateKey {
     if (!seed) return nil;
     if (![self length] && self.reference != DSDerivationPathReference_Root) return nil; //there needs to be at least 1 length
-    DSKey *seedKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
-    if (!seedKey) return nil;
-    _extendedPublicKey = [seedKey privateDeriveTo256BitDerivationPath:self];
-    NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
-    if (!_extendedPublicKey) return nil;
-
-    if (walletUniqueId) {
-        setKeychainData(_extendedPublicKey.extendedPublicKeyData, [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId], NO);
-        if (storePrivateKey) {
-            setKeychainData(_extendedPublicKey.extendedPrivateKeyData, [self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId], YES);
+    @autoreleasepool {
+        if (_extendedPublicKey)
+            processor_destroy_opaque_key(_extendedPublicKey);
+//        DerivationPathData *data = [self ffi_malloc];
+        _extendedPublicKey = generate_extended_public_key_from_seed(seed.bytes, seed.length, (int16_t) self.signingAlgorithm, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length);
+//        [DSDerivationPath ffi_free:data];
+        NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
+        if (_extendedPublicKey == NULL) {
+            return nil;
         }
+        if (walletUniqueId) {
+            NSData *publicKeyData = [DSKeyManager extendedPublicKeyData:_extendedPublicKey];
+            setKeychainData(publicKeyData, [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId], NO);
+            if (storePrivateKey) {
+                NSData *privateKeyData = [DSKeyManager extendedPrivateKeyData:_extendedPublicKey];
+                setKeychainData(privateKeyData, [self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId], YES);
+            }
+        }
+        forget_private_key(_extendedPublicKey);
     }
-
-    [_extendedPublicKey forgetPrivateKey];
-
     return _extendedPublicKey;
 }
 
-- (DSKey *)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath *)parentDerivationPath storeUnderWalletUniqueId:(NSString *)walletUniqueId {
+- (OpaqueKey *)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath *)parentDerivationPath storeUnderWalletUniqueId:(NSString *)walletUniqueId {
     NSAssert(parentDerivationPath.signingAlgorithm == self.signingAlgorithm, @"The signing algorithms must be the same");
     NSParameterAssert(parentDerivationPath);
     NSAssert(self.length > parentDerivationPath.length, @"length must be inferior to the parent derivation path length");
@@ -601,77 +626,78 @@
         NSAssert(uint256_eq([parentDerivationPath indexAtPosition:i], [self indexAtPosition:i]), @"This derivation path must start with elements of the parent derivation path");
         if (!uint256_eq([parentDerivationPath indexAtPosition:i], [self indexAtPosition:i])) return nil;
     }
-
-    _extendedPublicKey = [parentDerivationPath.extendedPublicKey publicDeriveTo256BitDerivationPath:self derivationPathOffset:parentDerivationPath.length];
-
+    if (_extendedPublicKey)
+        processor_destroy_opaque_key(_extendedPublicKey);
+    _extendedPublicKey = [DSKeyManager keyPublicDeriveTo256Bit:parentDerivationPath childIndexes:self->_indexes childHardened:self->_hardenedIndexes length:self.length];
     NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
 
     if (walletUniqueId) {
-        setKeychainData(_extendedPublicKey.extendedPublicKeyData, [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId], NO);
+        NSData *publicKeyData = [DSKeyManager extendedPublicKeyData:_extendedPublicKey];
+        setKeychainData(publicKeyData, [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId], NO);
     }
-
     return _extendedPublicKey;
 }
 
-- (DSKey *)privateKeyForKnownAddress:(NSString *)address fromSeed:(NSData *)seed {
+- (OpaqueKey *)privateKeyForKnownAddress:(NSString *)address fromSeed:(NSData *)seed {
     NSIndexPath *indexPathForAddress = [self indexPathForKnownAddress:address];
     return [self privateKeyAtIndexPath:indexPathForAddress fromSeed:seed];
 }
 
-- (DSKey *)privateKeyAtIndexPath:(NSIndexPath *)indexPath fromSeed:(NSData *)seed {
-    NSParameterAssert(indexPath);
-    NSParameterAssert(seed);
-    if (!seed || !indexPath) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
-    DSKey *topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
-    NSAssert(topKey, @"Top key should exist");
-    if (!topKey) return nil;
-    DSKey *derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
-    NSAssert(derivationPathExtendedKey, @"Top key should exist");
-    if (!derivationPathExtendedKey) return nil;
-    return [derivationPathExtendedKey privateDeriveToPath:indexPath];
+- (OpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath fromSeed:(NSData *)seed {
+    return [DSKeyManager privateKeyAtIndexPath:self.signingAlgorithm indexes:self->_indexes hardened:self->_hardenedIndexes length:self.length indexPath:indexPath fromSeed:seed];
 }
 
-- (DSKey *)publicKeyAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [DSECDSAKey keyWithPublicKeyData:[self publicKeyDataAtIndexPath:indexPath]];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [DSBLSKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384 useLegacy:true];
-    } else if (self.signingAlgorithm == DSKeyType_BLS_BASIC) {
-        return [DSBLSKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384 useLegacy:false];
-    }
-    return nil;
+- (OpaqueKey *)publicKeyAtIndexPath:(NSIndexPath *)indexPath {
+    return [DSKeyManager publicKeyAtIndexPath:self.extendedPublicKey indexPath:indexPath];
 }
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [DSECDSAKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath useLegacy:true];
-    } else if (self.signingAlgorithm == DSKeyType_BLS_BASIC) {
-        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath useLegacy:false];
-    }
-    return nil;
+    return [DSKeyManager publicKeyDataAtIndexPath:self.extendedPublicKey indexPath:indexPath];
 }
 
 - (NSArray *)privateKeysAtIndexPaths:(NSArray *)indexPaths fromSeed:(NSData *)seed {
     if (!seed || !indexPaths) return nil;
     if (indexPaths.count == 0) return @[];
-    NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
-    DSKey *topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
-    DSKey *derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
 
-#if DEBUG
-    if (_extendedPublicKey) {
-        NSData *publicKey = _extendedPublicKey.extendedPublicKeyData;
-        NSAssert([publicKey isEqualToData:derivationPathExtendedKey.extendedPublicKeyData], @"The derivation doesn't match the public key");
+    NSUInteger count = indexPaths.count;
+    IndexPathData *data = malloc(sizeof(IndexPathData) * count);
+    for (NSUInteger i = 0; i < count; i++) {
+        NSIndexPath *indexPath = indexPaths[i];
+        NSUInteger length = indexPath.length;
+        NSUInteger *indexes = malloc(sizeof(NSUInteger) * length);
+        [indexPath getIndexes:indexes];
+        data[i].indexes = indexes;
+        data[i].len = length;
     }
-#endif
-
-    for (NSIndexPath *indexPath in indexPaths) {
-        DSKey *privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-        [privateKeys addObject:privateKey];
+//    DerivationPathData *derivationPathData = [self ffi_malloc];
+    OpaqueKeys *keys = key_private_keys_at_index_paths(seed.bytes, seed.length, (int16_t) self.signingAlgorithm, data, count, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length);
+//    [DSDerivationPath ffi_free:derivationPathData];
+    for (NSUInteger i = 0; i < count; i++) {
+        free((void *)data[i].indexes);
     }
+    free(data);
+    NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:keys->len];
+    for (NSUInteger i = 0; i < keys->len; i++) {
+        [privateKeys addObject:[NSValue valueWithPointer:keys->keys[i]]];
+    }
+    // TODO: destroy when keys don't need anymore
+    // processor_destroy_opaque_keys(keys);
+    
+//    NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
+//    DSKey *topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
+//    DSKey *derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
+//
+//#if DEBUG
+//    if (_extendedPublicKey) {
+//        NSData *publicKey = _extendedPublicKey.extendedPublicKeyData;
+//        NSAssert([publicKey isEqualToData:derivationPathExtendedKey.extendedPublicKeyData], @"The derivation doesn't match the public key");
+//    }
+//#endif
+//
+//    for (NSIndexPath *indexPath in indexPaths) {
+//        DSKey *privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
+//        [privateKeys addObject:privateKey];
+//    }
 
     return privateKeys;
 }
@@ -680,47 +706,54 @@
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray *)indexPaths fromSeed:(NSData *)seed {
     if (!seed || !indexPaths) return nil;
     if (indexPaths.count == 0) return @[];
-
-    NSMutableArray *serializedPrivateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
-    DSKey *topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
-    DSKey *derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
-
-    for (NSIndexPath *indexPath in indexPaths) {
-        DSKey *privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-        NSString *serializedPrivateKey = [privateKey serializedPrivateKeyForChain:self.chain];
-        NSAssert(serializedPrivateKey, @"The serialized private key should exist");
-        [serializedPrivateKeys addObject:serializedPrivateKey];
+    
+    NSUInteger count = indexPaths.count;
+    IndexPathData *data = malloc(sizeof(IndexPathData) * count);
+    for (NSUInteger i = 0; i < count; i++) {
+        NSIndexPath *indexPath = indexPaths[i];
+        NSUInteger length = indexPath.length;
+        NSUInteger *indexes = malloc(sizeof(NSUInteger) * length);
+        [indexPath getIndexes:indexes];
+        data[i].indexes = indexes;
+        data[i].len = length;
     }
-
-    return serializedPrivateKeys;
+//    DerivationPathData *derivationPathData = [self ffi_malloc];
+    OpaqueSerializedKeys *keys = serialized_key_private_keys_at_index_paths(seed.bytes, seed.length, (int16_t) self.signingAlgorithm, data, count, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self.length, self.chain.chainType);
+//    [DSDerivationPath ffi_free:derivationPathData];
+    for (NSUInteger i = 0; i < count; i++) {
+        free((void *)data[i].indexes);
+    }
+    free(data);
+    NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:keys->len];
+    for (NSUInteger i = 0; i < keys->len; i++) {
+        [privateKeys addObject:[NSString stringWithUTF8String:keys->keys[i]]];
+    }
+    processor_destroy_serialized_opaque_keys(keys);
+    return privateKeys;
+    
+//    NSMutableArray *serializedPrivateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
+//    DSKey *topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
+//    DSKey *derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
+//
+//    for (NSIndexPath *indexPath in indexPaths) {
+//        DSKey *privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
+//        NSString *serializedPrivateKey = [privateKey serializedPrivateKeyForChain:self.chain];
+//        NSAssert(serializedPrivateKey, @"The serialized private key should exist");
+//        [serializedPrivateKeys addObject:serializedPrivateKey];
+//    }
+//
+//    return serializedPrivateKeys;
 }
 
 
 // MARK: - Deprecated
 
 //this is for upgrade purposes only
-- (DSKey *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed {
+// TODO: check if this needed
+- (OpaqueKey *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed {
     if (!seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
-    NSMutableData *mpk = [NSMutableData secureData];
-    UInt512 I;
-
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-
-    [mpk appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-
-    for (NSInteger i = 0; i < [self length]; i++) {
-        uint32_t derivation = (uint32_t)[self indexAtPosition:i].u64[0];
-        CKDpriv(&secret, &chain, derivation);
-    }
-
-    [mpk appendBytes:&chain
-              length:sizeof(chain)];
-    [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData];
-
-    return [DSKey keyWithExtendedPublicKeyData:mpk forKeyType:DSKeyType_ECDSA];
+    return [DSKeyManager keyDeprecatedExtendedPublicKeyFromSeed:seed indexes:self->_indexes hardened:self->_hardenedIndexes length:self.length];
 }
 
 // MARK: - Storage
@@ -728,37 +761,26 @@
 - (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString *)walletUniqueId {
     if (!_extendedPublicKey) return FALSE;
     NSParameterAssert(walletUniqueId);
-    setKeychainData(_extendedPublicKey.extendedPublicKeyData, [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId], NO);
+    NSData *data = [DSKeyManager extendedPublicKeyData:_extendedPublicKey];
+    setKeychainData(data, [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId], NO);
     return TRUE;
 }
 
 // MARK: - Serializations
 
+- (NSString *_Nullable)serializedExtendedPrivateKeyFromSeedAtIndexPath:(NSData *)seed indexPath:(NSIndexPath *)indexPath {
+    OpaqueKey *key = [self privateKeyAtIndexPath:indexPath fromSeed:seed];
+//    NSString *pk = [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, [self indexPathToData].bytes, indexPath.length, self.chain.chainType)];
+//    NSString *pk = [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length, self.chain.chainType)];
+    NSString *pk = [DSKeyManager NSStringFrom:key_serialized_private_key_for_chain(key, self.chain.chainType)];
+    processor_destroy_opaque_key(key);
+    return pk;
+}
 - (NSString *)serializedExtendedPrivateKeyFromSeed:(NSData *)seed {
     @autoreleasepool {
         if (!seed) return nil;
-
-        UInt512 I;
-
-        HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-
-        UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-
-        uint32_t fingerprint = 0;
-        UInt256 index = UINT256_ZERO;
-        BOOL hardened = NO;
-
-        if (self.length) {
-            for (NSInteger i = 0; i < [self length] - 1; i++) {
-                CKDpriv256(&secret, &chain, [self indexAtPosition:i], [self isHardenedAtPosition:i]);
-            }
-            fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
-            index = [self indexAtPosition:[self length] - 1];
-            hardened = [self isHardenedAtPosition:[self length] - 1];
-            CKDpriv256(&secret, &chain, index, hardened); // account 0H
-        }
-
-        return serialize([self length], fingerprint, hardened, index, chain, [NSData dataWithBytes:&secret length:sizeof(secret)], [self.chain isMainnet]);
+        return [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length, self.chain.chainType)];
+//        return [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, [self indexPathToData].bytes, [self length], self.chain.chainType)];
     }
 }
 
@@ -821,5 +843,62 @@
 - (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString {
     return [DSDerivationPath deserializedExtendedPublicKey:extendedPublicKeyString onChain:self.chain];
 }
+
+
+
+- (NSData *)indexPathToData {
+    NSMutableData *writer = [NSMutableData dataWithCapacity:self.length * 33];
+    // TODO: write bytes from UInt256IndexPath directly without this iterator
+    for (NSUInteger i = 0; i < self.length; i++) {
+        [writer appendUInt256:[self indexAtPosition:i]];
+        [writer appendUInt8:[self isHardenedAtPosition:i] ? 1 : 0];
+    }
+    return writer;
+}
+
+//- (DerivationPathData *)ffi_malloc {
+//
+////    Validity *previous_validity = malloc(previousValidityCount * sizeof(Validity));
+////    i = 0;
+////    for (NSData *block in previousValidity) {
+////        NSNumber *flag = previousValidity[block];
+////        UInt256 blockHash = *(UInt256 *)(block.bytes);
+////        uint32_t blockHeight = *(uint32_t *)(block.bytes + sizeof(UInt256));
+////        Validity obj = {.block_height = blockHeight, .is_valid = [flag boolValue]};
+////        memcpy(obj.block_hash, blockHash.u8, sizeof(UInt256));
+////        previous_validity[i++] = obj;
+////    }
+////    masternode_entry->previous_validity = previous_validity;
+////    masternode_entry->previous_validity_count = previousValidityCount;
+//
+//
+//
+//    DerivationPathData *obj = malloc(sizeof(DerivationPathData) * self.length);
+//    obj->len = self.length;
+//    UInt256 outIndexes[self.length];
+//    [self getIndexes:outIndexes];
+//    uint8_t *uint8Array = (uint8_t *)malloc(self.length * sizeof(uint8_t));
+//    for (NSUInteger i = 0; i < self.length; i++) {
+//        uint8Array[i] = (uint8_t)_hardenedIndexes[i];
+//    }
+//    obj->indexes = (uint8_t (*)[32]) outIndexes;
+//    obj->hardened = (uint8_t *) uint8Array;
+//    return obj;
+//}
+//
+//+ (void)ffi_free:(DerivationPathData *)path {
+//    if (path->len > 0) {
+//        if (path->indexes) {
+////            for (NSUInteger i = 0; i < path->len; i++) {
+////                free((void *) path->indexes[i]);
+////            }
+//            free((void *) path->indexes);
+//        }
+//        if (path->hardened)
+//            free((void *) path->hardened);
+//    }
+//    free(path);
+//
+//}
 
 @end

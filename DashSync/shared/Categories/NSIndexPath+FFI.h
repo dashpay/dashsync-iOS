@@ -1,6 +1,6 @@
-//
-//  Created by Sam Westrich
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Vladimir Pirogov
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,26 +16,14 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "DSBLSKey.h"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wconditional-uninitialized"
-#pragma clang diagnostic ignored "-Wdocumentation"
-#pragma clang diagnostic ignored "-Wmacro-redefined"
-#import "bls.hpp"
-#pragma clang diagnostic pop
+#import "dash_shared_core.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBLSKey (Private)
+@interface NSIndexPath (FFI)
 
-- (bls::ExtendedPublicKey)blsExtendedPublicKey;
-
-- (bls::PrivateKey)blsPrivateKey;
-- (bls::G1Element)blsPublicKey;
+- (IndexPathData *)ffi_malloc;
++ (void)ffi_free:(IndexPathData *)entry;
 
 @end
 

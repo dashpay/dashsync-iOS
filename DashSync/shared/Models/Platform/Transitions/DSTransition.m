@@ -7,11 +7,10 @@
 
 #import "DSTransition.h"
 #import "BigIntTypes.h"
-#import "DSBLSKey.h"
 #import "DSBlockchainIdentity.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSECDSAKey.h"
+#import "DSKeyManager.h"
 #import "DSTransition+Protected.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -61,30 +60,15 @@
     return self;
 }
 
-- (BOOL)checkTransitionSignatureForECDSAKey:(DSECDSAKey *)transitionRecoveredPublicKey {
-    return [transitionRecoveredPublicKey verify:[self serializedBaseDataHash].UInt256 signatureData:self.signatureData];
-    //return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
-}
-
-- (BOOL)checkTransitionSignatureForBLSKey:(DSBLSKey *)blockchainIdentityPublicKey {
-    return [blockchainIdentityPublicKey verify:[self serializedBaseDataHash].UInt256 signature:self.signatureData.UInt768];
-}
-
-- (BOOL)checkTransitionSignature:(DSKey *)key {
-    if ([key isMemberOfClass:[DSECDSAKey class]]) {
-        return [self checkTransitionSignatureForECDSAKey:(DSECDSAKey *)key];
-    } else if ([key isMemberOfClass:[DSBLSKey class]]) {
-        return [self checkTransitionSignatureForBLSKey:(DSBLSKey *)key];
-    }
-    NSAssert(FALSE, @"unimplemented key type");
-    return FALSE;
+- (BOOL)checkTransitionSignature:(OpaqueKey *)key {
+    return [DSKeyManager verifyMessageDigest:key digest:[self serializedBaseDataHash].UInt256 signature:self.signatureData];
 }
 
 - (BOOL)checkTransitionSignedByBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    return [blockchainIdentity verifySignature:self.signatureData ofType:DSKeyType_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
+    return [blockchainIdentity verifySignature:self.signatureData ofType:KeyKind_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
 }
 
-- (void)signWithKey:(DSKey *)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)signWithKey:(OpaqueKey *)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     NSParameterAssert(privateKey);
     if ([self isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
         NSAssert(index == UINT32_MAX, @"index must not exist");
@@ -92,15 +76,10 @@
         NSAssert(index != UINT32_MAX, @"index must exist");
     }
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
-    DSLogPrivate(@"Signing %@ with key %@", [self serializedBaseDataHash].hexString, privateKey.publicKeyData.hexString);
-    if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
-        self.signatureType = DSKeyType_BLS;
-        self.signatureData = uint768_data([((DSBLSKey *)privateKey) signDigest:[self serializedBaseDataHash].UInt256]);
-    } else if ([privateKey isMemberOfClass:[DSECDSAKey class]]) {
-        self.signatureType = DSKeyType_ECDSA;
-        self.signatureData = [((DSECDSAKey *)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
-    }
+//    DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
+//    DSLogPrivate(@"Signing %@ with key %@", [self serializedBaseDataHash].hexString, privateKey.publicKeyData.hexString);
+    self.signatureType = (KeyKind) privateKey->tag;
+    self.signatureData = [DSKeyManager signMesasageDigest:privateKey digest:[self serializedBaseDataHash].UInt256];
     self.signaturePublicKeyId = index;
     self.transitionHash = self.data.SHA256;
 }
