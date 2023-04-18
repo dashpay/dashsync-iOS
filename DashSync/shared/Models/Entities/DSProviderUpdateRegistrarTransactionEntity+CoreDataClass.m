@@ -32,8 +32,8 @@
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
 
         NSString *operatorAddress = [DSKeyManager addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
-        NSString *votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
-        NSString *payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
+        NSString *votingAddress = [DSKeyManager addressFromHash160:providerUpdateRegistrarTransaction.votingKeyHash forChain:tx.chain];
+        NSString *payoutAddress = [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:tx.chain];
 
         NSArray *operatorAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", operatorAddress, [tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([operatorAddressEntities count]) {

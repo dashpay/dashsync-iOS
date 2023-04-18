@@ -33,8 +33,7 @@
     return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
-    UInt256 indexes[] = {uint256_from_long(44), uint256_from_long(coinType), uint256_from_long(accountNumber)};
+    UInt256 indexes[] = {uint256_from_long(44), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(accountNumber)};
     BOOL hardenedIndexes[] = {YES, YES, YES};
     return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
@@ -91,7 +90,7 @@
                     NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
 
                     while (e.index >= a.count) [a addObject:[NSNull null]];
-                    if (![e.address isValidDashAddressOnChain:self.account.wallet.chain]) {
+                    if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
 #if DEBUG
                         DSLogPrivate(@"address %@ loaded but was not valid on chain %@", e.address, self.account.wallet.chain.name);
 #else
@@ -175,7 +174,6 @@
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
             NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
-//            NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 
             if (!addr) {
                 DSLog(@"error generating keys");
@@ -197,9 +195,9 @@
                 DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
                 for (NSNumber *number in addAddresses) {
                     NSString *address = [addAddresses objectForKey:number];
+                    NSAssert([DSKeyManager isValidDashAddress:address forChain:self.chain], @"the address is being saved to the wrong derivation path");
                     DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
-                    NSAssert([address isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = address;
                     e.index = [number intValue];
                     e.internal = internal;
@@ -218,14 +216,12 @@
     for (NSUInteger i = exportInternalRange.location; i < exportInternalRange.length + exportInternalRange.location; i++) {
         NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:YES];
         NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
-//        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
 
     for (NSUInteger i = exportExternalRange.location; i < exportExternalRange.location + exportExternalRange.length; i++) {
         NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:NO];
         NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
-//        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
 
@@ -237,7 +233,6 @@
     NSData *pubKey = [self publicKeyDataAtIndex:index internal:internal];
     NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
     return addr;
-//    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 }
 
 // returns the first unused external address

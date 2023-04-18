@@ -50,9 +50,9 @@
 
 + (void)setDashCurrencySymbolAssetName:(NSString *)imageName;
 
-+ (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain *)chain;
-+ (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain *)chain;
-+ (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain *)chain;
+//+ (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain *)chain;
+//+ (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain *)chain;
+//+ (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain *)chain;
 
 - (NSAttributedString *)attributedStringForDashSymbol;
 #if TARGET_OS_IOS

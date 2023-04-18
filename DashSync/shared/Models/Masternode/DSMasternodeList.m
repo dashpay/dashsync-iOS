@@ -617,12 +617,11 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash {
-    LLMQType quorumType = self.chain.quorumTypeForPlatform;
-    return [self quorumEntryForPlatformWithQuorumHash:quorumHash ofQuorumType:quorumType];
+    return [self quorumEntryForPlatformWithQuorumHash:quorumHash ofQuorumType:quorum_type_for_platform(self.chain.chainType)];
 }
 
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID {
-    LLMQType quorumType = self.chain.quorumTypeForChainLocks;
+    LLMQType quorumType = quorum_type_for_chain_locks(self.chain.chainType);
     NSArray *quorumsForIS = [self.quorums[@(quorumType)] allValues];
     NSMutableDictionary *orderedQuorumDictionary = [NSMutableDictionary dictionary];
     for (DSQuorumEntry *quorumEntry in quorumsForIS) {
@@ -660,7 +659,7 @@
 - (BOOL)hasUnverifiedNonRotatedQuorums {
     for (NSNumber *quorumType in self.quorums) {
         LLMQType llmqType = (LLMQType) quorumType.unsignedIntValue;
-        if (llmqType == self.chain.quorumTypeForISDLocks || ![self.chain shouldProcessQuorumOfType:llmqType]) {
+        if (llmqType == quorum_type_for_isd_locks(self.chain.chainType) || !quorum_should_process_type_for_chain(llmqType, self.chain.chainType)) {
             continue;
         }
         NSDictionary<NSData *, DSQuorumEntry *> *quorumsOfType = self.quorums[quorumType];
@@ -675,7 +674,7 @@
 }
 
 - (BOOL)hasUnverifiedRotatedQuorums {
-    NSArray<DSQuorumEntry *> *quorumsForISDLock = [self.quorums[@(self.chain.quorumTypeForISDLocks)] allValues];
+    NSArray<DSQuorumEntry *> *quorumsForISDLock = [self.quorums[@(quorum_type_for_isd_locks(self.chain.chainType))] allValues];
     for (DSQuorumEntry *entry in quorumsForISDLock) {
         if (!entry.verified) {
             return YES;
@@ -696,7 +695,6 @@
 }
 
 - (DSMasternodeList *)mergedWithMasternodeList:(DSMasternodeList *)masternodeList {
-    DSLog(@"• mergedWithMasternodeList: %u: %@", masternodeList.height, uint256_hex(masternodeList.blockHash));
     for (NSData *proTxHash in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *entry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[proTxHash];
         DSSimplifiedMasternodeEntry *newEntry = masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[proTxHash];

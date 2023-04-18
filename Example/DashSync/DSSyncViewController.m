@@ -517,7 +517,7 @@
     NSArray *addresses = [self.pasteboardExtractor extractAddresses];
     NSString *firstAddress = nil;
     for (NSString *string in addresses) {
-        if ([string isValidDashAddressOnChain:self.chainManager.chain]) {
+        if ([DSKeyManager isValidDashAddress:string forChain:self.chainManager.chain]) {
             firstAddress = string;
         }
     }

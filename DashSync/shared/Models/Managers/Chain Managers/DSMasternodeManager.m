@@ -112,7 +112,7 @@
 }
 
 - (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-    if (![self.masternodeListDiffService retrievalQueueCount] && ![self.quorumRotationService retrievalQueueCount]) {
+    if (![self.masternodeListDiffService retrievalQueueCount] /*&& ![self.quorumRotationService retrievalQueueCount]*/) {
         [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
     }
@@ -319,11 +319,6 @@
 
 // MARK: - Requesting Masternode List
 
-
-- (BOOL)hasDIP0024Enabled {
-    return [self.chain hasDIP0024Enabled] && self.chain.isRotatedQuorumsPresented;
-}
-
 - (void)startSync {
     [self getRecentMasternodeList];
 }
@@ -501,6 +496,7 @@
         } else {
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 self.masternodeListDiffService.currentMasternodeList = masternodeList;
+                [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:masternodeListBlockHashData];
             }
             DSLog(@"••• updateStoreWithMasternodeList: %u: %@ (%@)", masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
             [self updateStoreWithMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError *error) {
@@ -611,6 +607,7 @@
         } else {
             if (uint256_eq(self.store.lastQueriedBlockHash, blockHashAtTip)) {
                 self.quorumRotationService.currentMasternodeList = masternodeListAtTip;
+                [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:blockHashDataAtTip];
             }
             DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
             [self updateStoreWithMasternodeList:masternodeListAtTip addedMasternodes:mnListDiffResultAtTip.addedMasternodes modifiedMasternodes:mnListDiffResultAtTip.modifiedMasternodes addedQuorums:mnListDiffResultAtTip.addedQuorums completion:^(NSError *error) {}];

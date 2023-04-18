@@ -188,7 +188,6 @@
     NSURLComponents *components = [NSURLComponents componentsWithString:invitationLink];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
-//    ECDSAKey *fundingPrivateKey = nil;
     BOOL isEmptyFundingPrivateKey = true;
     for (NSURLQueryItem *queryItem in queryItems) {
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
@@ -240,13 +239,9 @@
     OpaqueKey *fundingPrivateKey = nil;
     for (NSURLQueryItem *queryItem in queryItems) {
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
-            NSString *assetLockTransactionHashString = queryItem.value;
-            assetLockTransactionHash = assetLockTransactionHashString.hexToData.UInt256;
+            assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-            NSString *fundingPrivateKeyString = queryItem.value;
-            fundingPrivateKey = [DSKeyManager keyWithPrivateKeyString:fundingPrivateKeyString ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
-//            fundingPrivateKey = [DSKeyManager ecdsaKeyWithPrivateKey:fundingPrivateKeyString forChainType:self.chain.chainType];
-//            fundingPrivateKey = [DSECDSAKey keyWithPrivateKey:fundingPrivateKeyString onChain:self.chain];
+            fundingPrivateKey = [DSKeyManager keyWithPrivateKeyString:queryItem.value ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {

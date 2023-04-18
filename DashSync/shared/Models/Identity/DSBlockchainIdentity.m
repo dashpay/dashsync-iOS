@@ -1353,14 +1353,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSNumber *type = dictionary[@"type"];
     if (keyData && keyId && type) {
         OpaqueKey *key = [DSKeyManager keyWithPublicKeyData:keyData ofType:type.intValue];
-//        DSKey *rKey = nil;
-//        if ([type intValue] == DSKeyType_ECDSA) {
-//            rKey = [DSECDSAKey keyWithPublicKeyData:keyData];
-//        } else if ([type intValue] == DSKeyType_BLS) {
-//            rKey = [DSBLSKey keyWithPublicKey:keyData.UInt384 useLegacy:true];
-//        } else if ([type intValue] == DSKeyType_BLS_BASIC) {
-//            rKey = [DSBLSKey keyWithPublicKey:keyData.UInt384 useLegacy:false];
-//        }
         *rIndex = [keyId unsignedIntValue];
         *rType = [type unsignedIntValue];
         return key;
@@ -1381,7 +1373,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (NSString *)registrationFundingAddress {
     if (self.registrationCreditFundingTransaction) {
-        return [uint160_data(self.registrationCreditFundingTransaction.creditBurnPublicKeyHash) addressFromHash160DataForChain:self.chain];
+        return [DSKeyManager addressFromHash160:self.registrationCreditFundingTransaction.creditBurnPublicKeyHash forChain:self.chain];
     } else {
         DSCreditFundingDerivationPath *derivationPathRegistrationFunding;
         if (self.isOutgoingInvitation) {
@@ -4089,7 +4081,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         OpaqueKey *senderPublicKey = [senderBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
                         NSData *extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:senderPublicKey];
                         OpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:extendedPublicKeyData ofType:KeyKind_ECDSA];
-//                        DSECDSAKey *extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:extendedPublicKeyData];
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
                             [errors addObject:[NSError errorWithCode:500 localizedDescriptionKey:@"Incorrect key format after contact request decryption"]];
@@ -4151,7 +4142,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         NSData *decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
                         NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                         OpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:KeyKind_ECDSA];
-//                        DSECDSAKey *extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
                             [errors addObject:[NSError errorWithCode:500 localizedDescriptionKey:@"Contact request extended public key is incorrectly encrypted."]];

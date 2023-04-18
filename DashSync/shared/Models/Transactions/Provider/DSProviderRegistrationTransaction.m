@@ -249,16 +249,15 @@
 
 
 - (NSString *)ownerAddress {
-    return [[NSData dataWithUInt160:self.ownerKeyHash] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.ownerKeyHash forChain:self.chain];
 }
 
 - (NSString *)platformNodeAddress {
-    return [[NSData dataWithUInt160:self.platformNodeID] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.platformNodeID forChain:self.chain];
 }
 
 - (NSString *)operatorAddress {
     return [DSKeyManager addressWithPublicKeyData:uint384_data(self.operatorKey) forChain:self.chain];
-//    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
 }
 
 - (NSString *)operatorKeyString {
@@ -266,7 +265,7 @@
 }
 
 - (NSString *)votingAddress {
-    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.votingKeyHash forChain:self.chain];
 }
 
 - (NSString *)holdingAddress {
@@ -279,7 +278,7 @@
 }
 
 - (NSString *)payoutAddress {
-    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.chain];
+    return [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:self.chain];
 }
 
 - (NSString *)location {

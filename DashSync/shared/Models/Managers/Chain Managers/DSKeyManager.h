@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)hasPrivateKey:(OpaqueKey *)key;
 + (NSString *)secretKeyHexString:(OpaqueKey *)key;
-+ (OpaqueKey *_Nullable)keyWithPrivateKeyString:(NSString *)key ofKeyType:(KeyKind)keyType forChainType:(DSChainType)chainType;
++ (OpaqueKey *_Nullable)keyWithPrivateKeyString:(NSString *)key ofKeyType:(KeyKind)keyType forChainType:(ChainType)chainType;
 + (OpaqueKey *_Nullable)keyWithPrivateKeyData:(NSData *)data ofType:(KeyKind)keyType;
 + (OpaqueKey *_Nullable)keyWithPublicKeyData:(NSData *)data ofType:(KeyKind)keyType;
 + (OpaqueKey *_Nullable)keyWithExtendedPublicKeyData:(NSData *)data ofType:(KeyKind)keyType;
@@ -60,18 +60,24 @@ NS_ASSUME_NONNULL_BEGIN
 //+ (OpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath childPath:(DSDerivationPath *)childPath;
 + (OpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath childIndexes:(UInt256 *)childIndexes childHardened:(BOOL *)childHardened length:(NSUInteger)length;
 
-+ (NSString *)serializedPrivateKey:(OpaqueKey *)key chainType:(DSChainType)chainType;
++ (NSString *)serializedPrivateKey:(OpaqueKey *)key chainType:(ChainType)chainType;
 
-+ (NSString *)addressForKey:(OpaqueKey *)key forChainType:(DSChainType)chainType;
++ (NSString *)addressForKey:(OpaqueKey *)key forChainType:(ChainType)chainType;
 + (NSString *)addressWithPublicKeyData:(NSData *)data forChain:(nonnull DSChain *)chain;
-+ (UInt160)ecdsaKeyPublicKeyHashFromSecret:(NSString *)secret forChainType:(DSChainType)chainType;
++ (NSString *_Nullable)addressWithScriptPubKey:(NSData *)script forChain:(nonnull DSChain *)chain;
++ (NSString *_Nullable)addressWithScriptSig:(NSData *)script forChain:(nonnull DSChain *)chain;
++ (NSString *)addressFromHash160:(UInt160)hash forChain:(nonnull DSChain *)chain;
++ (BOOL)isValidDashAddress:(NSString *)address forChain:(nonnull DSChain *)chain;
++ (NSData *)scriptPubKeyForAddress:(NSString *)address forChain:(nonnull DSChain *)chain;
 
-+ (NSString *_Nullable)ecdsaKeyAddressFromPublicKeyData:(NSData *)data forChainType:(DSChainType)chainType;
-- (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret forChainType:(DSChainType)chainType;
++ (UInt160)ecdsaKeyPublicKeyHashFromSecret:(NSString *)secret forChainType:(ChainType)chainType;
+
++ (NSString *_Nullable)ecdsaKeyAddressFromPublicKeyData:(NSData *)data forChainType:(ChainType)chainType;
+- (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret forChainType:(ChainType)chainType;
 - (NSString *)keyRecoveredFromCompactSig:(NSData *)signature andMessageDigest:(UInt256)md;
 + (NSData *_Nullable)compactSign:(DSDerivationPath *)derivationPath fromSeed:(NSData *)seed atIndexPath:(NSIndexPath *)indexPath digest:(UInt256)digest;
-+ (ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(DSChainType)chainType;
-+ (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(DSChainType)chainType;
++ (ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(ChainType)chainType;
++ (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(ChainType)chainType;
 + (BOOL)isValidDashBIP38Key:(NSString *)key;
 //+ (OpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed path:(DSDerivationPath *)path;
 + (OpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length;
@@ -100,7 +106,9 @@ NS_ASSUME_NONNULL_BEGIN
                                      reward:(uint16_t)reward
                                ownerKeyHash:(UInt160)ownerKeyHash
                                voterKeyHash:(UInt160)voterKeyHash
-                                  chainType:(DSChainType)chainType;
+                                  chainType:(ChainType)chainType;
+
++ (NSString *_Nullable)devnetIdentifierFor:(ChainType)chainType;
 
 @end
 

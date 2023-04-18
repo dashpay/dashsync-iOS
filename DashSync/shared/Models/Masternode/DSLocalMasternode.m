@@ -273,17 +273,17 @@
 
 - (NSString *)payoutAddress {
     if ([self.providerUpdateRegistrarTransactions count]) {
-        return [NSString addressWithScriptPubKey:[self.providerUpdateRegistrarTransactions lastObject].scriptPayout onChain:self.providerRegistrationTransaction.chain];
+        return [DSKeyManager addressWithScriptPubKey:[self.providerUpdateRegistrarTransactions lastObject].scriptPayout forChain:self.providerRegistrationTransaction.chain];
     }
     if (self.providerRegistrationTransaction) {
-        return [NSString addressWithScriptPubKey:self.providerRegistrationTransaction.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+        return [DSKeyManager addressWithScriptPubKey:self.providerRegistrationTransaction.scriptPayout forChain:self.providerRegistrationTransaction.chain];
     }
     return nil;
 }
 
 - (NSString *)operatorPayoutAddress {
     if ([self.providerUpdateServiceTransactions count]) {
-        return [NSString addressWithScriptPubKey:[self.providerUpdateServiceTransactions lastObject].scriptPayout onChain:self.providerRegistrationTransaction.chain];
+        return [DSKeyManager addressWithScriptPubKey:[self.providerUpdateServiceTransactions lastObject].scriptPayout forChain:self.providerRegistrationTransaction.chain];
     }
     return nil;
 }
@@ -424,8 +424,7 @@
             completion(nil);
             return;
         }
-        NSMutableData *script = [NSMutableData data];
-        [script appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
+        NSData *script = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
 
         DSMasternodeHoldingsDerivationPath *providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self.holdingKeysWallet];
         if (!providerFundsDerivationPath.hasExtendedPublicKey) {
@@ -498,9 +497,7 @@
         }
         if (dsutxo_is_zero(collateral)) {
             NSString *holdingAddress = [providerFundsDerivationPath receiveAddress];
-            NSMutableData *scriptPayout = [NSMutableData data];
-            [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
-
+            NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
             [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[scriptPayout] withFee:YES];
 
         } else {
@@ -535,17 +532,8 @@
             completion(nil);
             return;
         }
-        NSData *scriptPayout;
-        if (payoutAddress == nil) {
-            scriptPayout = [NSData data];
-        } else {
-            NSMutableData *mScriptPayout = [NSMutableData data];
-            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
-            scriptPayout = mScriptPayout;
-        }
-
+        NSData *scriptPayout = payoutAddress == nil ? [NSData data] : [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
         DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
-
         NSAssert(self.providerRegistrationTransaction, @"There must be a providerRegistrationTransaction linked here");
 
         OpaqueKey *operatorKey = [providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
@@ -571,21 +559,10 @@
             completion(nil);
             return;
         }
-        NSData *scriptPayout;
-        if (payoutAddress == nil) {
-            scriptPayout = [NSData data];
-        } else {
-            NSMutableData *mScriptPayout = [NSMutableData data];
-            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
-            scriptPayout = mScriptPayout;
-        }
-
+        NSData *scriptPayout = payoutAddress == nil ? [NSData data] : [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
         DSAuthenticationKeysDerivationPath *providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
-
         NSAssert(self.providerRegistrationTransaction, @"There must be a providerRegistrationTransaction linked here");
         OpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
-//        DSECDSAKey *ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
-
         DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithProviderUpdateRegistrarTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash mode:0 operatorKey:operatorKey votingKeyHash:votingKeyHash scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
 
 
@@ -609,23 +586,22 @@
                                                    forAmount:0
                                          forceAuthentication:YES
                                                   completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                                      if (!seed) {
-                                                          completion(nil);
-                                                          return;
-                                                      }
-                                                      NSInteger index = [self.providerRegistrationTransaction masternodeOutputIndex];
-                                                      if (index == NSNotFound) {
-                                                          completion(nil);
-                                                          return;
-                                                      }
-                                                      NSData *script = [NSMutableData scriptPubKeyForAddress:self.providerRegistrationTransaction.outputs[index].address
-                                                                                                    forChain:self.providerRegistrationTransaction.chain];
-                                                      uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194]; // assume we will add a change output
-                                                      DSTransaction *reclaimTransaction = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(self.providerRegistrationTransaction.txHash)] inputIndexes:@[@(index)] inputScripts:@[script] outputAddresses:@[fundingAccount.changeAddress] outputAmounts:@[@(MASTERNODE_COST - fee)] onChain:self.providerRegistrationTransaction.chain];
+        if (!seed) {
+            completion(nil);
+            return;
+        }
+        NSInteger index = [self.providerRegistrationTransaction masternodeOutputIndex];
+        if (index == NSNotFound) {
+            completion(nil);
+            return;
+        }
+        NSData *script = [DSKeyManager scriptPubKeyForAddress:self.providerRegistrationTransaction.outputs[index].address forChain:self.providerRegistrationTransaction.chain];
+        uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194]; // assume we will add a change output
+        DSTransaction *reclaimTransaction = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(self.providerRegistrationTransaction.txHash)] inputIndexes:@[@(index)] inputScripts:@[script] outputAddresses:@[fundingAccount.changeAddress] outputAmounts:@[@(MASTERNODE_COST - fee)] onChain:self.providerRegistrationTransaction.chain];
 
-                                                      //there is no need to sign the payload here.
-                                                      completion(reclaimTransaction);
-                                                  }];
+        //there is no need to sign the payload here.
+        completion(reclaimTransaction);
+    }];
 }
 
 

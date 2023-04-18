@@ -134,15 +134,9 @@
 }
 
 - (uint32_t)createAccountReference {
+    // TODO: make test
     OpaqueKey *key = [self sourceKeyAtIndex];
     return key_create_account_reference(key, self.extendedPublicKey, self.account.accountNumber);
-
-//    UInt256 accountSecretKey = uint256_reverse([key HMAC256Data:self.extendedPublicKey.extendedPublicKeyData]);
-//    uint32_t accountSecretKey28 = accountSecretKey.u32[0] >> 4;
-//    uint32_t shortenedAccountBits = self.account.accountNumber & 0x0FFFFFFF;
-//    uint32_t version = 0; //currently set to 0
-//    uint32_t versionBits = version << 28;
-//    return versionBits | (accountSecretKey28 ^ shortenedAccountBits); //this is the account ref
 }
 
 - (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData {

@@ -85,36 +85,24 @@
     return key_verify_message_digest(key, digest.u8, signature.bytes, signature.length);
 }
 
-//+ (OpaqueKey *_Nullable)privateKeyAtIndexPath:(DSDerivationPath *)derivationPath indexPath:(NSIndexPath *)indexPath fromSeed:(NSData *)seed {
 + (OpaqueKey *_Nullable)privateKeyAtIndexPath:(KeyKind)keyType indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length indexPath:(NSIndexPath *)indexPath fromSeed:(NSData *)seed {
-//    NSUInteger length = indexPath.length;
-//    NSUInteger *indexes = calloc(length, sizeof(NSUInteger));
-//    [indexPath getIndexes:indexes];
-//    IndexPathData index_path = {.indexes = indexes, .len = length };
     NSParameterAssert(indexPath);
     NSParameterAssert(seed);
     if (!seed || !indexPath) return nil;
     if (!length) return nil; //there needs to be at least 1 length
     IndexPathData *index_path = [indexPath ffi_malloc];
-//    DerivationPathData *derivation_path = [derivationPath ffi_malloc];
     OpaqueKey *key = key_private_key_at_index_path(seed.bytes, seed.length, (int16_t) keyType, index_path, (const uint8_t *) indexes, hardened, length);
     [NSIndexPath ffi_free:index_path];
-//    [DSDerivationPath ffi_free:derivation_path];
     return key;
 }
 
 + (OpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath childIndexes:(UInt256 *)childIndexes childHardened:(BOOL *)childHardened length:(NSUInteger)length {
-//    DerivationPathData *data = [childPath ffi_malloc];
     OpaqueKey *key = key_public_derive_to_256bit(parentPath.extendedPublicKey, (const uint8_t *) childIndexes, childHardened, length, parentPath.length);
-//    [DSDerivationPath ffi_free:data];
     return key;
 }
 
 + (OpaqueKey *_Nullable)publicKeyAtIndexPath:(OpaqueKey *)key indexPath:(NSIndexPath *)indexPath {
-//    NSUInteger length = indexPath.length;
-//    NSUInteger *indexes = calloc(length, sizeof(NSUInteger));
-//    [indexPath getIndexes:indexes];
-//    IndexPathData index_path = {.indexes = indexes, .len = length };
+    if (key == NULL) return nil;
     IndexPathData *index_path = [indexPath ffi_malloc];
     OpaqueKey *key_at_index_path = key_public_key_at_index_path(key, index_path);
     [NSIndexPath ffi_free:index_path];
@@ -122,18 +110,19 @@
 }
 
 + (NSData *_Nullable)publicKeyDataAtIndexPath:(OpaqueKey *)key indexPath:(NSIndexPath *)indexPath {
+    if (key == NULL) return nil;
     IndexPathData *index_path = [indexPath ffi_malloc];
     ByteArray byte_array = key_public_key_data_at_index_path(key, index_path);
     [NSIndexPath ffi_free:index_path];
     return [DSKeyManager NSDataFrom:byte_array];
 }
 
-+ (NSString *)serializedPrivateKey:(OpaqueKey *)key chainType:(DSChainType)chainType {
++ (NSString *)serializedPrivateKey:(OpaqueKey *)key chainType:(ChainType)chainType {
     char *c_string = key_serialized_private_key_for_chain(key, chainType);
     return [DSKeyManager NSStringFrom:c_string];
 }
 
-+ (NSString *)addressForKey:(OpaqueKey *)key forChainType:(DSChainType)chainType {
++ (NSString *)addressForKey:(OpaqueKey *)key forChainType:(ChainType)chainType {
     char *c_string = key_address_for_key(key, chainType);
     return [DSKeyManager NSStringFrom:c_string];
 }
@@ -141,6 +130,29 @@
 + (NSString *)addressWithPublicKeyData:(NSData *)data forChain:(nonnull DSChain *)chain {
     char *c_string = key_address_with_public_key_data(data.bytes, data.length, chain.chainType);
     return [DSKeyManager NSStringFrom:c_string];
+}
+
++ (NSString *)addressFromHash160:(UInt160)hash forChain:(nonnull DSChain *)chain {
+    char *c_string = address_from_hash160(hash.u8, chain.chainType);
+    return [DSKeyManager NSStringFrom:c_string];
+}
+
++ (NSString *_Nullable)addressWithScriptPubKey:(NSData *)script forChain:(nonnull DSChain *)chain {
+    char *c_string = address_with_script_pubkey(script.bytes, script.length, chain.chainType);
+    return [DSKeyManager NSStringFrom:c_string];
+}
+
++ (NSString *_Nullable)addressWithScriptSig:(NSData *)script forChain:(nonnull DSChain *)chain {
+    char *c_string = address_with_script_sig(script.bytes, script.length, chain.chainType);
+    return [DSKeyManager NSStringFrom:c_string];
+}
+
++ (BOOL)isValidDashAddress:(NSString *)address forChain:(nonnull DSChain *)chain {
+    return is_valid_dash_address_for_chain([address UTF8String], chain.chainType);
+}
+
++ (NSData *)scriptPubKeyForAddress:(NSString *)address forChain:(nonnull DSChain *)chain {
+    return [DSKeyManager NSDataFrom:script_pubkey_for_address([address UTF8String], chain.chainType)];
 }
 
 + (NSData *)privateKeyData:(OpaqueKey *)key {
@@ -174,42 +186,16 @@
     return key;
 }
 
-//- (NSData *_Nullable)publicKeyDataAtIndexPath:(OpaqueKey *)key indexPath:(NSIndexPath *)indexPath {
-//    NSUInteger length = indexPath.length;
-//    NSUInteger *indexes = calloc(length, sizeof(NSUInteger));
-//    [indexPath getIndexes:indexes];
-//    IndexPathData index_path = {.indexes = indexes, .len = length };
-//    ByteArray byte_array = key_public_key_data_at_index_path(key, &index_path);
-//    free(indexes);
-//    if (byte_array.ptr == NULL && byte_array.len == 0) {
-//        return nil;
-//    } else {
-//        NSData *data = [NSData dataWithBytes:(const void *)byte_array.ptr length:byte_array.len];
-//        processor_destroy_byte_array(byte_array.ptr, byte_array.len);
-//        return data;
-//    }
-//}
-//
-
-+ (NSString *)keyStoragePrefix:(KeyKind)keyType {
-    switch (keyType) {
-        case KeyKind_ECDSA: return @"";
-        case KeyKind_BLS: return @"_BLS_";
-        case KeyKind_BLSBasic: return @"_BLS_";
-        case KeyKind_ED25519: return @"_ED_";
-    }
-}
-
-+ (UInt160)ecdsaKeyPublicKeyHashFromSecret:(NSString *)secret forChainType:(DSChainType)chainType {
++ (UInt160)ecdsaKeyPublicKeyHashFromSecret:(NSString *)secret forChainType:(ChainType)chainType {
     return [DSKeyManager NSDataFrom:ecdsa_public_key_hash_from_secret([secret UTF8String], chainType)].UInt160;
 }
 
-+ (NSString *_Nullable)ecdsaKeyAddressFromPublicKeyData:(NSData *)data forChainType:(DSChainType)chainType {
++ (NSString *_Nullable)ecdsaKeyAddressFromPublicKeyData:(NSData *)data forChainType:(ChainType)chainType {
     return [DSKeyManager NSStringFrom:ecdsa_address_from_public_key_data(data.bytes, data.length, chainType)];
 }
 
 
-- (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret forChainType:(DSChainType)chainType {
+- (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret forChainType:(ChainType)chainType {
     uint64_t unque_id = ecdsa_public_key_unique_id_from_derived_key_data(secret.u8, 32, chainType);
     return [NSString stringWithFormat:@"%0llX", unque_id];
 }
@@ -218,31 +204,19 @@
     return [DSKeyManager NSStringFrom:address_for_ecdsa_key_recovered_from_compact_sig(signature.bytes, signature.length, md.u8, self.chain.chainType)];
 }
 
-//- (NSData *)ecdsaKeyPublicKeyDataFromExtendedPublicKey:(ECDSAKey *)key {
-////    ecdsa
-//    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-//        return [DSECDSAKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath];
-//    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-//        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath useLegacy:true];
-//    } else if (self.signingAlgorithm == DSKeyType_BLS_BASIC) {
-//        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath useLegacy:false];
-//    }
-//}
-
 + (NSData *_Nullable)compactSign:(DSDerivationPath *)derivationPath fromSeed:(NSData *)seed atIndexPath:(NSIndexPath *)indexPath digest:(UInt256)digest {
     OpaqueKey *key = [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
-    // TODO: wrong need to sign opaque
+    // TODO: wrong need to sign opaque?
     NSData *data = [DSKeyManager NSDataFrom:key_ecdsa_compact_sign(key->ecdsa, digest.u8)];
     processor_destroy_opaque_key(key);
     return data;
 }
 
-
-+ (ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(DSChainType)chainType {
++ (ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(ChainType)chainType {
     return key_ecdsa_with_private_key([key UTF8String], chainType);
 }
 
-+ (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(DSChainType)chainType {
++ (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(ChainType)chainType {
     return [DSKeyManager NSStringFrom:key_ecdsa_with_bip38_key([key UTF8String], [passphrase UTF8String], chainType)];
 }
 
@@ -250,14 +224,12 @@
     return key_is_valid_bip38_key([key UTF8String]);
 }
 
-+ (OpaqueKey *_Nullable)keyWithPrivateKeyString:(NSString *)key ofKeyType:(KeyKind)keyType forChainType:(DSChainType)chainType {
++ (OpaqueKey *_Nullable)keyWithPrivateKeyString:(NSString *)key ofKeyType:(KeyKind)keyType forChainType:(ChainType)chainType {
     return key_with_private_key([key UTF8String], keyType, chainType);
 }
 
 + (OpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length {
-//    DerivationPathData *data = [path ffi_malloc];
     OpaqueKey *key = deprecated_incorrect_extended_public_key_from_seed(seed.bytes, seed.length, (const uint8_t *) indexes, hardened, length);
-//    [DSDerivationPath ffi_free:data];
     return key;
 }
 
@@ -278,6 +250,15 @@
         NSData *data = [NSData dataWithBytes:(const void *)byte_array.ptr length:byte_array.len];
         processor_destroy_byte_array(byte_array.ptr, byte_array.len);
         return data;
+    }
+}
+
++ (NSString *)keyStoragePrefix:(KeyKind)keyType {
+    switch (keyType) {
+        case KeyKind_ECDSA: return @"";
+        case KeyKind_BLS: return @"_BLS_";
+        case KeyKind_BLSBasic: return @"_BLS_";
+        case KeyKind_ED25519: return @"_ED_";
     }
 }
 
@@ -341,10 +322,13 @@
                                      reward:(uint16_t)reward
                                ownerKeyHash:(UInt160)ownerKeyHash
                                voterKeyHash:(UInt160)voterKeyHash
-                                  chainType:(DSChainType)chainType {
+                                  chainType:(ChainType)chainType {
     ByteArray result = pro_reg_tx_payload_collateral_digest(payload.bytes, payload.length, scriptPayout.bytes, scriptPayout.length, reward, ownerKeyHash.u8, voterKeyHash.u8, chainType);
     return [DSKeyManager NSDataFrom:result];
+}
 
++ (NSString *_Nullable)devnetIdentifierFor:(ChainType)chainType {
+    return [DSKeyManager NSStringFrom:devnet_identifier_for_chain_type(chainType)];
 }
 
 @end

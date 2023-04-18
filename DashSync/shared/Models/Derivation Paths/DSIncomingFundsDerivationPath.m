@@ -38,8 +38,7 @@
 
 + (instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId forAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
     NSAssert(!uint256_eq(sourceBlockchainIdentityUniqueId, destinationBlockchainIdentityUniqueId), @"source and destination must be different");
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber), sourceBlockchainIdentityUniqueId, destinationBlockchainIdentityUniqueId};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long((uint64_t) chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber), sourceBlockchainIdentityUniqueId, destinationBlockchainIdentityUniqueId};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES, NO, NO};
     //todo full uint256 derivation
     DSIncomingFundsDerivationPath *derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
@@ -111,7 +110,7 @@
                     NSMutableArray *a = self.externalAddresses;
 
                     while (e.index >= a.count) [a addObject:[NSNull null]];
-                    if (![e.address isValidDashAddressOnChain:self.account.wallet.chain]) {
+                    if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
 #if DEBUG
                         DSLogPrivate(@"address %@ loaded but was not valid on chain %@", e.address, self.account.wallet.chain.name);
 #else
@@ -227,7 +226,7 @@
                     DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:context];
                     DSAddressEntity *e = [DSAddressEntity managedObjectInContext:context];
                     e.derivationPath = derivationPathEntity;
-                    NSAssert([address isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
+                    NSAssert([DSKeyManager isValidDashAddress:address forChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = address;
                     e.index = n;
                     e.internal = NO;

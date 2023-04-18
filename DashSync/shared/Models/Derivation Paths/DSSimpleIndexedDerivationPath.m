@@ -30,7 +30,7 @@
                 for (DSAddressEntity *e in addresses) {
                     @autoreleasepool {
                         while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
-                        if (![e.address isValidDashAddressOnChain:self.wallet.chain]) {
+                        if (![DSKeyManager isValidDashAddress:e.address forChain:self.wallet.chain]) {
 #if DEBUG
                             DSLogPrivate(@"address %@ loaded but was not valid on chain %@", e.address, self.account.wallet.chain.name);
 #else
@@ -133,7 +133,7 @@
                     DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
                     DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
-                    NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
+                    NSAssert([DSKeyManager isValidDashAddress:addr forChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;
                     e.index = n;
                     e.standalone = NO;

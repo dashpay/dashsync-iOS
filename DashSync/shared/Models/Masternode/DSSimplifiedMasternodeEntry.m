@@ -281,13 +281,9 @@
 }
 
 + (UInt256)hashConfirmedHash:(UInt256)confirmedHash withProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
-    NSMutableData *combinedData = [NSMutableData data];
-    NSData *confirmedHashData = [NSData dataWithUInt256:confirmedHash];
-    NSData *providerRegistrationTransactionHashData = [NSData dataWithUInt256:providerRegistrationTransactionHash];
-    [combinedData appendData:providerRegistrationTransactionHashData];
-    [combinedData appendData:confirmedHashData];
-    NSData *confirmedHashHashedWithProviderRegistrationTransactionHashData = [NSData dataWithUInt256:combinedData.SHA256];
-    return confirmedHashHashedWithProviderRegistrationTransactionHashData.UInt256;
+    ByteArray byte_array = masternode_hash_confirmed_hash(confirmedHash.u8, providerRegistrationTransactionHash.u8);
+    NSData *data = [DSKeyManager NSDataFrom:byte_array];
+    return data.UInt256;
 }
 
 - (void)updateConfirmedHashHashedWithProviderRegistrationTransactionHash {
@@ -349,16 +345,15 @@
 //}
 
 - (NSString *)votingAddress {
-    return [[NSData dataWithUInt160:self.keyIDVoting] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.keyIDVoting forChain:self.chain];
 }
 
 - (NSString *)platformNodeAddress {
-    return [[NSData dataWithUInt160:self.platformNodeID] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.platformNodeID forChain:self.chain];
 }
 
 - (NSString *)operatorAddress {
     return [DSKeyManager addressWithPublicKeyData:uint384_data(self.operatorPublicKey) forChain:self.chain];
-//    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorPublicKey] forChain:self.chain];
 }
 
 - (NSString *)description {

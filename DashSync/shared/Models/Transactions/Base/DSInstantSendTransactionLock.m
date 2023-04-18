@@ -172,7 +172,7 @@
 
 - (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
     NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:self.chain.quorumTypeForISLocks];
+    [data appendVarInt:quorum_type_for_is_locks(self.chain.chainType)];
     [data appendUInt256:quorumEntry.quorumHash];
     [data appendUInt256:self.requestID];
     [data appendUInt256:self.transactionHash];
@@ -186,7 +186,7 @@
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
     DSQuorumEntry *foundQuorum = nil;
-    LLMQType ISLockQuorumType = [self.chain quorumTypeForISLocks];
+    LLMQType ISLockQuorumType = quorum_type_for_is_locks(self.chain.chainType);
     for (DSMasternodeList *masternodeList in [self.chain.chainManager.masternodeManager.recentMasternodeLists copy]) {
         for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:ISLockQuorumType] allValues]) {
             BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];

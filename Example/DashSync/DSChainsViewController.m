@@ -54,17 +54,12 @@
 }
 
 - (void)setupChacha {
-    [self setupDevnetWithId:@"chacha"
+    [self setupDevnetWithId:DevnetType_Chacha
                sporkAddress:@"ybiRzdGWFeijAgR7a8TJafeNi6Yk6h68ps"
             sporkPrivateKey:@"cPTms6Sd7QuhPWXWQSzMbvg2VbEPsWCsLBbR4PBgvfYRzAPazbt3"
          minProtocolVersion:70225
             protocolVersion:70225
     minimumDifficultyBlocks:1000000
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.213.73.187",
         @"35.166.223.113",
@@ -88,113 +83,14 @@
 
 }
 
-- (void)setupOuzo {
-    [self setupDevnetWithId:@"ouzo"
-               sporkAddress:@"yeJknC3K3bqknL1b4zV3bQJmYmFJAuHXnn"
-            sporkPrivateKey:@"cTenvzwy6XNuQYHaunrbcqQ7Y2EBDKVwA266HrUbxskSpYporezT"
-         minProtocolVersion:70221
-            protocolVersion:70221
-    minimumDifficultyBlocks:1000000
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
-                  addresses:@[
-        @"52.89.24.208",
-        @"34.220.82.112",
-        @"54.218.103.107",
-        @"52.88.159.80",
-        @"52.24.84.40",
-        @"34.215.80.36",
-        @"54.148.27.171",
-        @"34.221.28.77",
-        @"54.149.28.80",
-        @"35.89.85.37",
-        @"34.215.119.240",
-        @"18.237.217.216",
-        @"35.88.161.210",
-        @"52.12.12.63",
-        @"52.38.202.134",
-        @"54.185.53.61",
-        @"52.35.194.112",
-        @"52.32.227.138",
-        @"35.165.61.89",
-        @"54.214.221.119",
-        @"18.237.57.115",
-        @"54.189.179.235",
-        @"35.161.213.120",
-        @"54.244.212.246",
-        @"35.87.199.78",
-        @"54.213.198.223",
-        @"54.245.78.176",
-        @"35.85.41.146",
-        @"34.214.135.215",
-        @"52.88.32.62",
-        @"34.210.26.177",
-    ] walletPhrase:nil];
-}
-
-- (void)setupMekhong {
-    [self setupDevnetWithId:@"mekhong"
-               sporkAddress:@""
-            sporkPrivateKey:@""
-         minProtocolVersion:70221
-            protocolVersion:70221
-    minimumDifficultyBlocks:1000000
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
-                  addresses:@[
-        @"54.188.102.153",
-        @"35.87.178.188",
-        @"54.212.214.116",
-        @"54.202.86.176",
-        @"34.221.103.87",
-        @"52.13.94.19",
-        @"34.219.140.215",
-        @"35.87.152.160",
-        @"18.237.63.137",
-        @"34.221.119.130",
-        @"35.89.146.129",
-        @"35.88.102.15",
-        @"35.167.170.103",
-        @"34.217.191.74",
-        @"34.223.255.60",
-        @"35.163.120.168",
-        @"35.86.135.83",
-        @"54.218.101.162",
-        @"54.188.82.45",
-        @"34.220.107.143",
-        @"54.187.136.25",
-        @"35.87.75.98",
-        @"35.88.31.194",
-        @"35.167.110.124",
-        @"35.85.155.162",
-        @"54.190.159.245",
-        @"34.221.125.132",
-        @"34.221.211.221",
-        @"35.89.155.236",
-        @"18.236.213.113",
-        @"34.211.42.195",
-        @"52.13.59.213"
-    ] walletPhrase:nil];
-}
 
 - (void)setup333 {
-    [self setupDevnetWithId:@"333"
+    [self setupDevnetWithId:DevnetType_Devnet333
                sporkAddress:@"yM6zJAMWoouAZxPvqGDbuHb6BJaD6k4raQ"
             sporkPrivateKey:@"cQnP9JNQp6oaZrvBtqBWRMeQERMkDyuXyvQh1qaph4FdP6cT2cVa"
          minProtocolVersion:70221
             protocolVersion:70221
     minimumDifficultyBlocks:1000000
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.220.100.153",
         @"52.12.210.34",
@@ -211,122 +107,14 @@
     ] walletPhrase:nil];
 }
 
-- (void)setupMalort {
-    [self setupDevnetWithId:@"malort"
-               sporkAddress:@"yM6zJAMWoouAZxPvqGDbuHb6BJaD6k4raQ"
-            sporkPrivateKey:@"cQnP9JNQp6oaZrvBtqBWRMeQERMkDyuXyvQh1qaph4FdP6cT2cVa"
-         minProtocolVersion:70221
-            protocolVersion:70221
-    minimumDifficultyBlocks:1000000
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
-                  addresses:@[
-        @"34.211.117.176",
-        @"35.89.146.98",
-        @"52.26.81.223",
-        @"34.222.65.245",
-        @"54.213.124.14",
-        @"18.237.184.197",
-        @"34.222.152.243",
-        @"34.222.248.102",
-        @"18.237.161.253",
-        @"35.87.115.28",
-        @"34.219.215.20",
-        @"35.88.109.177",
-    ] walletPhrase:nil];
-}
-
-- (void)setupVanaheim {
-    [self setupDevnetWithId:@"vanaheim"
-                   sporkAddress:@"yX2ACj1usjiLPsx1LGBmn3eNkSWhrBUC5Z"
-                sporkPrivateKey:@"cSYpFi9CLFuvKbCTqe4J5BpNeLFYY3EdgTUEWJiou9njrv4hULt3"
-         minProtocolVersion:70221
-            protocolVersion:70221
-    minimumDifficultyBlocks:1000000
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
-                      addresses:@[
-        @"35.161.144.85",
-        @"35.166.87.8",
-        @"34.220.121.200",
-        @"34.219.75.199",
-        @"34.216.104.111",
-        @"54.212.169.233",
-        @"34.219.64.215",
-        @"34.219.255.1",
-        @"35.89.50.0",
-        @"34.217.61.222",
-        @"34.208.8.244",
-        @"54.189.89.146",
-        @"35.87.37.73",
-        @"34.219.214.178",
-        @"35.88.213.149",
-        @"54.201.199.64",
-        @"35.88.233.183",
-        @"54.201.190.209",
-        @"18.236.163.246",
-        @"34.221.229.206",
-        @"34.220.252.141",
-        @"54.200.58.60",
-        @"34.221.11.124",
-        @"52.25.246.109",
-        @"18.236.88.65",
-        @"54.149.112.22",
-        @"34.214.38.156",
-        @"54.202.85.155",
-        @"54.71.116.57",
-        @"54.201.37.222",
-        @"35.89.78.105",
-    ] walletPhrase:nil];
-
-}
-
-- (void)setupKrupnik {
-    [self setupDevnetWithId:@"krupnik"
-                   sporkAddress:@"yPBtLENPQ6Ri1R7SyjevvvyMdopdFJUsRo"
-                sporkPrivateKey:@"cW4VFwXvjAJusUyygeiCCf2CjnHGEpVkybp7Njg9j2apUZutFyAQ"
-             minProtocolVersion:70219
-                protocolVersion:70220
-        minimumDifficultyBlocks:2200
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
-                      addresses:@[
-                          @"4.210.237.116",
-                          @"54.69.65.231",
-                          @"54.185.90.95",
-                          @"54.186.234.0",
-                          @"35.87.212.139",
-                          @"34.212.52.44",
-                          @"34.217.47.197",
-                          @"34.220.79.131",
-                          @"18.237.212.176",
-                          @"54.188.17.188",
-                          @"34.210.1.159",
-                      ]
-                     walletPhrase:nil];
-}
 
 - (void)setupJackDaniels {
-    [self setupDevnetWithId:@"jack-daniels"
+    [self setupDevnetWithId:DevnetType_JackDaniels
                sporkAddress:@"yYBanbwp2Pp2kYWqDkjvckY3MosuZzkKp7"
             sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"
          minProtocolVersion:70219
             protocolVersion:70220
     minimumDifficultyBlocks:4032
-           ISLockQuorumType:LLMQType_LlmqtypeDevnet
-          ISDLockQuorumType:LLMQType_LlmqtypeDevnetDIP0024
-        chainLockQuorumType:LLMQType_LlmqtypeDevnet
-         platformQuorumType:LLMQType_LlmqtypeDevnet
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.220.200.8",
         @"35.90.255.217",
@@ -368,18 +156,12 @@
 }
 
 - (void)setupMojito {
-    [self setupDevnetWithId:@"mojito"
+    [self setupDevnetWithId:DevnetType_Mojito
                    sporkAddress:@"yXePLfsnJHGbM2LAWcxXaJaixX4qKs38g1"
                 sporkPrivateKey:@"cS4ikCxcqorwKuGNxMfpX8paBqSjnQsqMuM8YjLvSZZd6gcp7WQg"
              minProtocolVersion:70225
                 protocolVersion:70225
-//    minimumDifficultyBlocks:1000000
         minimumDifficultyBlocks:4032
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                       addresses:@[
         @"35.91.72.103",
         @"35.87.140.64",
@@ -404,18 +186,12 @@
 }
 
 - (void)setupWhiteRussian {
-    [self setupDevnetWithId:@"white-russian"
+    [self setupDevnetWithId:DevnetType_WhiteRussian
                    sporkAddress:@"yZaEFuVfaycMzvQbHH7dgbDPJ6F2AGLqzR"
                 sporkPrivateKey:@"cTvYmnZxCK7A8HekGQYMD7yuXSxVKnwgVVo7fHQrcbzckxYm2g7M"
              minProtocolVersion:70227
                 protocolVersion:70227
-//    minimumDifficultyBlocks:1000000
         minimumDifficultyBlocks:4032
-           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
-          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
-        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
-         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
-     masternodeSyncMode:DSMasternodeSyncMode_Rotation
                       addresses:@[
         @"35.85.152.110",
         @"34.209.13.56",
@@ -440,25 +216,20 @@
 
 }
 
-- (void)setupDevnetWithId:(NSString *)identifier
+- (void)setupDevnetWithId:(DevnetType)devnetType
              sporkAddress:(NSString *)sporkAddress
           sporkPrivateKey:(NSString *)sporkPrivateKey
        minProtocolVersion:(uint32_t)minProtocolVersion
           protocolVersion:(uint32_t)protocolVersion
   minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
-         ISLockQuorumType:(uint32_t)ISLockQuorumType
-        ISDLockQuorumType:(uint32_t)ISDLockQuorumType
-      chainLockQuorumType:(uint32_t)chainLockQuorumType
-       platformQuorumType:(uint32_t)platformQuorumType
-       masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                 addresses:(NSArray<NSString *> *)addresses
              walletPhrase:(NSString *_Nullable)walletPhrase {
-    NSString *chainID = [NSString stringWithFormat:@"devnet-%@", identifier];
+//    NSString *chainID = [NSString stringWithFormat:@"devnet-%@", identifier];
     NSMutableOrderedSet<NSString *> *insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:addresses];
     NSArray<DSChain *> *devnetChains = [[DSChainsManager sharedInstance] devnetChains];
     DSChain *chain = nil;
     for (DSChain *devnetChain in devnetChains) {
-        if ([devnetChain.devnetIdentifier isEqualToString:chainID]) {
+        if (devnet_type_for_chain_type(devnetChain.chainType) == devnetType) {
             chain = devnetChain;
             break;
         }
@@ -469,11 +240,10 @@
         
     UInt256 dpnsContractID = UINT256_ZERO;
     UInt256 dashpayContractID = UINT256_ZERO;
-    uint32_t version = 1;
+//    uint32_t version = 1;
 
     if (chain) {
         [[DSChainsManager sharedInstance] updateDevnetChain:chain
-                                                    version:version
                                         forServiceLocations:insertedIPAddresses
                                     minimumDifficultyBlocks:minimumDifficultyBlocks
                                                standardPort:dashdPort
@@ -484,15 +254,9 @@
                                             protocolVersion:protocolVersion
                                          minProtocolVersion:minProtocolVersion
                                                sporkAddress:sporkAddress
-                                            sporkPrivateKey:sporkPrivateKey
-                                           ISLockQuorumType:ISLockQuorumType
-                                          ISDLockQuorumType:ISDLockQuorumType
-                                        chainLockQuorumType:chainLockQuorumType
-                                         platformQuorumType:platformQuorumType
-                                         masternodeSyncMode:masternodeSyncMode];
+                                            sporkPrivateKey:sporkPrivateKey];
     } else {
-        chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID
-                                                                            version:version
+        chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:devnetType
                                                                 forServiceLocations:insertedIPAddresses
                                                         withMinimumDifficultyBlocks:minimumDifficultyBlocks
                                                                        standardPort:dashdPort
@@ -503,12 +267,7 @@
                                                                     protocolVersion:protocolVersion
                                                                  minProtocolVersion:minProtocolVersion
                                                                        sporkAddress:sporkAddress
-                                                                    sporkPrivateKey:sporkPrivateKey
-                                                                   ISLockQuorumType:ISLockQuorumType
-                                                                  ISDLockQuorumType:ISDLockQuorumType
-                                                                chainLockQuorumType:chainLockQuorumType
-                                                                 platformQuorumType:platformQuorumType
-                                                                 masternodeSyncMode:masternodeSyncMode];
+                                                                    sporkPrivateKey:sporkPrivateKey];
     }
     if (walletPhrase) {
         DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:walletPhrase setCreationDate:0 forChain:chain storeSeedPhrase:YES isTransient:NO];

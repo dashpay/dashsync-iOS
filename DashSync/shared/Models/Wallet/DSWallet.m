@@ -1728,27 +1728,32 @@
 
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self];
-    return [derivationPath containsAddress:[[NSData dataWithUInt160:votingAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:votingAuthenticationHash forChain:self.chain];
+    return [derivationPath containsAddress:address];
 }
 
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self];
-    return [derivationPath containsAddress:[[NSData dataWithUInt160:owningAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:owningAuthenticationHash forChain:self.chain];
+    return [derivationPath containsAddress:address];
 }
 
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self];
-    return [derivationPath containsAddress:[[NSData dataWithUInt160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160]] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160] forChain:self.chain];
+    return [derivationPath containsAddress:address];
 }
 
 - (BOOL)containsPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath platformNodeKeysDerivationPathForWallet:self];
-    return [derivationPath containsAddress:[[NSData dataWithUInt160:platformNodeAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:platformNodeAuthenticationHash forChain:self.chain];
+    return [derivationPath containsAddress:address];
 }
 
 - (BOOL)containsBlockchainIdentityBLSAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self];
-    return [derivationPath containsAddress:[[NSData dataWithUInt160:blockchainIdentityAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:blockchainIdentityAuthenticationHash forChain:self.chain];
+    return [derivationPath containsAddress:address];
 }
 
 - (BOOL)containsHoldingAddress:(NSString *)holdingAddress {
@@ -1760,49 +1765,56 @@
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:votingAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:votingAuthenticationHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:owningAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:owningAuthenticationHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160]] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160] forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath platformNodeKeysDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:platformNodeAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:platformNodeAuthenticationHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfHoldingAddress:(NSString *)holdingAddress {
     NSParameterAssert(holdingAddress);
-
     DSMasternodeHoldingsDerivationPath *derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self];
     return [derivationPath indexOfKnownAddress:holdingAddress];
 }
 
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:blockchainIdentityAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:blockchainIdentityAuthenticationHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash {
     DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingRegistrationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:creditFundingRegistrationHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash {
     DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingTopupHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:creditFundingTopupHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash {
     DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingInvitationHash] addressFromHash160DataForChain:self.chain]];
+    NSString *address = [DSKeyManager addressFromHash160:creditFundingInvitationHash forChain:self.chain];
+    return [derivationPath indexOfKnownAddress:address];
 }
 
 @end

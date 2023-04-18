@@ -68,10 +68,9 @@
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
++ (instancetype)devnetGenesisCoinbaseWithIdentifier:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
     DSTransaction *transaction = [[self alloc] initOnChain:chain];
-    NSMutableData *coinbaseData = [NSMutableData data];
-    [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier version:version onProtocolVersion:protocolVersion];
+    NSData *coinbaseData = [DSKeyManager NSDataFrom:devnet_genesis_coinbase_message(devnetType, protocolVersion)];
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
     NSMutableData *outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
@@ -228,7 +227,7 @@
         if ([address isEqual:[NSNull null]]) {
             [outScript appendUInt8:OP_RETURN];
         } else {
-            [outScript appendScriptPubKeyForAddress:address forChain:chain];
+            [outScript appendData:[DSKeyManager scriptPubKeyForAddress:address forChain:chain]];
         }
         [self.mOutputs addObject:[DSTransactionOutput transactionOutputWithAmount:amount outScript:outScript onChain:self.chain]];
     }
@@ -286,10 +285,10 @@
         NSMutableArray *rAddresses = [NSMutableArray arrayWithCapacity:self.mInputs.count];
         for (DSTransactionInput *input in self.mInputs) {
             if (input.inScript) {
-                NSString *address = [NSString addressWithScriptPubKey:input.inScript onChain:self.chain];
+                NSString *address = [DSKeyManager addressWithScriptPubKey:input.inScript forChain:self.chain];
                 [rAddresses addObject:(address) ? address : [NSNull null]];
             } else {
-                NSString *address = [NSString addressWithScriptSig:input.signature onChain:self.chain];
+                NSString *address = [DSKeyManager addressWithScriptSig:input.signature forChain:self.chain];
                 [rAddresses addObject:(address) ? address : [NSNull null]];
             }
         }
@@ -468,14 +467,14 @@
 
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount {
     @synchronized (self) {
-        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[NSData scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
+        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[DSKeyManager scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
         [self.mOutputs addObject:transactionOutput];
     }
 }
 
 - (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount {
     @synchronized (self) {
-        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[NSData scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
+        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[DSKeyManager scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
         [self.mOutputs addObject:transactionOutput];
     }
 }
@@ -500,7 +499,7 @@
 
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount {
     @synchronized (self) {
-        NSString *address = [NSString addressWithScriptPubKey:script onChain:self.chain];
+        NSString *address = [DSKeyManager addressWithScriptPubKey:script forChain:self.chain];
         [self addOutputScript:script withAddress:address amount:amount];
     }
 }
@@ -510,7 +509,7 @@
     NSParameterAssert(script);
     @synchronized (self) {
         if (!address && script) {
-            address = [NSString addressWithScriptPubKey:script onChain:self.chain];
+            address = [DSKeyManager addressWithScriptPubKey:script forChain:self.chain];
         }
         DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount address:address outScript:script onChain:self.chain];
         [self.mOutputs addObject:transactionOutput];
@@ -519,9 +518,7 @@
 
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index {
     @synchronized (self) {
-        NSMutableData *inputScript = [NSMutableData data];
-        [inputScript appendScriptPubKeyForAddress:address forChain:self.chain];
-        self.mInputs[index].inScript = inputScript;
+        self.mInputs[index].inScript = [DSKeyManager scriptPubKeyForAddress:address forChain:self.chain];
     }
 }
 
@@ -571,8 +568,6 @@
 
     for (NSString *pk in privateKeys) {
         OpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
-//        DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:pk onChain:self.chain];
-
         if (!key) continue;
         [keys addObject:[NSValue valueWithPointer:key]];
     }
@@ -591,7 +586,7 @@
        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
            
-            NSString *addr = [NSString addressWithScriptPubKey:transactionInput.inScript onChain:self.chain];
+            NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
             NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
             if (keyIdx == NSNotFound) continue;
             NSData *data = [self toDataWithSubscriptIndex:i];

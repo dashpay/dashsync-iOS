@@ -22,11 +22,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "dash_shared_core.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainLockEntity+CoreDataProperties.h"
 #import "DSCheckpoint.h"
 #import "DSCompatibilityArrayValueTransformer.h"
+#import "DSKeyManager.h"
 #import "DSPeerManager.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -43,7 +45,7 @@
 @synthesize cachedChain;
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
-    self.type = chain.chainType;
+    self.type = chain_type_index(chain.chainType);
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
     return self;
 }
@@ -52,7 +54,7 @@
     if (self.cachedChain) {
         return self.cachedChain;
     }
-    __block DSChainType type;
+    __block ChainType type;
     __block NSString *devnetIdentifier;
     __block uint16_t devnetVersion;
     __block NSData *data;
@@ -66,7 +68,7 @@
 
     __block NSArray *lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
-        type = self.type;
+        type = chain_type_from_index(self.type);
         devnetIdentifier = self.devnetIdentifier;
         devnetVersion = self.devnetVersion;
         data = self.checkpoints;
@@ -79,20 +81,20 @@
         lastPersistedChainSyncBlockTimestamp = self.syncBlockTimestamp;
     }];
     DSChain *chain = nil;
-    if (type == DSChainType_MainNet) {
+    if (type.tag == ChainType_MainNet) {
         chain = [DSChain mainnet];
-    } else if (type == DSChainType_TestNet) {
+    } else if (type.tag == ChainType_TestNet) {
         chain = [DSChain testnet];
-    } else if (type == DSChainType_DevNet) {
+    } else if (type.tag == ChainType_DevNet) {
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
             chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSError *checkpointRetrievalError = nil;
             NSArray *checkpointArray = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:data error:&checkpointRetrievalError];
-            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier version:devnetVersion withCheckpoints:checkpointRetrievalError ? @[] : checkpointArray performSetup:YES];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnet_type_for_chain_type(type) withCheckpoints:checkpointRetrievalError ? @[] : checkpointArray performSetup:YES];
         }
     } else {
-        NSAssert(FALSE, @"Unknown DSChainType");
+        NSAssert(FALSE, @"Unknown ChainType");
     }
     [self.managedObjectContext performBlockAndWait:^{
         lastChainLock = [self.lastChainLock chainLockForChain:chain];
@@ -121,8 +123,10 @@
     return chain;
 }
 
-+ (DSChainEntity *)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString *)devnetIdentifier devnetVersion:(uint16_t)devnetVersion checkpoints:(NSArray *)checkpoints inContext:(NSManagedObjectContext *)context {
-    NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type, DSChainType_DevNet, devnetIdentifier] inContext:context];
++ (DSChainEntity *)chainEntityForType:(ChainType)type checkpoints:(NSArray *)checkpoints inContext:(NSManagedObjectContext *)context {
+    NSString *devnetIdentifier = [DSKeyManager devnetIdentifierFor:type];
+    int16_t devnetVersion = devnet_version_for_chain_type(type);
+    NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type, ChainType_DevNet, devnetIdentifier] inContext:context];
     if (objects.count) {
         NSAssert(objects.count == 1, @"There should only ever be 1 chain for either mainnet, testnet, or a devnet Identifier");
         if (objects.count > 1) {
@@ -131,7 +135,7 @@
                 DSChainEntity *chainEntityToRemove = objects[i];
                 [context deleteObject:chainEntityToRemove];
                 [context ds_save];
-                DSLog(@"Removing extra chain entity of type %d", type);
+                DSLog(@"Removing extra chain entity of type %d", type.tag);
             }
         }
         DSChainEntity *chainEntity = [objects objectAtIndex:0];
@@ -152,7 +156,7 @@
     }
 
     DSChainEntity *chainEntity = [self managedObjectInBlockedContext:context];
-    chainEntity.type = type;
+    chainEntity.type = (uint16_t) type.tag;
     chainEntity.devnetIdentifier = devnetIdentifier;
     chainEntity.devnetVersion = devnetVersion;
     if (checkpoints && devnetIdentifier) {

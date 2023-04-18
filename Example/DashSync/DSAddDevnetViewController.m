@@ -64,17 +64,17 @@
     } else {
         DSPeerManager *peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain].peerManager;
         self.insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:peerManager.registeredDevnetPeerServices];
-        self.addDevnetNameTableViewCell.valueTextField.text = self.chain.devnetIdentifier;
-        self.addDevnetVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.devnetVersion];
+        self.addDevnetNameTableViewCell.valueTextField.text = [DSKeyManager devnetIdentifierFor:self.chain.chainType];
+        self.addDevnetVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", devnet_version_for_chain_type(self.chain.chainType)];
         self.protocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.protocolVersion];
         self.minProtocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.minProtocolVersion];
         self.sporkPrivateKeyTableViewCell.valueTextField.text = self.chain.sporkPrivateKeyBase58String;
         self.sporkAddressTableViewCell.valueTextField.text = self.chain.sporkAddress;
         self.addDevnetNameTableViewCell.userInteractionEnabled = FALSE;
         self.addDevnetVersionTableViewCell.userInteractionEnabled = FALSE;
-        self.instantSendLockQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.quorumTypeForISLocks];
-        self.chainLockQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.quorumTypeForChainLocks];
-        self.platformQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.quorumTypeForPlatform];
+        self.instantSendLockQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", quorum_type_for_is_locks(self.chain.chainType)];
+        self.chainLockQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",  quorum_type_for_chain_locks(self.chain.chainType)];
+        self.platformQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", quorum_type_for_platform(self.chain.chainType)];
         self.dashdPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.standardPort];
         self.dapiJRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.standardDapiJRPCPort];
         self.dapiGRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.standardDapiGRPCPort];
@@ -259,7 +259,7 @@
 
 - (IBAction)save {
     [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
-    uint32_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
+    //uint32_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
     uint32_t protocolVersion = [self.protocolVersionTableViewCell.valueTextField.text intValue];
     uint32_t minProtocolVersion = [self.minProtocolVersionTableViewCell.valueTextField.text intValue];
     NSString *sporkAddress = [self.sporkAddressTableViewCell.valueTextField.text isEqualToString:@""] ? nil : self.sporkAddressTableViewCell.valueTextField.text;
@@ -268,9 +268,6 @@
     uint32_t minimumDifficultyBlocks = [self.minimumDifficultyBlocksTableViewCell.valueTextField.text isEqualToString:@""] ? 0 : [self.minimumDifficultyBlocksTableViewCell.valueTextField.text intValue];
     uint32_t dapiJRPCPort = [self.dapiJRPCPortTableViewCell.valueTextField.text isEqualToString:@""] ? DEVNET_DAPI_JRPC_STANDARD_PORT : [self.dapiJRPCPortTableViewCell.valueTextField.text intValue];
     uint32_t dapiGRPCPort = [self.dapiGRPCPortTableViewCell.valueTextField.text isEqualToString:@""] ? DEVNET_DAPI_GRPC_STANDARD_PORT : [self.dapiGRPCPortTableViewCell.valueTextField.text intValue];
-    uint32_t instantSendLockQuorumType = [self.instantSendLockQuorumTypeTableViewCell.valueTextField.text isEqualToString:@""] ? DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE : [self.instantSendLockQuorumTypeTableViewCell.valueTextField.text intValue];
-    uint32_t chainLockQuorumType = [self.chainLockQuorumTypeTableViewCell.valueTextField.text isEqualToString:@""] ? DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE : [self.chainLockQuorumTypeTableViewCell.valueTextField.text intValue];
-    uint32_t platformQuorumType = [self.platformQuorumTypeTableViewCell.valueTextField.text isEqualToString:@""] ? DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE : [self.platformQuorumTypeTableViewCell.valueTextField.text intValue];
     UInt256 dpnsContractID = [self.dpnsContractIDTableViewCell.valueTextField.text isEqualToString:@""] ? UINT256_ZERO : [self.dpnsContractIDTableViewCell.valueTextField.text base58ToData].UInt256;
     UInt256 dashpayContractID = [self.dashpayContractIDTableViewCell.valueTextField.text isEqualToString:@""] ? UINT256_ZERO : [self.dashpayContractIDTableViewCell.valueTextField.text base58ToData].UInt256;
     if (![sporkAddress isValidDashDevnetAddress]) {
@@ -280,11 +277,11 @@
         sporkPrivateKey = nil;
     }
     if (self.chain) {
-        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain version:version forServiceLocations:self.insertedIPAddresses minimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey ISLockQuorumType:instantSendLockQuorumType ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType masternodeSyncMode:DSMasternodeSyncMode_Mixed];
+        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses minimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     } else {
         NSString *identifier = self.addDevnetNameTableViewCell.valueTextField.text;
-        uint16_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
-        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier version:version forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey ISLockQuorumType:instantSendLockQuorumType ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType masternodeSyncMode:DSMasternodeSyncMode_Mixed];
+        //uint16_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
+        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chain_devnet_from_identifier([identifier UTF8String]) forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     }
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }

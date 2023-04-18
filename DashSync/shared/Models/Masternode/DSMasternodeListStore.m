@@ -699,7 +699,7 @@
     }
     DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
     if (quorumEntry == nil) {
-        quorumEntry = [self activeQuorumForTypeQuorumHash:quorumHash ofQuorumType:self.chain.quorumTypeForPlatform];
+        quorumEntry = [self activeQuorumForTypeQuorumHash:quorumHash ofQuorumType:quorum_type_for_platform(self.chain.chainType)];
     }
     if (quorumEntry == nil) {
         quorumEntry = [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:block.height - 1];
@@ -732,14 +732,14 @@
 
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
     return [self quorumEntryForLockRequestID:requestID
-                                ofQuorumType:self.chain.quorumTypeForChainLocks
+                                ofQuorumType:quorum_type_for_chain_locks(self.chain.chainType)
                               forMerkleBlock:merkleBlock
                         withExpirationOffset:24];
 }
 
 - (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
     return [self quorumEntryForLockRequestID:requestID
-                                ofQuorumType:self.chain.quorumTypeForISLocks
+                                ofQuorumType:quorum_type_for_is_locks(self.chain.chainType)
                               forMerkleBlock:merkleBlock
                         withExpirationOffset:32];
 }

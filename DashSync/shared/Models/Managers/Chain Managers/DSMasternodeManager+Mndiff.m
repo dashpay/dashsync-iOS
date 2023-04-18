@@ -176,7 +176,7 @@ void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
 //Skipped = 1,
 //ParseError = 2,
 //HasNoBaseBlockHash = 3,
-uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context) {
+ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 baseBlockHash = *((UInt256 *)base_block_hash);
     UInt256 blockHash = *((UInt256 *)block_hash);
@@ -184,94 +184,42 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     processor_destroy_block_hash(block_hash);
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        DSMasternodeManager *manager = chain.chainManager.masternodeManager;
         uint32_t baseBlockHeight = processorContext.blockHeightLookup(baseBlockHash);
         uint32_t blockHeight = processorContext.blockHeightLookup(blockHash);
         DSLog(@"•••• shouldProcessDiffWithRange: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
         if (blockHeight == UINT32_MAX) {
             DSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
-            return 5; // ProcessingError::UnknownBlockHash
+            return ProcessingError_UnknownBlockHash;
         }
+        DSChain *chain = processorContext.chain;
+        DSMasternodeManager *manager = chain.chainManager.masternodeManager;
         DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
         BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
-        NSData *blockHashData = uint256_data(blockHash);
-        BOOL hasLocallyStored = [manager.store hasMasternodeListAt:blockHashData];
-        DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
         if (!hasRemovedFromRetrieval) {
             DSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
-            return 1; // ProcessingError::PersistInRetrieval
+            return ProcessingError_PersistInRetrieval;
         }
+        NSData *blockHashData = uint256_data(blockHash);
+        DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
         BOOL needToVerifyRotatedQuorums = processorContext.isDIP0024 && (!manager.quorumRotationService.masternodeListAtH || [manager.quorumRotationService.masternodeListAtH hasUnverifiedRotatedQuorums]);
         BOOL needToVerifyNonRotatedQuorums = !processorContext.isDIP0024 && [list hasUnverifiedNonRotatedQuorums];
         BOOL noNeedToVerifyQuorums = !(needToVerifyRotatedQuorums || needToVerifyNonRotatedQuorums);
+        BOOL hasLocallyStored = [manager.store hasMasternodeListAt:blockHashData];
         if (hasLocallyStored && noNeedToVerifyQuorums) {
             DSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ needToVerifyRotatedQuorums: %d needToVerifyNonRotatedQuorums: %d", blockHeight, uint256_reverse_hex(blockHash), needToVerifyRotatedQuorums, needToVerifyNonRotatedQuorums);
             [service removeFromRetrievalQueue:blockHashData];
-            return 2; // ProcessingError::LocallyStored
+            return ProcessingError_LocallyStored;
         }
         DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
         if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
             // this could have been deleted in the meantime, if so rerequest
             [service issueWithMasternodeListFromPeer:processorContext.peer];
             DSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_reverse_hex(baseBlockHash));
-            return 4; // ProcessingError::HasNoBaseBlockHash
+            return ProcessingError_HasNoBaseBlockHash;
         }
     }
-    return 0; // ProcessingError::None
+    return ProcessingError_None;
 }
-
-bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
-    LLMQType llmqType = (LLMQType)quorum_type;
-    DSMasternodeProcessorContext *processorContext = NULL;
-    BOOL should = NO;
-    @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        BOOL isQRContext = processorContext.isDIP0024;
-        if (chain.quorumTypeForISDLocks == llmqType) {
-            should = isQRContext && chain.isRotatedQuorumsPresented;
-        } else if (isQRContext) /*skip old quorums here for now*/ {
-            should = false;
-        } else {
-            should = [chain shouldProcessQuorumOfType:llmqType];
-        }
-    }
-    return should;
-}
-
-//bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
-//    uintptr_t count = data->count;
-//    OperatorPublicKey **items = data->items;
-//    UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
-//    UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
-//    UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
-//    UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
-//    uint16_t version = data->version;
-//    BOOL useLegacy = version <= 2;
-//    //NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
-//    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
-//    for (NSUInteger i = 0; i < count; i++) {
-//        OperatorPublicKey *key = items[i];
-//        UInt384 publicKey = *((UInt384 *)key->data);
-//        BOOL useLegacy = key->version < 2;
-//        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey useLegacy:useLegacy]];
-//    }
-//    processor_destroy_llmq_validation_data(data);
-//    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:useLegacy];
-//    if (!allCommitmentAggregatedSignatureValidated) {
-//        DSLog(@"••• Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
-//        return false;
-//    }
-//    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-//    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey useLegacy:useLegacy];
-//    if (!quorumSignatureValidated) {
-//        DSLog(@"••• Issue with quorumSignatureValidated");
-//        return false;
-//    }
-//    return true;
-//};
-
 ///
 /// MARK: Registering/unregistering processor (which is responsible for callback processing)
 ///
@@ -287,7 +235,6 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
                               saveMasternodeList,
                               destroyMasternodeList,
                               addInsightForBlockHash,
-                              shouldProcessLLMQType,
                               destroyHash,
                               destroyLLMQSnapshot,
                               shouldProcessDiffWithRange);
@@ -318,10 +265,10 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     DSLog(@"processMasternodeDiffWith: %@", context);
     MNListDiffResult *result = process_mnlistdiff_from_message(message.bytes,
                                                                message.length,
+                                                               context.chain.chainType,
                                                                context.useInsightAsBackup,
                                                                context.isFromSnapshot,
                                                                context.peer ? context.peer.version : context.chain.protocolVersion,
-                                                               (const uint8_t *) context.chain.genesisHash.u8,
                                                                self.processor,
                                                                self.processorCache,
                                                                (__bridge void *)(context));
@@ -336,10 +283,11 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     DSLog(@"processQRInfoWith: %@", context);
     QRInfoResult *result = process_qrinfo_from_message(message.bytes,
                                                        message.length,
+                                                       context.chain.chainType,
                                                        context.useInsightAsBackup,
                                                        context.isFromSnapshot,
+                                                       context.chain.isRotatedQuorumsPresented,
                                                        context.peer ? context.peer.version : context.chain.protocolVersion,
-                                                       (const uint8_t *) context.chain.genesisHash.u8,
                                                        self.processor,
                                                        self.processorCache,
                                                        (__bridge void *)(context));
@@ -356,6 +304,7 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
         result = process_mnlistdiff_from_message(
                                                  message.bytes,
                                                  message.length,
+                                                 context.chain.chainType,
                                                  context.useInsightAsBackup,
                                                  context.isFromSnapshot,
                                                  // TODO: re-orient diff-processor to rely on is_from_snapshot + protocol_version,
@@ -363,7 +312,6 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
                                                  // TODO: or we can include protocol version into checkpoint obj, probably it's even better
                                                  70221,
 //                                                 context.chain.protocolVersion,
-                                                 (const uint8_t *) context.chain.genesisHash.u8,
                                                  self.processor,
                                                  self.processorCache,
                                                  (__bridge void *)(context));

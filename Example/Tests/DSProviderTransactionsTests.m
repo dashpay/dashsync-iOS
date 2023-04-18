@@ -148,9 +148,7 @@
     OpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
     UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
     UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
-
-    NSMutableData *scriptPayout = [NSMutableData data];
-    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
+    NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
 
     UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
     struct in_addr addrV4;
@@ -159,9 +157,7 @@
         ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
     }
 
-    NSMutableData *inputScript = [NSMutableData data];
-
-    [inputScript appendScriptPubKeyForAddress:inputAddress0 forChain:chain];
+    NSData *inputScript = [DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain];
 
     DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
 
@@ -250,8 +246,7 @@
 
     XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData, hexData, @"Provider transaction does not match it's data");
 
-    NSMutableData *scriptPayout = [NSMutableData data];
-    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
+    NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
 
     UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
     struct in_addr addrV4;
@@ -262,7 +257,11 @@
 
     NSArray *inputHashes = @[uint256_obj(input0.hash), uint256_obj(input1.hash), uint256_obj(input2.hash)];
     NSArray *inputIndexes = @[@(input0.n), @(input1.n), @(input2.n)];
-    NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain], [NSData scriptPubKeyForAddress:inputAddress1 forChain:chain], [NSData scriptPubKeyForAddress:inputAddress2 forChain:chain]];
+    NSArray *inputScripts = @[
+        [DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain],
+        [DSKeyManager scriptPubKeyForAddress:inputAddress1 forChain:chain],
+        [DSKeyManager scriptPubKeyForAddress:inputAddress2 forChain:chain]
+    ];
 
     DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
 
@@ -334,7 +333,7 @@
     }
     NSArray *inputHashes = @[uint256_obj(input0.hash)];
     NSArray *inputIndexes = @[@(input0.n)];
-    NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];
+    NSArray *inputScripts = @[[DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain]];
     DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash ipAddress:ipAddress port:19999 scriptPayout:[NSData data] onChain:chain];
     [providerUpdateServiceTransaction updateInputsHash];
     [providerUpdateServiceTransaction signPayloadWithKey:privateKey];
@@ -380,10 +379,8 @@
 
     NSArray *inputHashes = @[uint256_obj(input0.hash)];
     NSArray *inputIndexes = @[@(input0.n)];
-    NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];
-
-    NSMutableData *scriptPayout = [NSMutableData data];
-    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:chain];
+    NSArray *inputScripts = @[[DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain]];
+    NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
     NSData *operatorPublicKey = [DSKeyManager NSDataFrom:key_bls_public_key(operatorKey->bls_legacy)];
 
     DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(29266822857)] providerUpdateRegistrarTransactionVersion:1 providerTransactionHash:providerTransactionHash mode:0 operatorKey:operatorPublicKey.UInt384 votingKeyHash:votingAddress.addressToHash160.UInt160 scriptPayout:scriptPayout onChain:chain];

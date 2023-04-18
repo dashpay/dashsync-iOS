@@ -199,7 +199,7 @@
 }
 
 - (NSString *)payoutAddress {
-    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    return [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:self.providerRegistrationTransaction.chain];
 }
 
 - (NSString *)operatorAddress {
@@ -207,7 +207,7 @@
 }
 
 - (NSString *)votingAddress {
-    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.votingKeyHash forChain:self.chain];
 }
 
 - (Class)entityClass {

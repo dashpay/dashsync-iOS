@@ -60,11 +60,10 @@
 // MARK: - testTransaction
 
 - (void)testTransaction {
-    NSMutableData *script = [NSMutableData data];
     OpaqueKey *k = [DSKeyManager keyWithPrivateKeyData:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData ofType:KeyKind_ECDSA];
     NSValue *hash = uint256_obj(UINT256_ZERO);
     NSString *address = [DSKeyManager addressForKey:k forChainType:self.chain.chainType];
-    [script appendScriptPubKeyForAddress:address forChain:self.chain];
+    NSData *script = [DSKeyManager scriptPubKeyForAddress:address forChain:self.chain];
     DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[hash]
                                                       inputIndexes:@[@0]
                                                       inputScripts:@[script]
@@ -126,10 +125,7 @@
     XCTAssertEqualObjects(checkInputAddress, inputAddress, @"Private key does not match input address");
     NSString *outputAddress0 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
     NSString *outputAddress1 = @"yiTyFtkZVCrEvmANHoj9rJQ2VA9HBnYTgp";
-    NSMutableData *script = [NSMutableData data];
-
-    [script appendScriptPubKeyForAddress:inputAddress forChain:devnetDRA];
-
+    NSData *script = [DSKeyManager scriptPubKeyForAddress:inputAddress forChain:devnetDRA];
     DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(inputId)]
                                                       inputIndexes:@[@1]
                                                       inputScripts:@[script]
@@ -393,11 +389,11 @@
     NSString *ia3 = [DSKeyManager addressForKey:pk3 forChainType:testnet.chainType];
     NSString *ia4 = [DSKeyManager addressForKey:pk4 forChainType:testnet.chainType];
     NSString *ia5 = [DSKeyManager addressForKey:pk5 forChainType:testnet.chainType];
-    NSMutableData *script1 = [NSMutableData withScriptPubKeyForAddress:ia1 forChain:testnet];
-    NSMutableData *script2 = [NSMutableData withScriptPubKeyForAddress:ia2 forChain:testnet];
-    NSMutableData *script3 = [NSMutableData withScriptPubKeyForAddress:ia3 forChain:testnet];
-    NSMutableData *script4 = [NSMutableData withScriptPubKeyForAddress:ia4 forChain:testnet];
-    NSMutableData *script5 = [NSMutableData withScriptPubKeyForAddress:ia5 forChain:testnet];
+    NSData *script1 = [DSKeyManager scriptPubKeyForAddress:ia1 forChain:testnet];
+    NSData *script2 = [DSKeyManager scriptPubKeyForAddress:ia2 forChain:testnet];
+    NSData *script3 = [DSKeyManager scriptPubKeyForAddress:ia3 forChain:testnet];
+    NSData *script4 = [DSKeyManager scriptPubKeyForAddress:ia4 forChain:testnet];
+    NSData *script5 = [DSKeyManager scriptPubKeyForAddress:ia5 forChain:testnet];
     UInt256 hash1 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.UInt256;
     UInt256 hash2 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7a".hexToData.reverse.UInt256;
     UInt256 hash3 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7b".hexToData.reverse.UInt256;
@@ -419,11 +415,11 @@
     NSString *outputAddress2 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
     NSString *outputAddress3 = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
     // 76a914f2ef7a87a09aadd215be821ddfcb922fa099f64f88ac
-    NSMutableData *outputScript1 = [NSMutableData withScriptPubKeyForAddress:outputAddress1 forChain:testnet];
+    NSData *outputScript1 = [DSKeyManager scriptPubKeyForAddress:outputAddress1 forChain:testnet];
     // 76a914dcf5b8abf6e222dea0219f4e3b539fa9b6addcfa88ac
-    NSMutableData *outputScript2 = [NSMutableData withScriptPubKeyForAddress:outputAddress2 forChain:testnet];
+    NSData *outputScript2 = [DSKeyManager scriptPubKeyForAddress:outputAddress2 forChain:testnet];
     // 76a9149a01e1b57808ed4f14553fc4624de20c13c9e97e88ac
-    NSMutableData *outputScript3 = [NSMutableData withScriptPubKeyForAddress:outputAddress3 forChain:testnet];
+    NSData *outputScript3 = [DSKeyManager scriptPubKeyForAddress:outputAddress3 forChain:testnet];
     NSArray *outputAddresses = @[outputAddress1, outputAddress2, outputAddress3];
     DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:hashes
                                                       inputIndexes:indices

@@ -12,6 +12,7 @@
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSCoinbaseTransaction.h"
+#import "DSGetMNListDiffRequest.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeManager+Mndiff.h"
 #import "DSMasternodeProcessorContext.h"
@@ -3230,10 +3231,6 @@
     }
 
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-}
-
-- (void)testDIP0024 {
-    DSChain *chain = [DSChain devnetWithIdentifier:@"malort"];
 }
 
 - (void)validateBitsets:(NSData *)bitset count:(int32_t)count {

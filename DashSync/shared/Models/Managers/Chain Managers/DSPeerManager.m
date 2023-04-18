@@ -65,10 +65,11 @@
 #endif
 
 #define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io"]
-
+//#define TESTNET_DNS_SEEDS @[@"35.92.167.154", @"52.12.116.10"]
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
+//#define TESTNET_MAIN_PEER @"54.213.94.216:19999" //@"52.36.64.148:19999"
 
 
 #define FIXED_PEERS @"FixedPeers"

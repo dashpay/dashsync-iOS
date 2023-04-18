@@ -29,7 +29,7 @@
 
 - (IBAction)checkAddress:(id)sender {
     NSString *address = self.addressTextField.text;
-    if ([address isValidDashAddressOnChain:self.chainManager.chain]) {
+    if ([DSKeyManager isValidDashAddress:address forChain:self.chainManager.chain]) {
         [self.chainManager.DAPIClient.DAPIPlatformNetworkService getAddressSummary:@[address]
             noTxList:NO
             from:@(0)

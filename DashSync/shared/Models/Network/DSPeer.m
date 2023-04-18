@@ -224,7 +224,6 @@
 
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) { // delay connect until network is reachable
         DSLog(@"%@:%u not reachable, waiting...", self.host, self.port);
-
         dispatch_async(dispatch_get_main_queue(), ^{
             if (!self.reachabilityObserver) {
                 self.reachabilityObserver =
@@ -232,12 +231,11 @@
                                                                       object:nil
                                                                        queue:nil
                                                                   usingBlock:^(NSNotification *note) {
-                                                                      if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
-                                                                          self->_status = DSPeerStatus_Disconnected;
-                                                                          [self connect];
-                                                                      }
-                                                                  }];
-
+                        if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
+                            self->_status = DSPeerStatus_Disconnected;
+                            [self connect];
+                        }
+                    }];
                 if (!self.reachability.monitoring) {
                     [self.reachability startMonitoring];
                 }
@@ -439,7 +437,7 @@
 //    } else if (self.chain.protocolVersion >= 70220) {
 //        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%u.%@)/", self.chain.devnetVersion, self.chain.devnetIdentifier]];
     } else {
-        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", self.chain.devnetIdentifier]];
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", [DSKeyManager devnetIdentifierFor:self.chain.chainType]]];
     }
     DSVersionRequest *request = [DSVersionRequest requestWithAddress:_address
                                                                 port:self.port
@@ -857,7 +855,7 @@
         return;
     }
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
-    if (self.version < self.chain.minProtocolVersion) {
+    if (self.version < self.chain.minProtocolVersion /*|| ([_useragent containsString:@"18.2.1"] && self.version > 70224)*/) {
 #if MESSAGE_LOGGING
         DSLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif

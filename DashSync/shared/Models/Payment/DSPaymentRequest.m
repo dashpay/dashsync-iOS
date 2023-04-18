@@ -97,7 +97,7 @@
     NSURL *url = [NSURL URLWithString:s];
 
     if (!url || !url.scheme) {
-        if ([s isValidDashAddressOnChain:self.chain] ||
+        if ([DSKeyManager isValidDashAddress:s forChain:self.chain] ||
             [s isValidDashPrivateKeyOnChain:self.chain] ||
             [DSKeyManager isValidDashBIP38Key:s]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
@@ -237,7 +237,7 @@
 
 - (BOOL)isValidAsNonDashpayPaymentRequest {
     if ([self.scheme isEqualToString:@"dash"]) {
-        BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
+        BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]);
         if (!valid) {
             DSLog(@"Not a valid dash request");
         }
@@ -245,7 +245,7 @@
     }
 #if SHAPESHIFT_ENABLED
     else if ([self.scheme isEqualToString:@"bitcoin"]) {
-        BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
+        BOOL valid = [self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r]);
         if (!valid) {
             DSLog(@"Not a valid bitcoin request");
         }
@@ -269,7 +269,7 @@
                 }
             }
         }];
-        BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath) ? YES : NO;
+        BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath;
         if (!valid) {
             DSLog(@"Not a valid dash request");
         }
@@ -339,8 +339,7 @@
         return [self protocolRequest];
     }
     NSData *label = [self.label dataUsingEncoding:NSUTF8StringEncoding];
-    NSMutableData *script = [NSMutableData data];
-    [script appendScriptPubKeyForAddress:friendshipDerivationPath.receiveAddress forChain:self.chain];
+    NSData *script = [DSKeyManager scriptPubKeyForAddress:friendshipDerivationPath.receiveAddress forChain:self.chain];
 
     if (script.length == 0) return nil;
 
@@ -380,8 +379,8 @@
 - (DSPaymentProtocolRequest *)protocolRequest {
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
-    if ([self.paymentAddress isValidDashAddressOnChain:self.chain]) {
-        [script appendScriptPubKeyForAddress:self.paymentAddress forChain:self.chain];
+    if ([DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain]) {
+        [script appendData:[DSKeyManager scriptPubKeyForAddress:self.paymentAddress forChain:self.chain]];
     }
 #if SHAPESHIFT_ENABLED
     else if ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain]) {

@@ -972,11 +972,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (DSTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee {
     NSParameterAssert(address);
-
-    NSMutableData *script = [NSMutableData data];
-
-    [script appendScriptPubKeyForAddress:address forChain:self.wallet.chain];
-
+    NSData *script = [DSKeyManager scriptPubKeyForAddress:address forChain:self.wallet.chain];
     return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
 }
 
@@ -1281,7 +1277,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
     if (_isViewOnlyAccount) return;
 
-    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    //int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    
     NSArray *usedDerivationPaths = [self usedDerivationPathsForTransaction:transaction];
 
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately

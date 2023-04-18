@@ -159,7 +159,7 @@
     if (self.scriptPayout.length == 0) {
         return nil; //no payout address
     } else {
-        return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+        return [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:self.providerRegistrationTransaction.chain];
     }
 }
 

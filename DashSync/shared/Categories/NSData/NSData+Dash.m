@@ -1612,24 +1612,6 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return (self.length == 20);
 }
 
-- (NSString *)addressFromHash160DataForChain:(DSChain *)chain {
-    NSAssert(self.length == 20, @"The length of this data should be 20 bytes");
-    if (self.length != 20) return nil;
-    NSMutableData *d = [NSMutableData data];
-    uint8_t v;
-
-    if ([chain isMainnet]) {
-        v = DASH_PUBKEY_ADDRESS;
-    } else {
-        v = DASH_PUBKEY_ADDRESS_TEST;
-    }
-    [d appendBytes:&v
-            length:1];
-    [d appendData:self];
-    [d appendBytes:d.SHA256_2.u32 length:4];
-    return [d base58String];
-}
-
 - (uint64_t)trueBitsCount {
     uint64_t trueBitsCount = 0;
     for (uint64_t i = 0; i < self.length; i++) {

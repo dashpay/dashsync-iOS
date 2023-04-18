@@ -36,11 +36,10 @@
         self.scriptPayout = providerRegistrationTransaction.scriptPayout;
         self.payloadSignature = providerRegistrationTransaction.payloadSignature;
 
-        NSString *ownerAddress = [self.ownerKeyHash addressFromHash160DataForChain:transaction.chain];
+        NSString *ownerAddress = [DSKeyManager addressFromHash160:providerRegistrationTransaction.ownerKeyHash forChain:transaction.chain];
         NSString *operatorAddress = [DSKeyManager addressWithPublicKeyData:self.operatorKey forChain:transaction.chain];
-//        NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:transaction.chain];
-        NSString *votingAddress = [self.votingKeyHash addressFromHash160DataForChain:transaction.chain];
-        NSString *payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:transaction.chain];
+        NSString *votingAddress = [DSKeyManager addressFromHash160:providerRegistrationTransaction.votingKeyHash forChain:transaction.chain];
+        NSString *payoutAddress = [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:transaction.chain];
 
         NSArray *ownerAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", ownerAddress, [transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([ownerAddressEntities count]) {
