@@ -116,7 +116,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
 }
 
 - (BOOL)isValidDashBIP38Key {
-    [DSKeyManager isValidDashBIP38Key:self];
+    return [DSKeyManager isValidDashBIP38Key:self];
 }
 
 #if TARGET_OS_IOS
