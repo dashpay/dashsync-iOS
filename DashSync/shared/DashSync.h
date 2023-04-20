@@ -6,6 +6,7 @@
 //  Copyright © 2019 dashcore. All rights reserved.
 //
 
+#import "dash_shared_core.h"
 #import "DSError.h"
 
 #import "DSBlockchainIdentity.h"

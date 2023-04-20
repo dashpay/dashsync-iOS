@@ -50,6 +50,22 @@ static NSString *DashCurrencySymbolAssetName = nil;
     DashCurrencySymbolAssetName = imageName;
 }
 
+// NOTE: It's important here to be permissive with scriptSig (spends) and strict with scriptPubKey (receives). If we
+// miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
+// we are unable to correctly sign later, then the entire wallet balance after that point would become stuck with the
+// current coin selection code
++ (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain *)chain {
+    return [DSKeyManager addressWithScriptPubKey:script forChain:chain];
+}
+
++ (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain *)chain {
+    return [DSKeyManager addressFromHash160:hash160 forChain:chain];
+}
+
++ (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain *)chain {
+    return [DSKeyManager addressWithScriptSig:script forChain:chain];
+}
+
 - (BOOL)isValidDashAddressOnChain:(DSChain *)chain {
     if (self.length > 35) return NO;
     
