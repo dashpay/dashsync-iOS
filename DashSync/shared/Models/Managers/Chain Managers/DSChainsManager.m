@@ -66,23 +66,9 @@
     self = [super init];
     if (self) {
         self.knownChains = [NSMutableArray array];
-        NSError *error = nil;
-        NSMutableDictionary *registeredDevnetIdentifiers = [NSMutableDictionary dictionary];
-        NSDictionary *dictionaryFromKeyChain = getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error);
-        if (dictionaryFromKeyChain && error == nil) {
-            registeredDevnetIdentifiers = [dictionaryFromKeyChain mutableCopy];
-        }
         self.knownDevnetChains = [NSMutableArray array];
-        /*for (NSString *string in registeredDevnetIdentifiers) {
-            NSArray<DSCheckpoint *> *checkpointArray = registeredDevnetIdentifiers[string];
-            //todo deal with version > 1
-            DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray performSetup:NO];
-            chain.chainManager = [self devnetManagerForChain:chain];
-            // [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
-            [chain setUp];
-        }*/
-
         self.reachability = [DSReachabilityManager sharedManager];
+        register_rust_logger();
     }
     return self;
 }

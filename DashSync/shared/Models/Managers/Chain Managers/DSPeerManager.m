@@ -230,6 +230,30 @@
 }
 
 // MARK: - Peers
++ (DSPeer *)peerFromString:(NSString *)string forChain:(DSChain *)chain {
+    return [[DSPeer alloc] initWithAddress:[[self class] ipAddressFromString:string]
+                                      port:chain.standardPort
+                                   onChain:chain
+                                 timestamp:[NSDate timeIntervalSince1970] - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
+                                  services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM];
+}
+
++ (UInt128)ipAddressFromString:(NSString *)address {
+    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
+    struct in_addr addrV4;
+    struct in6_addr addrV6;
+    if (inet_aton([address UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+        DSLog(@"ipAddressFromString: %@: %08x", address, ip);
+    } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
+        //todo support IPV6
+        DSLog(@"we do not yet support IPV6");
+    } else {
+        DSLog(@"invalid address");
+    }
+    return ipAddress;
+}
 
 - (void)removeTrustedPeerHost {
     [self disconnect];

@@ -586,11 +586,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.2.7)
+  - DashSharedCore (0.3.1)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.2.7)
+    - DashSharedCore (= 0.3.1)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -667,7 +667,7 @@ PODS:
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `https://github.com/dashpay/dash-shared-core.git`, branch `feature/bls-core-v0.19`)
+  - DashSharedCore (from `https://github.com/dashpay/dash-shared-core.git`, branch `fix/core-v0.19`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
   - SDWebImage (= 5.14.3)
@@ -697,7 +697,7 @@ EXTERNAL SOURCES:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSharedCore:
-    :branch: feature/bls-core-v0.19
+    :branch: fix/core-v0.19
     :git: https://github.com/dashpay/dash-shared-core.git
   DashSync:
     :path: "../"
@@ -707,7 +707,7 @@ CHECKOUT OPTIONS:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSharedCore:
-    :commit: 3627e504282573258b707b9a0c074d92127fd883
+    :commit: 684fcb507c01aaebe05b446bd47c1f2ceeeb0a43
     :git: https://github.com/dashpay/dash-shared-core.git
 
 SPEC CHECKSUMS:
@@ -718,8 +718,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 0feb2619100aed2fbaa5162aeea405b30dfa0145
-  DashSync: d734d841c9ff215452b7ff8ab7d5d19751c1ba05
+  DashSharedCore: b378bdc3d1b0efb018a4992a6507f1c85011d9d0
+  DashSync: 7f1abe19d99f1010d156d619b4b8d8e6c951eea9
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
@@ -732,6 +732,6 @@ SPEC CHECKSUMS:
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: ec9c9daf45948b9decf6d2b96a323393a64b090b
+PODFILE CHECKSUM: 93e033c677f42edeeb3d26be99db7977ddee1173
 
 COCOAPODS: 1.12.0

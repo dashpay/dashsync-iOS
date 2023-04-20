@@ -19,6 +19,7 @@
 #import "DSMasternodeListDiffService.h"
 #import "DSMasternodeListService+Protected.h"
 #import "DSMasternodeListStore+Protected.h"
+#import "NSString+Dash.h"
 
 @implementation DSMasternodeListDiffService
 
@@ -61,6 +62,13 @@
         return;
     }
     NSLog(@"•••• requestMasternodeListDiff: %u..%u %@ .. %@", [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    [self sendMasternodeListRequest:request];
+}
+
+/// test-only
+-(void)sendReversedHashes:(NSString *)baseBlockHash blockHash:(NSString *)blockHash {
+    DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:baseBlockHash.hexToData.reverse.UInt256
+                                                                             blockHash:blockHash.hexToData.reverse.UInt256];
     [self sendMasternodeListRequest:request];
 }
 
