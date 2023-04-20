@@ -217,11 +217,11 @@
 
 - (NSArray *)dnsSeeds {
     switch (self.chain.chainType) {
-        case DSChainType_MainNet:
+        case ChainType_MainNet:
             return MAINNET_DNS_SEEDS;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return TESTNET_DNS_SEEDS;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return nil; //no dns seeds for devnets
         default:
             break;
