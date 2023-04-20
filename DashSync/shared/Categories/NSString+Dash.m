@@ -52,11 +52,11 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
 - (BOOL)isValidDashAddressOnChain:(DSChain *)chain {
     if (self.length > 35) return NO;
-
+    
     NSData *d = self.base58checkToData;
-
+    
     if (d.length != 21) return NO;
-
+    
     uint8_t version = *(const uint8_t *)d.bytes;
     if ([chain isMainnet]) {
         return (version == DASH_PUBKEY_ADDRESS || version == DASH_SCRIPT_ADDRESS);
@@ -67,20 +67,20 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
 - (BOOL)isValidDashDevnetAddress {
     if (self.length > 35) return NO;
-
+    
     NSData *d = self.base58checkToData;
-
+    
     if (d.length != 21) return NO;
-
+    
     uint8_t version = *(const uint8_t *)d.bytes;
-
+    
     return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST);
 }
 
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain {
     if (![self isValidBase58]) return FALSE;
     NSData *d = self.base58checkToData;
-
+    
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
         if ([chain isMainnet]) {
             return (*(const uint8_t *)d.bytes == DASH_PRIVKEY);
@@ -94,7 +94,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
 - (BOOL)isValidDashDevnetPrivateKey {
     if (![self isValidBase58]) return FALSE;
     NSData *d = self.base58checkToData;
-
+    
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
         return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST);
     } else
@@ -113,6 +113,10 @@ static NSString *DashCurrencySymbolAssetName = nil;
         return FALSE;
     }
     return TRUE;
+}
+
+- (BOOL)isValidDashBIP38Key {
+    [DSKeyManager isValidDashBIP38Key:self];
 }
 
 #if TARGET_OS_IOS

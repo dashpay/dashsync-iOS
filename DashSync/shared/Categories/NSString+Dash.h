@@ -70,6 +70,7 @@
 - (BOOL)isValidDashDevnetAddress;
 - (BOOL)isValidDashDevnetPrivateKey;
 - (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain *)chain;
+- (BOOL)isValidDashBIP38Key;
 
 - (NSInteger)indexOfCharacter:(unichar)character;
 
