@@ -216,7 +216,7 @@
 }
 
 - (NSArray *)dnsSeeds {
-    switch (self.chain.chainType) {
+    switch (self.chain.chainType.tag) {
         case ChainType_MainNet:
             return MAINNET_DNS_SEEDS;
         case ChainType_TestNet:
