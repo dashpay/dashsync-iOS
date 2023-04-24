@@ -439,7 +439,6 @@
     } else {
         agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", [DSKeyManager devnetIdentifierFor:self.chain.chainType]]];
     }
-    DSLog(@"••••• sendVersionMessage: %@ [%@] %u", self.host, agent, self.chain.protocolVersion);
     DSVersionRequest *request = [DSVersionRequest requestWithAddress:_address
                                                                 port:self.port
                                                      protocolVersion:self.chain.protocolVersion
@@ -856,8 +855,6 @@
         return;
     }
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
-    DSLog(@"••••• acceptVersionMessage: %@ [%@] %u", self.host, _useragent, _version);
-    
 
     if (self.version < self.chain.minProtocolVersion /*|| ([_useragent containsString:@"18.2.1"] && self.version > 70224)*/) {
 #if MESSAGE_LOGGING
