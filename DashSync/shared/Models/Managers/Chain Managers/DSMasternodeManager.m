@@ -164,11 +164,11 @@
 }
 
 - (NSUInteger)masternodeListRetrievalQueueCount {
-    return [self.masternodeListDiffService retrievalQueueCount] + [self.quorumRotationService retrievalQueueCount];
+    return [self.masternodeListDiffService retrievalQueueCount];
 }
 
 - (NSUInteger)masternodeListRetrievalQueueMaxAmount {
-    return [self.masternodeListDiffService retrievalQueueMaxAmount] + [self.quorumRotationService retrievalQueueMaxAmount];
+    return [self.masternodeListDiffService retrievalQueueMaxAmount];
 }
 
 - (uint32_t)estimatedMasternodeListsToSync {
@@ -671,7 +671,7 @@
                       addedQuorums:addedQuorums
                         completion:^(NSError *error) {
         completion(error);
-        if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
+        if (!error || !([self.masternodeListDiffService retrievalQueueCount] + [self.quorumRotationService retrievalQueueCount])) { //if it is 0 then we most likely have wiped chain info
             return;
         }
         [self wipeMasternodeInfo];
