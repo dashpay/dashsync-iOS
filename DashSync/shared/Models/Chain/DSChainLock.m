@@ -117,7 +117,9 @@
 
 - (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    return key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
+    BOOL verified = key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
+    DSLog(@"verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %@: %u", verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(quorumEntry.llmqQuorumHash), uint256_hex(signId), uint384_hex(quorumEntry.quorumPublicKey), uint768_hex(self.signature), quorumEntry.useLegacyBLSScheme);
+    return verified;
 }
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
