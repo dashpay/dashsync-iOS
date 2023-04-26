@@ -649,21 +649,9 @@
 }
 
 - (void)updateStoreWithMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
-    UInt256 masternodeListBlockHash = masternodeList.blockHash;
-    if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeListBlockHash)) {
+    if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeList.blockHash)) {
         self.store.masternodeListAwaitingQuorumValidation = nil;
     }
-//    NSData *blockHashData = uint256_data(masternodeListBlockHash);
-//    DSLog(@"•••• store (%d) masternode list at: %u: %@", [self.store hasMasternodeListAt:blockHashData], [self heightForBlockHash:masternodeListBlockHash], uint256_hex(masternodeListBlockHash));
-    
-//    if ([self.store hasMasternodeListAt:blockHashData]) {
-//         in rare race conditions this might already exist
-//         but also as we can get it from different sources
-//         with different quorums verification status
-//
-//        completion(NULL);
-//        return;
-//    }
     [self.store saveMasternodeList:masternodeList
                   addedMasternodes:addedMasternodes
                modifiedMasternodes:modifiedMasternodes
