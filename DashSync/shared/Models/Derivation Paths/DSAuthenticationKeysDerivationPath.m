@@ -196,7 +196,6 @@
             const NSUInteger softIndexes[] = {identityIndex, n};
             const NSUInteger *indexes = self.usesHardenedKeys ? hardenedIndexes : softIndexes;
             NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-//            NSString *addr = [[DSKey keyWithPublicKeyData:pubKey forKeyType:self.signingAlgorithm] addressForChain:self.chain];
             NSString *addr = [DSKeyManager NSStringFrom:key_address_with_public_key_data(pubKey.bytes, pubKey.length, self.chain.chainType)];
 
             if (!addr) {

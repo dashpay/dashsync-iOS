@@ -818,16 +818,4 @@
     return [DSDerivationPath deserializedExtendedPublicKey:extendedPublicKeyString onChain:self.chain];
 }
 
-
-
-- (NSData *)indexPathToData {
-    NSMutableData *writer = [NSMutableData dataWithCapacity:self.length * 33];
-    // TODO: write bytes from UInt256IndexPath directly without this iterator
-    for (NSUInteger i = 0; i < self.length; i++) {
-        [writer appendUInt256:[self indexAtPosition:i]];
-        [writer appendUInt8:[self isHardenedAtPosition:i] ? 1 : 0];
-    }
-    return writer;
-}
-
 @end

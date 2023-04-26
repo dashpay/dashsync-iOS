@@ -160,10 +160,6 @@ void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
     processor_destroy_block_hash(block_hash);
 }
 
-//None = 0,
-//Skipped = 1,
-//ParseError = 2,
-//HasNoBaseBlockHash = 3,
 ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 baseBlockHash = *((UInt256 *)base_block_hash);
@@ -174,7 +170,6 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         uint32_t baseBlockHeight = processorContext.blockHeightLookup(baseBlockHash);
         uint32_t blockHeight = processorContext.blockHeightLookup(blockHash);
-        DSLog(@"•••• shouldProcessDiffWithRange: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
         if (blockHeight == UINT32_MAX) {
             DSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
             return ProcessingError_UnknownBlockHash;
@@ -208,6 +203,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
     }
     return ProcessingError_None;
 }
+    
 ///
 /// MARK: Registering/unregistering processor (which is responsible for callback processing)
 ///
@@ -298,6 +294,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                                                  // TODO: re-orient diff-processor to rely on is_from_snapshot + protocol_version,
                                                  // TODO: since now we can't process diff for checkpoint with the protocol version >= 70221
                                                  // TODO: or we can include protocol version into checkpoint obj, probably it's even better
+                                                 // TODO: or to recreate checkpoints for the latest protocol version after mainnet upgrading
                                                  70221,
 //                                                 context.chain.protocolVersion,
                                                  self.processor,

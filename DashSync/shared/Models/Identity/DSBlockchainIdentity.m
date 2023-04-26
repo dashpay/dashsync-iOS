@@ -1298,14 +1298,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     
     OpaqueKey *keyToCheck = [derivationPath publicKeyAtIndexPath:[indexPath hardenAllItems]];
     NSAssert(keyToCheck != nil, @"This key should be found");
-//    if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) { //if it isn't local we shouldn't verify
     if ([DSKeyManager keysPublicKeyDataIsEqual:keyToCheck key2:key]) { //if it isn't local we shouldn't verify
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
         if (self.keyInfoDictionaries[@(index)]) {
             NSDictionary *keyDictionary = self.keyInfoDictionaries[@(index)];
             NSValue *keyToCheckInDictionaryValue = keyDictionary[@(DSBlockchainIdentityKeyDictionary_Key)];
-//            DSKey *keyToCheckInDictionary = keyDictionary[@(DSBlockchainIdentityKeyDictionary_Key)];
-//            if ([keyToCheckInDictionary.publicKeyData isEqualToData:key.publicKeyData]) {
             if ([DSKeyManager keysPublicKeyDataIsEqual:keyToCheckInDictionaryValue.pointerValue key2:key]) {
                 if (save) {
                     [self updateStatus:status forKeyAtPath:indexPath fromDerivationPath:derivationPath inContext:context];
@@ -1880,14 +1877,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     OpaqueKey *privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
     NSAssert(privateKey, @"The private key should exist");
     NSAssert([DSKeyManager keysPublicKeyDataIsEqual:privateKey key2:[self publicKeyAtIndex:keyIndex ofType:signingAlgorithm]], @"These should be equal");
-//    NSAssert([privateKey.publicKeyData isEqualToData:[self publicKeyAtIndex:keyIndex ofType:signingAlgorithm].publicKeyData], @"These should be equal");
     NSParameterAssert(privateKey);
-    
-//    DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
     DSLogPrivate(@"Signing %@ with key %@", uint256_hex(digest), [DSKeyManager publicKeyData:privateKey].hexString);
     NSData *signature = [DSKeyManager signMesasageDigest:privateKey digest:digest];
     completion(!signature.isZeroBytes, signature);
-//    [privateKey signMessageDigest:digest completion:completion];
 }
 
 - (BOOL)verifySignature:(NSData *)signature ofType:(KeyKind)signingAlgorithm forMessageDigest:(UInt256)messageDigest {

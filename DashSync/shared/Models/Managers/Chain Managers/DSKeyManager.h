@@ -24,14 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSDerivationPath;
 
-//typedef NS_ENUM(NSUInteger, DSKeyType) {
-//    DSKeyType_ECDSA = 0,
-//    DSKeyType_BLS = 1,
-//    DSKeyType_BLS_BASIC = 2,
-//    DSKeyType_ED25519 = 3,
-//};
-
-// This is temporary class provides rust FFI for keys
+// This is temporary class provides rust FFI for keys and some other things
 @interface DSKeyManager : NSObject
 
 - (instancetype)initWithChain:(DSChain *)chain;
@@ -46,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSData *)signMesasageDigest:(OpaqueKey *)key digest:(UInt256)digest;
 + (BOOL)verifyMessageDigest:(OpaqueKey *)key digest:(UInt256)digest signature:(NSData *)signature;
 
-//+ (OpaqueKey *_Nullable)privateKeyAtIndexPath:(DSDerivationPath *)derivationPath indexPath:(NSIndexPath *)indexPath fromSeed:(NSData *)seed;
 + (OpaqueKey *_Nullable)privateKeyAtIndexPath:(KeyKind)keyType indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length indexPath:(NSIndexPath *)indexPath fromSeed:(NSData *)seed;
 + (OpaqueKey *_Nullable)publicKeyAtIndexPath:(OpaqueKey *)key indexPath:(NSIndexPath *)indexPath;
 + (NSData *_Nullable)publicKeyDataAtIndexPath:(OpaqueKey *)key indexPath:(NSIndexPath *)indexPath;
@@ -57,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSData *)extendedPublicKeyData:(OpaqueKey *)key;
 
 + (OpaqueKey *_Nullable)deriveKeyFromExtenedPrivateKeyDataAtIndexPath:(NSData *_Nullable)data indexPath:(NSIndexPath *)indexPath forKeyType:(KeyKind)keyType;
-//+ (OpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath childPath:(DSDerivationPath *)childPath;
 + (OpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath childIndexes:(UInt256 *)childIndexes childHardened:(BOOL *)childHardened length:(NSUInteger)length;
 
 + (NSString *)serializedPrivateKey:(OpaqueKey *)key chainType:(ChainType)chainType;
@@ -79,7 +70,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(ChainType)chainType;
 + (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(ChainType)chainType;
 + (BOOL)isValidDashBIP38Key:(NSString *)key;
-//+ (OpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed path:(DSDerivationPath *)path;
 + (OpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length;
 
 + (NSString *)NSStringFrom:(char *)c_string;

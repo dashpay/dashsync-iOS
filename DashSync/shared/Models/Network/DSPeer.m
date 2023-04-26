@@ -856,7 +856,7 @@
     }
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
 
-    if (self.version < self.chain.minProtocolVersion /*|| ([_useragent containsString:@"18.2.1"] && self.version > 70224)*/) {
+    if (self.version < self.chain.minProtocolVersion) {
 #if MESSAGE_LOGGING
         DSLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif

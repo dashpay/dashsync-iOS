@@ -138,7 +138,6 @@
 
 - (BOOL)checkPayloadSignature:(OpaqueKey *)providerOwnerPublicKey {
     return key_check_payload_signature(providerOwnerPublicKey, self.providerRegistrationTransaction.ownerKeyHash.u8);
-//    return uint160_eq([providerOwnerPublicKey hash160], self.providerRegistrationTransaction.ownerKeyHash);
 }
 
 - (BOOL)checkPayloadSignature {

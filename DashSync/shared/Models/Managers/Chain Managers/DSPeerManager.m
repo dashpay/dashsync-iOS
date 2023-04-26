@@ -69,8 +69,6 @@
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
-//#define TESTNET_MAIN_PEER @"54.213.94.216:19999" //@"52.36.64.148:19999"
-
 
 #define FIXED_PEERS @"FixedPeers"
 #define TESTNET_FIXED_PEERS @"TestnetFixedPeers"
@@ -324,7 +322,6 @@
 
                     DSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
                     NSString *dnsSeed = [dnsSeeds objectAtIndex:i];
-//                    NSLog(@"---- addPeer: %@: %u", uint128_hex(addr), port);
                     if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
                         for (p = servinfo; p != NULL; p = p->ai_next) {
                             if (p->ai_family == AF_INET) {
@@ -340,7 +337,6 @@
 
                             uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                             NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
-//                            NSLog(@"---- addPeer: %@: %u", uint128_hex(addr), port);
                             [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr
                                                                            port:port
                                                                         onChain:self.chain

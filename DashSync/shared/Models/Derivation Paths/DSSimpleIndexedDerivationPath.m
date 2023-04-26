@@ -208,7 +208,6 @@
         } else {
             NSData *pubKey = [self publicKeyDataAtIndex:i];
             NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
-//            NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
             [mArray addObject:addr];
             if (addToCache && self.mOrderedAddresses.count == i) {
                 [self.mOrderedAddresses addObject:addr];

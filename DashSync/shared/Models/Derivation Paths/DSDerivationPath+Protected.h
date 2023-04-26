@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSDerivationPathEntity *derivationPathEntity;
 
 - (DSDerivationPathEntity *)derivationPathEntityInContext:(NSManagedObjectContext *)context;
-- (NSData *)indexPathToData;
 
 @end
 

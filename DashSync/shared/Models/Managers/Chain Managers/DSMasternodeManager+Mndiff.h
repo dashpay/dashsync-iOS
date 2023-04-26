@@ -43,9 +43,6 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const v
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
 ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
-//bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
-//bool validateLLMQ(struct LLMQValidationData *data, const void *context);
-
 
 + (MasternodeProcessor *)registerProcessor;
 + (void)unregisterProcessor:(MasternodeProcessor *)processor;

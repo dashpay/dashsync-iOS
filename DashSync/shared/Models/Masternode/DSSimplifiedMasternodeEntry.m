@@ -47,7 +47,6 @@
 @property (null_resettable, nonatomic, copy) NSString *host;
 @property (null_resettable, nonatomic, copy) NSString *ipAddressString;
 @property (null_resettable, nonatomic, copy) NSString *portString;
-//@property (nonatomic, strong) DSBLSKey *operatorPublicBLSKey;
 @property (nonatomic, strong) NSDictionary<NSData *, NSData *> *previousOperatorPublicKeys;
 @property (nonatomic, strong) NSDictionary<NSData *, NSNumber *> *previousValidity;
 @property (nonatomic, strong) NSDictionary<NSData *, NSData *> *previousSimplifiedMasternodeEntryHashes;
@@ -226,7 +225,6 @@
 
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight {
     if (![self.previousOperatorPublicKeys count]) return self.operatorPublicKey;
-    //[self.chain heightForBlockHash:<#(UInt256)#>]
     NSDictionary<NSData *, NSData *> *previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
     uint32_t minDistance = UINT32_MAX;
     UInt384 usedPreviousOperatorPublicKeyAtBlockHash = self.operatorPublicKey;
@@ -348,19 +346,6 @@
     return simplifiedMasternodeEntryEntity;
 }
 
-//- (DSBLSKey *)operatorPublicBLSKey {
-//    if (!_operatorPublicBLSKey && !uint384_is_zero(self.operatorPublicKey)) {
-//        _operatorPublicBLSKey = [DSBLSKey keyWithPublicKey:self.operatorPublicKey];
-//    }
-//    return _operatorPublicBLSKey;
-//}
-
-//- (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest {
-//    DSBLSKey *operatorPublicBLSKey = [self operatorPublicBLSKey];
-//    if (!operatorPublicBLSKey) return NO;
-//    return [operatorPublicBLSKey verify:messageDigest signature:signature];
-//}
-
 - (NSString *)votingAddress {
     return [DSKeyManager addressFromHash160:self.keyIDVoting forChain:self.chain];
 }
@@ -380,13 +365,7 @@
 - (BOOL)isEqual:(id)other {
     DSSimplifiedMasternodeEntry *entry = (DSSimplifiedMasternodeEntry *)other;
     if (![other isKindOfClass:[DSSimplifiedMasternodeEntry class]]) return NO;
-    if (other == self) {
-        return YES;
-    } else if (uint256_eq(self.providerRegistrationTransactionHash, entry.providerRegistrationTransactionHash)) {
-        return YES;
-    } else {
-        return NO;
-    }
+    return other == self || uint256_eq(self.providerRegistrationTransactionHash, entry.providerRegistrationTransactionHash);
 }
 
 - (NSUInteger)hash {
@@ -395,19 +374,12 @@
 
 - (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-
     dictionary[@"address"] = [uint128_data(_address) base64String];
     dictionary[@"port"] = @(_port);
-
     UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
     dictionary[@"operatorPublicKey"] = [uint384_data(ourOperatorPublicKeyAtBlockHash) base64String];
     dictionary[@"keyIDVoting"] = [uint160_data(_keyIDVoting) base64String];
-
-
-    BOOL ourIsValid = [self isValidAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
-    dictionary[@"isValid"] = ourIsValid ? @"YES" : @"NO";
-
-
+    dictionary[@"isValid"] = [self isValidAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup] ? @"YES" : @"NO";
     UInt256 ourSimplifiedMasternodeEntryHash = [self simplifiedMasternodeEntryHashAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
     dictionary[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{@"SimplifiedMasternodeEntryHash": uint256_base64(ourSimplifiedMasternodeEntryHash), @"blockHeight": @(blockHeightLookup(blockHash))};
     dictionary[@"previousSimplifiedMasternodeEntryHashes"] = @{@"PreviousSimplifiedMasternodeEntryHash": self.previousSimplifiedMasternodeEntryHashes};

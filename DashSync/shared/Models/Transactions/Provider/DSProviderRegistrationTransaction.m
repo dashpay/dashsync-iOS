@@ -187,11 +187,6 @@
                                             ownerKeyHash:self.ownerKeyHash
                                             voterKeyHash:self.votingKeyHash
                                                chainType:self.chain.chainType].UInt256;
-    
-//    NSMutableData *stringMessageData = [NSMutableData data];
-//    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
-//    [stringMessageData appendString:self.payloadCollateralString];
-//    return stringMessageData.SHA256_2;
 }
 
 - (BOOL)checkPayloadSignature {
@@ -201,7 +196,6 @@
 }
 
 - (NSData *)basePayloadData {
-    //    DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(self.collateralOutpoint.hash), .n = self.collateralOutpoint.n};
     NSMutableData *data = [NSMutableData data];
     [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
     [data appendUInt16:self.providerType];                           //32
