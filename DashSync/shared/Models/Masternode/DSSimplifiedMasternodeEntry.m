@@ -75,7 +75,24 @@
     return [self payloadData].SHA256_2;
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey operatorPublicKeyVersion:(uint16_t)operatorPublicKeyVersion previousOperatorBLSPublicKeys:(NSDictionary<NSData *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid type:(uint16_t)type platformHTTPPort:(uint16_t)platformHTTPPort platformNodeID:(UInt160)platformNodeID previousValidity:(NSDictionary<NSData *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<NSData *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash
+                                                                   confirmedHash:(UInt256)confirmedHash
+                                                                         address:(UInt128)address
+                                                                            port:(uint16_t)port
+                                                            operatorBLSPublicKey:(UInt384)operatorBLSPublicKey
+                                                        operatorPublicKeyVersion:(uint16_t)operatorPublicKeyVersion
+                                                   previousOperatorBLSPublicKeys:(NSDictionary<NSData *, NSData *> *)previousOperatorBLSPublicKeys
+                                                                     keyIDVoting:(UInt160)keyIDVoting
+                                                                         isValid:(BOOL)isValid
+                                                                            type:(uint16_t)type
+                                                                platformHTTPPort:(uint16_t)platformHTTPPort
+                                                                  platformNodeID:(UInt160)platformNodeID
+                                                                previousValidity:(NSDictionary<NSData *, NSNumber *> *)previousValidity
+                                                          knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight
+                                                                    updateHeight:(uint32_t)updateHeight
+                                                   simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash
+                                         previousSimplifiedMasternodeEntryHashes:(NSDictionary<NSData *, NSData *> *)previousSimplifiedMasternodeEntryHashes
+                                                                         onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;

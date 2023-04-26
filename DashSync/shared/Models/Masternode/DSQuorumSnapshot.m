@@ -20,7 +20,7 @@
 @implementation DSQuorumSnapshot
 
 - (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@: {\nmode: %d, \nmembers: %@, \nskipped: %@\n}",
+    return [NSString stringWithFormat:@"%@: mode: %d, members: %@, skipped: %@",
             [super debugDescription], self.skipListMode, self.memberList, self.skipList
     ];
 }

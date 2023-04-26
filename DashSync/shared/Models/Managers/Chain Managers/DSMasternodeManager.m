@@ -96,8 +96,6 @@
     _processorCache = [DSMasternodeManager createProcessorCache];
     _processingGroup = dispatch_group_create();
     _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.processing.%@", uint256_data(self.chain.genesisHash).shortHexString] UTF8String], DISPATCH_QUEUE_SERIAL);
-
-    NSLog(@"DSMasternodeManager.initWithChain: %@: ", chain);
     return self;
 }
 
@@ -112,8 +110,9 @@
 }
 
 - (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-    if (![self.masternodeListDiffService retrievalQueueCount] /*&& ![self.quorumRotationService retrievalQueueCount]*/) {
-        [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
+    if (![self.masternodeListDiffService retrievalQueueCount]) {
+        if (![self.quorumRotationService retrievalQueueCount])
+            [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
     }
 }

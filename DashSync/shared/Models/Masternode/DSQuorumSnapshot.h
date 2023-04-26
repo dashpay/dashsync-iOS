@@ -23,8 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQuorumSnapshot : NSObject
 
-@property (nonatomic) NSOrderedSet<NSNumber *> *memberList;
-@property (nonatomic) NSOrderedSet<NSNumber *> *skipList;
+@property (nonatomic) NSData *memberList;
+@property (nonatomic) NSArray<NSNumber *> *skipList;
 @property (nonatomic) LLMQSnapshotSkipMode skipListMode;
 
 @property (nonatomic) UInt256 blockHash;

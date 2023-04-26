@@ -55,16 +55,12 @@
 - (void)updateAttributesFromPotentialQuorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot onBlock:(DSMerkleBlockEntity *) block {
     self.block = block;
     NSError *error = nil;
-    NSData *archivedMemberList = [NSKeyedArchiver archivedDataWithRootObject:quorumSnapshot.memberList requiringSecureCoding:YES error:&error];
-    NSAssert(error == nil, @"There should not be an error when decrypting memberList");
-    if (!error) {
-        self.memberList = archivedMemberList;
-    }
     NSData *archivedSkipList = [NSKeyedArchiver archivedDataWithRootObject:quorumSnapshot.skipList requiringSecureCoding:YES error:&error];
     NSAssert(error == nil, @"There should not be an error when decrypting skipList");
     if (!error) {
         self.skipList = archivedSkipList;
     }
+    self.memberList = quorumSnapshot.memberList;
     self.skipListMode = quorumSnapshot.skipListMode;
 }
 

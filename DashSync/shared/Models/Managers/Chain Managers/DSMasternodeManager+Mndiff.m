@@ -41,10 +41,6 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
-//        DSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
-//        if (list) {
-//            [list saveToJsonFileExtended:[NSString stringWithFormat:@"MNLIST_%@_%@_%@.json", @(list.height), @([[NSDate date] timeIntervalSince1970]), @"getMasternodeListByBlockHash"]];
-//        }
         if (list) {
             c_list = [list ffi_malloc];
         }
@@ -62,7 +58,6 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_li
         DSChain *chain = processorContext.chain;
         DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:masternode_list onChain:chain];
         saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:blockHash];
-        //NSLog(@"••• saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     }
     processor_destroy_block_hash(block_hash);
     processor_destroy_masternode_list(masternode_list);
@@ -70,12 +65,10 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_li
 }
 
 void destroyMasternodeList(MasternodeList *masternode_list) {
-//    NSLog(@"••• destroyMasternodeList: %p", masternode_list);
     [DSMasternodeList ffi_free:masternode_list];
 }
 
 void destroyHash(uint8_t *block_hash) { // UInt256
-//    NSLog(@"••• destroyHash: %p", block_hash);
     if (block_hash) {
         free(block_hash);
     }
@@ -88,7 +81,6 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         block_height = processorContext.blockHeightLookup(blockHash);
-//        NSLog(@"getBlockHeightByHash: %u: %@", block_height, uint256_hex(blockHash));
     }
     processor_destroy_block_hash(block_hash);
     return block_height;
@@ -101,7 +93,6 @@ uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSChain *chain = processorContext.chain;
         DSBlock *block = [chain blockAtHeight:block_height];
-//        NSLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
         if (block) {
             block_hash = uint256_malloc(block.blockHash);
         }
@@ -118,7 +109,6 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         UInt256 merkleRoot = processorContext.merkleRootLookup(blockHash);
         merkle_root = uint256_malloc(merkleRoot);
-//        NSLog(@"getMerkleRootByHash: %@: %@", uint256_hex(blockHash), uint256_hex(merkleRoot));
     }
     processor_destroy_block_hash(block_hash);
     return (uint8_t *)merkle_root;
@@ -150,14 +140,12 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const v
         DSChain *chain = processorContext.chain;
         DSQuorumSnapshot *quorumSnapshot = [DSQuorumSnapshot quorumSnapshotWith:snapshot forBlockHash:blockHash];
         saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:quorumSnapshot];
-        //NSLog(@"••• saveLLMQSnapshot: %u: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     }
     processor_destroy_block_hash(block_hash);
     processor_destroy_llmq_snapshot(snapshot);
     return saved;
 }
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
-//    NSLog(@"••• destroyLLMQSnapshot: %p", snapshot);
     [DSQuorumSnapshot ffi_free:snapshot];
 }
 
