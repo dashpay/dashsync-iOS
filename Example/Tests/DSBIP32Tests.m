@@ -93,15 +93,9 @@
     NSIndexPath *baseIndexPath2 = derivationPath2.baseIndexPath;
     IndexPathData *index_path2 = [baseIndexPath2 ffi_malloc];
     BLSKey *keyPair2 = key_bls_private_derive_to_path(keyPair, index_path2);
-//    [NSIndexPath ffi_free:index_path2];
-
-//    DSBLSKey *keyPair2 = [keyPair privateDeriveToPath:derivationPath2.baseIndexPath];
     XCTAssertEqual(key_bls_fingerprint(keyPair2), 0xff26a31f, @"Testing BLS extended private child public key fingerprint");
-
     BLSKey *keyPair3 = key_bls_private_derive_to_path(keyPair, index_path2);
     [NSIndexPath ffi_free:index_path2];
-
-//    DSBLSKey *keyPair3 = [keyPair publicDeriveToPath:derivationPath2.baseIndexPath];
     XCTAssertEqual(key_bls_fingerprint(keyPair3), 0xff26a31f, @"Testing BLS extended private child public key fingerprint");
 }
 
@@ -520,7 +514,7 @@
         deserializedMpk,
         @"[DSDerivationPath deserializedMasterPublicKey: onChain:]");
 }
-
+// TODO: make rust bindings for these tests if needed
 //- (void)test31BitDerivation {
 //    NSString *seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
 //    NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
@@ -608,6 +602,7 @@
     XCTAssert(keys_private_key_data_is_equal(privateKey2FromMultiIndex, privateKey2), @"the private keys must match");
 }
 
+// TODO: make rust bindings for these tests if needed
 //- (void)test256BitDerivation {
 //    NSString *seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
 //
@@ -676,7 +671,6 @@
     DSDerivationPath *masterContactsDerivationPath = [account masterContactsDerivationPath];
     DSIncomingFundsDerivationPath *incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:destinationUser2 sourceBlockchainIdentityUniqueId:sourceUser1 forAccountNumber:0 onChain:self.chain];
     incomingFundsDerivationPath.account = account;
-    NoTimeLog(@"************************");
     OpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
     OpaqueKey *bobKeyPairBLS = key_with_seed_data((uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10}, 10, (int16_t) KeyKind_BLS);
@@ -697,7 +691,6 @@
     DSDerivationPath *masterContactsDerivationPath = [account masterContactsDerivationPath];
     DSIncomingFundsDerivationPath *incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:destinationUser2 sourceBlockchainIdentityUniqueId:sourceUser1 forAccountNumber:0 onChain:self.chain];
     incomingFundsDerivationPath.account = account;
-    NoTimeLog(@"************************");
     OpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     NSData *extendedPublicKeyFromMasterContactDerivationPathData = [DSKeyManager extendedPublicKeyData:extendedPublicKeyFromMasterContactDerivationPath];
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:self.wallet];

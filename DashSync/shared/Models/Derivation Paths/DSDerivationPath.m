@@ -668,9 +668,7 @@
         data[i].indexes = indexes;
         data[i].len = length;
     }
-//    DerivationPathData *derivationPathData = [self ffi_malloc];
     OpaqueKeys *keys = key_private_keys_at_index_paths(seed.bytes, seed.length, (int16_t) self.signingAlgorithm, data, count, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length);
-//    [DSDerivationPath ffi_free:derivationPathData];
     for (NSUInteger i = 0; i < count; i++) {
         free((void *)data[i].indexes);
     }
@@ -692,11 +690,6 @@
 //        NSAssert([publicKey isEqualToData:derivationPathExtendedKey.extendedPublicKeyData], @"The derivation doesn't match the public key");
 //    }
 //#endif
-//
-//    for (NSIndexPath *indexPath in indexPaths) {
-//        DSKey *privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-//        [privateKeys addObject:privateKey];
-//    }
 
     return privateKeys;
 }
@@ -716,9 +709,7 @@
         data[i].indexes = indexes;
         data[i].len = length;
     }
-//    DerivationPathData *derivationPathData = [self ffi_malloc];
     OpaqueSerializedKeys *keys = serialized_key_private_keys_at_index_paths(seed.bytes, seed.length, (int16_t) self.signingAlgorithm, data, count, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self.length, self.chain.chainType);
-//    [DSDerivationPath ffi_free:derivationPathData];
     for (NSUInteger i = 0; i < count; i++) {
         free((void *)data[i].indexes);
     }
@@ -729,19 +720,6 @@
     }
     processor_destroy_serialized_opaque_keys(keys);
     return privateKeys;
-    
-//    NSMutableArray *serializedPrivateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
-//    DSKey *topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
-//    DSKey *derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
-//
-//    for (NSIndexPath *indexPath in indexPaths) {
-//        DSKey *privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-//        NSString *serializedPrivateKey = [privateKey serializedPrivateKeyForChain:self.chain];
-//        NSAssert(serializedPrivateKey, @"The serialized private key should exist");
-//        [serializedPrivateKeys addObject:serializedPrivateKey];
-//    }
-//
-//    return serializedPrivateKeys;
 }
 
 
@@ -769,8 +747,6 @@
 
 - (NSString *_Nullable)serializedExtendedPrivateKeyFromSeedAtIndexPath:(NSData *)seed indexPath:(NSIndexPath *)indexPath {
     OpaqueKey *key = [self privateKeyAtIndexPath:indexPath fromSeed:seed];
-//    NSString *pk = [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, [self indexPathToData].bytes, indexPath.length, self.chain.chainType)];
-//    NSString *pk = [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length, self.chain.chainType)];
     NSString *pk = [DSKeyManager NSStringFrom:key_serialized_private_key_for_chain(key, self.chain.chainType)];
     processor_destroy_opaque_key(key);
     return pk;
@@ -779,7 +755,6 @@
     @autoreleasepool {
         if (!seed) return nil;
         return [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length, self.chain.chainType)];
-//        return [DSKeyManager NSStringFrom:key_serialized_extended_private_key_from_seed(seed.bytes, seed.length, [self indexPathToData].bytes, [self length], self.chain.chainType)];
     }
 }
 
@@ -854,50 +829,5 @@
     }
     return writer;
 }
-
-//- (DerivationPathData *)ffi_malloc {
-//
-////    Validity *previous_validity = malloc(previousValidityCount * sizeof(Validity));
-////    i = 0;
-////    for (NSData *block in previousValidity) {
-////        NSNumber *flag = previousValidity[block];
-////        UInt256 blockHash = *(UInt256 *)(block.bytes);
-////        uint32_t blockHeight = *(uint32_t *)(block.bytes + sizeof(UInt256));
-////        Validity obj = {.block_height = blockHeight, .is_valid = [flag boolValue]};
-////        memcpy(obj.block_hash, blockHash.u8, sizeof(UInt256));
-////        previous_validity[i++] = obj;
-////    }
-////    masternode_entry->previous_validity = previous_validity;
-////    masternode_entry->previous_validity_count = previousValidityCount;
-//
-//
-//
-//    DerivationPathData *obj = malloc(sizeof(DerivationPathData) * self.length);
-//    obj->len = self.length;
-//    UInt256 outIndexes[self.length];
-//    [self getIndexes:outIndexes];
-//    uint8_t *uint8Array = (uint8_t *)malloc(self.length * sizeof(uint8_t));
-//    for (NSUInteger i = 0; i < self.length; i++) {
-//        uint8Array[i] = (uint8_t)_hardenedIndexes[i];
-//    }
-//    obj->indexes = (uint8_t (*)[32]) outIndexes;
-//    obj->hardened = (uint8_t *) uint8Array;
-//    return obj;
-//}
-//
-//+ (void)ffi_free:(DerivationPathData *)path {
-//    if (path->len > 0) {
-//        if (path->indexes) {
-////            for (NSUInteger i = 0; i < path->len; i++) {
-////                free((void *) path->indexes[i]);
-////            }
-//            free((void *) path->indexes);
-//        }
-//        if (path->hardened)
-//            free((void *) path->hardened);
-//    }
-//    free(path);
-//
-//}
 
 @end

@@ -25,13 +25,6 @@
     [self getIndexes:indexes];
     obj->indexes = indexes;
     obj->len = self.length;
-    
-    
-//    NSUInteger length = indexPath.length;
-//    NSUInteger *indexes = calloc(length, sizeof(NSUInteger));
-//    [indexPath getIndexes:indexes];
-//    IndexPathData index_path = {.indexes = indexes, .len = length };
-
     return obj;
 }
 
