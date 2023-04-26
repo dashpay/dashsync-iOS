@@ -3254,20 +3254,8 @@
     int32_t count1 = 50;
     NSData *bitset2 = [NSData dataFromHexString:@"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000"];
     int32_t count2 = 400;
-    //    NSData *bitset3 = [NSData dataFromHexString:@"fffffffffbffff0f"]; // Not valid
-    //    int32_t count3 = 60;
-    //    added_quorum. validate_bitsets: true
-    //    validate_bitsets: "ffffffffffff03":7:[val: 50, len: 1]:6 "ffffffffffff03":7:[val: 50, len: 1]:6
-    //    added_quorum. validate_bitsets: true
-    //    validate_bitsets: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000":50:[val: 400, len: 3]:50 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000":50:[val: 400, len: 3]:50
-    //    2022-09-09 16:21:34.346550+0300 DashSync_Example[17347:206775] validateBitsets: ffffffffffff03:7:50:6
-    //    2022-09-09 16:21:34.346746+0300 DashSync_Example[17347:206775] lastByte: 3 mask: 252
-    //    2022-09-09 16:21:34.346907+0300 DashSync_Example[17347:206775] validateBitsets: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000:50:400:50
-    //    2022-09-09 16:21:34.347043+0300 DashSync_Example[17347:206775] lastByte: 0 mask: 0
-
     [self validateBitsets:bitset1 count:count1];
     [self validateBitsets:bitset2 count:count2];
-    //    [self validateBitsets:bitset3 count:count3];
 }
 
 - (void)testCheckpoints {

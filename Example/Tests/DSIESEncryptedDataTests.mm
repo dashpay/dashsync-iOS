@@ -31,6 +31,7 @@
 
 @end
 
+// TODO: make rust bindings for this (tests are implemented in rust)
 @implementation DSIESEncryptedDataTests
 
 //- (void)testBLSEncryptionAndDecryption {

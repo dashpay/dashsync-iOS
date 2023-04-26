@@ -35,6 +35,7 @@
         @"[NSData blake3]"); // verified by wikipedia
 }
 
+// TODO: move it into x11 crate
 //
 //- (void)testBlake {
 //    UInt512 md = [@"020000002cc0081be5039a54b686d24d5d8747ee9770d9973ec1ace02e5c0500000000008d7139724b11c52995db4370284c998b9114154b120ad3486f1a360a1d4253d310d40e55b8f70a1be8e32300"
