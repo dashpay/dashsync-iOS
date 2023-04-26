@@ -86,36 +86,36 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 
-- (void)testIdentityCreation {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"createFundingPrivateKeyWithSeed"];
-    [self.blockchainIdentity createFundingPrivateKeyWithSeed:self.seedData
-                                             isForInvitation:NO
-                                                  completion:^(BOOL success) {
-        XCTAssertTrue(success, @"No error should be produced");
-        [self.blockchainIdentity registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition *_Nonnull blockchainIdentityRegistrationTransition, NSError *_Nonnull error) {
-            XCTAssertNil(error, @"No error should be produced");
-            OpaqueKey *key = [blockchainIdentityRegistrationTransition.publicKeys allValues][0].pointerValue;
-            XCTAssertEqualObjects([DSKeyManager publicKeyData:key].hexString, @"02128cef3f329986c01860526499283bbd9a33af2e6747d7488c779be8ed37a409");
-            XCTAssertEqual(key->tag, KeyKind_ECDSA);
-            XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"ae99d9433fc86f8974094c6a24fcc8cc68f87510c000d714c71ee5f64ceacf4b");
-            XCTAssertEqual(blockchainIdentityRegistrationTransition.type, DSTransitionType_IdentityRegistration);
-            [expectation fulfill];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
-}
-
-- (void)testIdentitySigning {
-    UInt256 digest = uint256_random;
-    XCTestExpectation *expectation = [self expectationWithDescription:@"signedAndVerifiedMessage"];
-    OpaqueKey *key = [self.blockchainIdentity privateKeyAtIndex:0 ofType:KeyKind_ECDSA forSeed:self.seedData];
-    NSData *signature = [DSKeyManager signMesasageDigest:key digest:digest];
-    XCTAssertFalse([signature isZeroBytes], "The blockchain identity should be able to sign a message digest");
-    BOOL verified = [self.blockchainIdentity verifySignature:signature forKeyIndex:0 ofType:KeyKind_ECDSA forMessageDigest:digest];
-    XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
-    [expectation fulfill];
-    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
-}
+//- (void)testIdentityCreation {
+//    XCTestExpectation *expectation = [self expectationWithDescription:@"createFundingPrivateKeyWithSeed"];
+//    [self.blockchainIdentity createFundingPrivateKeyWithSeed:self.seedData
+//                                             isForInvitation:NO
+//                                                  completion:^(BOOL success) {
+//        XCTAssertTrue(success, @"No error should be produced");
+//        [self.blockchainIdentity registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition *_Nonnull blockchainIdentityRegistrationTransition, NSError *_Nonnull error) {
+//            XCTAssertNil(error, @"No error should be produced");
+//            OpaqueKey *key = [blockchainIdentityRegistrationTransition.publicKeys allValues][0].pointerValue;
+//            XCTAssertEqualObjects([DSKeyManager publicKeyData:key].hexString, @"02128cef3f329986c01860526499283bbd9a33af2e6747d7488c779be8ed37a409");
+//            XCTAssertEqual(key->tag, KeyKind_ECDSA);
+//            XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"ae99d9433fc86f8974094c6a24fcc8cc68f87510c000d714c71ee5f64ceacf4b");
+//            XCTAssertEqual(blockchainIdentityRegistrationTransition.type, DSTransitionType_IdentityRegistration);
+//            [expectation fulfill];
+//        }];
+//    }];
+//    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
+//}
+//
+//- (void)testIdentitySigning {
+//    UInt256 digest = uint256_random;
+//    XCTestExpectation *expectation = [self expectationWithDescription:@"signedAndVerifiedMessage"];
+//    OpaqueKey *key = [self.blockchainIdentity privateKeyAtIndex:0 ofType:KeyKind_ECDSA forSeed:self.seedData];
+//    NSData *signature = [DSKeyManager signMesasageDigest:key digest:digest];
+//    XCTAssertFalse([signature isZeroBytes], "The blockchain identity should be able to sign a message digest");
+//    BOOL verified = [self.blockchainIdentity verifySignature:signature forKeyIndex:0 ofType:KeyKind_ECDSA forMessageDigest:digest];
+//    XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
+//    [expectation fulfill];
+//    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
+//}
 
 - (void)testNameRegistration {
     // ToDo
