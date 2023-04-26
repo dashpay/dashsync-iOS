@@ -22,7 +22,7 @@
 + (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash {
     DSQuorumSnapshot *snapshot = [[DSQuorumSnapshot alloc] init];
     NSUInteger memberListLength = quorumSnapshot->member_list_length;
-    NSData *memberList = [NSData dataWithBytes:quorumSnapshot->member_list length:quorumSnapshot->member_list_length];
+    NSData *memberList = [NSData dataWithBytes:quorumSnapshot->member_list length:memberListLength];
     NSUInteger skipListLength = quorumSnapshot->skip_list_length;
     NSMutableArray<NSNumber *> *skipList = [NSMutableArray arrayWithCapacity:skipListLength];
     const int32_t *skip_list_bytes = quorumSnapshot->skip_list;
