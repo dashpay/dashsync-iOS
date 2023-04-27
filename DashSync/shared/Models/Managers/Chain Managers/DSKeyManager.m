@@ -197,7 +197,7 @@
 
 - (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret forChainType:(ChainType)chainType {
     uint64_t unque_id = ecdsa_public_key_unique_id_from_derived_key_data(secret.u8, 32, chainType);
-    return [NSString stringWithFormat:@"%0llX", unque_id];
+    return [NSString stringWithFormat:@"%0llx", unque_id];
 }
 
 - (NSString *)keyRecoveredFromCompactSig:(NSData *)signature andMessageDigest:(UInt256)md {

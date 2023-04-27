@@ -592,9 +592,7 @@
     @autoreleasepool {
         if (_extendedPublicKey)
             processor_destroy_opaque_key(_extendedPublicKey);
-//        DerivationPathData *data = [self ffi_malloc];
         _extendedPublicKey = generate_extended_public_key_from_seed(seed.bytes, seed.length, (int16_t) self.signingAlgorithm, (const uint8_t *) self->_indexes, self->_hardenedIndexes, self->_length);
-//        [DSDerivationPath ffi_free:data];
         NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
         if (_extendedPublicKey == NULL) {
             return nil;

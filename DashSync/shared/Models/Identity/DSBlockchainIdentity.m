@@ -1119,6 +1119,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 + (DSAuthenticationKeysDerivationPath *)derivationPathForType:(KeyKind)type forWallet:(DSWallet *)wallet {
+    // TODO: ed25519 + bls basic
     if (type == KeyKind_ECDSA) {
         return [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:wallet];
     } else if (type == KeyKind_BLS || type == KeyKind_BLSBasic) {

@@ -713,7 +713,7 @@
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
         uint64_t unique_id = ecdsa_public_key_unique_id_from_derived_key_data(derivedKeyData.bytes, derivedKeyData.length, chain.chainType);
-        uniqueID = [NSString stringWithFormat:@"%0llX", unique_id];
+        uniqueID = [NSString stringWithFormat:@"%0llx", unique_id];
         for (DSAccount *account in accounts) {
             for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
@@ -738,7 +738,7 @@
                                                          withPassphrase:nil] :
                                                 nil;
         uint64_t unique_id = ecdsa_public_key_unique_id_from_derived_key_data(derivedKeyData.bytes, derivedKeyData.length, chain.chainType);
-        uniqueID = [NSString stringWithFormat:@"%0llX", unique_id];
+        uniqueID = [NSString stringWithFormat:@"%0llx", unique_id];
         
         NSString *storeOnUniqueId = nil;                                          //if not store on keychain then we wont save the extended public keys below.
         if (storeOnKeychain) {

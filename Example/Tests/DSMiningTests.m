@@ -37,7 +37,7 @@
 @implementation DSMiningTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:DevnetType_Devnet333 protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:DevnetType_MiningTest protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
     self.wallet = [DSWallet transientWalletWithDerivedKeyData:@"000102030405060708090a0b0c0d0e0f".hexToData forChain:self.chain];
 
     // Put setup code here. This method is called before the invocation of each test method in the class.

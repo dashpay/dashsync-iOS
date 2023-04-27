@@ -62,7 +62,7 @@
 @implementation DSTransitionTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:DevnetType_Devnet333 protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:DevnetType_Zero protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
     NSString *seedPhrase = @"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch";
     self.testWallet = [DSWallet standardWalletWithSeedPhrase:@"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch" setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
 
