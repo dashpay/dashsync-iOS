@@ -10,9 +10,12 @@ target 'DashSync_Example' do
   platform :ios, '13.0'
   common_pods
   pod 'KVO-MVVM', '0.5.1'
-  target 'DashSync_Tests' do
-    inherit! :search_paths
-  end
+end
+
+target 'DashSync_Tests' do
+  platform :ios, '13.0'
+  common_pods
+  pod 'KVO-MVVM', '0.5.1'
 end
 
 target 'NetworkInfo' do
