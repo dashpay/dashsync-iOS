@@ -43,7 +43,7 @@ jobs:
       - name: Install Cargo Lipo
         run: cargo install cargo-lipo
       - name: Rustup add targets
-        run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim x86_64-apple-darwin
+        run: rustup target add x86_64-apple-darwin
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
