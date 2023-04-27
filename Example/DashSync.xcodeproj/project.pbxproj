@@ -52,7 +52,6 @@
 		2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */; };
 		2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */; };
 		404946170FF870F9FBA4B3C7 /* libPods-NetworkInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */; };
-		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
 		6003F592195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
@@ -66,6 +65,7 @@
 		6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
+		798A60FA627EC43C0AB39611 /* libPods-DashSync-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 192956F40996DE819B9D64AC /* libPods-DashSync-DashSync_Example.a */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		93099D7228E7275400160709 /* MNLIST_1746460.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7028E7275300160709 /* MNLIST_1746460.dat */; };
@@ -521,6 +521,7 @@
 
 /* Begin PBXFileReference section */
 		131B02E9F838D9B0B88342E6 /* Pods-NetworkInfo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkInfo.release.xcconfig"; path = "Pods/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo.release.xcconfig"; sourceTree = "<group>"; };
+		192956F40996DE819B9D64AC /* libPods-DashSync-DashSync_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync-DashSync_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27552411E6D7D4041AC16526 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		2A1AC63A20F9012A00B3B79F /* FormSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FormSectionModel.h; sourceTree = "<group>"; };
 		2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FormSectionModel.m; sourceTree = "<group>"; };
@@ -592,6 +593,7 @@
 		2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactProfileAvatarView.h; sourceTree = "<group>"; };
 		2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileAvatarView.m; sourceTree = "<group>"; };
 		2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
+		425B12FE369253E7F3A93D58 /* Pods-DashSync-DashSync_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -613,7 +615,7 @@
 		64A245673BBAE1DA7DAB4907 /* DashSync.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = DashSync.podspec; path = ../DashSync.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NetworkInfo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		93099D7028E7275300160709 /* MNLIST_1746460.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MNLIST_1746460.dat; sourceTree = "<group>"; };
 		93099D7128E7275400160709 /* MNL_1746460_1746516.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1746460_1746516.dat; sourceTree = "<group>"; };
@@ -1198,7 +1200,7 @@
 				6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */,
 				6003F592195388D20070C39A /* UIKit.framework in Frameworks */,
 				6003F58E195388D20070C39A /* Foundation.framework in Frameworks */,
-				4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */,
+				798A60FA627EC43C0AB39611 /* libPods-DashSync-DashSync_Example.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1380,9 +1382,9 @@
 				6003F58F195388D20070C39A /* CoreGraphics.framework */,
 				6003F591195388D20070C39A /* UIKit.framework */,
 				6003F5AF195388D20070C39A /* XCTest.framework */,
-				825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */,
 				955D615511918752AF099181 /* libPods-DashSync_Tests.a */,
 				6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */,
+				192956F40996DE819B9D64AC /* libPods-DashSync-DashSync_Example.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1477,6 +1479,8 @@
 				DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */,
 				D1B8FECBB1652E781A9E4620 /* Pods-NetworkInfo.debug.xcconfig */,
 				131B02E9F838D9B0B88342E6 /* Pods-NetworkInfo.release.xcconfig */,
+				425B12FE369253E7F3A93D58 /* Pods-DashSync-DashSync_Example.debug.xcconfig */,
+				74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -2353,7 +2357,6 @@
 				6003F5AA195388D20070C39A /* Sources */,
 				6003F5AB195388D20070C39A /* Frameworks */,
 				6003F5AC195388D20070C39A /* Resources */,
-				E48CD72E4D9428B94D14E704 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2828,31 +2831,11 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DashSync_Example-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-DashSync-DashSync_Example-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E48CD72E4D9428B94D14E704 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-iOS/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-iOS/gRPCCertificates.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F3524DD5332FD019D466B225 /* [CP] Copy Pods Resources */ = {
@@ -2861,7 +2844,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-iOS/DashSync.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-iOS/gRPCCertificates.bundle",
 			);
@@ -2872,7 +2855,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FB5A0FA7219506140079CF42 /* ShellScript */ = {
@@ -3232,7 +3215,7 @@
 		};
 		6003F5C0195388D20070C39A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 98472781BAD8800EFF391FA4 /* Pods-DashSync_Example.debug.xcconfig */;
+			baseConfigurationReference = 425B12FE369253E7F3A93D58 /* Pods-DashSync-DashSync_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3250,7 +3233,7 @@
 		};
 		6003F5C1195388D20070C39A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */;
+			baseConfigurationReference = 74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3314,6 +3297,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3338,6 +3322,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
