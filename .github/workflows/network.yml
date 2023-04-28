@@ -63,12 +63,6 @@ jobs:
         if: steps.cache-network-info-build.outputs.cache-hit != 'true'
         run: |
           xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/' CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO
-      - name: Set up keychain
-        run: |
-          security create-keychain -p password tmp.keychain
-          security default-keychain -s tmp.keychain
-          security unlock-keychain -p password tmp.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k password tmp.keychain
       - name: Get Network Info and Ping Nodes
         working-directory: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
         env:
