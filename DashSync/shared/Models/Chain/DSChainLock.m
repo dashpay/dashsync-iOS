@@ -119,6 +119,11 @@
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
     BOOL verified = key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
     DSLog(@"verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %@: %u", verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(quorumEntry.llmqQuorumHash), uint256_hex(signId), uint384_hex(quorumEntry.quorumPublicKey), uint768_hex(self.signature), quorumEntry.useLegacyBLSScheme);
+#if DEBUG
+     DSLogPrivate(@"verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %@: %u", verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(quorumEntry.llmqQuorumHash), uint256_hex(signId), uint384_hex(quorumEntry.quorumPublicKey), uint768_hex(self.signature), quorumEntry.useLegacyBLSScheme);
+ #else
+     DSLog(@"verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %@: %u", verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(quorumEntry.llmqQuorumHash), @"<REDACTED>", uint384_hex(quorumEntry.quorumPublicKey), @"<REDACTED>", quorumEntry.useLegacyBLSScheme);
+ #endif
     return verified;
 }
 
