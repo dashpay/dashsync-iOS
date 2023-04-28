@@ -8,7 +8,6 @@
 
 #import "DSSignPayloadViewController.h"
 #import "DSAccount.h"
-#import "DSECDSAKey.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSWallet.h"
 #import "NSData+Dash.h"
@@ -47,8 +46,7 @@
 - (IBAction)sign:(id)sender {
     if (self.signatureMessageResultTextView.text && ![self.signatureMessageResultTextView.text isEqualToString:@""]) {
         NSData *signature = [[NSData alloc] initWithBase64EncodedString:self.signatureMessageResultTextView.text options:0];
-        DSECDSAKey *key = [DSECDSAKey keyRecoveredFromCompactSig:signature andMessageDigest:self.providerRegistrationTransaction.payloadCollateralDigest];
-        NSString *address = [key addressForChain:self.providerRegistrationTransaction.chain];
+        NSString *address = [self.providerRegistrationTransaction.chain.chainManager.keyManager keyRecoveredFromCompactSig:signature andMessageDigest:self.providerRegistrationTransaction.payloadCollateralDigest];
         if ([address isEqualToString:self.collateralAddress]) {
             [self.delegate viewController:self didReturnSignature:signature];
         } else {
@@ -67,8 +65,7 @@
                              forAmount:0
                             completion:^(NSData *_Nullable seed, BOOL cancelled) {
                                 if (seed && !cancelled) {
-                                    DSECDSAKey *key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
-                                    NSData *data = [key compactSign:self.providerRegistrationTransaction.payloadCollateralDigest];
+                                    NSData *data = [DSKeyManager compactSign:derivationPath fromSeed:seed atIndexPath:indexPath digest:self.providerRegistrationTransaction.payloadCollateralDigest];
                                     [self.delegate viewController:self didReturnSignature:data];
                                 }
                             }];

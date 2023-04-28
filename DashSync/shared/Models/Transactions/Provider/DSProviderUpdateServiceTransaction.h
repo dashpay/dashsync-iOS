@@ -6,11 +6,12 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBLSKey, DSProviderRegistrationTransaction;
+@class DSProviderRegistrationTransaction;
 
 @interface DSProviderUpdateServiceTransaction : DSTransaction
 
@@ -23,20 +24,40 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, nullable, readonly) NSString *payoutAddress;
 @property (nonatomic, assign) UInt256 inputsHash;
 @property (nonatomic, strong) NSData *payloadSignature;
+@property (nonatomic, assign) uint16_t providerType; // Masternode Type: 0: Regular, 1: HighPerformance
+@property (nonatomic, assign) uint16_t platformHTTPPort;
+@property (nonatomic, assign) uint16_t platformP2PPort;
+@property (nonatomic, assign) UInt160 platformNodeID;
 @property (nonatomic, readonly) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash ipAddress:(UInt128)ipAddress port:(uint16_t)port scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
+- (instancetype)initWithInputHashes:(NSArray *)hashes
+                       inputIndexes:(NSArray *)indexes
+                       inputScripts:(NSArray *)scripts
+                     inputSequences:(NSArray *)inputSequences
+                    outputAddresses:(NSArray *)addresses
+                      outputAmounts:(NSArray *)amounts
+providerUpdateServiceTransactionVersion:(uint16_t)version
+            providerTransactionHash:(UInt256)providerTransactionHash
+                          ipAddress:(UInt128)ipAddress
+                               port:(uint16_t)port
+                       scriptPayout:(NSData *)scriptPayout
+                            onChain:(DSChain *_Nonnull)chain;
 
-- (instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash ipAddress:(UInt128)ipAddress port:(uint16_t)port scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
+- (instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version
+                                        providerTransactionHash:(UInt256)providerTransactionHash
+                                                      ipAddress:(UInt128)ipAddress
+                                                           port:(uint16_t)port
+                                                   scriptPayout:(NSData *)scriptPayout
+                                                        onChain:(DSChain *_Nonnull)chain;
 
 - (void)updateInputsHash;
 
-- (void)signPayloadWithKey:(DSBLSKey *_Nonnull)privateKey;
+- (void)signPayloadWithKey:(OpaqueKey *_Nonnull)privateKey;
 
 - (BOOL)checkPayloadSignature;
 
-- (BOOL)checkPayloadSignature:(DSBLSKey *)publicKey;
+- (BOOL)checkPayloadSignature:(OpaqueKey *)publicKey;
 
 
 @end

@@ -27,6 +27,11 @@
         NSLog(@"DSQRInfoProcessingResult.error %ul", errorStatus);
         return processingResult;
     }
+    if (result->result_at_tip == NULL) {
+        NSLog(@"DSQRInfoProcessingResult.error.unknown");
+        processingResult.errorStatus = ProcessingError_ParseError;
+        return processingResult;
+    }
     MNListDiffResult *diffResultAtHC = result->result_at_h_c;
     MNListDiffResult *diffResultAtH2C = result->result_at_h_2c;
     MNListDiffResult *diffResultAtH3C = result->result_at_h_3c;

@@ -7,7 +7,6 @@
 
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSChainManager.h"
-#import "DSECDSAKey.h"
 #import "DSLocalMasternode.h"
 #import "DSMasternodeManager.h"
 #import "DSProviderRegistrationTransaction.h"
@@ -137,19 +136,20 @@
     return [self payloadDataForHash].SHA256_2;
 }
 
-- (BOOL)checkPayloadSignature:(DSECDSAKey *)providerOwnerPublicKey {
-    return uint160_eq([providerOwnerPublicKey hash160], self.providerRegistrationTransaction.ownerKeyHash);
+- (BOOL)checkPayloadSignature:(OpaqueKey *)providerOwnerPublicKey {
+    return key_check_payload_signature(providerOwnerPublicKey, self.providerRegistrationTransaction.ownerKeyHash.u8);
 }
 
 - (BOOL)checkPayloadSignature {
-    DSECDSAKey *providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
-    return [self checkPayloadSignature:providerOwnerPublicKey];
+    NSData *signature = self.payloadSignature;
+    NSData *payload = [self payloadDataForHash];
+    return key_ecdsa_verify_compact_sig(signature.bytes, signature.length, payload.bytes, payload.length, self.providerRegistrationTransaction.ownerKeyHash.u8);
 }
 
-- (void)signPayloadWithKey:(DSECDSAKey *)privateKey {
+- (void)signPayloadWithKey:(OpaqueKey *)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
-    self.payloadSignature = [privateKey compactSign:[self payloadHash]];
+    //DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
+    self.payloadSignature = [DSKeyManager NSDataFrom:key_ecdsa_compact_sign(privateKey->ecdsa, [self payloadHash].u8)];;
 }
 
 - (NSData *)basePayloadData {
@@ -198,15 +198,15 @@
 }
 
 - (NSString *)payoutAddress {
-    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    return [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:self.providerRegistrationTransaction.chain];
 }
 
 - (NSString *)operatorAddress {
-    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
+    return [DSKeyManager addressWithPublicKeyData:uint384_data(self.operatorKey) forChain:self.chain];
 }
 
 - (NSString *)votingAddress {
-    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.votingKeyHash forChain:self.chain];
 }
 
 - (Class)entityClass {

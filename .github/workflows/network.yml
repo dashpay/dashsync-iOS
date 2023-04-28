@@ -43,7 +43,7 @@ jobs:
       - name: Install Cargo Lipo
         run: cargo install cargo-lipo
       - name: Rustup add targets
-        run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim x86_64-apple-darwin
+        run: rustup target add x86_64-apple-darwin
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
@@ -62,7 +62,7 @@ jobs:
           platform: ${{ 'macOS' }}
         if: steps.cache-network-info-build.outputs.cache-hit != 'true'
         run: |
-          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/' CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO
       - name: Get Network Info and Ping Nodes
         working-directory: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
         env:

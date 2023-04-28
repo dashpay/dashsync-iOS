@@ -66,7 +66,7 @@
 - (BOOL)hasRotatedQuorumsForChain:(DSChain*)chain {
     return [[self.addedQuorums keysOfEntriesPassingTest:^BOOL(NSNumber *_Nonnull llmqType, id _Nonnull obj, BOOL *_Nonnull stop) {
         // TODO: make it more reliable as quorum type values may change
-        return ([llmqType unsignedIntValue] == chain.quorumTypeForISDLocks) && (*stop = TRUE);
+        return ([llmqType unsignedIntValue] == quorum_type_for_isd_locks(chain.chainType)) && (*stop = TRUE);
     }] count] > 0;
 }
 

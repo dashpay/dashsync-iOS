@@ -46,6 +46,7 @@
 #import "DSGovernanceSyncRequest.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSInvRequest.h"
+#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
 #import "DSNotFoundRequest.h"
@@ -223,7 +224,6 @@
 
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) { // delay connect until network is reachable
         DSLog(@"%@:%u not reachable, waiting...", self.host, self.port);
-
         dispatch_async(dispatch_get_main_queue(), ^{
             if (!self.reachabilityObserver) {
                 self.reachabilityObserver =
@@ -231,12 +231,11 @@
                                                                       object:nil
                                                                        queue:nil
                                                                   usingBlock:^(NSNotification *note) {
-                                                                      if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
-                                                                          self->_status = DSPeerStatus_Disconnected;
-                                                                          [self connect];
-                                                                      }
-                                                                  }];
-
+                        if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
+                            self->_status = DSPeerStatus_Disconnected;
+                            [self connect];
+                        }
+                    }];
                 if (!self.reachability.monitoring) {
                     [self.reachability startMonitoring];
                 }
@@ -259,7 +258,7 @@
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
-
+    self.knownInstantSendLockDHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownChainLockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
@@ -438,7 +437,7 @@
 //    } else if (self.chain.protocolVersion >= 70220) {
 //        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%u.%@)/", self.chain.devnetVersion, self.chain.devnetIdentifier]];
     } else {
-        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", self.chain.devnetIdentifier]];
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", [DSKeyManager devnetIdentifierFor:self.chain.chainType]]];
     }
     DSVersionRequest *request = [DSVersionRequest requestWithAddress:_address
                                                                 port:self.port
@@ -673,8 +672,7 @@
     [self sendRequest:[DSMessageRequest requestWithType:MSG_GETADDR]];
 }
 
-- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
-{
+- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler {
     NSMutableData *msg = [NSMutableData data];
 
     dispatch_async(self.delegateQueue, ^{
@@ -767,6 +765,8 @@
         [self acceptVerackMessage:message];
     else if ([MSG_ADDR isEqual:type])
         [self acceptAddrMessage:message];
+    else if ([MSQ_SENDADDRV2 isEqual:type])
+        [self acceptAddrV2Message:message];
     else if ([MSG_INV isEqual:type])
         [self acceptInvMessage:message];
     else if ([MSG_TX isEqual:type])
@@ -842,22 +842,18 @@
 
 - (void)acceptVersionMessage:(NSData *)message {
     NSNumber *l = nil;
-
     if (message.length < 85) {
         [self error:@"malformed version message, length is %u, should be > 84", (int)message.length];
         return;
     }
-
     _version = [message UInt32AtOffset:0];
     _services = [message UInt64AtOffset:4];
     _timestamp = [message UInt64AtOffset:12];
     _useragent = [message stringAtOffset:80 length:&l];
-
     if (message.length < 80 + l.unsignedIntegerValue + sizeof(uint32_t)) {
         [self error:@"malformed version message, length is %u, should be %u", (int)message.length, (int)(80 + l.unsignedIntegerValue + 4)];
         return;
     }
-
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
 
     if (self.version < self.chain.minProtocolVersion) {
@@ -871,7 +867,6 @@
         DSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif
     }
-
     [self sendVerackMessage];
 }
 
@@ -941,6 +936,10 @@
     dispatch_async(self.delegateQueue, ^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peer:self relayedPeers:peers];
     });
+}
+
+- (void)acceptAddrV2Message:(NSData *)message {
+    DSLog(@"%@:%u sendaddrv2, len:%u, (not implemented)", self.host, self.port, (int)message.length);
 }
 
 - (NSString *)nameOfInvMessage:(DSInvType)type {
@@ -1108,18 +1107,14 @@
     if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
         for (NSValue *hash in txHashes) {
             UInt256 h;
-
             if (![self.knownTxHashes containsObject:hash]) continue;
             [hash getValue:&h];
-
             dispatch_async(self.delegateQueue, ^{
                 if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h];
             });
         }
-
         [txHashes minusOrderedSet:self.knownTxHashes];
     }
-
     [self.knownTxHashes unionOrderedSet:txHashes];
 
     if (instantSendLockHashes.count > 0) {
@@ -1343,10 +1338,10 @@
     DSInstantSendTransactionLock *instantSendTransactionLock = [DSInstantSendTransactionLock instantSendTransactionLockWithDeterministicMessage:message onChain:self.chain];
 
     if (!instantSendTransactionLock) {
-        [self error:@"malformed islock message: %@", message];
+        [self error:@"malformed isdlock message: %@", message];
         return;
     } else if (!self.sentFilter && !self.sentGetdataTxBlocks) {
-        [self error:@"got islock message before loading a filter"];
+        [self error:@"got isdlock message before loading a filter"];
         return;
     }
 
@@ -1415,7 +1410,7 @@
         _relayStartTime = 0;
     }
     //    for (int i = 0; i < count; i++) {
-    //        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
+    //        UInt256 locator = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(l + 81*i, 80)]];
     //        DSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
     //    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
@@ -1431,8 +1426,8 @@
     }
     if (!count) return;
     if (count >= self.chain.headersMaxAmount || (((lastTimestamp + DAY_TIME_INTERVAL * 2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync))) {
-        UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
-        UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81 * (count - 1), 80)].x11;
+        UInt256 firstBlockHash = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(l, 80)]];
+        UInt256 lastBlockHash = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(l + 81 * (count - 1), 80)]];
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         if (((lastTimestamp + DAY_TIME_INTERVAL * 2) >= self.earliestKeyTime) &&
@@ -1443,7 +1438,7 @@
                 off += 81;
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
-            lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
+            lastBlockHash = [DSKeyManager x11:[message subdataWithRange:NSMakeRange(off, 80)]];
             lastHashData = uint256_data(lastBlockHash);
             DSLog(@"%@:%u calling getblocks with locators: [%@, %@]", self.host, self.port, lastHashData.reverse.hexString, firstHashData.reverse.hexString);
             [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];

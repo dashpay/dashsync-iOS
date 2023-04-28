@@ -17,7 +17,7 @@
 
 #import "DSTransactionOutput.h"
 #import "DSChain.h"
-#import "NSString+Dash.h"
+#import "DSKeyManager.h"
 
 @interface DSTransactionOutput ()
 
@@ -42,7 +42,7 @@
     self.amount = amount;
     self.outScript = outScript;
     if (outScript) {
-        self.address = [NSString addressWithScriptPubKey:outScript onChain:chain]; // address from output script if applicable
+        self.address = [DSKeyManager addressWithScriptPubKey:outScript forChain:chain]; // address from output script if applicable
     }
     return self;
 }

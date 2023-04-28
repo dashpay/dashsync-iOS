@@ -33,6 +33,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
+#import "dash_shared_core.h"
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
     NSCParameterAssert(key);
@@ -1034,6 +1035,16 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 
 @implementation NSData (Dash)
 
++ (instancetype)dataWithBlockInfo:(DSBlockInfo)blockInfo {
+    return [self dataWithBytes:&blockInfo length:sizeof(blockInfo)];
+}
+
++ (instancetype)dataWithBlockHash:(UInt256)blockHash height:(uint32_t)height {
+    NSMutableData *d = [NSMutableData dataWithUInt256:blockHash];
+    [d appendUInt32:height];
+    return d;
+}
+
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq {
     return [self dataWithBytes:&llmq length:sizeof(llmq)];
 }
@@ -1361,6 +1372,11 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return *(DSLLMQ *)(self.bytes);
 }
 
+- (DSBlockInfo)blockInfo {
+    if (self.length < sizeof(DSBlockInfo)) return DSBlockInfo_ZERO;
+    return *(DSBlockInfo *)(self.bytes);
+}
+
 
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber **)length {
     uint8_t h = [self UInt8AtOffset:offset];
@@ -1483,6 +1499,7 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 }
 
 - (NSString *)shortHexString {
+    // TODO: cut length before hexify for efficiency
     NSString *hexData = [NSString hexWithData:self];
     if (hexData.length > 7) {
         return [hexData substringToIndex:7];
@@ -1595,24 +1612,6 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return (self.length == 20);
 }
 
-- (NSString *)addressFromHash160DataForChain:(DSChain *)chain {
-    NSAssert(self.length == 20, @"The length of this data should be 20 bytes");
-    if (self.length != 20) return nil;
-    NSMutableData *d = [NSMutableData data];
-    uint8_t v;
-
-    if ([chain isMainnet]) {
-        v = DASH_PUBKEY_ADDRESS;
-    } else {
-        v = DASH_PUBKEY_ADDRESS_TEST;
-    }
-    [d appendBytes:&v
-            length:1];
-    [d appendData:self];
-    [d appendBytes:d.SHA256_2.u32 length:4];
-    return [d base58String];
-}
-
 - (uint64_t)trueBitsCount {
     uint64_t trueBitsCount = 0;
     for (uint64_t i = 0; i < self.length; i++) {
@@ -1665,6 +1664,16 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     [self writeToFile:dataPath atomically:YES];
 }
 
+- (BOOL)isZeroBytes {
+    const uint8_t *bytes = self.bytes;
+    NSUInteger length = self.length;
+    for (NSUInteger i = 0; i < length; i++) {
+        if (bytes[i] != 0) {
+            return NO;
+        }
+    }
+    return YES;
+}
 @end
 
 

@@ -17,7 +17,6 @@
 
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DPContract.h"
-#import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSChainManager.h"
 #import "DSDocumentTransition.h"
@@ -464,7 +463,7 @@
     }
     DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
     if (quorumEntry && quorumEntry.verified) {
-        return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:chain.quorumTypeForPlatform error:error];
+        return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:quorum_type_for_platform(chain.chainType) error:error];
     } else if (quorumEntry) {
         *error = [NSError errorWithCode:400 descriptionKey:DSLocalizedString(@"Quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash))];
         DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
@@ -474,7 +473,7 @@
     return nil;
 }
 
-+ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error {
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType error:(NSError **)error {
     NSData *signatureData = proof.signature;
     if (!signatureData) {
         *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no signature data"];
@@ -605,7 +604,7 @@
     return [data SHA256];
 }
 
-+ (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
++ (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
     UInt256 requestId = [self requestIdForHeight:height];
     NSMutableData *data = [NSMutableData data];
     [data appendUInt8:quorumType];
@@ -615,12 +614,9 @@
     return [data SHA256_2];
 }
 
-+ (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType {
-    UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
++ (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType {
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry quorumType:quorumType forStateMessageHash:stateMessageHash height:height];
-    DSLogPrivate(@"verifying DAPI returned signature %@ with public key %@ against quorum %@", [NSData dataWithUInt768:signature].hexString, [NSData dataWithUInt384:publicKey].hexString, quorumEntry);
-    return [blsKey verify:signId signature:signature];
+    return key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, signature.u8);
 }
 
 

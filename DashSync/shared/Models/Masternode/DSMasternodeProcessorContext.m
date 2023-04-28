@@ -20,4 +20,8 @@
 
 @implementation DSMasternodeProcessorContext
 
+- (NSString *)description {
+    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%@}: [%@: %@ (%u)] genesis: %@ protocol: %u, insight: %i, from_snapshot: %i, dip-24: %i}", self.chain.name, self.peer.location, self.peer.useragent, self.peer.version, uint256_hex(self.chain.genesisHash), self.chain.protocolVersion, self.useInsightAsBackup, self.isFromSnapshot, self.isDIP0024]];
+}
+
 @end

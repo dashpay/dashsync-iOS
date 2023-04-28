@@ -84,16 +84,16 @@
     return NO;
 }
 
-- (DSKey *)secretKeyForDecryptionOfType:(DSKeyType)type {
+- (OpaqueKey *)secretKeyForDecryptionOfType:(KeyKind)type {
     uint32_t index = [self blockchainIdentityIsRecipient] ? self.recipientKeyIndex : self.senderKeyIndex;
-    DSKey *key = [self.blockchainIdentity privateKeyAtIndex:index ofType:(DSKeyType)type];
+    OpaqueKey *key = [self.blockchainIdentity privateKeyAtIndex:index ofType:type];
     NSAssert(key, @"Key should exist");
     return key;
 }
 
-- (NSData *)decryptedPublicKeyDataWithKey:(DSKey *)key {
+- (NSData *)decryptedPublicKeyDataWithKey:(OpaqueKey *)key {
     NSParameterAssert(key);
-    return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPublicKey:key];
+    return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:(int16_t) key->tag] fromPublicKey:key];
 }
 
 - (NSString *)debugDescription {

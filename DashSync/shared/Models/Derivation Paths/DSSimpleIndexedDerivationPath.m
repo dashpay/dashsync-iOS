@@ -6,12 +6,13 @@
 //
 
 #import "DSDerivationPath+Protected.h"
+#import "DSKeyManager.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
 #import "NSError+Dash.h"
 
 @implementation DSSimpleIndexedDerivationPath
 
-- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
+- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
 
     self.mOrderedAddresses = [NSMutableArray array];
@@ -29,7 +30,7 @@
                 for (DSAddressEntity *e in addresses) {
                     @autoreleasepool {
                         while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
-                        if (![e.address isValidDashAddressOnChain:self.wallet.chain]) {
+                        if (![DSKeyManager isValidDashAddress:e.address forChain:self.wallet.chain]) {
 #if DEBUG
                             DSLogPrivate(@"address %@ loaded but was not valid on chain %@", e.address, self.account.wallet.chain.name);
 #else
@@ -118,8 +119,7 @@
 
         while (rArray.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n];
-            NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
-
+            NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
             if (!addr) {
                 DSLog(@"error generating keys");
                 if (error) {
@@ -133,7 +133,7 @@
                     DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
                     DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
-                    NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
+                    NSAssert([DSKeyManager isValidDashAddress:addr forChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;
                     e.index = n;
                     e.standalone = NO;
@@ -183,7 +183,7 @@
     return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
-- (DSKey *)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed {
+- (OpaqueKey *)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed {
     return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
 }
 
@@ -207,7 +207,7 @@
             [mArray addObject:self.mOrderedAddresses[i]];
         } else {
             NSData *pubKey = [self publicKeyDataAtIndex:i];
-            NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
+            NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
             [mArray addObject:addr];
             if (addToCache && self.mOrderedAddresses.count == i) {
                 [self.mOrderedAddresses addObject:addr];
@@ -220,8 +220,9 @@
 - (NSArray *)privateKeysForRange:(NSRange)range fromSeed:(NSData *)seed {
     NSMutableArray *mArray = [NSMutableArray array];
     for (NSUInteger i = range.location; i < (range.location + range.length); i++) {
-        DSKey *privateKey = [self privateKeyAtIndex:(uint32_t)i fromSeed:seed];
-        [mArray addObject:privateKey];
+        OpaqueKey *privateKey = [self privateKeyAtIndex:(uint32_t)i fromSeed:seed];
+        NSValue *privateKeyValue = [NSValue valueWithPointer:privateKey];
+        [mArray addObject:privateKeyValue];
     }
     return [mArray copy];
 }

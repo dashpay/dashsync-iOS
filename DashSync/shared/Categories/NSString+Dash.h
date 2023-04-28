@@ -64,13 +64,12 @@
 - (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(NSColor *)color dashSymbolSize:(CGSize)dashSymbolSize;
 + (NSAttributedString *)dashSymbolAttributedStringWithTintColor:(NSColor *)color forDashSymbolSize:(CGSize)dashSymbolSize;
 #endif
-
 - (BOOL)isValidDashAddressOnChain:(DSChain *)chain;
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain;
 - (BOOL)isValidDashDevnetAddress;
 - (BOOL)isValidDashDevnetPrivateKey;
-- (BOOL)isValidDashBIP38Key; // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 - (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain *)chain;
+- (BOOL)isValidDashBIP38Key;
 
 - (NSInteger)indexOfCharacter:(unichar)character;
 

@@ -26,5 +26,8 @@
 @dynamic operatorReward;
 @dynamic scriptPayout;
 @dynamic localMasternode;
+@dynamic platformHTTPPort;
+@dynamic platformP2PPort;
+@dynamic platformNodeID;
 
 @end

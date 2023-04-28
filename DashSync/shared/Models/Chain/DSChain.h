@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DSChainConstants.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
@@ -43,36 +44,12 @@ FOUNDATION_EXPORT NSString *const DSChainInitialHeadersDidFinishSyncingNotificat
 FOUNDATION_EXPORT NSString *const DSChainBlocksDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString *const DSChainNewChainTipBlockNotification;
 
-typedef NS_ENUM(uint16_t, DSChainType)
-{
-    DSChainType_MainNet = 0,
-    DSChainType_TestNet = 1,
-    DSChainType_DevNet = 2,
-};
-
 typedef NS_ENUM(NSUInteger, DSTransactionDirection)
 {
     DSTransactionDirection_Sent,
     DSTransactionDirection_Received,
     DSTransactionDirection_Moved,
     DSTransactionDirection_NotAccountFunds,
-};
-
-typedef NS_ENUM(uint16_t, DSLLMQType)
-{
-    DSLLMQType_Unknown = 0,
-    DSLLMQType_50_60 = 1,  //every 24 blocks
-    DSLLMQType_400_60 = 2, //288 blocks
-    DSLLMQType_400_85 = 3, //576 blocks
-    DSLLMQType_100_67 = 4, //every 24 blocks
-    DSLLMQType_60_75 = 5,
-    DSLLMQType_5_60 = 100, //24 blocks // LLmqtypeTest
-    DSLLMQType_10_60 = 101, //24 blocks // LLmqtypeDevnet
-    DSLLMQType_TestV17 = 102, // 3 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
-    DSLLMQType_TestDIP0024 = 103, // 4 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
-    DSLLMQType_DevnetDIP0024 = 105, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
-    DSLLMQType_Devnet333DIP0024 = 106, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
-
 };
 
 typedef NS_ENUM(uint16_t, DSChainSyncPhase)
@@ -126,7 +103,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, assign) uint32_t protocolVersion;
 
 /*! @brief headersMaxAmount is the maximum amount of headers that is expected from peers.  */
-@property (nonatomic, assign) uint32_t headersMaxAmount;
+@property (nonatomic, assign) uint64_t headersMaxAmount;
 
 /*! @brief maxProofOfWork is the lowest amount of work effort required to mine a block on the chain.  */
 @property (nonatomic, readonly) UInt256 maxProofOfWork;
@@ -183,10 +160,10 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 // MARK: - DashSync Chain Info
 
 /*! @brief The chain type (MainNet, TestNet or DevNet).  */
-@property (nonatomic, readonly) DSChainType chainType;
+@property (nonatomic, readonly) ChainType chainType;
 
 /*! @brief A threshold after which a peer will be banned.  */
-@property (nonatomic, readonly) uint32_t peerMisbehavingThreshold;
+@property (nonatomic, readonly) uintptr_t peerMisbehavingThreshold;
 
 /*! @brief True if this chain syncs the blockchain. All Chains currently sync the blockchain.  */
 @property (nonatomic, readonly) BOOL syncsBlockchain;
@@ -200,23 +177,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The number of minimumDifficultyBlocks.  */
 @property (nonatomic, assign) uint32_t minimumDifficultyBlocks;
 
-/*! @brief The type of quorum used for Instant Send Locks.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForISLocks;
-
-/*! @brief The type of quorum used for Deterministic Instant Send Locks.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForISDLocks;
-
-/*! @brief The type of quorum used for Chain Locks.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForChainLocks;
-
-/*! @brief The type of quorum used for Platform.  */
-@property (nonatomic, assign) DSLLMQType quorumTypeForPlatform;
-
 /*! @brief The flag represents whether the quorum rotation is enabled in this chain.  */
 @property (nonatomic, assign) BOOL isRotatedQuorumsPresented;
-
-/*! @brief Whether chain should process this type of quorum.  */
-- (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType;
 
 /*! @brief Returns all standard derivaton paths used for the chain based on the account number.  */
 - (NSArray<DSDerivationPath *> *)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
@@ -225,12 +187,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief The unique identifier of the chain. This unique id follows the same chain accross devices because it is the short hex string of the genesis hash.  */
 @property (nonatomic, readonly) NSString *uniqueID;
-
-/*! @brief The devnet identifier is the name of the devnet, the genesis hash of a devnet uses this devnet identifier in its construction.  */
-@property (nonatomic, readonly, nullable) NSString *devnetIdentifier;
-
-/*! @brief The devnet version is the version of the devnet, the genesis hash of a devnet uses this devnet identifier in its construction.  */
-@property (nonatomic, readwrite) uint16_t devnetVersion;
 
 /*! @brief The name of the chain (Mainnet-Testnet-Devnet).  */
 @property (nonatomic, readonly) NSString *name;
@@ -498,8 +454,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 + (DSChain *_Nullable)devnetWithIdentifier:(NSString *)identifier;
 
 /*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. minimumDifficultyBlocks are used to speed up the initial chain creation. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
-+ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier
-                               version:(uint16_t)version
++ (DSChain *)setUpDevnetWithIdentifier:(DevnetType)devnetType
                        protocolVersion:(uint32_t)protocolVersion
                     minProtocolVersion:(uint32_t)minProtocolVersion
                        withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray
@@ -509,14 +464,10 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
                withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort
                         dpnsContractID:(UInt256)dpnsContractID
                      dashpayContractID:(UInt256)dashpayContractID
-                      ISLockQuorumType:(DSLLMQType)ISLockQuorumType
-                     ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-                   chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                    platformQuorumType:(DSLLMQType)platformQuorumType
-                           isTransient:(BOOL)isTransient;
+                          isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
-+ (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier version:(uint16_t)version withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;
++ (DSChain *)recoverKnownDevnetWithIdentifier:(DevnetType)devnetType withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;
 
 /*! @brief Retrieve a chain having the specified network name.  */
 + (DSChain *_Nullable)chainForNetworkName:(NSString *_Nullable)networkName;
@@ -528,7 +479,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (BOOL)isDevnetAny;
 - (BOOL)isEvolutionEnabled;
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
-- (BOOL)hasDIP0024Enabled;
 @end
 
 @protocol DSChainTransactionsDelegate

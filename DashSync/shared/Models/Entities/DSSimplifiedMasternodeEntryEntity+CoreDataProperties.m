@@ -19,6 +19,7 @@
 @dynamic isValid;
 @dynamic keyIDVoting;
 @dynamic operatorBLSPublicKey;
+@dynamic operatorPublicKeyVersion;
 @dynamic port;
 @dynamic previousOperatorBLSPublicKeys;
 @dynamic previousValidity;
@@ -39,5 +40,8 @@
 @dynamic coreProtocol;
 @dynamic coreLastConnectionDate;
 @dynamic platformVersion;
+@dynamic type;
+@dynamic platformHTTPPort;
+@dynamic platformNodeID;
 
 @end

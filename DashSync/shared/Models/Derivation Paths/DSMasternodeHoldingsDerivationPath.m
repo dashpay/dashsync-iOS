@@ -23,10 +23,9 @@
 }
 
 + (instancetype _Nonnull)providerFundsDerivationPathForChain:(DSChain *)chain {
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(3), uint256_from_long(0)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long((uint64_t) chain_coin_type(chain.chainType)), uint256_from_long(3), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:chain];
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:chain];
 }
 
 - (NSString *)receiveAddress {
@@ -53,9 +52,8 @@
             if (!seed) {
                 if (completion) completion(NO, cancelled);
             } else {
-                DSECDSAKey *key = (DSECDSAKey *)[self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
-
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[key]];
+                OpaqueKey *key = [self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[[NSValue valueWithPointer:key]]];
                 if (completion) completion(signedSuccessfully, NO);
             }
         });

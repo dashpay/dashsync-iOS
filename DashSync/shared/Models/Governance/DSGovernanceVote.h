@@ -5,12 +5,13 @@
 //  Created by Sam Westrich on 6/12/18.
 //
 
+#import "dash_shared_core.h"
 #import "DSChain.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSGovernanceObject, DSSimplifiedMasternodeEntry, DSChain, DSECDSAKey;
+@class DSGovernanceObject, DSSimplifiedMasternodeEntry, DSChain;
 
 typedef NS_ENUM(uint32_t, DSGovernanceVoteSignal)
 {
@@ -44,7 +45,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome)
 
 + (DSGovernanceVote *_Nullable)governanceVoteFromMessage:(NSData *)message onChain:(DSChain *)chain;
 - (instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData *_Nullable)signature onChain:(DSChain *)chain;
-- (void)signWithKey:(DSECDSAKey *)key;
+- (void)signWithKey:(OpaqueKey *)key;
 
 - (NSData *)dataMessage;
 - (BOOL)isValid;

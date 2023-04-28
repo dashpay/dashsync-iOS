@@ -6,7 +6,6 @@
 //
 
 #import "DSQuorumCommitmentTransaction.h"
-#import "DSKey.h"
 #import "DSQuorumCommitmentTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"

@@ -27,7 +27,6 @@ Pod::Spec.new do |s|
   s.ios.public_header_files = 'DashSync/iOS/**/*.h'
   s.macos.source_files = "DashSync/macOS/**/*.{h,m,mm}"
   s.macos.public_header_files = 'DashSync/macOS/**/*.h'
-  s.private_header_files = 'DashSync/crypto/x11/*.h'
   s.libraries = 'resolv', 'bz2', 'sqlite3'
   s.resource_bundles = {'DashSync' => ['DashSync/shared/*.xcdatamodeld', 'DashSync/shared/MappingModels/*.xcmappingmodel', 'DashSync/shared/*.plist', 'DashSync/shared/*.lproj', 'DashSync/shared/MasternodeLists/*.dat', 'DashSync/shared/*.json']}
   
@@ -35,9 +34,7 @@ Pod::Spec.new do |s|
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'DashSharedCore', '0.2.8'
-  s.dependency 'secp256k1_dash', '0.1.4-alpha.2'
-  s.dependency 'bls-signatures-pod', '1.0.7'
+  s.dependency 'DashSharedCore', '0.3.5'
   s.dependency 'CocoaLumberjack', '3.7.2'
   s.ios.dependency 'DWAlertController', '0.2.1'
   s.dependency 'DSDynamicOptions', '0.1.2'

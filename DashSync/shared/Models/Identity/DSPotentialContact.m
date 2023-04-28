@@ -21,7 +21,6 @@
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
-#import "DSKey.h"
 #import "NSData+Dash.h"
 
 @interface DSPotentialContact ()
@@ -64,11 +63,11 @@
     return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainIdentityUniqueId)];
 }
 
-- (void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index {
+- (void)addPublicKey:(NSValue *)key atIndex:(NSUInteger)index {
     self.keyDictionary[@(index)] = key;
 }
 
-- (DSKey *)publicKeyAtIndex:(NSUInteger)index {
+- (NSValue *)publicKeyAtIndex:(NSUInteger)index {
     return self.keyDictionary[@(index)];
 }
 

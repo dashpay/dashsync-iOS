@@ -19,11 +19,9 @@
 
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBLSKey.h"
 #import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
-#import "DSECDSAKey.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSWallet.h"
 #import "DashSync.h"
@@ -71,7 +69,7 @@
                                                               [headerFinishedExpectation fulfill];
                                                           }];
     });
-    [self waitForExpectations:@[headerFinishedExpectation] timeout:120];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:150];
     [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 

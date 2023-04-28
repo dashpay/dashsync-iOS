@@ -30,6 +30,7 @@
 #import "DSBlock+Protected.h"
 #import "DSChain.h"
 #import "DSChainLock.h"
+#import "DSKeyManager.h"
 #import "DSMerkleTree.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -57,7 +58,6 @@
     if (message.length < 80) return nil;
     NSNumber *l = nil;
     NSUInteger off = 0, len = 0;
-    NSMutableData *d = [NSMutableData data];
 
     self.version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -83,13 +83,14 @@
     self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions hashFunction:DSMerkleTreeHashFunction_SHA256_2];
     self.height = BLOCK_UNKNOWN_HEIGHT;
 
+    NSMutableData *d = [NSMutableData data];
     [d appendUInt32:self.version];
     [d appendUInt256:prevBlock];
     [d appendUInt256:merkleRoot];
     [d appendUInt32:self.timestamp];
     [d appendUInt32:self.target];
     [d appendUInt32:self.nonce];
-    self.blockHash = d.x11;
+    self.blockHash = [DSKeyManager x11:d];
     self.chain = chain;
 
 #if LOG_MERKLE_BLOCKS || LOG_MERKLE_BLOCKS_FULL

@@ -40,8 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define TX_INPUT_SIZE 148                                                          // estimated size for a typical compact pubkey transaction input
 #define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_B * 3 * (TX_OUTPUT_SIZE + TX_INPUT_SIZE)) //no txout can be below this amount
 #define TX_MAX_SIZE 100000                                                         // no tx can be larger than this size in bytes
-#define TX_UNCONFIRMED INT32_MAX                                                   // block height indicating transaction is unconfirmed
-#define TX_MAX_LOCK_HEIGHT 500000000                                               // a lockTime below this value is a block height, otherwise a timestamp
+//#define TX_UNCONFIRMED INT32_MAX                                                   // block height indicating transaction is unconfirmed
+//#define TX_MAX_LOCK_HEIGHT 500000000                                               // a lockTime below this value is a block height, otherwise a timestamp
 
 #define TX_VERSION 0x00000001u
 #define SPECIAL_TX_VERSION 0x00000003u
@@ -116,7 +116,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain;
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
++ (instancetype)devnetGenesisCoinbaseWithIdentifier:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
 
 - (instancetype)initOnChain:(DSChain *)chain;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;

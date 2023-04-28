@@ -6,11 +6,12 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSProviderRegistrationTransaction, DSECDSAKey;
+@class DSProviderRegistrationTransaction;
 
 @interface DSProviderUpdateRegistrarTransaction : DSTransaction
 
@@ -29,19 +30,37 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
+- (instancetype)initWithInputHashes:(NSArray *)hashes
+                       inputIndexes:(NSArray *)indexes
+                       inputScripts:(NSArray *)scripts
+                     inputSequences:(NSArray *)inputSequences
+                    outputAddresses:(NSArray *)addresses
+                      outputAmounts:(NSArray *)amounts
+providerUpdateRegistrarTransactionVersion:(uint16_t)version
+            providerTransactionHash:(UInt256)providerTransactionHash
+                               mode:(uint16_t)providerMode
+                        operatorKey:(UInt384)operatorKey
+                      votingKeyHash:(UInt160)votingKeyHash
+                       scriptPayout:(NSData *)scriptPayout
+                            onChain:(DSChain *_Nonnull)chain;
 
-- (instancetype)initWithProviderUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
+- (instancetype)initWithProviderUpdateRegistrarTransactionVersion:(uint16_t)version
+                                          providerTransactionHash:(UInt256)providerTransactionHash
+                                                             mode:(uint16_t)providerMode
+                                                      operatorKey:(UInt384)operatorKey
+                                                    votingKeyHash:(UInt160)votingKeyHash
+                                                     scriptPayout:(NSData *)scriptPayout
+                                                          onChain:(DSChain *_Nonnull)chain;
 
 - (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction *_Nullable)registrationTransaction onChain:(DSChain *)chain;
 
 - (void)updateInputsHash;
 
-- (void)signPayloadWithKey:(DSECDSAKey *_Nonnull)privateKey;
+- (void)signPayloadWithKey:(OpaqueKey *_Nonnull)privateKey;
 
 - (BOOL)checkPayloadSignature;
 
-- (BOOL)checkPayloadSignature:(DSECDSAKey *_Nonnull)publicKey;
+- (BOOL)checkPayloadSignature:(OpaqueKey *_Nonnull)publicKey;
 
 
 @end

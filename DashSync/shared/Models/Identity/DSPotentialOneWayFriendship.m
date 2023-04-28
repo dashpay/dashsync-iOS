@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
+#import "dash_shared_core.h"
 #import "DSPotentialOneWayFriendship.h"
 #import "DSAccount.h"
-#import "DSBLSKey.h"
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSDashPlatform.h"
@@ -27,7 +27,7 @@
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
-#import "DSKey.h"
+#import "DSKeyManager.h"
 #import "DSPotentialContact.h"
 #import "DSWallet.h"
 #import "NSData+Encryption.h"
@@ -40,7 +40,7 @@
 @property (nonatomic, strong) DSBlockchainIdentity *destinationBlockchainIdentity;
 @property (nonatomic, strong) DSPotentialContact *destinationContact;
 @property (nonatomic, strong) DSIncomingFundsDerivationPath *fundsDerivationPathForContact;
-@property (nonatomic, strong) DSKey *extendedPublicKey;
+@property (nonatomic, assign) OpaqueKey *extendedPublicKey;
 @property (nonatomic, strong) NSData *encryptedExtendedPublicKeyData;
 @property (nonatomic, assign) uint32_t sourceKeyIndex;
 @property (nonatomic, assign) uint32_t destinationKeyIndex;
@@ -75,16 +75,16 @@
     return UINT256_ZERO;
 }
 
-- (DSKey *)sourceKeyAtIndex {
+- (OpaqueKey *)sourceKeyAtIndex {
     NSAssert(self.sourceBlockchainIdentity != nil, @"The source identity should be present");
     return [self.sourceBlockchainIdentity keyAtIndex:self.sourceKeyIndex];
 }
 
-- (DSKey *)destinationKeyAtIndex {
+- (OpaqueKey *)destinationKeyAtIndex {
     if (self.destinationBlockchainIdentity) {
         return [self.destinationBlockchainIdentity keyAtIndex:self.destinationKeyIndex];
     } else if (self.destinationContact) {
-        return [self.destinationContact publicKeyAtIndex:self.destinationKeyIndex];
+        return [self.destinationContact publicKeyAtIndex:self.destinationKeyIndex].pointerValue;
     }
     return nil;
 }
@@ -114,8 +114,8 @@
 - (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion {
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     __weak typeof(self) weakSelf = self;
-    DSKey *recipientKey = [self destinationKeyAtIndex];
-    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey.extendedPublicKeyData
+    OpaqueKey *recipientKey = [self destinationKeyAtIndex];
+    [self.sourceBlockchainIdentity encryptData:[DSKeyManager extendedPublicKeyData:self.extendedPublicKey]
                                 withKeyAtIndex:self.sourceKeyIndex
                                forRecipientKey:recipientKey
                                     completion:^(NSData *_Nonnull encryptedData) {
@@ -134,15 +134,9 @@
 }
 
 - (uint32_t)createAccountReference {
-    DSKey *key = [self sourceKeyAtIndex];
-
-    UInt256 accountSecretKey = uint256_reverse([key HMAC256Data:self.extendedPublicKey.extendedPublicKeyData]);
-
-    uint32_t accountSecretKey28 = accountSecretKey.u32[0] >> 4;
-    uint32_t shortenedAccountBits = self.account.accountNumber & 0x0FFFFFFF;
-    uint32_t version = 0; //currently set to 0
-    uint32_t versionBits = version << 28;
-    return versionBits | (accountSecretKey28 ^ shortenedAccountBits); //this is the account ref
+    // TODO: make test
+    OpaqueKey *key = [self sourceKeyAtIndex];
+    return key_create_account_reference(key, self.extendedPublicKey, self.account.accountNumber);
 }
 
 - (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData {

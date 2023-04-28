@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 quorumVerificationVectorHash;
 @property (nonatomic, readonly) UInt768 allCommitmentAggregatedSignature;
 @property (nonatomic, readonly) int32_t signersCount;
-@property (nonatomic, readonly) DSLLMQType llmqType;
+@property (nonatomic, readonly) LLMQType llmqType;
 @property (nonatomic, readonly) int32_t validMembersCount;
 @property (nonatomic, readonly) NSData *signersBitset;
 @property (nonatomic, readonly) NSData *validMembersBitset;
@@ -37,9 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL verified;
 @property (nonatomic, assign) BOOL saved;
 
-- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
+- (instancetype)initWithVersion:(uint16_t)version type:(LLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
 - (instancetype)initWithVersion:(uint16_t)version
-                           type:(DSLLMQType)type
+                           type:(LLMQType)type
                      quorumHash:(UInt256)quorumHash
                     quorumIndex:(uint32_t)quorumIndex
                    signersCount:(int32_t)signersCount
@@ -60,11 +60,14 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 
 - (DSQuorumEntryEntity *)matchingQuorumEntryEntityInContext:(NSManagedObjectContext *)context;
 
-- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType;
+- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(LLMQType)quorumType;
 
-+ (uint32_t)quorumSizeForType:(DSLLMQType)type;
++ (uint32_t)quorumSizeForType:(LLMQType)type;
 
 - (void)mergedWithQuorumEntry:(DSQuorumEntry *)quorumEntry;
+
+- (BOOL)useLegacyBLSScheme;
+
 @end
 
 NS_ASSUME_NONNULL_END

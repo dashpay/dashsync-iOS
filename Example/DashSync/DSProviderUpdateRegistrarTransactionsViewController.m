@@ -48,7 +48,7 @@
 
     cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d", transaction.blockHeight];
     cell.operatorKeyLabel.text = [NSData dataWithUInt384:transaction.operatorKey].hexString;
-    cell.payToAddressLabel.text = [NSString addressWithScriptPubKey:transaction.scriptPayout onChain:transaction.chain];
+    cell.payToAddressLabel.text = [DSKeyManager addressWithScriptPubKey:transaction.scriptPayout forChain:transaction.chain];
 
     return cell;
 }

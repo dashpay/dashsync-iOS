@@ -32,6 +32,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef union _UInt256 UInt256;
+typedef union _DSBlockInfo DSBlockInfo;
 
 @class DSChain, DSChainLock, DSCheckpoint;
 

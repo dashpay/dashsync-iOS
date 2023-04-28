@@ -7,6 +7,7 @@
 
 #import "DSDerivationPath.h"
 #import "NSIndexPath+Dash.h"
+#import "dash_shared_core.h"
 
 @implementation NSIndexPath (Dash)
 

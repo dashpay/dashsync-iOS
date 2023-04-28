@@ -8,7 +8,6 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager+Protected.h"
-#import "DSECDSAKey.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
@@ -67,6 +66,12 @@
     if (length - off < 48) return nil;
     self.operatorKey = [message UInt384AtOffset:off];
     off += 48;
+    
+    if ([self usesBasicBLS]) {
+        if (length - off < 2) return nil;
+        self.operatorKeyVersion = [message UInt16AtOffset:off];
+        off += 2;
+    }
 
     if (length - off < 20) return nil;
     self.votingKeyHash = [message UInt160AtOffset:off];
@@ -83,7 +88,19 @@
     if (length - off < 32) return nil;
     self.inputsHash = [message UInt256AtOffset:off];
     off += 32;
-
+    
+    if ([self usesBasicBLS] && [self usesHPMN]) {
+        if (length - off < 32) return nil;
+        self.platformNodeID = [message UInt160AtOffset:off];
+        off += 32;
+        if (length - off < 2) return nil;
+        self.platformP2PPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+       off += 2;
+        if (length - off < 2) return nil;
+        self.platformHTTPPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+        off += 2;
+    }
+    
     if (length - off < 1) return nil;
     NSNumber *messageSignatureSizeLength = nil;
     NSUInteger messageSignatureSize = (NSUInteger)[message varIntAtOffset:off length:&messageSignatureSizeLength];
@@ -102,7 +119,7 @@
 }
 
 
-- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain {
+- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash platformNodeID:(UInt160)platformNodeID operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain {
     NSParameterAssert(scriptPayout);
     NSParameterAssert(chain);
 
@@ -118,6 +135,7 @@
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
     self.votingKeyHash = votingKeyHash;
+    self.platformNodeID = platformNodeID;
     self.operatorReward = operatorReward;
     self.scriptPayout = scriptPayout;
     DSLogPrivate(@"Creating provider (masternode) with ownerKeyHash %@", uint160_data(ownerKeyHash));
@@ -163,19 +181,21 @@
 }
 
 - (UInt256)payloadCollateralDigest {
-    NSMutableData *stringMessageData = [NSMutableData data];
-    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
-    [stringMessageData appendString:self.payloadCollateralString];
-    return stringMessageData.SHA256_2;
+    return [DSKeyManager proRegTXPayloadCollateralDigest:[self payloadDataForHash]
+                                            scriptPayout:self.scriptPayout
+                                                  reward:self.operatorReward
+                                            ownerKeyHash:self.ownerKeyHash
+                                            voterKeyHash:self.votingKeyHash
+                                               chainType:self.chain.chainType].UInt256;
 }
 
 - (BOOL)checkPayloadSignature {
-    DSECDSAKey *providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
-    return uint160_eq([providerOwnerPublicKey hash160], self.ownerKeyHash);
+    return [DSKeyManager verifyProRegTXPayloadSignature:self.payloadSignature
+                                                payload:[self payloadDataForHash]
+                                           ownerKeyHash:self.ownerKeyHash];
 }
 
 - (NSData *)basePayloadData {
-    //    DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(self.collateralOutpoint.hash), .n = self.collateralOutpoint.n};
     NSMutableData *data = [NSMutableData data];
     [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
     [data appendUInt16:self.providerType];                           //32
@@ -190,6 +210,11 @@
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
+    if ([self usesBasicBLS] && [self usesHPMN]) {
+        [data appendUInt160:self.platformNodeID];
+        [data appendUInt16:CFSwapInt16BigToHost(self.platformP2PPort)];
+        [data appendUInt16:CFSwapInt16BigToHost(self.platformHTTPPort)];
+    }
     return data;
 }
 
@@ -218,11 +243,15 @@
 
 
 - (NSString *)ownerAddress {
-    return [[NSData dataWithUInt160:self.ownerKeyHash] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.ownerKeyHash forChain:self.chain];
+}
+
+- (NSString *)platformNodeAddress {
+    return [DSKeyManager addressFromHash160:self.platformNodeID forChain:self.chain];
 }
 
 - (NSString *)operatorAddress {
-    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
+    return [DSKeyManager addressWithPublicKeyData:uint384_data(self.operatorKey) forChain:self.chain];
 }
 
 - (NSString *)operatorKeyString {
@@ -230,7 +259,7 @@
 }
 
 - (NSString *)votingAddress {
-    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
+    return [DSKeyManager addressFromHash160:self.votingKeyHash forChain:self.chain];
 }
 
 - (NSString *)holdingAddress {
@@ -243,7 +272,7 @@
 }
 
 - (NSString *)payoutAddress {
-    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.chain];
+    return [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:self.chain];
 }
 
 - (NSString *)location {
@@ -300,6 +329,14 @@
     return [self.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
         return obj.amount == MASTERNODE_COST;
     }];
+}
+
+- (BOOL)usesBasicBLS {
+    return self.version == 2;
+}
+
+- (BOOL)usesHPMN {
+    return self.providerType == 1;
 }
 
 @end

@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t updateHeight;
 @property (nonatomic, assign) uint32_t knownConfirmedAtHeight;
 @property (nonatomic, assign) BOOL isValid;
+@property (nonatomic, assign) uint16_t type;
+@property (nonatomic, assign) uint16_t platformHTTPPort;
+@property (nullable, nonatomic, retain) NSData *platformNodeID;
 @property (nullable, nonatomic, retain) NSString *coreVersion;
 @property (nonatomic, assign) uint64_t coreProtocol;
 @property (nullable, nonatomic, retain) NSDate *coreLastConnectionDate;
@@ -30,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *ipv6Address;
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
+@property (nonatomic, assign) uint16_t operatorPublicKeyVersion;
 @property (nullable, nonatomic, retain) NSDictionary *previousOperatorBLSPublicKeys;
 @property (nullable, nonatomic, retain) NSDictionary *previousValidity;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;

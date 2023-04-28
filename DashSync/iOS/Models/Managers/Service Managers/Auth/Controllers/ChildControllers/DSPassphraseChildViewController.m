@@ -103,10 +103,9 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     DSAccount *transientAccount = [transientWallet accountWithNumber:0];
     DSDerivationPath *transientDerivationPath = [transientAccount bip44DerivationPath];
     NSData *transientExtendedPublicKey = transientDerivationPath.extendedPublicKeyData;
-
+    // TODO: deprecatedIncorrectExtendedPublicKeyFromSeed
     if (transientExtendedPublicKey &&
-        ![transientExtendedPublicKey isEqual:oldData] &&
-        ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]) {
+        ![transientExtendedPublicKey isEqual:oldData] /*&& ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]*/) {
         [textView ds_shakeView];
 
         [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];

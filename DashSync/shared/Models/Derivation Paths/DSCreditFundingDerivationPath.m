@@ -37,24 +37,21 @@
 }
 
 + (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain {
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_REGISTRATION)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_REGISTRATION)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
 }
 
 + (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain {
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_TOPUP)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_TOPUP)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditTopupFunding onChain:chain];
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditTopupFunding onChain:chain];
 }
 
 + (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain {
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_INVITATIONS)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_INVITATIONS)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding onChain:chain];
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding onChain:chain];
 }
 
 - (NSString *)receiveAddress {
@@ -81,9 +78,10 @@
             if (!seed) {
                 if (completion) completion(NO, cancelled);
             } else {
-                DSECDSAKey *key = (DSECDSAKey *)[self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
-
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[key]];
+                OpaqueKey *key = [self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
+                NSValue *val = [NSValue valueWithPointer:key];
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[val]];
+                processor_destroy_opaque_key(key);
                 if (completion) completion(signedSuccessfully, NO);
             }
         });

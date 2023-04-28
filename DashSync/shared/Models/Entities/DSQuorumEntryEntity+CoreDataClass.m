@@ -22,9 +22,9 @@
     DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
     DSQuorumEntryEntity *quorumEntryEntity = nil;
     if (block) {
-        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)]] anyObject];
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)]] anyObject];
     } else {
-        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)];
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)];
     }
     if (!quorumEntryEntity) {
         if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
@@ -43,9 +43,9 @@
     DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
     DSQuorumEntryEntity *quorumEntryEntity = nil;
     if (block) {
-        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)]] anyObject];
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)]] anyObject];
     } else {
-        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)];
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)];
     }
     if (!quorumEntryEntity) {
         if (potentialQuorumEntry.saved && potentialQuorumEntry.verified) {
@@ -71,7 +71,7 @@
     self.signersBitset = potentialQuorumEntry.signersBitset;
     self.validMembersCount = potentialQuorumEntry.validMembersCount;
     self.validMembersBitset = potentialQuorumEntry.validMembersBitset;
-    self.llmqType = potentialQuorumEntry.llmqType;
+    self.llmqType = (int16_t)potentialQuorumEntry.llmqType;
     self.version = potentialQuorumEntry.version;
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
     self.commitmentHash = potentialQuorumEntry.quorumEntryHash;

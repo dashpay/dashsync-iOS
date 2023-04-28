@@ -184,7 +184,7 @@
             UInt256 newTarget = uInt256MultiplyUInt32LE(previousTarget, 10);
             uint32_t compact = getCompactLE(newTarget);
             if (compact > self.chain.maxProofOfWorkTarget) {
-                DSLog(@"Setting desired target to max proof of work");
+//                DSLog(@"Setting desired target to max proof of work");
                 compact = self.chain.maxProofOfWorkTarget;
             }
             return compact;
@@ -251,7 +251,7 @@
 
     // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
     if (uint256_sup(darkTarget, self.chain.maxProofOfWork)) {
-        DSLog(@"Found a block with minimum difficulty");
+//        DSLog(@"Found a block with minimum difficulty");
         return self.chain.maxProofOfWorkTarget;
     }
 

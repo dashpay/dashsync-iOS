@@ -19,6 +19,7 @@
 #import "DSMasternodeListDiffService.h"
 #import "DSMasternodeListService+Protected.h"
 #import "DSMasternodeListStore+Protected.h"
+#import "NSString+Dash.h"
 
 @implementation DSMasternodeListDiffService
 
@@ -61,6 +62,18 @@
         return;
     }
     NSLog(@"•••• requestMasternodeListDiff: %u..%u %@ .. %@", [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    [self sendMasternodeListRequest:request];
+}
+
+/// test-only
+/// Used for fast obtaining list diff chain for specific block hashes like this:
+/// //DSMasternodeListDiffService *service = self.masternodeListDiffService;
+//    [service sendReversedHashes:@"00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c" blockHash:@"000000e6b51b9aba9754e6b4ef996ef1d142d6cfcc032c1fd7fc78ca6663ee0a"];
+//    [service sendReversedHashes:@"000000e6b51b9aba9754e6b4ef996ef1d142d6cfcc032c1fd7fc78ca6663ee0a" blockHash:@"00000009d7c0bcb59acf741f25239f45820eea178b74597d463ca80e104f753b"];
+
+-(void)sendReversedHashes:(NSString *)baseBlockHash blockHash:(NSString *)blockHash {
+    DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:baseBlockHash.hexToData.reverse.UInt256
+                                                                             blockHash:blockHash.hexToData.reverse.UInt256];
     [self sendMasternodeListRequest:request];
 }
 

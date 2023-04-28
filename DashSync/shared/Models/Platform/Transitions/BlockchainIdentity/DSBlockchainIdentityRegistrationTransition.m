@@ -8,8 +8,8 @@
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "BigIntTypes.h"
 #import "DSCreditFundingTransaction.h"
-#import "DSECDSAKey.h"
 #import "DSInstantSendTransactionLock.h"
+#import "DSKeyManager.h"
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
 #import "DSTransition+Protected.h"
@@ -19,7 +19,7 @@
 
 @interface DSBlockchainIdentityRegistrationTransition ()
 
-@property (nonatomic, strong) NSDictionary<NSNumber *, DSKey *> *publicKeys;
+@property (nonatomic, strong) NSDictionary<NSNumber *, NSValue *> *publicKeys;
 @property (nonatomic, strong) DSCreditFundingTransaction *creditFundingTransaction;
 
 @end
@@ -32,7 +32,7 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary<NSNumber *, DSKey *> *)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction *)creditFundingTransaction onChain:(DSChain *)chain {
+- (instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary<NSNumber *, NSValue *> *)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction *)creditFundingTransaction onChain:(DSChain *)chain {
     NSParameterAssert(chain);
     NSParameterAssert(publicKeys);
     NSAssert(publicKeys.count, @"There must be at least one key when registering a user");
@@ -48,14 +48,14 @@
 - (NSMutableArray *)platformKeyDictionaries {
     NSMutableArray *platformKeys = [NSMutableArray array];
     for (NSNumber *indexIdentifier in self.publicKeys) {
-        DSKey *key = self.publicKeys[indexIdentifier];
+        OpaqueKey *key = self.publicKeys[indexIdentifier].pointerValue;
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
         platformKeyDictionary[@"id"] = @([indexIdentifier unsignedIntValue]);
         platformKeyDictionary[@"purpose"] = @(DWIdentityPublicKeyPurposeAuthentication);
         platformKeyDictionary[@"securityLevel"] = @(DWIdentityPublicKeySecurityLevelMaster); 
         platformKeyDictionary[@"readOnly"] = @NO;
-        platformKeyDictionary[@"type"] = @(key.keyType);
-        platformKeyDictionary[@"data"] = key.publicKeyData;
+        platformKeyDictionary[@"type"] = @(key->tag);
+        platformKeyDictionary[@"data"] = [DSKeyManager publicKeyData:key];
         [platformKeys addObject:platformKeyDictionary];
     }
     return platformKeys;
@@ -101,11 +101,11 @@
     NSArray *publicKeysDictionariesArray = keyValueDictionary[@"publicKeys"];
     NSMutableDictionary *platformKeys = [NSMutableDictionary dictionary];
     for (DSMutableStringValueDictionary *platformKeyDictionary in publicKeysDictionariesArray) {
-        DSKeyType keyType = [platformKeyDictionary[@"type"] unsignedIntValue];
+        KeyKind keyType = [platformKeyDictionary[@"type"] unsignedIntValue];
         NSUInteger identifier = [platformKeyDictionary[@"id"] unsignedIntValue];
         NSData *keyData = platformKeyDictionary[@"data"];
-        DSKey *key = [DSKey keyWithPublicKeyData:keyData forKeyType:keyType];
-        platformKeys[@(identifier)] = key;
+        OpaqueKey *key = [DSKeyManager keyWithPublicKeyData:keyData ofType:keyType];
+        platformKeys[@(identifier)] = [NSValue valueWithPointer:key];
     }
     self.publicKeys = [platformKeys copy];
 }

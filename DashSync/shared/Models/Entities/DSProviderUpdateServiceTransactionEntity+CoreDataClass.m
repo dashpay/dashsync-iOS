@@ -9,7 +9,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSKey.h"
+#import "DSKeyManager.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
@@ -29,7 +29,7 @@
         self.scriptPayout = providerUpdateServiceTransaction.scriptPayout;
         self.payloadSignature = providerUpdateServiceTransaction.payloadSignature;
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
-        NSString *payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:transaction.chain];
+        NSString *payoutAddress = [DSKeyManager addressWithScriptPubKey:self.scriptPayout forChain:transaction.chain];
 
         NSArray *payoutAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", payoutAddress, [transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([payoutAddressEntities count]) {

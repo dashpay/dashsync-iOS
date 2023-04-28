@@ -1,6 +1,6 @@
-//
-//  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  
+//  Created by Vladimir Pirogov
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DSKey.h"
+#import "NSIndexPath+FFI.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation NSIndexPath (FFI)
 
-@interface DSKey ()
+- (IndexPathData *)ffi_malloc {
+    IndexPathData *obj = malloc(sizeof(IndexPathData));
+    NSUInteger *indexes = calloc(self.length, sizeof(NSUInteger));
+    [self getIndexes:indexes];
+    obj->indexes = indexes;
+    obj->len = self.length;
+    return obj;
+}
 
-@property (nonatomic, strong) NSData *extendedPrivateKeyData;
-@property (nonatomic, strong) NSData *extendedPublicKeyData;
++ (void)ffi_free:(IndexPathData *)entry {
+    if (entry->len > 0) {
+        free((void *) entry->indexes);
+    }
+    free(entry);
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

@@ -90,6 +90,15 @@ typedef struct {
     uint8_t p[33];
 } DSECPoint;
 
+typedef union _DSBlockInfo {
+    uint8_t u8[288 / 8]; // 36
+    uint16_t u16[288 / 16]; // 18
+    uint32_t u32[288 / 32]; // 9
+} DSBlockInfo;
+
+#define dsblockinfo_data(u) [NSData dataWithBlockInfo:u]
+#define dsblockinfo_from(hash, height) [NSData dataWithBlockHash:hash height:height]
+
 typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
@@ -177,6 +186,7 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint160_data_from_obj(u) [NSData dataWithUInt160Value:u]
 #define uint256_data_from_obj(u) [NSData dataWithUInt256Value:u]
 
+#define uint32_hex(u) [NSData dataWithUInt32:u].hexString
 #define uint128_hex(u) [NSData dataWithUInt128:u].hexString
 #define uint160_hex(u) [NSData dataWithUInt160:u].hexString
 #define uint160_reverse_hex(u) [NSData dataWithUInt160:u].reverse.hexString
@@ -194,7 +204,7 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint512_reverse_hex(u) [NSData dataWithUInt512:u].reverse.hexString
 #define uint768_hex(u) [NSData dataWithUInt768:u].hexString
 #define uint768_reverse_hex(u) [NSData dataWithUInt768:u].reverse.hexString
-
+#define ecpoint_hex(u) [NSData dataWithBytes:u.p length:sizeof(DSECPoint)].hexString
 #define uint256_reverse(u) [NSData dataWithUInt256:u].reverse.UInt256
 
 #define uint256_from_int(u) ((UInt256){.u32 = {u, 0, 0, 0, 0, 0, 0, 0}})
@@ -213,6 +223,7 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define DSUTXO_ZERO ((DSUTXO){.hash = UINT256_ZERO, .n = 0})
 #define DSLLMQ_ZERO ((DSLLMQ){.type = 0, .hash = UINT256_ZERO})
 #define DSECPOINT_ZERO ((DSECPoint){.p = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}})
+#define DSBlockInfo_ZERO ((DSBlockInfo){.u32 = {0, 0, 0, 0, 0, 0, 0, 0, 0}})
 
 #define dsutxo_eq(a, b) (uint256_eq(a.hash, b.hash) && (a.n == b.n))
 #define dsutxo_is_zero(a) (uint256_is_zero(a.hash) && (a.n == 0))

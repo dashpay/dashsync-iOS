@@ -89,7 +89,7 @@
                                                                    forAmount:0
                                                                   completion:^(NSData *_Nullable seed, BOOL cancelled) {
                                                                       if (seed) {
-                                                                          self.ownerKeyLabel.text = [[self.localMasternode ownerKeyFromSeed:seed] serializedPrivateKeyForChain:self.chain];
+                                                                          self.ownerKeyLabel.text = [DSKeyManager serializedPrivateKey:[self.localMasternode ownerKeyFromSeed:seed] chainType:self.chain.chainType];
                                                                       }
                                                                   }];
                     }
