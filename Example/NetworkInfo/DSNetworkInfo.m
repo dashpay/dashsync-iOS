@@ -55,8 +55,6 @@
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
     [[DashSync sharedSyncController] wipeSporkDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
     [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
-    [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
-    [[DashSync sharedSyncController] wipeWalletDataForChain:self.testnetChain forceReauthentication:NO inContext:[NSManagedObjectContext chainContext]];
     
     void (^currentMasternodeListDidChangeBlock)(NSNotification *note) = ^(NSNotification *note) {
         DSMasternodeList *masternodeList = [note userInfo][DSMasternodeManagerNotificationMasternodeListKey];
