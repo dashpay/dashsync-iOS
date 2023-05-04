@@ -58,6 +58,7 @@
 }
 
 + (BOOL)keysPublicKeyDataIsEqual:(OpaqueKey *)key1 key2:(OpaqueKey *)key2 {
+    if (key1 == NULL || key2 == NULL) return false;
     return keys_public_key_data_is_equal(key1, key2);
 }
 

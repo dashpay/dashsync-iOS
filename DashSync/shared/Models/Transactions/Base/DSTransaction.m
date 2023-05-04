@@ -68,17 +68,12 @@
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
++ (UInt256)devnetGenesisCoinbaseTxHash:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
     DSTransaction *transaction = [[self alloc] initOnChain:chain];
     NSData *coinbaseData = [DSKeyManager NSDataFrom:devnet_genesis_coinbase_message(devnetType, protocolVersion)];
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
-    NSMutableData *outputScript = [NSMutableData data];
-    [outputScript appendUInt8:OP_RETURN];
-    [transaction addOutputScript:outputScript amount:chain.baseReward];
-    //    DSLogPrivate(@"we are hashing %@",transaction.toData);
-    transaction.txHash = transaction.toData.SHA256_2;
-    //    DSLogPrivate(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
-    return transaction;
+    [transaction addOutputScript:[NSData dataWithUInt8:OP_RETURN] amount:chain.baseReward];
+    return transaction.toData.SHA256_2;
 }
 
 - (instancetype)init {

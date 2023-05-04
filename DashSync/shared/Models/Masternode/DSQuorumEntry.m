@@ -210,7 +210,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     }
     MasternodeList *list = [masternodeList ffi_malloc];
     LLMQEntry *quorum = [self ffi_malloc];
-    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash));
+    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash), self.chain.chainType);
     [DSMasternodeList ffi_free:list];
     [DSQuorumEntry ffi_free:quorum];
     self.verified = is_valid;

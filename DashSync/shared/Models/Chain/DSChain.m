@@ -505,7 +505,7 @@ static dispatch_once_t devnetToken = 0;
     UInt256 fullTarget = setCompactLE(nBits);
     uint32_t nVersion = 4;
     UInt256 prevHash = checkpoint.blockHash;
-    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier onProtocolVersion:protocolVersion forChain:self].txHash;
+    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseTxHash:identifier onProtocolVersion:protocolVersion forChain:self];
     UInt256 chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
     uint32_t nonce = UINT32_MAX; //+1 => 0;
     UInt256 blockhash;

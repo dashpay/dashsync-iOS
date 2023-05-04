@@ -29,6 +29,12 @@
     if (errorStatus > 0) {
         return processingResult;
     }
+    if (result->masternode_list == NULL) {
+        NSLog(@"DSQRInfoProcessingResult.error.unknown");
+        processingResult.errorStatus = ProcessingError_ParseError;
+        return processingResult;
+    }
+
     [processingResult setErrorStatus:errorStatus];
     [processingResult setBaseBlockHash:*(UInt256 *)result->base_block_hash];
     [processingResult setBlockHash:*(UInt256 *)result->block_hash];
