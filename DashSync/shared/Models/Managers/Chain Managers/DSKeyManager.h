@@ -68,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)keyRecoveredFromCompactSig:(NSData *)signature andMessageDigest:(UInt256)md;
 + (NSData *_Nullable)compactSign:(DSDerivationPath *)derivationPath fromSeed:(NSData *)seed atIndexPath:(NSIndexPath *)indexPath digest:(UInt256)digest;
 + (ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(ChainType)chainType;
++ (NSData *)blsPublicKeySerialize:(BLSKey *)key legacy:(BOOL)legacy;
 + (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(ChainType)chainType;
 + (BOOL)isValidDashBIP38Key:(NSString *)key;
 + (OpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length;
