@@ -31,9 +31,7 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSChain.h"
 #import "DSChainsManager.h"
-#import "DSECDSAKey.h"
 #import "DSEventManager.h"
-#import "DSKey+BIP38.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSWallet.h"
@@ -54,6 +52,7 @@
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSString+Dash.h"
+#import "dash_shared_core.h"
 
 #define TICKER_REFRESH_TIME 60.0
 

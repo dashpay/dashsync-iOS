@@ -42,15 +42,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary<NSData *, id> *)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier atBlockHeight:(uint32_t)blockHeight;
 - (NSArray *)scoresForQuorumModifier:(UInt256)quorumModifier atBlockHeight:(uint32_t)blockHeight;
 
-- (NSUInteger)validQuorumsCountOfType:(DSLLMQType)type;
-- (NSDictionary *)quorumsOfType:(DSLLMQType)type;
-- (NSUInteger)quorumsCountOfType:(DSLLMQType)type;
+- (NSUInteger)validQuorumsCountOfType:(LLMQType)type;
+- (NSDictionary *)quorumsOfType:(LLMQType)type;
+- (NSUInteger)quorumsCountOfType:(LLMQType)type;
 
 - (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
 
 - (NSArray<DSSimplifiedMasternodeEntry *> *)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeight:(uint32_t)blockHeight;
 
 - (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)listOfChangedNodesComparedTo:(DSMasternodeList *)previous;
 - (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (DSQuorumEntry *_Nullable)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(DSLLMQType)quorumType;
+- (DSQuorumEntry *_Nullable)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(LLMQType)quorumType;
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash;
 
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;

@@ -67,16 +67,16 @@
     UInt128 address = self.address;
     uint16_t port = CFSwapInt16HostToBig(self.port);
     [msg appendUInt32:self.protocolVersion];                                            // version
-    [msg appendUInt64:ENABLED_SERVICES];                                                      // services
-    [msg appendUInt64:[NSDate timeIntervalSince1970]];                                        // timestamp
-    [msg appendUInt64:self.services];                                                         // services of remote peer
-    [msg appendBytes:&address length:sizeof(address)];                                      // IPv6 address of remote peer
-    [msg appendBytes:&port length:sizeof(port)];                                              // port of remote peer
+    [msg appendUInt64:ENABLED_SERVICES];                                                // services
+    [msg appendUInt64:[NSDate timeIntervalSince1970]];                                  // timestamp
+    [msg appendUInt64:self.services];                                                   // services of remote peer
+    [msg appendBytes:&address length:sizeof(address)];                                  // IPv6 address of remote peer
+    [msg appendBytes:&port length:sizeof(port)];                                        // port of remote peer
     [msg appendNetAddress:LOCAL_HOST port:self.standardPort services:ENABLED_SERVICES]; // net address of local peer
-    [msg appendUInt64:self.localNonce];
-    [msg appendString:self.userAgent]; // user agent
-    [msg appendUInt32:0];     // last block received
-    [msg appendUInt8:0];      // relay transactions (no for SPV bloom filter mode)
+    [msg appendUInt64:self.localNonce];                                                 // random nonce
+    [msg appendString:self.userAgent];                                                  // user agent
+    [msg appendUInt32:0];                                                               // last block received
+    [msg appendUInt8:0];                                                                // relay transactions (no for SPV bloom filter mode)
     return msg;
 }
 

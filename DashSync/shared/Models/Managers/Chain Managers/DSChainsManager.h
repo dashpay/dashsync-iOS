@@ -43,7 +43,6 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
 - (DSChainManager *_Nullable)chainManagerForChain:(DSChain *)chain;
 
 - (void)updateDevnetChain:(DSChain *)chain
-                  version:(uint32_t)version
       forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations
   minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
              standardPort:(uint32_t)standardPort
@@ -54,14 +53,9 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
           protocolVersion:(uint32_t)protocolVersion
        minProtocolVersion:(uint32_t)minProtocolVersion
              sporkAddress:(NSString *)sporkAddress
-          sporkPrivateKey:(NSString *)sporkPrivateKey
-         ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
-        ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-      chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-       platformQuorumType:(DSLLMQType)platformQuorumType;
+          sporkPrivateKey:(NSString *)sporkPrivateKey;
 
-- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier
-                                                version:(uint16_t)version
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(DevnetType)devnetType
                                     forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations
                             withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
                                            standardPort:(uint32_t)standardPort
@@ -72,11 +66,7 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
                                         protocolVersion:(uint32_t)protocolVersion
                                      minProtocolVersion:(uint32_t)minProtocolVersion
                                            sporkAddress:(NSString *_Nullable)sporkAddress
-                                        sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey
-                                       ISLockQuorumType:(DSLLMQType)ISQuorumLockType
-                                      ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
-                                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                                     platformQuorumType:(DSLLMQType)platformQuorumType;
+                                        sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey;
 
 - (void)removeDevnetChain:(DSChain *)chain;
 

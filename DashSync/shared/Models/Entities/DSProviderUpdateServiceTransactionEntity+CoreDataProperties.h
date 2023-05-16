@@ -21,6 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *scriptPayout;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 @property (nullable, nonatomic, retain) DSLocalMasternodeEntity *localMasternode;
+@property (nonatomic, assign) uint16_t providerType;
+@property (nonatomic, assign) uint16_t platformHTTPPort;
+@property (nonatomic, assign) uint16_t platformP2PPort;
+@property (nullable, nonatomic, retain) NSData *platformNodeID;
 
 @end
 

@@ -34,6 +34,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
+#import "dash_shared_core.h"
 
 @interface DSIdentitiesManager ()
 
@@ -533,8 +534,8 @@
     for (NSDictionary *versionedIdentityDictionary in identityDictionaries) {
         NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
         NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
-        DSKey *key = [DSBlockchainIdentity firstKeyInIdentityDictionary:identityDictionary];
-        NSNumber *index = [keyIndexes objectForKey:key.publicKeyData];
+        OpaqueKey *key = [DSBlockchainIdentity firstKeyInIdentityDictionary:identityDictionary];
+        NSNumber *index = [keyIndexes objectForKey:[DSKeyManager publicKeyData:key]];
         if (index) {
             DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary version:[version intValue] inWallet:wallet];
             [identities addObject:blockchainIdentity];
@@ -582,15 +583,16 @@
         for (DSWallet *wallet in wallets) {
             NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
             uint32_t unusedIndex = [wallet unusedBlockchainIdentityIndex];
-            DSAuthenticationKeysDerivationPath *derivationPath = [DSBlockchainIdentity derivationPathForType:DSKeyType_ECDSA forWallet:wallet];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSBlockchainIdentity derivationPathForType:KeyKind_ECDSA forWallet:wallet];
             const int keysToCheck = 5;
             NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionary];
             for (int i = 0; i < keysToCheck; i++) {
                 const NSUInteger indexes[] = {(unusedIndex + i) | BIP32_HARD, 0 | BIP32_HARD};
                 NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
-                DSKey *key = [derivationPath publicKeyAtIndexPath:indexPath];
-                [keyHashes addObject:uint160_data([key hash160])];
-                [keyIndexes setObject:@(unusedIndex + i) forKey:key.publicKeyData];
+                OpaqueKey *key = [derivationPath publicKeyAtIndexPath:indexPath];
+                NSData *publicKeyData = [DSKeyManager publicKeyData:key];
+                [keyHashes addObject:uint160_data(publicKeyData.hash160)];
+                [keyIndexes setObject:@(unusedIndex + i) forKey:publicKeyData];
             }
             dispatch_group_enter(dispatch_group);
             [client.DAPIPlatformNetworkService fetchIdentitiesByKeyHashes:keyHashes

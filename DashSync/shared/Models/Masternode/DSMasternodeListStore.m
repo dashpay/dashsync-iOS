@@ -674,7 +674,7 @@
     return block ? [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block] : nil;
 }
 
-- (DSQuorumEntry *_Nullable)activeQuorumForTypeQuorumHash:(UInt256)quorumHash ofQuorumType:(DSLLMQType)quorumType {
+- (DSQuorumEntry *_Nullable)activeQuorumForTypeQuorumHash:(UInt256)quorumHash ofQuorumType:(LLMQType)quorumType {
     for (DSQuorumEntry *quorumEntry in self.activeQuorums) {
         if (uint256_eq(quorumEntry.quorumHash, quorumHash) && quorumEntry.llmqType == quorumType) {
             return quorumEntry;
@@ -699,7 +699,7 @@
     }
     DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
     if (quorumEntry == nil) {
-        quorumEntry = [self activeQuorumForTypeQuorumHash:quorumHash ofQuorumType:self.chain.quorumTypeForPlatform];
+        quorumEntry = [self activeQuorumForTypeQuorumHash:quorumHash ofQuorumType:quorum_type_for_platform(self.chain.chainType)];
     }
     if (quorumEntry == nil) {
         quorumEntry = [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:block.height - 1];
@@ -708,7 +708,7 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForLockRequestID:(UInt256)requestID
-                                  ofQuorumType:(DSLLMQType)quorumType
+                                  ofQuorumType:(LLMQType)quorumType
                                 forMerkleBlock:(DSMerkleBlock *)merkleBlock
                           withExpirationOffset:(uint32_t)offset {
     UInt256 blockHash = merkleBlock.blockHash;
@@ -732,14 +732,14 @@
 
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
     return [self quorumEntryForLockRequestID:requestID
-                                ofQuorumType:self.chain.quorumTypeForChainLocks
+                                ofQuorumType:quorum_type_for_chain_locks(self.chain.chainType)
                               forMerkleBlock:merkleBlock
                         withExpirationOffset:24];
 }
 
 - (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
     return [self quorumEntryForLockRequestID:requestID
-                                ofQuorumType:self.chain.quorumTypeForISLocks
+                                ofQuorumType:quorum_type_for_is_locks(self.chain.chainType)
                               forMerkleBlock:merkleBlock
                         withExpirationOffset:32];
 }

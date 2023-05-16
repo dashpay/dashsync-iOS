@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainEntity : NSManagedObject
 
-+ (DSChainEntity *_Nonnull)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString *_Nullable)devnetIdentifier devnetVersion:(uint16_t)devnetVersion checkpoints:(NSArray *_Nullable)checkpoints inContext:(NSManagedObjectContext *)context;
++ (DSChainEntity *_Nonnull)chainEntityForType:(ChainType)type checkpoints:(NSArray *_Nullable)checkpoints inContext:(NSManagedObjectContext *)context;
 - (instancetype)setAttributesFromChain:(DSChain *_Nonnull)chain;
 - (DSChain *_Nonnull)chain;
 

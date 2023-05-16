@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSAuthenticationKeysDerivationPath *)providerVotingKeysDerivationPathForWallet:(DSWallet *)wallet;
 - (DSAuthenticationKeysDerivationPath *)providerOwnerKeysDerivationPathForWallet:(DSWallet *)wallet;
 - (DSAuthenticationKeysDerivationPath *)providerOperatorKeysDerivationPathForWallet:(DSWallet *)wallet;
+- (DSAuthenticationKeysDerivationPath *)platformNodeKeysDerivationPathForWallet:(DSWallet *)wallet;
 - (DSMasternodeHoldingsDerivationPath *)providerFundsDerivationPathForWallet:(DSWallet *)wallet;
 
 - (DSCreditFundingDerivationPath *)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet;

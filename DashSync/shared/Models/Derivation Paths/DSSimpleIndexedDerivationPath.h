@@ -9,8 +9,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSKey;
-
 @interface DSSimpleIndexedDerivationPath : DSDerivationPath
 
 // returns the index of an address in the derivation path as long as it is within the gap limit
@@ -38,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)addressesToIndex:(NSUInteger)index useCache:(BOOL)useCache addToCache:(BOOL)addToCache;
 
 // gets a private key at an index
-- (DSKey *_Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;
+- (OpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;
 
 // get private keys for a range or to an index
 - (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed;

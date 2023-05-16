@@ -6,7 +6,6 @@
 //
 
 #import "DSInstantSendTransactionLock.h"
-#import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
@@ -81,10 +80,7 @@
     self.quorumVerified = NO;
     @autoreleasepool {
         self.chain = chain;
-
-
         count = [message varIntAtOffset:off length:&l]; // input count
-
         off += l.unsignedIntegerValue;
         NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
         for (NSUInteger i = 0; i < count; i++) { // inputs
@@ -116,10 +112,7 @@
     self.quorumVerified = NO;
     @autoreleasepool {
         self.chain = chain;
-
-
         count = [message varIntAtOffset:off length:&l]; // input count
-
         off += l.unsignedIntegerValue;
         NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
         for (NSUInteger i = 0; i < count; i++) { // inputs
@@ -179,7 +172,7 @@
 
 - (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
     NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:self.chain.quorumTypeForISLocks];
+    [data appendVarInt:quorum_type_for_is_locks(self.chain.chainType)];
     [data appendUInt256:quorumEntry.quorumHash];
     [data appendUInt256:self.requestID];
     [data appendUInt256:self.transactionHash];
@@ -187,16 +180,13 @@
 }
 
 - (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
-    UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    DSLogPrivate(@"verifying is lock signature %@ with public key %@ for transaction hash %@ against quorum %@", [NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString, quorumEntry);
-    return [blsKey verify:signId signature:self.signature];
+    return key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
 }
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
     DSQuorumEntry *foundQuorum = nil;
-    DSLLMQType ISLockQuorumType = [self.chain quorumTypeForISLocks];
+    LLMQType ISLockQuorumType = quorum_type_for_is_locks(self.chain.chainType);
     for (DSMasternodeList *masternodeList in [self.chain.chainManager.masternodeManager.recentMasternodeLists copy]) {
         for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:ISLockQuorumType] allValues]) {
             BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
@@ -242,6 +232,7 @@
 }
 
 - (BOOL)verifySignature {
+    // TODO: Need to implement
     return TRUE;
     //
     return [self verifySignatureWithQuorumOffset:8];

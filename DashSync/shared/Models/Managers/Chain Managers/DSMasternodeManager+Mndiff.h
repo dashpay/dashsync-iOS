@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "dash_shared_core.h"
 #import "DSChain.h"
 #import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeList.h"
@@ -23,7 +24,6 @@
 #import "DSQRInfoProcessingResult.h"
 #import "DSQuorumEntry.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -42,11 +42,7 @@ LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *
 bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context);
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
-void logRustMessage(const char *message, const void *context);
-uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
-bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
-bool validateLLMQ(struct LLMQValidationData *data, const void *context);
-
+ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
 
 + (MasternodeProcessor *)registerProcessor;
 + (void)unregisterProcessor:(MasternodeProcessor *)processor;

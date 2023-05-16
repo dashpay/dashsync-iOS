@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define MASTERNODE_COST 100000000000
 
-@class DSPeer, DSChain, DSSimplifiedMasternodeEntry, DSWallet, DSLocalMasternode, DSProviderRegistrationTransaction, DSQuorumEntry, DSMasternodeList, DSInstantSendTransactionLock, DSBLSKey, DSECDSAKey, DSMasternodeListService, DSQuorumRotationService, DSMasternodeListDiffService;
+@class DSPeer, DSChain, DSSimplifiedMasternodeEntry, DSWallet, DSLocalMasternode, DSProviderRegistrationTransaction, DSQuorumEntry, DSMasternodeList, DSInstantSendTransactionLock, DSMasternodeListService, DSQuorumRotationService, DSMasternodeListDiffService;
 
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate, DSMasternodeListServiceDelegate>
 

@@ -32,7 +32,6 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSCreditFundingTransaction.h"
-#import "DSECDSAKey.h"
 #import "DSIdentitiesManager.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager.h"
@@ -69,18 +68,12 @@
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
++ (UInt256)devnetGenesisCoinbaseTxHash:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
     DSTransaction *transaction = [[self alloc] initOnChain:chain];
-    NSMutableData *coinbaseData = [NSMutableData data];
-    [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier version:version onProtocolVersion:protocolVersion];
+    NSData *coinbaseData = [DSKeyManager NSDataFrom:devnet_genesis_coinbase_message(devnetType, protocolVersion)];
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
-    NSMutableData *outputScript = [NSMutableData data];
-    [outputScript appendUInt8:OP_RETURN];
-    [transaction addOutputScript:outputScript amount:chain.baseReward];
-    //    DSLogPrivate(@"we are hashing %@",transaction.toData);
-    transaction.txHash = transaction.toData.SHA256_2;
-    //    DSLogPrivate(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
-    return transaction;
+    [transaction addOutputScript:[NSData dataWithUInt8:OP_RETURN] amount:chain.baseReward];
+    return transaction.toData.SHA256_2;
 }
 
 - (instancetype)init {
@@ -229,7 +222,7 @@
         if ([address isEqual:[NSNull null]]) {
             [outScript appendUInt8:OP_RETURN];
         } else {
-            [outScript appendScriptPubKeyForAddress:address forChain:chain];
+            [outScript appendData:[DSKeyManager scriptPubKeyForAddress:address forChain:chain]];
         }
         [self.mOutputs addObject:[DSTransactionOutput transactionOutputWithAmount:amount outScript:outScript onChain:self.chain]];
     }
@@ -287,10 +280,10 @@
         NSMutableArray *rAddresses = [NSMutableArray arrayWithCapacity:self.mInputs.count];
         for (DSTransactionInput *input in self.mInputs) {
             if (input.inScript) {
-                NSString *address = [NSString addressWithScriptPubKey:input.inScript onChain:self.chain];
+                NSString *address = [DSKeyManager addressWithScriptPubKey:input.inScript forChain:self.chain];
                 [rAddresses addObject:(address) ? address : [NSNull null]];
             } else {
-                NSString *address = [NSString addressWithScriptSig:input.signature onChain:self.chain];
+                NSString *address = [DSKeyManager addressWithScriptSig:input.signature forChain:self.chain];
                 [rAddresses addObject:(address) ? address : [NSNull null]];
             }
         }
@@ -308,7 +301,7 @@
                 [rAddresses addObject:[NSNull null]];
             }
         }
-        return [rAddresses copy];
+        return rAddresses;
     }
 }
 
@@ -469,14 +462,14 @@
 
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount {
     @synchronized (self) {
-        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[NSData scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
+        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[DSKeyManager scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
         [self.mOutputs addObject:transactionOutput];
     }
 }
 
 - (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount {
     @synchronized (self) {
-        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[NSData scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
+        DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:[DSKeyManager scriptPubKeyForAddress:address forChain:self.chain] onChain:self.chain];
         [self.mOutputs addObject:transactionOutput];
     }
 }
@@ -501,7 +494,7 @@
 
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount {
     @synchronized (self) {
-        NSString *address = [NSString addressWithScriptPubKey:script onChain:self.chain];
+        NSString *address = [DSKeyManager addressWithScriptPubKey:script forChain:self.chain];
         [self addOutputScript:script withAddress:address amount:amount];
     }
 }
@@ -511,7 +504,7 @@
     NSParameterAssert(script);
     @synchronized (self) {
         if (!address && script) {
-            address = [NSString addressWithScriptPubKey:script onChain:self.chain];
+            address = [DSKeyManager addressWithScriptPubKey:script forChain:self.chain];
         }
         DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount address:address outScript:script onChain:self.chain];
         [self.mOutputs addObject:transactionOutput];
@@ -520,9 +513,7 @@
 
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index {
     @synchronized (self) {
-        NSMutableData *inputScript = [NSMutableData data];
-        [inputScript appendScriptPubKeyForAddress:address forChain:self.chain];
-        self.mInputs[index].inScript = inputScript;
+        self.mInputs[index].inScript = [DSKeyManager scriptPubKeyForAddress:address forChain:self.chain];
     }
 }
 
@@ -571,10 +562,9 @@
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
 
     for (NSString *pk in privateKeys) {
-        DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:pk onChain:self.chain];
-
+        OpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
         if (!key) continue;
-        [keys addObject:key];
+        [keys addObject:[NSValue valueWithPointer:key]];
     }
 
     return [self signWithPrivateKeys:keys];
@@ -582,29 +572,31 @@
 
 - (BOOL)signWithPrivateKeys:(NSArray *)keys {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
+    // TODO: avoid double looping: defer getting address into signWithPrivateKeys key <-> address
 
-    for (DSECDSAKey *key in keys) {
-        [addresses addObject:[key addressForChain:self.chain]];
+    for (NSValue *key in keys) {
+        [addresses addObject:[DSKeyManager addressForKey:key.pointerValue forChainType:self.chain.chainType]];
     }
-
-    return [self signWithPrivateKeys:keys forAddresses:addresses];
-}
-
-- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
     @synchronized (self) {
-        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
+       for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSMutableData *sig = [NSMutableData data];
+           
+            NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
+            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
+            if (keyIdx == NSNotFound) continue;
             NSData *data = [self toDataWithSubscriptIndex:i];
+            NSMutableData *sig = [NSMutableData data];
+            NSValue *keyValue = keys[keyIdx];
+            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
             UInt256 hash = data.SHA256_2;
-            NSMutableData *s = [NSMutableData dataWithData:[keys[i] sign:hash]];
-            NSArray *elem = [transactionInput.inScript scriptElements];
-
+            NSData *signedData = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, hash.u8, 32)];
+            
+            NSMutableData *s = [NSMutableData dataWithData:signedData];
             [s appendUInt8:SIGHASH_ALL];
             [sig appendScriptPushData:s];
-
+            NSArray *elem = [transactionInput.inScript scriptElements];
             if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-                [sig appendScriptPushData:[keys[i] publicKeyData]];
+                [sig appendScriptPushData:[DSKeyManager publicKeyData:key]];
             }
 
             transactionInput.signature = sig;
@@ -616,26 +608,24 @@
     }
 }
 
-- (BOOL)signWithPrivateKeys:(NSArray *)keys forAddresses:(NSArray *)addresses {
+- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
     @synchronized (self) {
-       for (NSUInteger i = 0; i < self.mInputs.count; i++) {
+        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSString *addr = [NSString addressWithScriptPubKey:transactionInput.inScript onChain:self.chain];
-            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
-
-            if (keyIdx == NSNotFound) continue;
-
             NSMutableData *sig = [NSMutableData data];
             NSData *data = [self toDataWithSubscriptIndex:i];
             UInt256 hash = data.SHA256_2;
-            NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
+            NSValue *keyValue = keys[i];
+            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
+            NSData *signedData = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, hash.u8, 32)];
+            NSMutableData *s = [NSMutableData dataWithData:signedData];
             NSArray *elem = [transactionInput.inScript scriptElements];
 
             [s appendUInt8:SIGHASH_ALL];
             [sig appendScriptPushData:s];
 
             if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-                [sig appendScriptPushData:[keys[keyIdx] publicKeyData]];
+                [sig appendScriptPushData:[DSKeyManager publicKeyData:key]];
             }
 
             transactionInput.signature = sig;
@@ -841,13 +831,11 @@
         Class transactionEntityClass = [self entityClass];
         if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
             transactionEntity = [transactionEntityClass managedObjectInBlockedContext:context];
-            [transactionEntity setAttributesFromTransaction:self];
-            [context ds_save];
         } else {
             transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
-            [transactionEntity setAttributesFromTransaction:self];
-            [context ds_save];
         }
+        [transactionEntity setAttributesFromTransaction:self];
+        [context ds_save];
     }];
     return transactionEntity;
 }

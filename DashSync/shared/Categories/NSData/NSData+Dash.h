@@ -160,6 +160,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 @interface NSData (Dash)
 
++ (instancetype)dataWithBlockHash:(UInt256)blockHash height:(uint32_t)height;
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq;
 + (instancetype)dataWithUInt768:(UInt768)n;
 + (instancetype)dataWithUInt512:(UInt512)n;
@@ -222,6 +223,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (DSUTXO)transactionOutpoint;
 - (DSLLMQ)llmq;
+- (DSBlockInfo)blockInfo;
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber *_Nullable *_Nullable)length;
 - (DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset;
 - (NSString *_Nullable)stringAtOffset:(NSUInteger)offset length:(NSNumber *_Nullable *_Nullable)length;
@@ -242,8 +244,6 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (BOOL)isSizedForAddress;
 
-- (NSString *_Nullable)addressFromHash160DataForChain:(DSChain *)chain;
-
 + (NSData *)scriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
 
 - (uint64_t)trueBitsCount;
@@ -257,7 +257,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 + (NSData *)dataFromHexString:(NSString *)string;
 
 - (void)saveToFile:(NSString *)file inDirectory:(NSSearchPathDirectory)directory;
-
+- (BOOL)isZeroBytes;
 @end
 
 

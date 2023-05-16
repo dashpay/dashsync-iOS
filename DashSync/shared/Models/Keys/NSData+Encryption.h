@@ -15,21 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DSKey.h"
 #import <Foundation/Foundation.h>
+#import "dash_shared_core.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Encryption)
 
-- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPublicKey:(DSKey *)peerPubKey;
-- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPublicKey:(DSKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector;
-- (nullable NSData *)decryptWithSecretKey:(DSKey *)secretKey fromPublicKey:(DSKey *)peerPubKey;
-- (nullable NSData *)encryptWithDHKey:(DSKey *)dhKey;
-- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys;
-- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys;
-- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys usingInitializationVector:(NSData *)initializationVector;
-- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys usingIVSize:(NSUInteger)ivSize;
+- (nullable NSData *)encryptWithSecretKey:(OpaqueKey *)secretKey forPublicKey:(OpaqueKey *)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(OpaqueKey *)secretKey forPublicKey:(OpaqueKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector;
+- (nullable NSData *)decryptWithSecretKey:(OpaqueKey *)secretKey fromPublicKey:(OpaqueKey *)peerPubKey;
+- (nullable NSData *)encryptWithDHKey:(OpaqueKey *)dhKey;
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys;
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<NSValue *> *)keys;
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys usingInitializationVector:(NSData *)initializationVector;
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<NSValue *> *)keys usingIVSize:(NSUInteger)ivSize;
 
 @end
 

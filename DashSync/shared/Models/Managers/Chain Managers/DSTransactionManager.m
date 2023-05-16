@@ -498,7 +498,7 @@
         amount = requestedAmount;
 
 
-    NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:chain];
+    NSString *address = [DSKeyManager addressWithScriptPubKey:protoReq.details.outputScripts.firstObject forChain:chain];
     if (!acceptInternalAddress && [wallet accountsBaseDerivationPathsContainAddress:address]) {
         NSString *challengeTitle = DSLocalizedString(@"WARNING", nil);
         NSString *challengeMessage = DSLocalizedString(@"This payment address is already in your wallet", nil);
@@ -605,8 +605,7 @@
     }
 
     for (NSData *script in protoReq.details.outputScripts) {
-        NSString *addr = [NSString addressWithScriptPubKey:script onChain:chain];
-
+        NSString *addr = [DSKeyManager addressWithScriptPubKey:script forChain:chain];
         if (!addr) addr = DSLocalizedString(@"Unrecognized address", nil);
         if ([address rangeOfString:addr].location != NSNotFound) continue;
         address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"", addr];
@@ -723,9 +722,7 @@
                       }];
     } else {
         uint64_t refundAmount = 0;
-        NSMutableData *refundScript = [NSMutableData data];
-        [refundScript appendScriptPubKeyForAddress:account.receiveAddress forChain:account.wallet.chain];
-
+        NSData *refundScript = [DSKeyManager scriptPubKeyForAddress:account.receiveAddress forChain:account.wallet.chain];
         for (NSNumber *amt in protocolRequest.details.outputAmounts) {
             refundAmount += amt.unsignedLongLongValue;
         }
@@ -1612,7 +1609,8 @@
     //DSLogPrivate(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (!self.chain.needsInitialTerminalHeadersSync &&
-        (block.timestamp + DAY_TIME_INTERVAL * 2 > self.chain.earliestWalletCreationTime) && !self.chainManager.chainSynchronizationFingerprint) {
+        (self.chain.earliestWalletCreationTime < block.timestamp + DAY_TIME_INTERVAL * 2) &&
+        !self.chainManager.chainSynchronizationFingerprint) {
         DSLog(@"ignoring header %@", uint256_hex(block.blockHash));
         return;
     }
@@ -1723,6 +1721,7 @@
 
     if (block) {
         [self.chain addChainLock:chainLock];
+        // TODO: duplicate saving check occurs in chain.addChainLock
         [chainLock saveInitial];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];

@@ -29,6 +29,12 @@
     if (errorStatus > 0) {
         return processingResult;
     }
+    if (result->masternode_list == NULL) {
+        NSLog(@"DSQRInfoProcessingResult.error.unknown");
+        processingResult.errorStatus = ProcessingError_ParseError;
+        return processingResult;
+    }
+
     [processingResult setErrorStatus:errorStatus];
     [processingResult setBaseBlockHash:*(UInt256 *)result->base_block_hash];
     [processingResult setBlockHash:*(UInt256 *)result->block_hash];
@@ -57,7 +63,8 @@
 }
 
 - (BOOL)isValid {
-    return self.foundCoinbase && self.validQuorums && self.rootMNListValid && self.rootQuorumListValid;
+//    return self.foundCoinbase && self.validQuorums && self.rootMNListValid && self.rootQuorumListValid;
+    return self.foundCoinbase && self.rootQuorumListValid;
 }
 - (BOOL)isTotallyValid {
     return [self isValid] && self.validCoinbase;
@@ -66,7 +73,7 @@
 - (BOOL)hasRotatedQuorumsForChain:(DSChain*)chain {
     return [[self.addedQuorums keysOfEntriesPassingTest:^BOOL(NSNumber *_Nonnull llmqType, id _Nonnull obj, BOOL *_Nonnull stop) {
         // TODO: make it more reliable as quorum type values may change
-        return ([llmqType unsignedIntValue] == chain.quorumTypeForISDLocks) && (*stop = TRUE);
+        return ([llmqType unsignedIntValue] == quorum_type_for_isd_locks(chain.chainType)) && (*stop = TRUE);
     }] count] > 0;
 }
 

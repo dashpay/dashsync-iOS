@@ -6,11 +6,12 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBLSKey, DSProviderRegistrationTransaction;
+@class DSProviderRegistrationTransaction;
 
 @interface DSProviderUpdateRevocationTransaction : DSTransaction
 
@@ -29,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateInputsHash;
 
-- (void)signPayloadWithKey:(DSBLSKey *_Nonnull)privateKey;
+- (void)signPayloadWithKey:(OpaqueKey *_Nonnull)privateKey;
 
 - (BOOL)checkPayloadSignature;
 
-- (BOOL)checkPayloadSignature:(DSBLSKey *)publicKey;
+- (BOOL)checkPayloadSignature:(OpaqueKey *)publicKey;
 
 
 @end

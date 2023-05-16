@@ -46,10 +46,12 @@
     self.outgoingOurKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@", @(self.outgoingFriendRequest.sourceKeyIndex)];
     self.outgoingFriendKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@", @(self.outgoingFriendRequest.destinationKeyIndex)];
 
-    self.incomingOurKeyUsedForEncryptionLabel.text = [self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.destinationKeyIndex].publicKeyData.hexString;
-    self.incomingFriendKeyUsedForEncryptionLabel.text = [friend keyAtIndex:self.incomingFriendRequest.sourceKeyIndex].publicKeyData.hexString;
-    self.outgoingOurKeyUsedForEncryptionLabel.text = [self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.sourceKeyIndex].publicKeyData.hexString;
-    self.outgoingFriendKeyUsedForEncryptionLabel.text = [friend keyAtIndex:self.incomingFriendRequest.destinationKeyIndex].publicKeyData.hexString;
+    
+    
+    self.incomingOurKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.destinationKeyIndex]].hexString;
+    self.incomingFriendKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[friend keyAtIndex:self.incomingFriendRequest.sourceKeyIndex]].hexString;
+    self.outgoingOurKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.sourceKeyIndex]].hexString;
+    self.outgoingFriendKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[friend keyAtIndex:self.incomingFriendRequest.destinationKeyIndex]].hexString;
 }
 
 @end

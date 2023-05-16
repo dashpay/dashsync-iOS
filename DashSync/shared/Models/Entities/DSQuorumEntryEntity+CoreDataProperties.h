@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSQuorumEntryEntity *> *)fetchRequest;
 
-@property (nonatomic, assign) DSLLMQType llmqType;
+@property (nonatomic, assign) int16_t llmqType;
 @property (nonatomic, assign) int16_t version;
 @property (nonatomic, assign) int32_t validMembersCount;
 @property (nonatomic, assign) int32_t signersCount;

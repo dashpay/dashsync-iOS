@@ -31,7 +31,7 @@
         DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];
         if (!masternodeEntry) {
             masternodeEntry = [masternodeEntity simplifiedMasternodeEntryWithBlockHeightLookup:blockHeightLookup];
-        }
+        }        
         [masternodeEntriesArray addObject:masternodeEntry];
     }
     NSMutableArray *quorumEntriesArray = [NSMutableArray array];

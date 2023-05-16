@@ -565,7 +565,6 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
-  - bls-signatures-pod (1.0.7)
   - BoringSSL-GRPC (0.0.24):
     - BoringSSL-GRPC/Implementation (= 0.0.24)
     - BoringSSL-GRPC/Interface (= 0.0.24)
@@ -587,15 +586,13 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.2.8)
+  - DashSharedCore (0.3.9)
   - DashSync (0.1.0):
-    - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.2.8)
+    - DashSharedCore (= 0.3.9)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
-    - secp256k1_dash (= 0.1.4-alpha.2)
     - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
@@ -660,11 +657,10 @@ PODS:
   - gRPC/Interface-Legacy (1.49.0):
     - gRPC-RxLibrary/Interface (= 1.49.0)
   - KVO-MVVM (0.5.1)
-  - Protobuf (3.21.12)
+  - Protobuf (3.23.0)
   - SDWebImage (5.14.3):
     - SDWebImage/Core (= 5.14.3)
   - SDWebImage/Core (5.14.3)
-  - secp256k1_dash (0.1.4-alpha.2)
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
     - tinycbor (= 0.5.4-alpha1)
@@ -680,7 +676,6 @@ SPEC REPOS:
     - "!ProtoCompiler"
     - "!ProtoCompiler-gRPCPlugin"
     - abseil
-    - bls-signatures-pod
     - BoringSSL-GRPC
     - CocoaLumberjack
     - DAPI-GRPC
@@ -694,7 +689,6 @@ SPEC REPOS:
     - KVO-MVVM
     - Protobuf
     - SDWebImage
-    - secp256k1_dash
     - tinycbor
     - TinyCborObjc
 
@@ -714,13 +708,12 @@ SPEC CHECKSUMS:
   "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
   "!ProtoCompiler-gRPCPlugin": 755f0ee414a0d5f0028e0dcfe98c23bdbc3e6fa3
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
-  bls-signatures-pod: 2fb002bda90163678c294bc2aa8a1049cba9ead7
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 79b38b97b4bff3d14467f4c997229225df4c5a83
-  DashSync: 076af723d7c44bd3e65daa7c8122dc607ad95edf
+  DashSharedCore: 0558ca3ca37725eeb613247a271dbc2692f05162
+  DashSync: 028a42f27e11ded738a25c83c58c894f9ee6755a
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
@@ -728,12 +721,11 @@ SPEC CHECKSUMS:
   gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
   gRPC-RxLibrary: 92327f150e11cf3b1c0f52e083944fd9f5cb5d1e
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  Protobuf: 120350fc38646e2dedc26f49ecba778184ea1de2
+  Protobuf: 43e3764cdf3609fdd00417649561565703437fdc
   SDWebImage: 9c36e66c8ce4620b41a7407698dda44211a96764
-  secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: 74b44586e2a9822f487529686339afa6bf62629c
+PODFILE CHECKSUM: 3b8e6e86b2277fa117d1f7aeb42ad586be9ec600
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

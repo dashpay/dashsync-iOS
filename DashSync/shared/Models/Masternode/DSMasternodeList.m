@@ -238,14 +238,14 @@
 - (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
     return [self validMasternodesForQuorumModifier:quorumModifier
                                        quorumCount:quorumCount
-                                 blockHeightLookup:^uint32_t(UInt256 blockHash) {
+                                 blockHeight:^uint32_t(UInt256 blockHash) {
                                      DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
                                      if (!block) {
                                          DSLog(@"Unknown block %@", uint256_reverse_hex(blockHash));
                                          NSAssert(block, @"block should be known");
                                      }
                                      return block.height;
-                                 }];
+                                 }(self.blockHash)];
 }
 
 - (NSArray<DSSimplifiedMasternodeEntry *> *)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
@@ -266,8 +266,7 @@
     return masternodes;
 }
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    uint32_t blockHeight = blockHeightLookup(self.blockHash);
+- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeight:(uint32_t)blockHeight {
     NSDictionary<NSData *, id> *scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier atBlockHeight:blockHeight];
     NSArray *scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         UInt256 hash1 = *(UInt256 *)((NSData *)obj1).bytes;
@@ -312,11 +311,11 @@
     return count;
 }
 
-- (NSUInteger)quorumsCountOfType:(DSLLMQType)type {
+- (NSUInteger)quorumsCountOfType:(LLMQType)type {
     return self.mQuorums[@(type)].count;
 }
 
-- (NSDictionary *)quorumsOfType:(DSLLMQType)type {
+- (NSDictionary *)quorumsOfType:(LLMQType)type {
     return self.mQuorums[@(type)];
 }
 
@@ -331,7 +330,7 @@
     return count;
 }
 
-- (NSUInteger)validQuorumsCountOfType:(DSLLMQType)type {
+- (NSUInteger)validQuorumsCountOfType:(LLMQType)type {
     NSUInteger count = 0;
     for (NSData *quorumHashData in self.mQuorums[@(type)]) {
         DSQuorumEntry *quorum = self.mQuorums[@(type)][quorumHashData];
@@ -591,7 +590,7 @@
     return dictionary;
 }
 
-- (DSQuorumEntry *)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(DSLLMQType)quorumType {
+- (DSQuorumEntry *)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(LLMQType)quorumType {
     NSArray *quorumsForLock = [self.quorums[@(quorumType)] allValues];
     UInt256 lowestValue = UINT256_MAX;
     DSQuorumEntry *firstQuorum = nil;
@@ -606,7 +605,7 @@
 }
 
 
-- (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash ofQuorumType:(DSLLMQType)quorumType {
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash ofQuorumType:(LLMQType)quorumType {
     NSArray *quorumsForPlatform = [self.quorums[@(quorumType)] allValues];
     for (DSQuorumEntry *quorumEntry in quorumsForPlatform) {
         if (uint256_eq(quorumEntry.quorumHash, quorumHash)) {
@@ -618,12 +617,11 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash {
-    DSLLMQType quorumType = self.chain.quorumTypeForPlatform;
-    return [self quorumEntryForPlatformWithQuorumHash:quorumHash ofQuorumType:quorumType];
+    return [self quorumEntryForPlatformWithQuorumHash:quorumHash ofQuorumType:quorum_type_for_platform(self.chain.chainType)];
 }
 
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID {
-    DSLLMQType quorumType = self.chain.quorumTypeForChainLocks;
+    LLMQType quorumType = quorum_type_for_chain_locks(self.chain.chainType);
     NSArray *quorumsForIS = [self.quorums[@(quorumType)] allValues];
     NSMutableDictionary *orderedQuorumDictionary = [NSMutableDictionary dictionary];
     for (DSQuorumEntry *quorumEntry in quorumsForIS) {
@@ -660,8 +658,8 @@
 
 - (BOOL)hasUnverifiedNonRotatedQuorums {
     for (NSNumber *quorumType in self.quorums) {
-        DSLLMQType llmqType = (DSLLMQType) quorumType.unsignedIntValue;
-        if (llmqType == self.chain.quorumTypeForISDLocks || ![self.chain shouldProcessQuorumOfType:llmqType]) {
+        LLMQType llmqType = (LLMQType) quorumType.unsignedIntValue;
+        if (llmqType == quorum_type_for_isd_locks(self.chain.chainType) || !quorum_should_process_type_for_chain(llmqType, self.chain.chainType)) {
             continue;
         }
         NSDictionary<NSData *, DSQuorumEntry *> *quorumsOfType = self.quorums[quorumType];
@@ -676,7 +674,7 @@
 }
 
 - (BOOL)hasUnverifiedRotatedQuorums {
-    NSArray<DSQuorumEntry *> *quorumsForISDLock = [self.quorums[@(self.chain.quorumTypeForISDLocks)] allValues];
+    NSArray<DSQuorumEntry *> *quorumsForISDLock = [self.quorums[@(quorum_type_for_isd_locks(self.chain.chainType))] allValues];
     for (DSQuorumEntry *entry in quorumsForISDLock) {
         if (!entry.verified) {
             return YES;
@@ -685,7 +683,7 @@
     return NO;
 }
 
-- (DSQuorumEntry *_Nullable)quorumEntryOfType:(DSLLMQType)llmqType withQuorumHash:(UInt256)quorumHash {
+- (DSQuorumEntry *_Nullable)quorumEntryOfType:(LLMQType)llmqType withQuorumHash:(UInt256)quorumHash {
     NSDictionary *quorums = [self quorumsOfType:llmqType];
     for (NSData *hash in quorums) {
         DSQuorumEntry *entry = quorums[hash];
@@ -697,7 +695,6 @@
 }
 
 - (DSMasternodeList *)mergedWithMasternodeList:(DSMasternodeList *)masternodeList {
-    DSLog(@"• mergedWithMasternodeList: %u: %@", masternodeList.height, uint256_hex(masternodeList.blockHash));
     for (NSData *proTxHash in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *entry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[proTxHash];
         DSSimplifiedMasternodeEntry *newEntry = masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[proTxHash];
@@ -708,7 +705,7 @@
         for (NSData *quorumHash in quorumsOfType) {
             DSQuorumEntry *entry = quorumsOfType[quorumHash];
             if (!entry.verified) {
-                DSQuorumEntry *quorumEntry = [masternodeList quorumEntryOfType:(DSLLMQType)quorumType.unsignedIntegerValue withQuorumHash:entry.quorumHash];
+                DSQuorumEntry *quorumEntry = [masternodeList quorumEntryOfType:(LLMQType)quorumType.unsignedIntegerValue withQuorumHash:entry.quorumHash];
                 if (quorumEntry.verified) {
                     [entry mergedWithQuorumEntry:quorumEntry];
                 }

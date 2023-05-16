@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 
 #import "DSChainLock.h"
-#import "DSBLSKey.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
@@ -109,7 +108,7 @@
 
 - (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
     NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:self.chain.quorumTypeForChainLocks];
+    [data appendVarInt:quorum_type_for_chain_locks(self.chain.chainType)];
     [data appendUInt256:quorumEntry.quorumHash];
     [data appendUInt256:self.requestID];
     [data appendUInt256:self.blockHash];
@@ -117,30 +116,20 @@
 }
 
 - (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
-    UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
+    BOOL verified = key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
 #if DEBUG
-    DSLogPrivate(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",
-        [NSData dataWithUInt768:self.signature].hexString,
-        [NSData dataWithUInt384:publicKey].hexString,
-        [NSData dataWithUInt256:self.blockHash].hexString,
-        quorumEntry);
+    DSLog(@"verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %@: %u", verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(quorumEntry.llmqQuorumHash), @"<REDACTED>", uint384_hex(quorumEntry.quorumPublicKey), @"<REDACTED>", quorumEntry.useLegacyBLSScheme);
 #else
-    DSLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",
-        @"<REDACTED>",
-        @"<REDACTED>",
-        @"<REDACTED>",
-        @"<REDACTED>",
-        quorumEntry);
-#endif /* DEBUG */
-    return [blsKey verify:signId signature:self.signature];
+    DSLogPrivate(@"verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %@: %u", verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(quorumEntry.llmqQuorumHash), uint256_hex(signId), uint384_hex(quorumEntry.quorumPublicKey), uint768_hex(self.signature), quorumEntry.useLegacyBLSScheme);
+#endif
+    return verified;
 }
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
     DSQuorumEntry *foundQuorum = nil;
     for (DSMasternodeList *masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
-        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:self.chain.quorumTypeForChainLocks] allValues]) {
+        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:quorum_type_for_chain_locks(self.chain.chainType)] allValues]) {
             BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
             if (signatureVerified) {
                 foundQuorum = quorumEntry;

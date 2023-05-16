@@ -136,8 +136,10 @@
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u'/%u'", self.derivationPath.stringRepresentation, addressEntity.identityIndex, addressEntity.index];
 
     const NSUInteger indexes[] = {addressEntity.identityIndex | BIP32_HARD, addressEntity.index | BIP32_HARD};
-    cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]].hexString;
-    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2] fromSeed:self.seed] serializedPrivateKeyForChain:self.derivationPath.chain];
+    NSIndexPath *path = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndexPath:path].hexString;
+//    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2] fromSeed:self.seed] serializedPrivateKeyForChain:self.derivationPath.chain];
+    cell.privateKeyLabel.text = [self.derivationPath serializedExtendedPrivateKeyFromSeedAtIndexPath:self.seed indexPath:path];
 }
 
 - (IBAction)copyAddress:(id)sender {

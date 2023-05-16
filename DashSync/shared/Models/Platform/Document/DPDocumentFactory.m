@@ -20,7 +20,6 @@
 #import "DPErrors.h"
 
 #import "BigIntTypes.h"
-#import "DSKey.h"
 #import "NSData+Dash.h"
 #import <TinyCborObjc/NSData+DSCborDecoding.h>
 

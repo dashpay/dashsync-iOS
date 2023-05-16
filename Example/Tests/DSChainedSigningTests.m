@@ -19,12 +19,11 @@
 
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
-#import "DSECDSAKey.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSKeyManager.h"
 #import "DSWallet.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"
@@ -48,6 +47,13 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
++ (NSData *)randomInitializationVectorOfSize:(NSUInteger)size {
+    unsigned char iv[size]; //16
+    for (int i = 0; i < sizeof(iv); i++) {
+        iv[i] = arc4random_uniform(UCHAR_MAX - 1);
+    }
+    return [NSData dataWithBytes:&iv length:size];
+}
 
 - (void)testExample {
     NSString *seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
@@ -64,32 +70,33 @@
 
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:wallet];
 
-    DSBLSKey *key0 = (DSBLSKey *)[derivationPath privateKeyAtIndex:0 fromSeed:seed];
-    DSBLSKey *key1 = (DSBLSKey *)[derivationPath privateKeyAtIndex:1 fromSeed:seed];
-    DSBLSKey *key2 = (DSBLSKey *)[derivationPath privateKeyAtIndex:2 fromSeed:seed];
-    DSBLSKey *key3 = (DSBLSKey *)[derivationPath privateKeyAtIndex:3 fromSeed:seed];
+    OpaqueKey *key0 = [derivationPath privateKeyAtIndex:0 fromSeed:seed];
+//    OpaqueKey *key1 = [derivationPath privateKeyAtIndex:1 fromSeed:seed];
+//    OpaqueKey *key2 = [derivationPath privateKeyAtIndex:2 fromSeed:seed];
+//    OpaqueKey *key3 = [derivationPath privateKeyAtIndex:3 fromSeed:seed];
 
     UInt256 randomInput0 = uint256_random;
-    UInt256 randomInput1 = uint256_random;
-    UInt256 randomInput2 = uint256_random;
-    UInt256 randomInput3 = uint256_random;
+//    UInt256 randomInput1 = uint256_random;
+//    UInt256 randomInput2 = uint256_random;
+//    UInt256 randomInput3 = uint256_random;
 
     UInt256 randomOutput0 = uint256_random;
-    UInt256 randomOutput1 = uint256_random;
-    UInt256 randomOutput2 = uint256_random;
-    UInt256 randomOutput3 = uint256_random;
+//    UInt256 randomOutput1 = uint256_random;
+//    UInt256 randomOutput2 = uint256_random;
+//    UInt256 randomOutput3 = uint256_random;
 
     UInt512 concat0 = uint512_concat(randomInput0, randomOutput0);
-    UInt512 concat1 = uint512_concat(randomInput1, randomOutput1);
-    UInt512 concat2 = uint512_concat(randomInput2, randomOutput2);
-    UInt512 concat3 = uint512_concat(randomInput3, randomOutput3);
+//    UInt512 concat1 = uint512_concat(randomInput1, randomOutput1);
+//    UInt512 concat2 = uint512_concat(randomInput2, randomOutput2);
+//    UInt512 concat3 = uint512_concat(randomInput3, randomOutput3);
 
     UInt256 hash0 = [[NSData dataWithUInt512:concat0] SHA256_2];
-    UInt256 hash1 = [[NSData dataWithUInt512:concat1] SHA256_2];
-    UInt256 hash2 = [[NSData dataWithUInt512:concat2] SHA256_2];
-    UInt256 hash3 = [[NSData dataWithUInt512:concat3] SHA256_2];
+//    UInt256 hash1 = [[NSData dataWithUInt512:concat1] SHA256_2];
+//    UInt256 hash2 = [[NSData dataWithUInt512:concat2] SHA256_2];
+//    UInt256 hash3 = [[NSData dataWithUInt512:concat3] SHA256_2];
 
-    UInt768 signature0 = [key0 signDigest:hash0];
+    NSData *signatureData0 = [DSKeyManager NSDataFrom:key_sign_message_digest(key0, hash0.u8)];
+//    UInt768 signature0 = [key0 signDigest:hash0];
     //    UInt768 signature1 = [key1 signDigest:hash1];
     //    UInt768 signature2 = [key2 signDigest:hash2];
     //    UInt768 signature3 = [key3 signDigest:hash3];
@@ -100,18 +107,21 @@
     //
     //    XCTAssert(verified, @"DSBLSKey verifyAggregatedSignature is working");
 
-    NSArray<DSBLSKey *> *quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; // simulate 10 quorums
+//    NSArray<DSBLSKey *> *quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; // simulate 10 quorums
+    NSArray<NSValue *> *quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; // simulate 10 quorums
 
     UInt256 signingSession = uint256_random;
 
-    NSData *signatureData0 = uint768_data(signature0);
-    NSArray *keysForDH0 = [@[key0] arrayByAddingObjectsFromArray:quorums];
-    NSData *encryptedSignatureData0 = [signatureData0 encapsulatedDHEncryptionWithKeys:keysForDH0 usingInitializationVector:[NSData data]];
-    NSData *signatureDataRoundTrip0 = [encryptedSignatureData0 encapsulatedDHDecryptionWithKeys:[[keysForDH0 reverseObjectEnumerator] allObjects] usingIVSize:0];
+//    NSData *signatureData0 = uint768_data(signature0);
+    NSArray *keysForDH0 = [@[[NSValue valueWithPointer:key0]] arrayByAddingObjectsFromArray:quorums];
+    NSData *ivData = [[self class] randomInitializationVectorOfSize:16];
+    
+    NSData *encryptedSignatureData0 = [signatureData0 encapsulatedDHEncryptionWithKeys:keysForDH0 usingInitializationVector:ivData];
+    NSData *signatureDataRoundTrip0 = [encryptedSignatureData0 encapsulatedDHDecryptionWithKeys:[[keysForDH0 reverseObjectEnumerator] allObjects] usingIVSize:ivData.length];
 
     XCTAssertEqualObjects(signatureData0, signatureDataRoundTrip0, @"these should be equal");
 
-    NSData *encryptedSignatureData1 = [signatureData0 encapsulatedDHEncryptionWithKeys:keysForDH0 usingInitializationVector:[NSData data]];
+//    NSData *encryptedSignatureData1 = [signatureData0 encapsulatedDHEncryptionWithKeys:keysForDH0 usingInitializationVector:[NSData data]];
 
     // at node n, quorum checks that signature matches
 }

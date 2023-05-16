@@ -45,8 +45,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "NSError+Dash.h"
 
-#define LOG_MASTERNODE_DIFF (0 && DEBUG)
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
@@ -97,8 +96,6 @@
     _processorCache = [DSMasternodeManager createProcessorCache];
     _processingGroup = dispatch_group_create();
     _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.processing.%@", uint256_data(self.chain.genesisHash).shortHexString] UTF8String], DISPATCH_QUEUE_SERIAL);
-
-    NSLog(@"DSMasternodeManager.initWithChain: %@: ", chain);
     return self;
 }
 
@@ -113,8 +110,9 @@
 }
 
 - (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-    if (![self.masternodeListDiffService retrievalQueueCount] && ![self.quorumRotationService retrievalQueueCount]) {
-        [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
+    if (![self.masternodeListDiffService retrievalQueueCount]) {
+        if (![self.quorumRotationService retrievalQueueCount])
+            [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
     }
 }
@@ -165,11 +163,11 @@
 }
 
 - (NSUInteger)masternodeListRetrievalQueueCount {
-    return [self.masternodeListDiffService retrievalQueueCount] + [self.quorumRotationService retrievalQueueCount];
+    return [self.masternodeListDiffService retrievalQueueCount];
 }
 
 - (NSUInteger)masternodeListRetrievalQueueMaxAmount {
-    return [self.masternodeListDiffService retrievalQueueMaxAmount] + [self.quorumRotationService retrievalQueueMaxAmount];
+    return [self.masternodeListDiffService retrievalQueueMaxAmount];
 }
 
 - (uint32_t)estimatedMasternodeListsToSync {
@@ -319,11 +317,6 @@
 }
 
 // MARK: - Requesting Masternode List
-
-
-- (BOOL)hasDIP0024Enabled {
-    return [self.chain hasDIP0024Enabled] && self.chain.isRotatedQuorumsPresented;
-}
 
 - (void)startSync {
     [self getRecentMasternodeList];
@@ -502,6 +495,7 @@
         } else {
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 self.masternodeListDiffService.currentMasternodeList = masternodeList;
+                [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:masternodeListBlockHashData];
             }
             DSLog(@"••• updateStoreWithMasternodeList: %u: %@ (%@)", masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
             [self updateStoreWithMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError *error) {
@@ -612,6 +606,7 @@
         } else {
             if (uint256_eq(self.store.lastQueriedBlockHash, blockHashAtTip)) {
                 self.quorumRotationService.currentMasternodeList = masternodeListAtTip;
+                [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:blockHashDataAtTip];
             }
             DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
             [self updateStoreWithMasternodeList:masternodeListAtTip addedMasternodes:mnListDiffResultAtTip.addedMasternodes modifiedMasternodes:mnListDiffResultAtTip.modifiedMasternodes addedQuorums:mnListDiffResultAtTip.addedQuorums completion:^(NSError *error) {}];
@@ -654,28 +649,16 @@
 }
 
 - (void)updateStoreWithMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
-    UInt256 masternodeListBlockHash = masternodeList.blockHash;
-    if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeListBlockHash)) {
+    if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeList.blockHash)) {
         self.store.masternodeListAwaitingQuorumValidation = nil;
     }
-//    NSData *blockHashData = uint256_data(masternodeListBlockHash);
-//    DSLog(@"•••• store (%d) masternode list at: %u: %@", [self.store hasMasternodeListAt:blockHashData], [self heightForBlockHash:masternodeListBlockHash], uint256_hex(masternodeListBlockHash));
-    
-//    if ([self.store hasMasternodeListAt:blockHashData]) {
-//         in rare race conditions this might already exist
-//         but also as we can get it from different sources
-//         with different quorums verification status
-//
-//        completion(NULL);
-//        return;
-//    }
     [self.store saveMasternodeList:masternodeList
                   addedMasternodes:addedMasternodes
                modifiedMasternodes:modifiedMasternodes
                       addedQuorums:addedQuorums
                         completion:^(NSError *error) {
         completion(error);
-        if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
+        if (!error || !([self.masternodeListDiffService retrievalQueueCount] + [self.quorumRotationService retrievalQueueCount])) { //if it is 0 then we most likely have wiped chain info
             return;
         }
         [self wipeMasternodeInfo];

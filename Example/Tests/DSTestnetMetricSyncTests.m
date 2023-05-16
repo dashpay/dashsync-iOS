@@ -19,11 +19,9 @@
 
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBLSKey.h"
 #import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
-#import "DSECDSAKey.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSWallet.h"
 #import "DashSync.h"

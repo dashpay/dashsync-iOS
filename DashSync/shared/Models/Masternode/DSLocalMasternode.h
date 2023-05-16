@@ -6,11 +6,12 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSWallet, DSAccount, DSTransaction, DSProviderRegistrationTransaction, DSProviderUpdateServiceTransaction, DSProviderUpdateRegistrarTransaction, DSProviderUpdateRevocationTransaction, DSBLSKey, DSECDSAKey;
+@class DSChain, DSWallet, DSAccount, DSTransaction, DSProviderRegistrationTransaction, DSProviderUpdateServiceTransaction, DSProviderUpdateRegistrarTransaction, DSProviderUpdateRevocationTransaction;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 {
@@ -37,6 +38,9 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 @property (nonatomic, readonly) DSWallet *votingKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, readonly) uint32_t votingWalletIndex;
 @property (nonatomic, readonly) NSData *votingPublicKeyData;
+@property (nonatomic, readonly) DSWallet *platformNodeKeysWallet; //only if this is contained in the wallet.
+@property (nonatomic, readonly) uint32_t platformNodeWalletIndex;
+@property (nonatomic, readonly) NSData *platformNodePublicKeyData;
 @property (nonatomic, readonly) DSWallet *holdingKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, readonly) uint32_t holdingWalletIndex;
 @property (nonatomic, readonly) NSMutableIndexSet *previousOperatorWalletIndexes; //previously used operator indexes
@@ -51,42 +55,56 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 @property (nonatomic, readonly) NSArray<DSProviderUpdateRevocationTransaction *> *providerUpdateRevocationTransactions;
 @property (nonatomic, readonly) DSLocalMasternodeStatus status;
 
-- (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(NSString *)address completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion;
+- (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount
+                                     toAddress:(NSString *)address
+                                    completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion;
 
-- (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(NSString *)address withCollateral:(DSUTXO)collateral completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion;
+- (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount
+                                     toAddress:(NSString *)address
+                                withCollateral:(DSUTXO)collateral
+                                    completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion;
 
-- (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion;
+- (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount
+                                      completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion;
 
-- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
+- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount
+                             toIPAddress:(UInt128)ipAddress
+                                    port:(uint32_t)port
+                           payoutAddress:(NSString *_Nullable)payoutAddress
+                              completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
 
-- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction))completion;
+- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount
+                          changeOperator:(UInt384)operatorKey
+                     changeVotingKeyHash:(UInt160)votingKeyHash
+                     changePayoutAddress:(NSString *_Nullable)payoutAddress
+                              completion:(void (^_Nullable)(DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction))completion;
 
-- (void)reclaimTransactionToAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSTransaction *reclaimTransaction))completion;
+- (void)reclaimTransactionToAccount:(DSAccount *)fundingAccount
+                         completion:(void (^_Nullable)(DSTransaction *reclaimTransaction))completion;
 
 - (void)registerName:(NSString *)name;
 
 - (void)save;
-
 - (void)saveInContext:(NSManagedObjectContext *)context;
 
-- (DSBLSKey *_Nullable)operatorKeyFromSeed:(NSData *)seed;
+// BLS
+- (OpaqueKey *_Nullable)operatorKeyFromSeed:(NSData *)seed;
+// ECDSA
+- (OpaqueKey *_Nullable)ownerKeyFromSeed:(NSData *)seed;
+- (OpaqueKey *_Nullable)votingKeyFromSeed:(NSData *)seed;
+// ED25519
+- (OpaqueKey *_Nullable)platformNodeKeyFromSeed:(NSData *)seed;
 
 - (NSString *)operatorKeyStringFromSeed:(NSData *)seed;
-
-- (DSECDSAKey *_Nullable)ownerKeyFromSeed:(NSData *)seed;
-
 - (NSString *_Nullable)ownerKeyStringFromSeed:(NSData *)seed;
-
-- (DSECDSAKey *_Nullable)votingKeyFromSeed:(NSData *)seed;
-
 - (NSString *_Nullable)votingKeyStringFromSeed:(NSData *)seed;
+- (NSString *_Nullable)platformNodeKeyStringFromSeed:(NSData *)seed;
 
-- (BOOL)forceOperatorPublicKey:(DSBLSKey *)operatorPublicKey;
-
-- (BOOL)forceOwnerPrivateKey:(DSECDSAKey *)ownerPrivateKey;
-
+- (BOOL)forceOperatorPublicKey:(OpaqueKey *)operatorPublicKey;
+- (BOOL)forceOwnerPrivateKey:(OpaqueKey *)ownerPrivateKey;
 //the voting key can either be private or public key
-- (BOOL)forceVotingKey:(DSECDSAKey *)votingKey;
+- (BOOL)forceVotingKey:(OpaqueKey *)votingKey;
+- (BOOL)forcePlatformNodeKey:(OpaqueKey *)platformNodeKey;
 
 @end
 

@@ -11,7 +11,6 @@
 #import "DSAccount.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
-#import "DSECDSAKey.h"
 #import "DSPriceManager.h"
 #import "DSTransaction.h"
 #import "DSWallet+Protected.h"

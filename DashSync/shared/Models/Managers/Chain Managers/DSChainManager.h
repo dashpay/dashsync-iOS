@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSKeyManager.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
@@ -49,7 +50,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncParametersUpdatedNo
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncFailedNotification;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock, DSKeyManager;
 
 typedef void (^BlockMiningCompletionBlock)(DSFullBlock *_Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError *_Nullable error);
 typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block, NSArray<NSNumber *> *attempts, NSTimeInterval timeUsed, NSError *_Nullable error);
@@ -69,6 +70,7 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 @property (nonatomic, readonly) DSIdentitiesManager *identitiesManager;
 @property (nonatomic, readonly) DSTransactionManager *transactionManager;
 @property (nonatomic, readonly) DSPeerManager *peerManager;
+@property (nonatomic, readonly) DSKeyManager *keyManager;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
 

@@ -107,6 +107,7 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define MSG_FEEFILTER @"feefilter"     // BIP133: https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
 #define MSG_SENDDSQ @"senddsq"         //version 14
 #define MSQ_SENDCMPCT @"sendcmpct"     //version 12.3
+#define MSQ_SENDADDRV2 @"sendaddrv2"
 
 //Dash specific
 
@@ -333,22 +334,14 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 
 - (void)sendGovernanceRequest:(DSGovernanceHashesRequest *)request;
 - (void)sendGovernanceSyncRequest:(DSGovernanceSyncRequest *)request;
-//- (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
-//- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
 
 - (void)sendGetaddrMessage;
-//- (void)sendGovSync;
-//- (void)sendGovSync:(UInt256)h;
 - (void)sendGovObject:(DSGovernanceObject *)governanceObject;
 - (void)sendGovObjectVote:(DSGovernanceVote *)governanceVote;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
-//- (void)sendDSegMessage:(DSUTXO)utxo; -> [DSDSegRequest requestWithUTXO:utxo];
-
 - (void)rerequestBlocksFrom:(UInt256)blockHash; // useful to get additional transactions after a bloom filter update
-
 - (NSString *)chainTip;
-
 - (void)save;
 
 

@@ -130,7 +130,7 @@
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u", self.derivationPath.stringRepresentation, addressEntity.index];
     cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndex:addressEntity.index].hexString;
-    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed] serializedPrivateKeyForChain:self.derivationPath.chain];
+    cell.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:[self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed] chainType:self.derivationPath.chain.chainType];
 }
 
 

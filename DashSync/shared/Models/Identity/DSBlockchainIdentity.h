@@ -8,10 +8,11 @@
 #import "BigIntTypes.h"
 #import "DSDAPIClient.h"
 #import "DSDerivationPath.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath, UIImage;
+@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath, UIImage;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep)
 {
@@ -242,13 +243,13 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)signStateTransition:(DSTransition *)transition completion:(void (^_Nullable)(BOOL success))completion;
 
-- (void)signStateTransition:(DSTransition *)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success))completion;
+- (void)signStateTransition:(DSTransition *)transition forKeyIndex:(uint32_t)keyIndex ofType:(KeyKind)signingAlgorithm completion:(void (^_Nullable)(BOOL success))completion;
 
-- (void)signMessageDigest:(UInt256)digest forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
+- (void)signMessageDigest:(UInt256)digest forKeyIndex:(uint32_t)keyIndex ofType:(KeyKind)signingAlgorithm completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
 
-- (BOOL)verifySignature:(NSData *)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
+- (BOOL)verifySignature:(NSData *)signature forKeyIndex:(uint32_t)keyIndex ofType:(KeyKind)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
-- (BOOL)verifySignature:(NSData *)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
+- (BOOL)verifySignature:(NSData *)signature ofType:(KeyKind)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
 - (void)createFundingPrivateKeyWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
 
@@ -257,7 +258,7 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 - (void)createAndPublishRegistrationTransitionWithCompletion:(void (^_Nullable)(NSDictionary *_Nullable successInfo, NSError *_Nullable error))completion;
 
 
-- (void)encryptData:(NSData *)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey *)recipientKey completion:(void (^_Nullable)(NSData *encryptedData))completion;
+- (void)encryptData:(NSData *)data withKeyAtIndex:(uint32_t)index forRecipientKey:(OpaqueKey *)recipientKey completion:(void (^_Nullable)(NSData *encryptedData))completion;
 
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
 */
@@ -280,31 +281,31 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)generateBlockchainIdentityExtendedPublicKeysWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL registered))completion;
 
-- (BOOL)setExternalFundingPrivateKey:(DSECDSAKey *)privateKey;
+- (BOOL)setExternalFundingPrivateKey:(OpaqueKey *)privateKey;
 
 - (BOOL)hasBlockchainIdentityExtendedPublicKeys;
 
 - (DSBlockchainIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index;
 
-- (DSKeyType)typeOfKeyAtIndex:(NSUInteger)index;
+- (KeyKind)typeOfKeyAtIndex:(NSUInteger)index;
 
-- (DSKey *_Nullable)keyAtIndex:(NSUInteger)index;
+- (OpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
 
-- (uint32_t)keyCountForKeyType:(DSKeyType)keyType;
+- (uint32_t)keyCountForKeyType:(KeyKind)keyType;
 
 + (NSString *)localizedStatusOfKeyForBlockchainIdentityKeyStatus:(DSBlockchainIdentityKeyStatus)status;
 
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index;
 
-- (DSKey *_Nullable)createNewKeyOfType:(DSKeyType)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex;
+- (OpaqueKey *_Nullable)createNewKeyOfType:(KeyKind)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex;
 
-- (DSKey *_Nullable)keyOfType:(DSKeyType)type atIndex:(uint32_t)rIndex;
+- (OpaqueKey *_Nullable)keyOfType:(KeyKind)type atIndex:(uint32_t)rIndex;
 
-+ (DSAuthenticationKeysDerivationPath *_Nullable)derivationPathForType:(DSKeyType)type forWallet:(DSWallet *)wallet;
++ (DSAuthenticationKeysDerivationPath *_Nullable)derivationPathForType:(KeyKind)type forWallet:(DSWallet *)wallet;
 
-+ (DSKey *_Nullable)keyFromKeyDictionary:(NSDictionary *)dictionary rType:(uint32_t *)rType rIndex:(uint32_t *)rIndex;
++ (OpaqueKey *_Nullable)keyFromKeyDictionary:(NSDictionary *)dictionary rType:(uint32_t *)rType rIndex:(uint32_t *)rIndex;
 
-+ (DSKey *_Nullable)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary;
++ (OpaqueKey *_Nullable)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary;
 
 // MARK: - Dashpay
 

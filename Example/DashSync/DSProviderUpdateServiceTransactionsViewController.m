@@ -48,7 +48,7 @@
     DSProviderUpdateServiceTransaction *transaction = [self.localMasternode.providerUpdateServiceTransactions objectAtIndex:indexPath.row];
 
     cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d", transaction.blockHeight];
-    cell.operatorRewardPayoutAddressLabel.text = (transaction.scriptPayout.length ? [NSString addressWithScriptPubKey:transaction.scriptPayout onChain:transaction.chain] : @"");
+    cell.operatorRewardPayoutAddressLabel.text = (transaction.scriptPayout.length ? [DSKeyManager addressWithScriptPubKey:transaction.scriptPayout forChain:transaction.chain] : @"");
     char s[INET6_ADDRSTRLEN];
     uint32_t ipAddress = transaction.ipAddress.u32[3];
     cell.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.localMasternode.port];

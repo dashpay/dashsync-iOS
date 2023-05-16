@@ -66,23 +66,9 @@
     self = [super init];
     if (self) {
         self.knownChains = [NSMutableArray array];
-        NSError *error = nil;
-        NSMutableDictionary *registeredDevnetIdentifiers = [NSMutableDictionary dictionary];
-        NSDictionary *dictionaryFromKeyChain = getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error);
-        if (dictionaryFromKeyChain && error == nil) {
-            registeredDevnetIdentifiers = [dictionaryFromKeyChain mutableCopy];
-        }
         self.knownDevnetChains = [NSMutableArray array];
-        /*for (NSString *string in registeredDevnetIdentifiers) {
-            NSArray<DSCheckpoint *> *checkpointArray = registeredDevnetIdentifiers[string];
-            //todo deal with version > 1
-            DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string version:1 withCheckpoints:checkpointArray performSetup:NO];
-            chain.chainManager = [self devnetManagerForChain:chain];
-            // [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
-            [chain setUp];
-        }*/
-
         self.reachability = [DSReachabilityManager sharedManager];
+        register_rust_logger();
     }
     return self;
 }
@@ -158,7 +144,6 @@
 }
 
 - (void)updateDevnetChain:(DSChain *)chain
-                  version:(uint32_t)version
       forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations
   minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
              standardPort:(uint32_t)standardPort
@@ -169,19 +154,12 @@
           protocolVersion:(uint32_t)protocolVersion
        minProtocolVersion:(uint32_t)minProtocolVersion
              sporkAddress:(NSString *)sporkAddress
-          sporkPrivateKey:(NSString *)sporkPrivateKey
-         ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
-        ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
-      chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-       platformQuorumType:(DSLLMQType)platformQuorumType {
+          sporkPrivateKey:(NSString *)sporkPrivateKey {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
     DSChainManager *chainManager = [self chainManagerForChain:chain];
     DSPeerManager *peerManager = chainManager.peerManager;
     [peerManager clearRegisteredPeers];
-    if (version) {
-        chain.devnetVersion = version;
-    }
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
     }
@@ -205,18 +183,6 @@
     }
     if (dapiGRPCPort && dapiGRPCPort != chain.standardDapiGRPCPort) {
         chain.standardDapiGRPCPort = dapiGRPCPort;
-    }
-    if (ISLockQuorumsType && ISLockQuorumsType != chain.quorumTypeForISLocks) {
-        chain.quorumTypeForISLocks = ISLockQuorumsType;
-    }
-    if (ISDLockQuorumType && ISDLockQuorumType != chain.quorumTypeForISDLocks) {
-        chain.quorumTypeForISDLocks = ISDLockQuorumType;
-    }
-    if (chainLockQuorumType && chainLockQuorumType != chain.quorumTypeForChainLocks) {
-        chain.quorumTypeForChainLocks = chainLockQuorumType;
-    }
-    if (platformQuorumType && platformQuorumType != chain.quorumTypeForPlatform) {
-        chain.quorumTypeForPlatform = platformQuorumType;
     }
     if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
@@ -267,8 +233,7 @@
     }
 }
 
-- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier
-                                                version:(uint16_t)version
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(DevnetType)devnetType
                                     forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations
                             withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
                                            standardPort:(uint32_t)standardPort
@@ -279,17 +244,13 @@
                                         protocolVersion:(uint32_t)protocolVersion
                                      minProtocolVersion:(uint32_t)minProtocolVersion
                                            sporkAddress:(NSString *_Nullable)sporkAddress
-                                        sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey
-                                       ISLockQuorumType:(DSLLMQType)ISQuorumLockType
-                                      ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
-                                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                                     platformQuorumType:(DSLLMQType)platformQuorumType {
-    NSParameterAssert(identifier);
+                                        sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey {
+    NSParameterAssert(devnetType);
     NSParameterAssert(serviceLocations);
 
     NSError *error = nil;
 
-    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion?protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:minProtocolVersion?minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISQuorumLockType ISDLockQuorumType:ISDQuorumLockType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType isTransient:NO];
+    DSChain *chain = [DSChain setUpDevnetWithIdentifier:devnetType protocolVersion:protocolVersion?protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:minProtocolVersion?minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:NO];
     
     if (sporkAddress && [sporkAddress isValidDashDevnetAddress]) {
         chain.sporkAddress = sporkAddress;
@@ -326,8 +287,9 @@
     NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
 
     if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
-    if (![[registeredDevnetsDictionary allKeys] containsObject:identifier]) {
-        [registeredDevnetsDictionary setObject:chain.checkpoints forKey:identifier];
+    NSString *devnetIdentifier = [DSKeyManager NSStringFrom:chain_devnet_identifier(devnetType)];
+    if (![[registeredDevnetsDictionary allKeys] containsObject:devnetIdentifier]) {
+        [registeredDevnetsDictionary setObject:chain.checkpoints forKey:devnetIdentifier];
         setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
     }
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -343,38 +305,39 @@
                                         usingBiometricAuthentication:FALSE
                                                       alertIfLockout:NO
                                                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-                                                              if (!cancelled && authenticatedOrSuccess) {
-                                                                  NSError *error = nil;
-                                                                  DSChainManager *chainManager = [self chainManagerForChain:chain];
-                                                                  DSPeerManager *peerManager = chainManager.peerManager;
-                                                                  DSMasternodeManager *masternodeManager = chainManager.masternodeManager;
-                                                                  [masternodeManager destroyProcessors];
-                                                                  [peerManager clearRegisteredPeers];
-                                                                  NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
+        if (!cancelled && authenticatedOrSuccess) {
+            NSError *error = nil;
+            DSChainManager *chainManager = [self chainManagerForChain:chain];
+            DSPeerManager *peerManager = chainManager.peerManager;
+            DSMasternodeManager *masternodeManager = chainManager.masternodeManager;
+            [masternodeManager destroyProcessors];
+            [peerManager clearRegisteredPeers];
+            NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
 
-                                                                  if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
-                                                                  if ([[registeredDevnetsDictionary allKeys] containsObject:chain.devnetIdentifier]) {
-                                                                      [registeredDevnetsDictionary removeObjectForKey:chain.devnetIdentifier];
-                                                                      setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
-                                                                  }
-                                                                  [chain wipeWalletsAndDerivatives];
-                                                                  NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
-                                                                  [[DashSync sharedSyncController] wipePeerDataForChain:chain inContext:context];
-                                                                  [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain inContext:context];
-                                                                  [[DashSync sharedSyncController] wipeSporkDataForChain:chain inContext:context];
-                                                                  [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain inContext:context];
-                                                                  [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain inContext:context];
-                                                                  [[DashSync sharedSyncController] wipeWalletDataForChain:chain forceReauthentication:NO inContext:context]; //this takes care of blockchain info as well;
-                                                                  [self.knownDevnetChains removeObject:chain];
-                                                                  [self.knownChains removeObject:chain];
-                                                                  NSValue *genesisValue = uint256_obj(chain.genesisHash);
-                                                                  [self.devnetGenesisDictionary removeObjectForKey:genesisValue];
-                                                                
-                                                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                                                      [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
-                                                                  });
-                                                              }
-                                                          }];
+            if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
+            NSString *devnetIdentifier = [DSKeyManager devnetIdentifierFor:chain.chainType];
+            if ([[registeredDevnetsDictionary allKeys] containsObject:devnetIdentifier]) {
+                [registeredDevnetsDictionary removeObjectForKey:devnetIdentifier];
+                setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
+            }
+            [chain wipeWalletsAndDerivatives];
+            NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
+            [[DashSync sharedSyncController] wipePeerDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeSporkDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeWalletDataForChain:chain forceReauthentication:NO inContext:context]; //this takes care of blockchain info as well;
+            [self.knownDevnetChains removeObject:chain];
+            [self.knownChains removeObject:chain];
+            NSValue *genesisValue = uint256_obj(chain.genesisHash);
+            [self.devnetGenesisDictionary removeObjectForKey:genesisValue];
+          
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
+            });
+        }
+    }];
 }
 
 - (BOOL)hasAWallet {

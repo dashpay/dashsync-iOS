@@ -65,11 +65,10 @@
 #endif
 
 #define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io"]
-
+//#define TESTNET_DNS_SEEDS @[@"35.92.167.154", @"52.12.116.10"]
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
-
 
 #define FIXED_PEERS @"FixedPeers"
 #define TESTNET_FIXED_PEERS @"TestnetFixedPeers"
@@ -215,12 +214,12 @@
 }
 
 - (NSArray *)dnsSeeds {
-    switch (self.chain.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chain.chainType.tag) {
+        case ChainType_MainNet:
             return MAINNET_DNS_SEEDS;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return TESTNET_DNS_SEEDS;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return nil; //no dns seeds for devnets
         default:
             break;
@@ -229,6 +228,30 @@
 }
 
 // MARK: - Peers
++ (DSPeer *)peerFromString:(NSString *)string forChain:(DSChain *)chain {
+    return [[DSPeer alloc] initWithAddress:[[self class] ipAddressFromString:string]
+                                      port:chain.standardPort
+                                   onChain:chain
+                                 timestamp:[NSDate timeIntervalSince1970] - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
+                                  services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM];
+}
+
++ (UInt128)ipAddressFromString:(NSString *)address {
+    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
+    struct in_addr addrV4;
+    struct in6_addr addrV6;
+    if (inet_aton([address UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+        DSLog(@"ipAddressFromString: %@: %08x", address, ip);
+    } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
+        //todo support IPV6
+        DSLog(@"we do not yet support IPV6");
+    } else {
+        DSLog(@"invalid address");
+    }
+    return ipAddress;
+}
 
 - (void)removeTrustedPeerHost {
     [self disconnect];
@@ -299,7 +322,6 @@
 
                     DSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
                     NSString *dnsSeed = [dnsSeeds objectAtIndex:i];
-
                     if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
                         for (p = servinfo; p != NULL; p = p->ai_next) {
                             if (p->ai_family == AF_INET) {
@@ -315,7 +337,6 @@
 
                             uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                             NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
-
                             [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr
                                                                            port:port
                                                                         onChain:self.chain

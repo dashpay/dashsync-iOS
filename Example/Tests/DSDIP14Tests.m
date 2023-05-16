@@ -19,12 +19,11 @@
 
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
-#import "DSECDSAKey.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSKeyManager.h"
 #import "DSUInt256IndexPath.h"
 #import "DSWallet.h"
 #import "NSData+Encryption.h"
@@ -74,11 +73,10 @@
     UInt256 indexes[] = {index0, index1, index2};
     BOOL hardened1[] = {NO, YES, NO};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
-
-    DSECDSAKey *key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
-
-    XCTAssertEqualObjects(key.secretKeyString, @"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09", @"keys should match");
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    OpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
+    NSString *string = [DSKeyManager secretKeyHexString:key];
+    XCTAssertEqualObjects(string, @"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09", @"keys should match");
 
     [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
 
@@ -100,11 +98,11 @@
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(5), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(0), index0, index1};
     BOOL hardened1[] = {YES, YES, YES, YES, YES, YES};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
-    DSECDSAKey *key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
-
-    XCTAssertEqualObjects(key.secretKeyString, @"fac40790776d171ee1db90899b5eb2df2f7d2aaf35ad56f07ffb8ed2c57f8e60", @"keys should match");
+    OpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
+    NSString *string = [DSKeyManager secretKeyHexString:key];
+    XCTAssertEqualObjects(string, @"fac40790776d171ee1db90899b5eb2df2f7d2aaf35ad56f07ffb8ed2c57f8e60", @"keys should match");
 }
 
 - (void)test256BitPathECDSADerivation3 {
@@ -115,7 +113,7 @@
     UInt256 indexes[] = {index0};
     BOOL hardened1[] = {NO};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
     [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
 
@@ -138,7 +136,7 @@
     UInt256 indexes[] = {index0, index1};
     BOOL hardened1[] = {NO, YES};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
     [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
 

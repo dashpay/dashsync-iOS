@@ -16,10 +16,11 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DPTypes.h"
 #import <Foundation/Foundation.h>
 
-@class DSKey, DSBlockchainIdentity;
+@class DSBlockchainIdentity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
-- (NSData *)decryptedPublicKeyDataWithKey:(DSKey *)key;
+- (NSData *)decryptedPublicKeyDataWithKey:(OpaqueKey *)key;
 
 @end
 

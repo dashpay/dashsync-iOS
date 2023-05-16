@@ -25,7 +25,6 @@
 
 #import "DSAccount.h"
 #import "DSChain+Protected.h"
-#import "DSECDSAKey.h"
 #import "DSFundsDerivationPath.h"
 #import "DSWallet+Protected.h"
 
@@ -55,7 +54,7 @@
 #import "DSGovernanceSyncManager.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSInsightManager.h"
-#import "DSKey+BIP38.h"
+#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
 #import "DSPriceManager.h"
@@ -458,7 +457,7 @@
             [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
         }
     }
-    return [mArray copy];
+    return mArray;
 }
 
 // all previously generated external addresses
@@ -490,17 +489,17 @@
 - (NSSet *)allAddresses {
     NSMutableSet *mSet = [NSMutableSet set];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath allAddresses] allObjects]];
+        [mSet unionSet:[derivationPath allAddresses]];
     }
-    return [mSet copy];
+    return mSet;
 }
 
 - (NSSet *)usedAddresses {
     NSMutableSet *mSet = [NSMutableSet set];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath usedAddresses] allObjects]];
+        [mSet unionSet:[derivationPath usedAddresses]];
     }
-    return [mSet copy];
+    return mSet;
 }
 
 // true if the address is controlled by the wallet
@@ -973,11 +972,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (DSTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee {
     NSParameterAssert(address);
-
-    NSMutableData *script = [NSMutableData data];
-
-    [script appendScriptPubKeyForAddress:address forChain:self.wallet.chain];
-
+    NSData *script = [DSKeyManager scriptPubKeyForAddress:address forChain:self.wallet.chain];
     return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
 }
 
@@ -1248,18 +1243,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // MARK: = Signing
 
-// sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(TransactionValidityCompletionBlock)completion;
-{
-    NSParameterAssert(transaction);
-
-    if (_isViewOnlyAccount) return;
-    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
-
+- (NSArray *)usedDerivationPathsForTransaction:(DSTransaction *)transaction {
     NSMutableArray *usedDerivationPaths = [NSMutableArray array];
+
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
-                            *internalIndexes = [NSMutableOrderedSet orderedSet];
+        *internalIndexes = [NSMutableOrderedSet orderedSet];
         for (NSString *addr in transaction.inputAddresses) {
             if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
             if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
@@ -1280,8 +1269,58 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
     }
 
+    return usedDerivationPaths;
+}
+
+- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion {
+    NSParameterAssert(transaction);
+
+    if (_isViewOnlyAccount) return;
+
+    //int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    
+    NSArray *usedDerivationPaths = [self usedDerivationPathsForTransaction:transaction];
+
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
+        self.wallet.seedRequestBlock(^void(NSData *_Nullable seed, BOOL cancelled) {
+            if (!seed) {
+                if (completion) completion(NO, YES);
+            } else {
+                NSMutableArray *privkeys = [NSMutableArray array];
+                for (NSDictionary *dictionary in usedDerivationPaths) {
+                    DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
+                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+                    *internalIndexes = dictionary[@"internalIndexes"];
+                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+                        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
+                    } else {
+                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
+                    }
+                }
+
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                if (completion) completion(signedSuccessfully, NO);
+            }
+        });
+    }
+}
+
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
+- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(TransactionValidityCompletionBlock)completion {
+    NSParameterAssert(transaction);
+
+    if (_isViewOnlyAccount) return;
+
+    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    NSArray *usedDerivationPaths = [self usedDerivationPathsForTransaction:transaction];
+
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.wallet.secureSeedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
             if (!seed) {
                 if (completion) completion(NO, YES);
             } else {
@@ -1317,7 +1356,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     for (DSTransaction *transaction in transactions) {
         amount += [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     }
-    self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
+    self.wallet.secureSeedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
         for (DSTransaction *transaction in transactions) {
             NSMutableArray *usedDerivationPaths = [NSMutableArray array];
             for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
@@ -1721,36 +1760,34 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
     if (!completion) return;
 
-    if ([privKey isValidDashBIP38Key]) {
+    if ([DSKeyManager isValidDashBIP38Key:privKey]) {
         [[DSAuthenticationManager sharedInstance] requestKeyPasswordForSweepCompletion:completion
                                                                               userInfo:@{AUTH_SWEEP_KEY: privKey, AUTH_SWEEP_FEE: @(fee)}
                                                                             completion:^(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error), NSDictionary *userInfo, NSString *password) {
-                                                                                dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                    DSECDSAKey *key = [DSECDSAKey keyWithBIP38Key:userInfo[AUTH_SWEEP_KEY] andPassphrase:password onChain:self.wallet.chain];
-
-                                                                                    if (!key) {
-                                                                                        [[DSAuthenticationManager sharedInstance]
-                                                                                            badKeyPasswordForSweepCompletion:^{
-                                                                                                [self sweepPrivateKey:privKey withFee:fee completion:completion];
-                                                                                            }
-                                                                                            cancel:^{
-                                                                                                if (sweepCompletion) sweepCompletion(nil, 0, nil);
-                                                                                            }];
-                                                                                    } else {
-                                                                                        [self sweepPrivateKey:[key serializedPrivateKeyForChain:self.wallet.chain] withFee:[userInfo[AUTH_SWEEP_FEE] boolValue] completion:sweepCompletion];
-                                                                                    }
-                                                                                });
-                                                                            }
-                                                                                cancel:^{
-
-                                                                                }];
-
-
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSString *key = [DSKeyManager ecdsaKeyWithBIP38Key:userInfo[AUTH_SWEEP_KEY] passphrase:password forChainType:self.wallet.chain.chainType];
+                
+                if (!key) {
+                    [[DSAuthenticationManager sharedInstance]
+                     badKeyPasswordForSweepCompletion:^{
+                        [self sweepPrivateKey:privKey withFee:fee completion:completion];
+                    }
+                     cancel:^{
+                        if (sweepCompletion) sweepCompletion(nil, 0, nil);
+                    }];
+                } else {
+                    [self sweepPrivateKey:key withFee:[userInfo[AUTH_SWEEP_FEE] boolValue] completion:sweepCompletion];
+                }
+            });
+        } cancel:^{}];
         return;
     }
 
-    DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:privKey onChain:self.wallet.chain];
-    NSString *address = [key addressForChain:self.wallet.chain];
+    ECDSAKey *key = key_ecdsa_with_private_key([privKey UTF8String], self.wallet.chain.chainType);
+    NSString *address = [DSKeyManager NSStringFrom:address_for_ecdsa_key(key, self.wallet.chain.chainType)];
+    NSData *publicKeyData = [DSKeyManager NSDataFrom:key_ecdsa_public_key_data(key)];
+    processor_destroy_ecdsa_key(key);
+    
     if (!address) {
         completion(nil, 0, [NSError errorWithCode:187 localizedDescriptionKey:@"Not a valid private key"]);
         return;
@@ -1764,48 +1801,47 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                  onChain:self.wallet.chain
                                               completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
                                                   DSTransaction *tx = [[DSTransaction alloc] initOnChain:self.wallet.chain];
-                                                  uint64_t balance = 0, feeAmount = 0;
-                                                  NSUInteger i = 0;
+        uint64_t balance = 0, feeAmount = 0;
+        NSUInteger i = 0;
 
-                                                  if (error) {
-                                                      completion(nil, 0, error);
-                                                      return;
-                                                  }
+        if (error) {
+            completion(nil, 0, error);
+            return;
+        }
 
-                                                  //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
-                                                  for (NSValue *output in utxos) {
-                                                      DSUTXO o;
+        //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
+        for (NSValue *output in utxos) {
+            DSUTXO o;
 
-                                                      [output getValue:&o];
-                                                      [tx addInputHash:o.hash index:o.n script:scripts[i]];
-                                                      balance += [amounts[i++] unsignedLongLongValue];
-                                                  }
+            [output getValue:&o];
+            [tx addInputHash:o.hash index:o.n script:scripts[i]];
+            balance += [amounts[i++] unsignedLongLongValue];
+        }
 
-                                                  if (balance == 0) {
-                                                      completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:@"This private key is empty"]);
-                                                      return;
-                                                  }
+        if (balance == 0) {
+            completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:@"This private key is empty"]);
+            return;
+        }
 
-                                                  // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                                                  if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33) * tx.inputs.count]; //input count doesn't matter for non instant transactions
+        // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
+        if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (publicKeyData.length - 33) * tx.inputs.count]; //input count doesn't matter for non instant transactions
 
-                                                  if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
-                                                      completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:
-                                                                          @"Transaction fees would cost more than the funds available on this "
-                                                                                             "private key (due to tiny \"dust\" deposits)"]);
-                                                      return;
-                                                  }
+        if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
+            completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:
+                                @"Transaction fees would cost more than the funds available on this "
+                                                   "private key (due to tiny \"dust\" deposits)"]);
+            return;
+        }
 
-                                                  [tx addOutputAddress:self.receiveAddress
-                                                                amount:balance - feeAmount];
+        [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
 
-                                                  if (![tx signWithSerializedPrivateKeys:@[privKey]]) {
-                                                      completion(nil, 0, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"]);
-                                                      return;
-                                                  }
+        if (![tx signWithSerializedPrivateKeys:@[privKey]]) {
+            completion(nil, 0, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"]);
+            return;
+        }
 
-                                                  completion(tx, feeAmount, nil);
-                                              }];
+        completion(tx, feeAmount, nil);
+    }];
 }
 
 @end

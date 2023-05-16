@@ -746,8 +746,7 @@
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"Payout Address", nil);
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@", [NSString addressWithScriptPubKey:providerRegistrationTransaction.scriptPayout onChain:providerRegistrationTransaction.chain]];
-
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@", [DSKeyManager addressWithScriptPubKey:providerRegistrationTransaction.scriptPayout forChain:providerRegistrationTransaction.chain]];
                         return cell;
                         break;
                     }
@@ -819,7 +818,7 @@
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"Payout Address", nil);
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@", [NSString addressWithScriptPubKey:providerUpdateRegistrarTransaction.scriptPayout onChain:providerUpdateRegistrarTransaction.chain]];
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@", [DSKeyManager addressWithScriptPubKey:providerUpdateRegistrarTransaction.scriptPayout forChain:providerUpdateRegistrarTransaction.chain]];
 
                         return cell;
                         break;
