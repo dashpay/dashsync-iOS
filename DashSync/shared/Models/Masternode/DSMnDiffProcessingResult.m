@@ -64,7 +64,7 @@
 
 - (BOOL)isValid {
 //    return self.foundCoinbase && self.validQuorums && self.rootMNListValid && self.rootQuorumListValid;
-    return self.foundCoinbase && self.validQuorums && self.rootQuorumListValid;
+    return self.foundCoinbase && self.rootQuorumListValid;
 }
 - (BOOL)isTotallyValid {
     return [self isValid] && self.validCoinbase;
