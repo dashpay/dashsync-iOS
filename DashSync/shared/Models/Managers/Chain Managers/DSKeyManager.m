@@ -217,8 +217,13 @@
     return key_ecdsa_with_private_key([key UTF8String], chainType);
 }
 
-+ (NSData *)blsPublicKeySerialize:(BLSKey *)key legacy:(BOOL)legacy {
-    return [DSKeyManager NSDataFrom:key_bls_serialize(key, legacy)];
++ (NSData *)blsPublicKeySerialize:(OpaqueKey *)key legacy:(BOOL)legacy {
+    BLSKey *bls;
+    if (key->tag == OpaqueKey_BLSBasic)
+        bls = key->bls_basic;
+    else
+        bls = key->bls_legacy;
+    return [DSKeyManager NSDataFrom:key_bls_serialize(bls, legacy)];
 }
 
 + (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key passphrase:(NSString *)passphrase forChainType:(ChainType)chainType {
