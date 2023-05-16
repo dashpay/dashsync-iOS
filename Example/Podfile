@@ -6,22 +6,11 @@ def common_pods
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
 end
 
-#target 'DashSync_Example' do
-#  platform :ios, '13.0'
-#  common_pods
-#  pod 'KVO-MVVM', '0.5.1'
-#  target 'DashSync_Tests' do
-#    inherit! :search_paths
-#  end
-#end
-
-
 abstract_target 'DashSync' do
   platform :ios, '13.0'
   common_pods
   pod 'KVO-MVVM', '0.5.1'
 
-  # The target ShowsiOS has its own copy of ShowsKit (inherited) + ShowWebAuth (added here)
   target 'DashSync_Example' do
   end
 

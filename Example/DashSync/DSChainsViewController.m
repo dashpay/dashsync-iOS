@@ -25,7 +25,7 @@
     [self destroyDevnets];
 //    This extracts ip addresses of masternodes from dash-network-configs and wraps into objc string format
     
-//    grep "masternode-" malort.txt | grep -oE 'public_ip=((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' | sed "s/ /\" \"/g;s/^/@\"/;s/$/\",/"
+//    grep -E 'masternode-|hp-masternode-' devnet.inventory | grep -oE 'public_ip=((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' | sed "s/ /\" \"/g;s/^/@\"/;s/$/\",/"
 //    [self setup333];
 //    [self setupMalort];
 //    [self setupKrupnik];
@@ -33,7 +33,7 @@
 //    [self setupMekhong];
 //    [self setupJackDaniels];
 //    [self setupChacha];
-    [self setupWhiteRussian];
+    [self setupScrewdriver];
     [self.tableView reloadData];
 
     self.addChainsObserver =
@@ -214,6 +214,30 @@
     ]
                walletPhrase:nil];
 
+}
+
+- (void)setupScrewdriver {
+    [self setupDevnetWithId:DevnetType_Screwdriver
+                   sporkAddress:@"yibwxyuuKsP6kBsq74vu9p6ju97qEb2B4b"
+                sporkPrivateKey:@"cUu1oagVnd2bBGC7EqyijjtFapiLb9yvmaWF4dMaREg6pmXJksHH"
+             minProtocolVersion:70224
+                protocolVersion:70227
+        minimumDifficultyBlocks:4032
+                      addresses:@[
+        @"52.43.22.230",
+        @"35.92.67.183",
+        @"54.244.217.185",
+        @"54.149.244.160",
+        @"35.93.71.90",
+        @"52.34.46.50",
+        @"35.160.137.75",
+        @"35.92.93.204",
+        @"54.70.34.204",
+        @"35.91.184.146",
+        @"52.35.142.34",
+        @"35.89.135.53",
+    ]
+               walletPhrase:nil];
 }
 
 - (void)setupDevnetWithId:(DevnetType)devnetType

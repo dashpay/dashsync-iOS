@@ -116,7 +116,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain;
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
++ (UInt256)devnetGenesisCoinbaseTxHash:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
 
 - (instancetype)initOnChain:(DSChain *)chain;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;
