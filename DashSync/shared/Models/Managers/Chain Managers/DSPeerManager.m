@@ -938,6 +938,7 @@
     }
     bestPeer.currentBlockHeight = self.chain.lastSyncBlockHeight;
 
+    [self.chainManager assignSyncWeights];
     if ([self.chain syncsBlockchain] && ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) || (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
         [self.chainManager resetLastRelayedItemTime];
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
