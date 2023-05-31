@@ -33,7 +33,7 @@
 //    [self setupMekhong];
 //    [self setupJackDaniels];
 //    [self setupChacha];
-    [self setupScrewdriver];
+    [self setupAbsinthe];
     [self.tableView reloadData];
 
     self.addChainsObserver =
@@ -236,6 +236,34 @@
         @"35.91.184.146",
         @"52.35.142.34",
         @"35.89.135.53",
+    ]
+               walletPhrase:nil];
+}
+
+- (void)setupAbsinthe {
+    [self setupDevnetWithId:DevnetType_Absinthe
+                   sporkAddress:@"yQaxrDEMJ7t2d4eDTugn3FY87T78j3fJX3"
+                sporkPrivateKey:@"cSAqscqXqRSh9CuGDmdWjKjtVbdiPgCquVTRUFV8Atakx941edN7"
+             minProtocolVersion:70227
+                protocolVersion:70227
+        minimumDifficultyBlocks:4032
+                      addresses:@[
+        @"54.203.248.31",
+        @"54.244.207.116",
+        @"52.12.65.230",
+        @"35.88.162.148",
+        @"35.87.149.127",
+        @"34.216.109.34",
+        @"52.40.57.30",
+        @"54.245.53.222",
+        @"54.244.210.173",
+        @"34.215.201.219",
+        @"35.91.255.242",
+        @"54.245.169.72",
+        @"54.184.78.233",
+        @"35.88.21.135",
+        @"52.36.206.44",
+        @"34.218.253.121",
     ]
                walletPhrase:nil];
 }
