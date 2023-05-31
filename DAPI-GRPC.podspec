@@ -7,14 +7,14 @@ Pod::Spec.new do |s|
   s.summary = "Dash's Decentralized API GRPC"
   s.source = { :git => 'https://github.com/dashpay/dashsync-iOS.git', :tag => 'dapi-0.25.0' }
 
-  s.ios.deployment_target = "13.0"
+  s.ios.deployment_target = "14.0"
   s.osx.deployment_target = "10.15"
 
   # Base directory where the .proto files are.
   src = "platform/packages/dapi-grpc/protos"
 
   # Run protoc with the Objective-C and gRPC plugins to generate protocol messages and gRPC clients.
-  s.dependency "!ProtoCompiler-gRPCPlugin", "~> 1.0"
+  s.dependency "!ProtoCompiler-gRPCPlugin", "~> 1.50.0-pre1"
 
   # Pods directory corresponding to this app's Podfile, relative to the location of this podspec.
   pods_root = 'dapi-grpc-pod-installer/Pods'
