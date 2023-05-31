@@ -245,7 +245,7 @@
                    sporkAddress:@"yQaxrDEMJ7t2d4eDTugn3FY87T78j3fJX3"
                 sporkPrivateKey:@"cSAqscqXqRSh9CuGDmdWjKjtVbdiPgCquVTRUFV8Atakx941edN7"
              minProtocolVersion:70227
-                protocolVersion:70227
+                protocolVersion:70228
         minimumDifficultyBlocks:4032
                       addresses:@[
         @"54.203.248.31",
