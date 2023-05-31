@@ -7,8 +7,8 @@ Pod::Spec.new do |s|
   s.summary = "Dash's Decentralized API GRPC"
   s.source = { :git => 'https://github.com/dashpay/dashsync-iOS.git', :tag => 'dapi-0.25.0' }
 
-  s.ios.deployment_target = "14.0"
-  s.osx.deployment_target = "10.15"
+  s.ios.deployment_target = "11.0"
+  s.osx.deployment_target = "10.13"
 
   # Base directory where the .proto files are.
   src = "platform/packages/dapi-grpc/protos"

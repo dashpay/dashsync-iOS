@@ -1,9 +1,9 @@
 PODS:
-  - "!ProtoCompiler (3.21.5)":
+  - "!ProtoCompiler (3.21.6)":
     - Protobuf (~> 3.0)
-  - "!ProtoCompiler-gRPCPlugin (1.49.0)":
-    - "!ProtoCompiler (= 3.21.5)"
-    - gRPC-ProtoRPC (= 1.49.0)
+  - "!ProtoCompiler-gRPCPlugin (1.50.0-pre1)":
+    - "!ProtoCompiler (= 3.21.6)"
+    - gRPC-ProtoRPC (= 1.50.0-pre1)
   - abseil/algorithm/algorithm (1.20220623.0):
     - abseil/base/config
   - abseil/algorithm/container (1.20220623.0):
@@ -571,10 +571,10 @@ PODS:
   - BoringSSL-GRPC/Implementation (0.0.24):
     - BoringSSL-GRPC/Interface (= 0.0.24)
   - BoringSSL-GRPC/Interface (0.0.24)
-  - gRPC-Core (1.49.0):
-    - gRPC-Core/Implementation (= 1.49.0)
-    - gRPC-Core/Interface (= 1.49.0)
-  - gRPC-Core/Implementation (1.49.0):
+  - gRPC-Core (1.50.0-pre1):
+    - gRPC-Core/Implementation (= 1.50.0-pre1)
+    - gRPC-Core/Interface (= 1.50.0-pre1)
+  - gRPC-Core/Implementation (1.50.0-pre1):
     - abseil/base/base (= 1.20220623.0)
     - abseil/base/core_headers (= 1.20220623.0)
     - abseil/container/flat_hash_map (= 1.20220623.0)
@@ -599,42 +599,42 @@ PODS:
     - abseil/types/variant (= 1.20220623.0)
     - abseil/utility/utility (= 1.20220623.0)
     - BoringSSL-GRPC (= 0.0.24)
-    - gRPC-Core/Interface (= 1.49.0)
-  - gRPC-Core/Interface (1.49.0)
-  - gRPC-ProtoRPC (1.49.0):
-    - gRPC-ProtoRPC/Legacy (= 1.49.0)
-    - gRPC-ProtoRPC/Legacy-Header (= 1.49.0)
-    - gRPC-ProtoRPC/Main (= 1.49.0)
-  - gRPC-ProtoRPC/Legacy (1.49.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.49.0)
-    - gRPC-ProtoRPC/Main (= 1.49.0)
-    - gRPC-RxLibrary (= 1.49.0)
-    - gRPC/GRPCCore (= 1.49.0)
+    - gRPC-Core/Interface (= 1.50.0-pre1)
+  - gRPC-Core/Interface (1.50.0-pre1)
+  - gRPC-ProtoRPC (1.50.0-pre1):
+    - gRPC-ProtoRPC/Legacy (= 1.50.0-pre1)
+    - gRPC-ProtoRPC/Legacy-Header (= 1.50.0-pre1)
+    - gRPC-ProtoRPC/Main (= 1.50.0-pre1)
+  - gRPC-ProtoRPC/Legacy (1.50.0-pre1):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.50.0-pre1)
+    - gRPC-ProtoRPC/Main (= 1.50.0-pre1)
+    - gRPC-RxLibrary (= 1.50.0-pre1)
+    - gRPC/GRPCCore (= 1.50.0-pre1)
     - Protobuf (~> 3.0)
-  - gRPC-ProtoRPC/Legacy-Header (1.49.0)
-  - gRPC-ProtoRPC/Main (1.49.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.49.0)
-    - gRPC/Interface (= 1.49.0)
+  - gRPC-ProtoRPC/Legacy-Header (1.50.0-pre1)
+  - gRPC-ProtoRPC/Main (1.50.0-pre1):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.50.0-pre1)
+    - gRPC/Interface (= 1.50.0-pre1)
     - Protobuf (~> 3.0)
-  - gRPC-RxLibrary (1.49.0):
-    - gRPC-RxLibrary/Implementation (= 1.49.0)
-    - gRPC-RxLibrary/Interface (= 1.49.0)
-  - gRPC-RxLibrary/Implementation (1.49.0):
+  - gRPC-RxLibrary (1.50.0-pre1):
+    - gRPC-RxLibrary/Implementation (= 1.50.0-pre1)
+    - gRPC-RxLibrary/Interface (= 1.50.0-pre1)
+  - gRPC-RxLibrary/Implementation (1.50.0-pre1):
     - gRPC-RxLibrary/Interface
-  - gRPC-RxLibrary/Interface (1.49.0)
-  - gRPC/GRPCCore (1.49.0):
-    - gRPC-Core (= 1.49.0)
-    - gRPC-RxLibrary (= 1.49.0)
-    - gRPC/Interface (= 1.49.0)
-    - gRPC/Interface-Legacy (= 1.49.0)
-  - gRPC/Interface (1.49.0):
-    - gRPC/Interface-Legacy (= 1.49.0)
-  - gRPC/Interface-Legacy (1.49.0):
-    - gRPC-RxLibrary/Interface (= 1.49.0)
+  - gRPC-RxLibrary/Interface (1.50.0-pre1)
+  - gRPC/GRPCCore (1.50.0-pre1):
+    - gRPC-Core (= 1.50.0-pre1)
+    - gRPC-RxLibrary (= 1.50.0-pre1)
+    - gRPC/Interface (= 1.50.0-pre1)
+    - gRPC/Interface-Legacy (= 1.50.0-pre1)
+  - gRPC/Interface (1.50.0-pre1):
+    - gRPC/Interface-Legacy (= 1.50.0-pre1)
+  - gRPC/Interface-Legacy (1.50.0-pre1):
+    - gRPC-RxLibrary/Interface (= 1.50.0-pre1)
   - Protobuf (3.23.2)
 
 DEPENDENCIES:
-  - "!ProtoCompiler-gRPCPlugin (~> 1.5)"
+  - "!ProtoCompiler-gRPCPlugin (~> 1.50.0-pre1)"
 
 SPEC REPOS:
   trunk:
@@ -649,16 +649,16 @@ SPEC REPOS:
     - Protobuf
 
 SPEC CHECKSUMS:
-  "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
-  "!ProtoCompiler-gRPCPlugin": 755f0ee414a0d5f0028e0dcfe98c23bdbc3e6fa3
+  "!ProtoCompiler": 3d4d455370f6db07c7f85e2da616edf120c9d2a1
+  "!ProtoCompiler-gRPCPlugin": cec0d152fae67b6ea8295a18f200c36321f3be3d
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
-  gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
-  gRPC-Core: 3a9fdb5967d42211e875826f3f6fc163ea02c2a1
-  gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
-  gRPC-RxLibrary: 92327f150e11cf3b1c0f52e083944fd9f5cb5d1e
+  gRPC: caf3a14727fd8c797f2b25ebd530cc9902415f34
+  gRPC-Core: cf15a5bdd474fc2bcffa52f1c7cbd4de11f0077e
+  gRPC-ProtoRPC: 64662f730bd0e49bd0c9ce529eb0f2185df90156
+  gRPC-RxLibrary: 690e3c6e59ebacdbf1b8abd226ccf9ffa27f988d
   Protobuf: 5df4e9d2abd535fb675c68d171f6bc87983d27a6
 
-PODFILE CHECKSUM: 86869d2bc89a7d5f5ac5d117535c45da934dd4a6
+PODFILE CHECKSUM: 2a1ed520cf08a2af7f61e98ffc087038257e3ebe
 
 COCOAPODS: 1.12.1
