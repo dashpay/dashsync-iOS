@@ -295,7 +295,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                                                  // TODO: since now we can't process diff for checkpoint with the protocol version >= 70221
                                                  // TODO: or we can include protocol version into checkpoint obj, probably it's even better
                                                  // TODO: or to recreate checkpoints for the latest protocol version after mainnet upgrading
-                                                 70221,
+                                                 context.chain.protocolVersion, // 70228 for testnet
 //                                                 context.chain.protocolVersion,
                                                  self.processor,
                                                  self.processorCache,
