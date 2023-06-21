@@ -680,17 +680,14 @@
         [self.peerManager connect];
     } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
-    } else {
-        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-            self.syncPhase = DSChainSyncPhase_ChainSync;
-            [self chainShouldStartSyncingBlockchain:self.chain onPeer:self.peerManager.downloadPeer];
-        }
+    } else if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+        self.syncPhase = DSChainSyncPhase_ChainSync;
+        [self chainShouldStartSyncingBlockchain:self.chain onPeer:self.peerManager.downloadPeer];
     }
 }
 
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     DSLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
-
     if (chain.isEvolutionEnabled) {
         [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
             [self syncBlockchain];

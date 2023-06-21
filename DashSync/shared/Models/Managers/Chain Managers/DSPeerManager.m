@@ -768,12 +768,10 @@
             }
         }
 
-        if (self.connectedPeers.count == 0) {
+        if (peers.count == 0) {
             [self chainSyncStopped];
-
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSError *error = [NSError errorWithCode:1 localizedDescriptionKey:@"No peers found"];
-
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                     object:nil
                                                                   userInfo:@{@"error": error, DSChainManagerNotificationChainKey: self.chain}];
