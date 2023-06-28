@@ -405,6 +405,14 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Helpers
 
+- (BOOL)isCore19Active {
+    return self.lastTerminalBlockHeight >= chain_core19_activation_height(self.chainType);
+}
+
+- (KeyKind)getActiveBLSType {
+    return [self isCore19Active] ? KeyKind_BLSBasic : KeyKind_BLS;
+}
+
 - (NSDictionary<NSValue *, DSBlock *> *)syncBlocks {
     return [self.mSyncBlocks copy];
 }
