@@ -44,6 +44,7 @@ typedef NS_ENUM(uint8_t, DSCheckpointOptions)
 @property (nonatomic, readonly) uint32_t timestamp;
 @property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) NSString *masternodeListName;
+@property (nonatomic, readonly) uint32_t protocolVersion;
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) UInt256 chainWork;
 

@@ -546,7 +546,7 @@
     }];
     [mndiffContext setBlockHeightLookup:blockHeightLookup];
 
-    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     DSMasternodeList *masternodeList = result.masternodeList;
     NSArray *proTxHashes = masternodeList.reversedRegistrationTransactionHashes;
     proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
@@ -619,7 +619,7 @@
         [mndiffContext setBlockHeightLookup:blockHeightLookup];
 
         DSMasternodeManager *masternodeManager = chain.chainManager.masternodeManager;
-        DSMnDiffProcessingResult *result = [masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+        DSMnDiffProcessingResult *result = [masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
         XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", blockHeightLookup(blockHash));
         // turned off on purpose as we don't have the coinbase block
         // XCTAssert(result.validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]);
@@ -726,7 +726,7 @@
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 1100000;
     }];
-    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
     // turned off on purpose as we don't have the coinbase block
     // XCTAssert(result.validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]);
@@ -788,7 +788,7 @@
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 122088;
     }];
-    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     NSData *masternodeListMerkleRoot = @"94d0af97187af3b9311c98b1cf40c9c9849df0af55dc63b097b80d4cf6c816c5".hexToData;
     DSMasternodeList *masternodeList = result.masternodeList;
     BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
@@ -869,7 +869,7 @@
         return @"ac841d3551d012e8ce5fbec60217043209317b50268d1c3717d79350d23fd593".hexToData.reverse.UInt256;
     }];
     [mndiffContext setBlockHeightLookup:blockHeightLookup122064];
-    DSMnDiffProcessingResult *result = [chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result = [chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     DSMasternodeList *masternodeList122064 = result.masternodeList;
     XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash122064]);
     // turned off on purpose as we don't have the coinbase block
@@ -919,7 +919,7 @@
                 }
             }];
             [mndiffContext setBlockHeightLookup:blockHeightLookup122088];
-            DSMnDiffProcessingResult *result122088 = [chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+            DSMnDiffProcessingResult *result122088 = [chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
             XCTAssert(result122088.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
             XCTAssert(result122088.validCoinbase, @"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
             XCTAssert(result122088.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
@@ -2827,7 +2827,7 @@
                                [mndiffContext setMerkleRootLookup:merkleRootLookup];
                                [mndiffContext setBlockHeightLookup:blockHeightLookup];
 
-                               DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+                               DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
                                XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash1092912]);
                                // XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
                                XCTAssert(result.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash1092912]);
@@ -2872,7 +2872,7 @@
                                                                 }];
                                                                 [mndiffContext setMerkleRootLookup:merkleRootLookup];
                                                                 [mndiffContext setBlockHeightLookup:blockHeightLookup];
-                                                                DSMnDiffProcessingResult *result1092940 = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+                                                                DSMnDiffProcessingResult *result1092940 = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
                                                                 DSMasternodeList *masternodeList1092940 = result1092940.masternodeList;
                                                                 XCTAssert(result1092940.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash1092940]);
                                                                 // XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
@@ -3003,7 +3003,7 @@
         NSAssert(NO, @"All values must be here");
         return UINT32_MAX;
     }];
-    DSMnDiffProcessingResult *result119064 = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result119064 = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     XCTAssert(result119064.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash119064]);
     // turned off on purpose as we don't have the coinbase block
     // XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]);
@@ -3052,7 +3052,7 @@
             return UINT256_ZERO;
         }];
         [mndiffContext setBlockHeightLookup:blockHeightLookup2];
-        DSMnDiffProcessingResult *result119200 = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+        DSMnDiffProcessingResult *result119200 = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
         XCTAssert(result119200.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
         // XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
         XCTAssert(result119200.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
@@ -3158,7 +3158,7 @@
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 370368;
     }];
-    DSMnDiffProcessingResult *result370368 = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result370368 = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     XCTAssert(result370368.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash370368]);
     // XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
     XCTAssert(result370368.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash370368]);
@@ -3204,7 +3204,7 @@
         [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
             return 370944;
         }];
-        DSMnDiffProcessingResult *result370944 = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+        DSMnDiffProcessingResult *result370944 = [chain.chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
         XCTAssert(result370944.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
         // XCTAssert(result370944.validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
         XCTAssert(result370944.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
@@ -3302,7 +3302,7 @@
         return @"ac841d3551d012e8ce5fbec60217043209317b50268d1c3717d79350d23fd593".hexToData.reverse.UInt256;
     }];
     [mndiffContext setBlockHeightLookup:blockHeightLookup122064];
-    DSMnDiffProcessingResult *result = [chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
+    DSMnDiffProcessingResult *result = [chainManager.masternodeManager processMasternodeDiffFromFile:message protocolVersion:DEFAULT_CHECKPOINT_PROTOCOL_VERSION withContext:mndiffContext];
     DSMasternodeList *masternodeList122064 = result.masternodeList;
     XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash122064]);
     // turned off on purpose as we don't have the coinbase block
@@ -3311,7 +3311,37 @@
     XCTAssert(result.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash122064]);
     XCTAssert(result.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash122064]);
     XCTAssertEqualObjects(uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122064]).hexString, @"86cfe9b759dfd012f8d00e980c560c5c1d9c487bfa8b59305e14c7fc60ef1150", @"");
-
 }
 
+- (uint32_t)extractProtocolVersion:(NSString *)masternodeListName {
+    uint32_t protocolVersion = DEFAULT_CHECKPOINT_PROTOCOL_VERSION;
+    NSError *error = NULL;
+    NSRegularExpression *regex = [NSRegularExpression
+                                  regularExpressionWithPattern:@"__(\\d+)"
+                                  options:NSRegularExpressionCaseInsensitive
+                                  error:&error];
+    NSTextCheckingResult *match = [regex
+                                   firstMatchInString:masternodeListName
+                                   options:0
+                                   range:NSMakeRange(0, [masternodeListName length])];
+    if (match) {
+        NSString *numberString = [masternodeListName substringWithRange:[match rangeAtIndex:1]];
+        if (numberString) {
+            protocolVersion = (uint32_t)[numberString integerValue];
+        }
+    }
+    return protocolVersion;
+}
+
+- (void)testCheckpointsName {
+    XCTAssertEqual([self extractProtocolVersion:@"ML1088640__70218"], 70218);
+    XCTAssertEqual([self extractProtocolVersion:@"ML1088640__70218"], DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
+    XCTAssertEqual([self extractProtocolVersion:@"ML1720000__70218"], 70218);
+    XCTAssertEqual([self extractProtocolVersion:@"MNT530000__70228"], 70228);
+    XCTAssertEqual([self extractProtocolVersion:@"MNL_1092916_1092940"], 70218);
+    XCTAssertEqual([self extractProtocolVersion:@"MNL_0_122928"], 70218);
+    XCTAssertEqual([self extractProtocolVersion:@"MNL_0_122928"], DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
+    XCTAssertEqual([self extractProtocolVersion:@"QRINFO_122222_122223__70227"], 70227);
+    
+}
 @end

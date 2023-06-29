@@ -280,7 +280,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
     completion(processingResult);
 }
 
-- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
+- (DSMnDiffProcessingResult *)processMasternodeDiffFromFile:(NSData *)message protocolVersion:(uint32_t)protocolVersion withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
     DSLog(@"processMasternodeDiffMessage: %@", context);
     MNListDiffResult *result = NULL;
@@ -291,12 +291,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                                                  context.chain.chainType,
                                                  context.useInsightAsBackup,
                                                  context.isFromSnapshot,
-                                                 // TODO: re-orient diff-processor to rely on is_from_snapshot + protocol_version,
-                                                 // TODO: since now we can't process diff for checkpoint with the protocol version >= 70221
-                                                 // TODO: or we can include protocol version into checkpoint obj, probably it's even better
-                                                 // TODO: or to recreate checkpoints for the latest protocol version after mainnet upgrading
-                                                 context.chain.protocolVersion, // 70228 for testnet
-//                                                 context.chain.protocolVersion,
+                                                 protocolVersion,
                                                  self.processor,
                                                  self.processorCache,
                                                  (__bridge void *)(context));
