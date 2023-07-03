@@ -166,7 +166,9 @@
     NSData *seedData1 = [NSData dataWithBytes:seed1 length:5];
     uint8_t message1[3] = {7, 8, 9};
     NSData *messageData1 = [NSData dataWithBytes:message1 length:3];
-    OpaqueKey *wrapper = key_with_seed_data(seedData1.bytes, seedData1.length, KeyKind_BLS);
+    BLSKey *bls_key = key_bls_with_seed_data(seedData1.bytes, seedData1.length, true);
+    OpaqueKey *wrapper = &((OpaqueKey) {.tag = OpaqueKey_BLSLegacy, .bls_legacy = bls_key });
+//    OpaqueKey *wrapper = key_with_seed_data(seedData1.bytes, seedData1.length, KeyKind_BLS);
     NSData *publicKeyData = [DSKeyManager publicKeyData:wrapper];
     NSData *privateKeyData = [DSKeyManager privateKeyData:wrapper];
     XCTAssertEqualObjects(publicKeyData.hexString, @"02a8d2aaa6a5e2e08d4b8d406aaf0121a2fc2088ed12431e6b0663028da9ac5922c9ea91cde7dd74b7d795580acc7a61");
@@ -175,7 +177,7 @@
     XCTAssertEqualObjects(signature1.hexString, @"023f5c750f402c69dab304e5042a7419722536a38d58ce46ba045be23e99d4f9ceeffbbc6796ebbdab6e9813c411c78f07167a3b76bef2262775a1e9f95ff1a80c5fa9fe8daa220d4d9da049a96e8932d5071aaf48fbff27a920bc4aa7511fd4");
     NSData *pkData = [DSKeyManager NSDataFrom:key_bls_public_key(wrapper->bls_legacy)];
     BOOL verified = key_bls_verify(pkData.bytes, true, [messageData1 SHA256_2].u8, signature1.bytes);
-    processor_destroy_opaque_key(wrapper);
+//    processor_destroy_opaque_key(wrapper);
     XCTAssertTrue(verified, @"Testing BLS signature verification");
 }
 
