@@ -673,6 +673,7 @@
 }
 
 - (void)syncBlockchain {
+    DSLog(@"syncBlockchain connected peers: %d phase: %d", self.peerManager.connectedPeerCount, self.syncPhase);
     if (self.peerManager.connectedPeerCount == 0) {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
             self.syncPhase = DSChainSyncPhase_ChainSync;
