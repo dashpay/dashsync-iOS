@@ -50,7 +50,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
 + (MasternodeProcessorCache *)createProcessorCache;
 + (void)destroyProcessorCache:(MasternodeProcessorCache *)processorCache;
 
-- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
+- (DSMnDiffProcessingResult *)processMasternodeDiffFromFile:(NSData *)message protocolVersion:(uint32_t)protocolVersion withContext:(DSMasternodeProcessorContext *)context;
 
 - (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 - (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;

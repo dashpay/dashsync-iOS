@@ -135,6 +135,29 @@
     return parameters;
 }
 
+// This is the old protocol version used for creating checkpoints
+// Now when storing list diff we add version at the end of masternode list name like this: MNT530000__70228
+- (uint32_t)protocolVersion {
+    uint32_t protocolVersion = DEFAULT_CHECKPOINT_PROTOCOL_VERSION;
+    NSError *error = NULL;
+    NSRegularExpression *regex = [NSRegularExpression
+                                  regularExpressionWithPattern:@"__(\\d+)"
+                                  options:NSRegularExpressionCaseInsensitive
+                                  error:&error];
+    NSTextCheckingResult *match = [regex
+                                   firstMatchInString:self.masternodeListName
+                                   options:0
+                                   range:NSMakeRange(0, [self.masternodeListName length])];
+    if (match) {
+        NSString *numberString = [self.masternodeListName substringWithRange:[match rangeAtIndex:1]];
+        if (numberString) {
+            protocolVersion = (uint32_t)[numberString integerValue];
+        }
+    }
+    return protocolVersion;
+}
+
+
 - (NSData *)serialize {
     NSMutableData *mData = [NSMutableData data];
     [mData appendUInt8:[self parameters]];
