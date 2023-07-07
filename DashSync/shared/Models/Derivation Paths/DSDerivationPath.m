@@ -256,15 +256,19 @@
         return nil;
 }
 
-//- (DSKey *)extendedPublicKey {
 - (OpaqueKey *)extendedPublicKey {
     if (!_extendedPublicKey) {
         if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
             NSData *extendedPublicKeyData = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
-//            NSAssert(extendedPublicKeyData, @"extended public key data not set");
             if (extendedPublicKeyData) {
                 _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
-//                _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
+                if (!_extendedPublicKey && self.signingAlgorithm == KeyKind_BLSBasic) {
+                    // Migrate BLS key from keychain: legacy -> basic
+                    _extendedPublicKey = key_bls_migrate_from_legacy_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length);
+                    if (_extendedPublicKey) {
+                        setKeychainData([DSKeyManager extendedPublicKeyData:_extendedPublicKey], [self standaloneExtendedPublicKeyLocationString], NO);
+                    }
+                }
                 NSAssert(_extendedPublicKey, @"extended public key not set");
             }
         } else {
@@ -289,10 +293,11 @@
                 }
             }
 #endif
-//            NSAssert(extendedPublicKeyData, @"extended public key data not set");
             _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
-//            _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
-//            NSAssert(_extendedPublicKey, @"extended public key not set");
+            if (!_extendedPublicKey && self.signingAlgorithm == KeyKind_BLSBasic) {
+                // Migrate BLS key from keychain: legacy -> basic
+                _extendedPublicKey = key_bls_migrate_from_legacy_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length);
+            }
         }
     }
     return _extendedPublicKey;

@@ -695,6 +695,7 @@
 // MARK: - Connectivity
 
 - (void)connect {
+    DSLog(@"[DSPeerManager] connect (%d)", self.connectedPeers);
     self.desiredState = DSPeerManagerDesiredState_Connected;
     dispatch_async(self.networkingQueue, ^{
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
@@ -768,12 +769,11 @@
             }
         }
 
-        if (self.connectedPeers.count == 0) {
+        if (peers.count == 0) {
+            DSLog(@"[DSPeerManager] connect failed peers: (%d) connected: (%d) mutableConnected: (%d)", peers, self.connectedPeers, self.mutableConnectedPeers);
             [self chainSyncStopped];
-
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSError *error = [NSError errorWithCode:1 localizedDescriptionKey:@"No peers found"];
-
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                     object:nil
                                                                   userInfo:@{@"error": error, DSChainManagerNotificationChainKey: self.chain}];
@@ -996,10 +996,10 @@
             }
         }];
 
+        DSLog(@"[DSPeerManager] disconnectedWithError: peers: (%d) connected: (%d) mutableConnected: (%d) connectFailures: (%d)", _peers, self.connectedPeers, self.mutableConnectedPeers, self.connectFailures);
         @synchronized(self) {
             _peers = nil;
         }
-
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                 object:nil

@@ -79,22 +79,6 @@
     [self loadLocalMasternodes];
 }
 
-- (NSData *_Nullable)messageFromFileForBlockHash:(UInt256)blockHash {
-    DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
-    if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
-        //DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
-        return nil;
-    }
-    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString *filePath = [bundle pathForResource:checkpoint.masternodeListName ofType:@"dat"];
-    if (!filePath) {
-        return nil;
-    }
-    NSData *message = [NSData dataWithContentsOfFile:filePath];
-    return message;
-}
-
 - (void)savePlatformPingInfoForEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)entries
                              inContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{

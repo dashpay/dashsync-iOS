@@ -612,7 +612,7 @@
 		6003F5B7195388D20070C39A /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-Info.plist"; sourceTree = "<group>"; };
 		6003F5B9195388D20070C39A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
-		64A245673BBAE1DA7DAB4907 /* DashSync.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = DashSync.podspec; path = ../DashSync.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		64A245673BBAE1DA7DAB4907 /* DashSync.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = DashSync.podspec; path = ../DashSync.podspec; sourceTree = "<group>"; };
 		6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NetworkInfo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
