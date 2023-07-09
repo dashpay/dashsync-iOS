@@ -83,7 +83,7 @@
 + (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(3), uint256_from_long(3)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:[chain getActiveBLSType] reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:[chain activeBLSType] reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
 }
 
 + (instancetype)platformNodeKeysDerivationPathForChain:(DSChain *)chain {
@@ -107,7 +107,7 @@
 + (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION), uint256_from_long(1)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES, YES};
-    DSAuthenticationKeysDerivationPath *blockchainIdentityBLSKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_MultipleUserAuthentication signingAlgorithm:[chain getActiveBLSType] reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
+    DSAuthenticationKeysDerivationPath *blockchainIdentityBLSKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_MultipleUserAuthentication signingAlgorithm:[chain activeBLSType] reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
     blockchainIdentityBLSKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;
     blockchainIdentityBLSKeysDerivationPath.usesHardenedKeys = YES;
     return blockchainIdentityBLSKeysDerivationPath;
