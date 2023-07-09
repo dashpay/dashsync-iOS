@@ -323,7 +323,6 @@
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath {
     NSData *pubKey = [self publicKeyDataAtIndexPath:indexPath];
     return [DSKeyManager NSStringFrom:key_address_with_public_key_data(pubKey.bytes, pubKey.length, self.chain.chainType)];
-//    return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
 // true if the address is controlled by the wallet

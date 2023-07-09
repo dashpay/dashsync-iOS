@@ -409,7 +409,7 @@ static dispatch_once_t devnetToken = 0;
     return self.lastTerminalBlockHeight >= chain_core19_activation_height(self.chainType);
 }
 
-- (KeyKind)getActiveBLSType {
+- (KeyKind)activeBLSType {
     return [self isCore19Active] ? KeyKind_BLSBasic : KeyKind_BLS;
 }
 
