@@ -586,11 +586,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.4.7)
+  - DashSharedCore (0.4.8)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.4.7)
+    - DashSharedCore (= 0.4.8)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -712,8 +712,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: c33567249c4bf4166609d828e5b45cacf41b784c
-  DashSync: bc3998e01da4f74bfb8fc9d4637d8a291704a8a9
+  DashSharedCore: cc87193cfc09b816c5f472b50174cc76e41668b1
+  DashSync: d53609a65e3965d246f68244883062093c0bbee6
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
@@ -726,6 +726,6 @@ SPEC CHECKSUMS:
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: 4a6ed5ed41963191295a38fad9760424b46ae9a9
+PODFILE CHECKSUM: 65ee9c6b1d7ae6ab3bc40337f53a5135ff99a2f1
 
 COCOAPODS: 1.12.1

@@ -148,6 +148,7 @@
     OpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
     UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
     UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    uint16_t operatorKeyVersion = 1; // BLS legacy
     NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
 
     UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
@@ -159,7 +160,7 @@
 
     NSData *inputScript = [DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain];
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
 
 
     providerRegistrationTransaction.payloadSignature = signatureData;
@@ -242,6 +243,7 @@
     UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
     UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
 
+    uint16_t operatorKeyVersion = 1; // BLS legacy
     DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
 
     XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData, hexData, @"Provider transaction does not match it's data");
@@ -263,7 +265,7 @@
         [DSKeyManager scriptPubKeyForAddress:inputAddress2 forChain:chain]
     ];
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
 
 
     [providerRegistrationTransaction updateInputsHash];
