@@ -492,13 +492,8 @@
         } else {
             operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:self.operatorWalletIndex].UInt384;
         }
-        
-        DSProviderRegistrationTransaction *providerRegistrationTransaction;
-        if ([self.chain isMainnet]) {
-            providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey votingKeyHash:votingKeyHash platformNodeID:UINT160_ZERO operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
-        } else {
-            providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:2 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey votingKeyHash:votingKeyHash platformNodeID:platformNodeID operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
-        }
+        uint16_t operatorKeyVersion = providerOperatorKeysDerivationPath.signingAlgorithm == KeyKind_BLS ? 1 : 2;
+        DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:2 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash platformNodeID:platformNodeID operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
         if (dsutxo_is_zero(collateral)) {
             NSString *holdingAddress = [providerFundsDerivationPath receiveAddress];
             NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
