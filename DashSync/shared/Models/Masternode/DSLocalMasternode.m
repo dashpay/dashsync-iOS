@@ -455,7 +455,10 @@
         } else {
             platformNodeKey = [platformNodeKeysDerivationPath privateKeyAtIndex:self.platformNodeWalletIndex fromSeed:seed];
         }
-        UInt160 platformNodeID = [DSKeyManager publicKeyData:platformNodeKey].hash160;
+        
+        UInt256 platformNodeIDsha = [DSKeyManager publicKeyData:platformNodeKey].SHA256;
+        NSData *data = [NSData dataWithBytes:platformNodeIDsha.u8 length:20];
+        UInt160 platformNodeID = data.UInt160;
 
         OpaqueKey *ownerKey;
         if (self.ownerWalletIndex == UINT32_MAX) {
