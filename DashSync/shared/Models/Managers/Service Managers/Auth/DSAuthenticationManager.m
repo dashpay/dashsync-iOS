@@ -958,8 +958,13 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                  animated:(BOOL)animated
                completion:(void (^_Nullable)(void))completion {
     UIWindow *window = [UIWindow keyWindow];
+    
     UIViewController *presentingController = [window ds_presentingViewController];
     NSParameterAssert(presentingController);
+    
+    //NOTE: Make sure we present anything on top of the current context
+    controller.modalPresentationStyle = UIModalPresentationOverFullScreen;
+    
     [presentingController presentViewController:controller animated:animated completion:completion];
 }
 #endif
