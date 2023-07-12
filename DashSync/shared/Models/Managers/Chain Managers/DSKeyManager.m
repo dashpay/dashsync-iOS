@@ -267,8 +267,8 @@
     switch (keyType) {
         case KeyKind_ECDSA: return @"";
         case KeyKind_BLS: return @"_BLS_";
-        case KeyKind_BLSBasic: return @"_BLS_";
-        case KeyKind_ED25519: return @"_ED_";
+        case KeyKind_BLSBasic: return @"_BLS_B_";
+        case KeyKind_ED25519: return @"_ED25519_";
     }
 }
 
