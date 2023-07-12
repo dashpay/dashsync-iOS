@@ -274,7 +274,6 @@
         if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
             NSData *extendedPublicKeyData = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
             if (extendedPublicKeyData) {
-                NoTimeLog(@"_extendedPublicKey (%d) = %@", self.signingAlgorithm, extendedPublicKeyData.hexString);
                 _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
                 [self maybeRevertBLSMigration:extendedPublicKeyData];
                 NSAssert(_extendedPublicKey, @"extended public key not set");
@@ -301,7 +300,6 @@
                 }
             }
 #endif
-            NoTimeLog(@"_extendedPublicKey (%d) = %@", self.signingAlgorithm, extendedPublicKeyData.hexString);
             _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
             [self maybeRevertBLSMigration:extendedPublicKeyData];
         }
