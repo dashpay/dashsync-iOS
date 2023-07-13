@@ -273,14 +273,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<NSValue *> *)keys usingIVSize:(NSUInteger)ivSize {
-    NoTimeLog(@"encapsulatedDHDecryptionWithKeys: %lu using: %lu", keys.count, ivSize);
     NSAssert(keys.count > 1, @"There should be at least two key (first pair)");
     if ([keys count] < 2) return self;
 
     OpaqueKey *firstKey = (OpaqueKey *)[keys firstObject].pointerValue;
     OpaqueKey *secondKey = (OpaqueKey *)[keys objectAtIndex:1].pointerValue;
     NSData *encryptedData = [self decryptWithSecretKey:secondKey fromPublicKey:firstKey usingIVSize:ivSize];
-    NoTimeLog(@"encapsulatedDHEncryptionWithKeys: encrypted: %@", encryptedData.hexString);
     if (keys.count == 2) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -289,12 +287,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<NSValue *> *)keys {
-    NoTimeLog(@"encapsulatedDHDecryptionWithKeys: %lu", keys.count);
     NSAssert(keys.count > 0, @"There should be at least one key");
     if (![keys count]) return self;
     OpaqueKey *firstKey = (OpaqueKey *) [keys firstObject].pointerValue;
     NSData *encryptedData = [self decryptWithDHKey:firstKey];
-    NoTimeLog(@"encapsulatedDHDecryptionWithKeys: decrypted: %@", encryptedData.hexString);
     if (keys.count == 1) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -303,12 +299,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys {
-    NoTimeLog(@"encapsulatedDHEncryptionWithKeys: %lu", keys.count);
     NSAssert(keys.count > 0, @"There should be at least one key");
     if (![keys count]) return self;
     OpaqueKey *firstKey = (OpaqueKey *) [keys firstObject].pointerValue;
     NSData *encryptedData = [self encryptWithDHKey:firstKey];
-    NoTimeLog(@"encapsulatedDHEncryptionWithKeys: encrypted: %@", encryptedData.hexString);
     if (keys.count == 1) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -317,7 +311,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys usingInitializationVector:(NSData *)initializationVector {
-    NoTimeLog(@"encapsulatedDHEncryptionWithKeys: %lu using: %@", keys.count, initializationVector.hexString);
     NSAssert(keys.count > 1, @"There should be at least two key (first pair)");
     if ([keys count] < 2) return self;
 
@@ -325,7 +318,6 @@ NS_ASSUME_NONNULL_BEGIN
     OpaqueKey *secondKey = (OpaqueKey *) [keys objectAtIndex:1].pointerValue;
     
     NSData *encryptedData = [self encryptWithSecretKey:firstKey forPublicKey:secondKey usingInitializationVector:initializationVector];
-    NoTimeLog(@"encapsulatedDHEncryptionWithKeys: encrypted: %@", encryptedData.hexString);
     if (keys.count == 2) { //not really necessary but easier to read
         return encryptedData;
     } else {
