@@ -327,8 +327,7 @@
     if (!self.runLoop) return;
     [self.inputStream close];
     [self.outputStream close];
-    [self.inputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
-    [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+    
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
     _status = DSPeerStatus_Disconnected;
