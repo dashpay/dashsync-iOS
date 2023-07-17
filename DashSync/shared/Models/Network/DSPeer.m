@@ -327,8 +327,7 @@
     if (!self.runLoop) return;
     [self.inputStream close];
     [self.outputStream close];
-    [self.inputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
-    [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+    
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
     _status = DSPeerStatus_Disconnected;
@@ -856,9 +855,9 @@
     }
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
 
-    if (self.version < self.chain.minProtocolVersion) {
+    if (self.version < self.chain.minProtocolVersion || self.version > self.chain.protocolVersion) {
 #if MESSAGE_LOGGING
-        DSLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+        DSLog(@"%@:%u protocol version %u not supported, valid versions are: [%u, %u], useragent:\"%@\", ", self.host, self.port, self.version, self.chain.minProtocolVersion, self.chain.protocolVersion, self.useragent);
 #endif
         [self error:@"protocol version %u not supported", self.version];
         return;
