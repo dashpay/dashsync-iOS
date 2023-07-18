@@ -59,7 +59,14 @@ NS_ASSUME_NONNULL_BEGIN
             [logFiles addObject:fileURL];
         }
     }
+    // add rust log file located at $CACHE/Logs/processor.log
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *cacheDirectory = [paths objectAtIndex:0];
+    NSString *rustLogPath = [cacheDirectory stringByAppendingPathComponent:@"Logs/processor.log"];
 
+    if ([[NSFileManager defaultManager] fileExistsAtPath:rustLogPath]) {
+        [logFiles addObject:[NSURL fileURLWithPath:rustLogPath]];
+    }
     return [logFiles copy];
 }
 
