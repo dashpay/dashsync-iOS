@@ -701,7 +701,7 @@
             UInt256 blockHash = result.blockHash;
             DSLog(@"•••• -> processed mnlistdiff %u..%u %@ .. %@", [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
         #if SAVE_MASTERNODE_DIFF_TO_FILE
-            NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), @(peer.version)];
+            NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
             DSLog(@"•-• File %@ saved", fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
         #endif
@@ -749,7 +749,7 @@
                 DSLog(@"•••• -> processed qrinfo h-4c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
             }
     #if SAVE_MASTERNODE_DIFF_TO_FILE
-            NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), @(peer.version)];
+            NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
             DSLog(@"•-• File %@ saved", fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
     #endif
