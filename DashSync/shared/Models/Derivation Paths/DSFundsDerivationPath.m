@@ -137,24 +137,22 @@
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
-
-    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
-    NSUInteger i = a.count;
-
-    // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
-        i--;
-    }
-
-    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-
-    if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-        [self receiveAddress];
-        [self changeAddress];
-    }
-
     @synchronized(self) {
+        NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
+        NSUInteger i = a.count;
+        // keep only the trailing contiguous block of addresses with no transactions
+        while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
+            i--;
+        }
+
+        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+
+        if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
+            [self receiveAddress];
+            [self changeAddress];
+        }
+
         //It seems weird to repeat this, but it's correct because of the original call receive address and change address
         [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
         i = a.count;
