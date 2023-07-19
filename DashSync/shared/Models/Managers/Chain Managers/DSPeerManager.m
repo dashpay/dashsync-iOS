@@ -695,7 +695,7 @@
 // MARK: - Connectivity
 
 - (void)connect {
-    DSLog(@"[DSPeerManager] connect (%d)", self.connectedPeers);
+    DSLog(@"[DSPeerManager] connect (%d)", [self.connectedPeers count]);
     self.desiredState = DSPeerManagerDesiredState_Connected;
     dispatch_async(self.networkingQueue, ^{
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
