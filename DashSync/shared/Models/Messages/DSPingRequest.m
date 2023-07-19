@@ -17,7 +17,7 @@
 
 #import "DSPingRequest.h"
 #import "DSPeer.h"
-#import "NSMutableData+Dash.h"
+#import "NSData+Dash.h"
 
 @implementation DSPingRequest
 
@@ -34,8 +34,6 @@
 }
 
 - (NSData *)toData {
-    NSMutableData *msg = [NSMutableData data];
-    [msg appendUInt64:self.localNonce];
-    return msg;
+    return [NSData dataWithUInt64:self.localNonce];
 }
 @end
