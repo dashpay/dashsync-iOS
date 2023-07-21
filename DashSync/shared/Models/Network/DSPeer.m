@@ -124,6 +124,7 @@
 @property (nonatomic, assign) uint64_t receivedOrphanCount;
 @property (nonatomic, assign) NSTimeInterval mempoolRequestTime;
 @property (nonatomic, strong) dispatch_semaphore_t outputBufferSemaphore;
+@property (nonatomic, strong) dispatch_queue_t handlersQueue;
 
 @end
 
@@ -150,6 +151,7 @@
     _port = (port == 0) ? [chain standardPort] : port;
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
+    _handlersQueue = dispatch_queue_create("org.dash.dashsync.peerHandlers", DISPATCH_QUEUE_SERIAL);
     return self;
 }
 
@@ -175,6 +177,7 @@
     if (_port == 0) _port = chain.standardPort;
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
+    _handlersQueue = dispatch_queue_create("org.dash.dashsync.peerHandlers", DISPATCH_QUEUE_SERIAL);
     return self;
 }
 
@@ -331,17 +334,18 @@
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
     _status = DSPeerStatus_Disconnected;
-    dispatch_async(self.delegateQueue, ^{
+    
+    dispatch_async(self.handlersQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
         while (self.pongHandlers.count) {
             ((void (^)(BOOL))self.pongHandlers[0])(NO);
             [self.pongHandlers removeObjectAtIndex:0];
         }
-
         if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO, YES, YES);
         self.mempoolTransactionCompletion = nil;
-        [self.peerDelegate peer:self disconnectedWithError:error];
+        dispatch_async(self.delegateQueue, ^{
+            [self.peerDelegate peer:self disconnectedWithError:error];
+        });
     });
 }
 
@@ -672,21 +676,18 @@
 }
 
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler {
-    NSMutableData *msg = [NSMutableData data];
-
-    dispatch_async(self.delegateQueue, ^{
+    dispatch_async(self.handlersQueue, ^{
         if (!self.pongHandlers) self.pongHandlers = [NSMutableArray array];
-        [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {
-        } copy]];
-        
-        [msg appendUInt64:self.localNonce];
+        [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
+        uint64_t localNonce = self.localNonce;
         self.pingStartTime = [NSDate timeIntervalSince1970];
 
 #if MESSAGE_LOGGING
         DSLog(@"%@:%u sending ping", self.host, self.port);
 #endif
-
-        [self sendRequest:[DSPingRequest requestWithLocalNonce:self.localNonce]];
+        dispatch_async(self.delegateQueue, ^{
+            [self sendRequest:[DSPingRequest requestWithLocalNonce:localNonce]];
+        });
     });
 }
 
@@ -1594,8 +1595,14 @@
         [self error:@"pong message contained wrong nonce: %llu, expected: %llu", [message UInt64AtOffset:0], self.localNonce];
         return;
     } else if (!self.pongHandlers.count) {
-        DSLog(@"%@:%u got unexpected pong", self.host, self.port);
-        return;
+        __block BOOL hasNoHandlers;
+        dispatch_sync(self.handlersQueue, ^{
+            hasNoHandlers = ![self.pongHandlers count];
+        });
+        if (hasNoHandlers) {
+            DSLog(@"%@:%u got unexpected pong", self.host, self.port);
+            return;
+        }
     }
 
     if (self.pingStartTime > 1) {
@@ -1609,11 +1616,13 @@
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 #endif
-
-    dispatch_async(self.delegateQueue, ^{
+    dispatch_async(self.handlersQueue, ^{
         if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
-            ((void (^)(BOOL))self.pongHandlers[0])(YES);
+            void (^handler)(BOOL) = [self.pongHandlers objectAtIndex:0];
             [self.pongHandlers removeObjectAtIndex:0];
+            dispatch_async(self.delegateQueue, ^{
+                handler(YES);
+            });
         }
     });
 }
@@ -1724,9 +1733,7 @@
 // MARK: - accept Control
 
 - (void)acceptSporkMessage:(NSData *)message {
-    DSSpork *spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    DSLog(@"received spork %u (%@) with message %@", spork.identifier, spork.identifierString, message.hexString);
-    [self.sporkDelegate peer:self relayedSpork:spork];
+    [self.sporkDelegate peer:self relayedSpork:message];
 }
 
 // MARK: - accept Masternode
