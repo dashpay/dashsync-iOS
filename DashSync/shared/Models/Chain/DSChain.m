@@ -2323,16 +2323,19 @@ static dispatch_once_t devnetToken = 0;
 - (DSBlock *)lastTerminalBlock {
     @synchronized (self) {
         if (_lastTerminalBlock) return _lastTerminalBlock;
-        
-        [self.chainManagedObjectContext performBlockAndWait:^{
-            NSArray *lastTerminalBlocks = [DSMerkleBlockEntity lastTerminalBlocks:1 onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
-            DSMerkleBlock *lastTerminalBlock = [[lastTerminalBlocks firstObject] merkleBlock];
+    }
+    [self.chainManagedObjectContext performBlockAndWait:^{
+        NSArray *lastTerminalBlocks = [DSMerkleBlockEntity lastTerminalBlocks:1 onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
+        DSMerkleBlock *lastTerminalBlock = [[lastTerminalBlocks firstObject] merkleBlock];
+        @synchronized (self) {
             self->_lastTerminalBlock = lastTerminalBlock;
             if (lastTerminalBlock) {
                 DSLog(@"last terminal block at height %d recovered from db (hash is %@)", lastTerminalBlock.height, [NSData dataWithUInt256:lastTerminalBlock.blockHash].hexString);
             }
-        }];
-        
+        }
+    }];
+
+    @synchronized (self) {
         if (!_lastTerminalBlock) {
             // if we don't have any headers yet, use the latest checkpoint
             DSCheckpoint *lastCheckpoint = self.terminalHeadersOverrideUseCheckpoint ? self.terminalHeadersOverrideUseCheckpoint : self.lastCheckpoint;

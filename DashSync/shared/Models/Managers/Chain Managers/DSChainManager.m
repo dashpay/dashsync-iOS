@@ -346,10 +346,8 @@
     DSLog(@"combinedSyncProgress breakdown %f %f %f", self.terminalHeaderSyncProgress, self.masternodeManager.masternodeListAndQuorumsSyncProgress, self.chainSyncProgress);
 #endif
     if ((self.terminalHeaderSyncWeight + self.chainSyncWeight + self.masternodeListSyncWeight) == 0) {
-        if (self.peerManager.connected) {
-            return 1;
-        } else {
-            return 0;
+        @synchronized (self.peerManager) {
+            return self.peerManager.connected ? 1 : 0;
         }
     } else {
         double progress = self.terminalHeaderSyncProgress * self.terminalHeaderSyncWeight + self.masternodeManager.masternodeListAndQuorumsSyncProgress * self.masternodeListSyncWeight + self.chainSyncProgress * self.chainSyncWeight;

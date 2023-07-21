@@ -297,7 +297,11 @@
     uint32_t minDistance = UINT32_MAX;
     uint32_t blockHeight = [self heightForBlockHash:blockHash];
     DSMasternodeList *closestMasternodeList = nil;
-    NSDictionary *lists = [self.masternodeListsByBlockHash copy];
+    NSDictionary *lists;
+    @synchronized (self.masternodeListsByBlockHash) {
+        lists = [self.masternodeListsByBlockHash copy];
+    }
+    
     for (NSData *blockHashData in lists) {
         uint32_t masternodeListBlockHeight = [self heightForBlockHash:blockHashData.UInt256];
         if (blockHeight <= masternodeListBlockHeight) continue;
