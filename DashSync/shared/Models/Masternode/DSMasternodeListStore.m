@@ -95,40 +95,54 @@
 }
 
 - (NSUInteger)knownMasternodeListsCount {
-    NSMutableSet *masternodeListHashes = [NSMutableSet setWithArray:self.masternodeListsByBlockHash.allKeys];
-    [masternodeListHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
-    return [masternodeListHashes count];
+    @synchronized (self.masternodeListsByBlockHash) {
+        @synchronized (self.masternodeListsBlockHashStubs) {
+            NSMutableSet *masternodeListHashes = [NSMutableSet setWithArray:self.masternodeListsByBlockHash.allKeys];
+            [masternodeListHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
+            return [masternodeListHashes count];
+        }
+    }
 }
 
 - (uint32_t)earliestMasternodeListBlockHeight {
     uint32_t earliest = UINT32_MAX;
-    for (NSData *blockHash in [self.masternodeListsBlockHashStubs copy]) {
-        earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
+    @synchronized (self.masternodeListsBlockHashStubs) {
+        for (NSData *blockHash in self.masternodeListsBlockHashStubs) {
+            earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
+        }
     }
-    for (NSData *blockHash in [self.masternodeListsByBlockHash copy]) {
-        earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
+    @synchronized (self.masternodeListsByBlockHash) {
+        for (NSData *blockHash in self.masternodeListsByBlockHash) {
+            earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
+        }
     }
     return earliest;
 }
 
 - (uint32_t)lastMasternodeListBlockHeight {
     uint32_t last = 0;
-    for (NSData *blockHash in [self.masternodeListsBlockHashStubs copy]) {
-        last = MAX(last, [self heightForBlockHash:blockHash.UInt256]);
+    @synchronized (self.masternodeListsBlockHashStubs) {
+        for (NSData *blockHash in self.masternodeListsBlockHashStubs) {
+            last = MAX(last, [self heightForBlockHash:blockHash.UInt256]);
+        }
     }
-    for (NSData *blockHash in [self.masternodeListsByBlockHash copy]) {
-        last = MAX(last, [self heightForBlockHash:blockHash.UInt256]);
+    @synchronized (self.masternodeListsByBlockHash) {
+        for (NSData *blockHash in self.masternodeListsByBlockHash) {
+            last = MAX(last, [self heightForBlockHash:blockHash.UInt256]);
+        }
     }
     return last ? last : UINT32_MAX;
 }
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     if (uint256_is_zero(blockhash)) return 0;
-    NSNumber *cachedHeightNumber = [self.cachedBlockHashHeights objectForKey:uint256_data(blockhash)];
-    if (cachedHeightNumber) return [cachedHeightNumber intValue];
-    uint32_t chainHeight = [self.chain heightForBlockHash:blockhash];
-    if (chainHeight != UINT32_MAX) [self.cachedBlockHashHeights setObject:@(chainHeight) forKey:uint256_data(blockhash)];
-    return chainHeight;
+    @synchronized (self.cachedBlockHashHeights) {
+        NSNumber *cachedHeightNumber = [self.cachedBlockHashHeights objectForKey:uint256_data(blockhash)];
+        if (cachedHeightNumber) return [cachedHeightNumber intValue];
+        uint32_t chainHeight = [self.chain heightForBlockHash:blockhash];
+        if (chainHeight != UINT32_MAX) [self.cachedBlockHashHeights setObject:@(chainHeight) forKey:uint256_data(blockhash)];
+        return chainHeight;
+    }
 }
 
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash {
@@ -259,9 +273,6 @@
             if ((i == masternodeListEntities.count - 1) || ((self.masternodeListsByBlockHash.count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
                 //we only need a few in memory as new quorums will mostly be verified against recent masternode lists
                 DSMasternodeList *masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
-//                [masternodeList saveToJsonFileExtended:[NSString stringWithFormat:@"MNLIST_ext_%@_%@_%@.json", @(masternodeList.height), @([[NSDate date] timeIntervalSince1970]), @"loadMasternodeListsWithBlockHeightLookup"]];
-
-                DSLog(@"••• addMasternodeList (loadMasternodeListsWithBlockHeightLookup) -> %@: %@", uint256_hex(masternodeList.blockHash), masternodeList.debugDescription);
                 [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
                 [self.cachedBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:uint256_data(masternodeList.blockHash)];
                 [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
@@ -407,10 +418,9 @@
     }
     NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
     [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
-    DSLog(@"••• addMasternodeList -> %@: %@", blockHashData.hexString, masternodeList);
-//    [masternodeList saveToJsonFileExtended:[NSString stringWithFormat:@"MNLIST_ext_%@_%@_%@.json", @(masternodeList.height), @([[NSDate date] timeIntervalSince1970]), @"saveMasternodeList"]];
-
-    [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHashData];
+    @synchronized (self.masternodeListsByBlockHash) {
+        [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHashData];
+    }
     [self notifyMasternodeListUpdate];
     dispatch_group_enter(self.savingGroup);
     //We will want to create unknown blocks if they came from insight
@@ -737,7 +747,9 @@
         return NO;
     }
     self.lastQueriedBlockHash = merkleBlockHash;
-    [self.masternodeListQueriesNeedingQuorumsValidated addObject:merkleBlockHashData];
+    @synchronized (self.masternodeListQueriesNeedingQuorumsValidated) {
+        [self.masternodeListQueriesNeedingQuorumsValidated addObject:merkleBlockHashData];
+    }
     return YES;
 }
 

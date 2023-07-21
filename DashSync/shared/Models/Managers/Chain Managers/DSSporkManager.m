@@ -94,7 +94,7 @@
 - (BOOL)sporksUpdatedSignatures {
     DSSpork *updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
     if (!updateSignatureSpork) return FALSE; //assume false
-    return updateSignatureSpork.value <= self.chain.lastTerminalBlockHeight;
+    return updateSignatureSpork.value <= self.chain.lastTerminalBlock.height;
 }
 
 - (BOOL)deterministicMasternodeListEnabled {
@@ -122,7 +122,9 @@
 }
 
 - (NSDictionary *)sporkDictionary {
-    return [_mSporkDictionary copy];
+    @synchronized (self) {
+        return [_mSporkDictionary copy];
+    }
 }
 
 // MARK: - Spork Sync

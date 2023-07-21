@@ -70,6 +70,7 @@
 #define MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING 500
 
 #define SAVE_MAX_TRANSACTIONS_INFO (DEBUG && 0)
+#define DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS (DEBUG && 0)
 
 @interface DSTransactionManager ()
 
@@ -1751,7 +1752,7 @@
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
             });
         } else {
-#if DEBUG
+#if DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS
             DSMasternodeList *masternodeList = nil;
             DSQuorumEntry *quorum = [chainLock findSigningQuorumReturnMasternodeList:&masternodeList];
             if (quorum && masternodeList) {

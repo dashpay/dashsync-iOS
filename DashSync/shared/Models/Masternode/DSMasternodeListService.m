@@ -56,18 +56,27 @@
 }
 
 - (void)startTimeOutObserver {
-    __block NSSet *requestsInRetrieval = [self.requestsInRetrieval copy];
+    __block NSSet *requestsInRetrieval;
+    @synchronized (self.requestsInRetrieval) {
+        requestsInRetrieval = [self.requestsInRetrieval copy];
+    }
     __block NSUInteger masternodeListCount = [self.store knownMasternodeListsCount];
     self.timeOutObserverTry++;
     __block uint16_t timeOutObserverTry = self.timeOutObserverTry;
     dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC));
     dispatch_after(timeout, self.chain.networkingQueue, ^{
+        
         if (!self.retrievalQueueMaxAmount || self.timeOutObserverTry != timeOutObserverTry) {
             return;
         }
+        __block NSSet *requestsInRetrieval2;
+        @synchronized (self.requestsInRetrieval) {
+            requestsInRetrieval2 = [self.requestsInRetrieval copy];
+        }
+
         // Removes from the receiving set each object that isn’t a member of another given set.
         NSMutableSet *leftToGet = [requestsInRetrieval mutableCopy];
-        [leftToGet intersectSet:self.requestsInRetrieval];
+        [leftToGet intersectSet:requestsInRetrieval2];
 
         if ((masternodeListCount == [self.store knownMasternodeListsCount]) && [requestsInRetrieval isEqualToSet:leftToGet]) {
             DSLog(@"TimedOut");
@@ -101,7 +110,6 @@
 
 - (void)dequeueMasternodeListRequest {
     [self fetchMasternodeListsToRetrieve:^(NSOrderedSet<NSData *> *list) {
-//        NSLog(@"•••• dequeueMasternodeListRequest with list: (%@)", [self logListSet:list]);
         [self composeMasternodeListRequest:list];
         [self startTimeOutObserver];
     }];
@@ -258,7 +266,10 @@
 }
 
 - (void)updateMasternodeRetrievalQueue {
-    self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, self.retrievalQueue.count);
+    NSUInteger currentCount = self.retrievalQueue.count;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, currentCount);
+    });
     [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
         return [self.store heightForBlockHash:obj1.UInt256] < [self.store heightForBlockHash:obj2.UInt256] ? NSOrderedAscending : NSOrderedDescending;
     }];
@@ -299,16 +310,24 @@
 - (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:baseBlockHash blockHash:blockHash];
     if (!matchedRequest) {
+        #if DEBUG
+        NSSet *requestsInRetrieval;
+        @synchronized (self.requestsInRetrieval) {
+            requestsInRetrieval = [self.requestsInRetrieval copy];
+        }
          NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
-         for (DSMasternodeListRequest *requestInRetrieval in [self.requestsInRetrieval copy]) {
+         for (DSMasternodeListRequest *requestInRetrieval in requestsInRetrieval) {
              [requestsInRetrievalStrings addObject:[requestInRetrieval logWithBlockHeightLookup:^uint32_t(UInt256 blockHash) {
                  return [self.store heightForBlockHash:blockHash];
              }]];
          }
-         DSLog(@"•••• A masternode list (%u..%u %@ .. %@) was received that is not set to be retrieved (%@)", [self.store heightForBlockHash:baseBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash), [requestsInRetrievalStrings componentsJoinedByString:@", "]);
-         return NO;
-     }
-    [self.requestsInRetrieval removeObject:matchedRequest];
+         DSLog(@"•••• A masternode list (%@ .. %@) was received that is not set to be retrieved (%@)", uint256_hex(baseBlockHash), uint256_hex(blockHash), [requestsInRetrievalStrings componentsJoinedByString:@", "]);
+        #endif /* DEBUG */
+        return NO;
+    }
+    @synchronized (self.requestsInRetrieval) {
+        [self.requestsInRetrieval removeObject:matchedRequest];
+    }
     return YES;
 }
 
@@ -337,8 +356,7 @@
         } else if (![faultyPeers containsObject:peer.location]) {
             faultyPeers = [faultyPeers arrayByAddingObject:peer.location];
         }
-        [[NSUserDefaults standardUserDefaults] setObject:faultyPeers
-                                                  forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self dequeueMasternodeListRequest];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -349,7 +367,9 @@
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request {
 //    DSLog(@"•••• sendMasternodeListRequest: %@", [request toData].hexString);
     [self.peerManager sendRequest:request];
-    [self.requestsInRetrieval addObject:request];
+    @synchronized (self.requestsInRetrieval) {
+        [self.requestsInRetrieval addObject:request];
+    }
 }
 
 @end

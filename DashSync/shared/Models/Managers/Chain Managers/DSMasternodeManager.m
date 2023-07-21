@@ -184,13 +184,15 @@
 }
 
 - (double)masternodeListAndQuorumsSyncProgress {
-    double amountLeft = self.masternodeListRetrievalQueueCount;
-    double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-    if (!amountLeft) {
-        return self.store.masternodeListsAndQuorumsIsSynced;
+    @synchronized (self) {
+        double amountLeft = self.masternodeListRetrievalQueueCount;
+        double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
+        if (!amountLeft) {
+            return self.store.masternodeListsAndQuorumsIsSynced;
+        }
+        double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0);
+        return progress;
     }
-    double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0);
-    return progress;
 }
 
 - (BOOL)currentMasternodeListIsInLast24Hours {
@@ -361,7 +363,9 @@
 - (BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash {
     self.store.lastQueriedBlockHash = blockHash;
     NSData *blockHashData = uint256_data(blockHash);
-    [self.store.masternodeListQueriesNeedingQuorumsValidated addObject:blockHashData];
+    @synchronized (self.store.masternodeListQueriesNeedingQuorumsValidated) {
+        [self.store.masternodeListQueriesNeedingQuorumsValidated addObject:blockHashData];
+    }
     // this is safe
     [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:blockHashData]];
     return TRUE;
@@ -501,14 +505,21 @@
         DSLog(@"•••• processMasternodeListDiffResult: missingMasternodeLists: %@", [self logListSet:neededMissingMasternodeLists]);
         UInt256 masternodeListBlockHash = masternodeList.blockHash;
         NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
-        if ([neededMissingMasternodeLists count] && [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:masternodeListBlockHashData]) {
+        BOOL hasAwaitingQuorumValidation;
+        @synchronized (self.store.masternodeListQueriesNeedingQuorumsValidated) {
+            hasAwaitingQuorumValidation = [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:masternodeListBlockHashData];
+        }
+
+        if ([neededMissingMasternodeLists count] && hasAwaitingQuorumValidation) {
             [self.masternodeListDiffService removeFromRetrievalQueue:masternodeListBlockHashData];
             [self processMissingMasternodeLists:neededMissingMasternodeLists forMasternodeList:masternodeList];
             completion();
         } else {
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 self.masternodeListDiffService.currentMasternodeList = masternodeList;
-                [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:masternodeListBlockHashData];
+                @synchronized (self.store.masternodeListQueriesNeedingQuorumsValidated) {
+                    [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:masternodeListBlockHashData];
+                }
             }
             DSLog(@"••• updateStoreWithMasternodeList: %u: %@ (%@)", masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
             [self updateStoreWithMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError *error) {
@@ -579,33 +590,37 @@
     NSData *blockHashDataAtH2C = uint256_data(blockHashAtH2C);
     NSData *blockHashDataAtH3C = uint256_data(blockHashAtH3C);
     NSData *blockHashDataAtH4C = uint256_data(blockHashAtH4C);
+    NSMutableSet<NSData *> *masternodeListQueriesNeedingQuorumsValidated;
+    @synchronized (self.store.masternodeListQueriesNeedingQuorumsValidated) {
+        masternodeListQueriesNeedingQuorumsValidated = self.store.masternodeListQueriesNeedingQuorumsValidated;
+    }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH4C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-    } else if (![missingMasternodeListsAtH4C count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH4C]) {
+    } else if (![missingMasternodeListsAtH4C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH4C]) {
         DSLog(@"••• updateStoreWithMasternodeList (h-4c): %u: %@ (%@)", masternodeListAtH4C.height, uint256_hex(blockHashAtH4C), uint256_reverse_hex(blockHashAtH4C));
         [self updateStoreWithMasternodeList:masternodeListAtH4C addedMasternodes:mnListDiffResultAtH4C.addedMasternodes modifiedMasternodes:mnListDiffResultAtH4C.modifiedMasternodes addedQuorums:mnListDiffResultAtH4C.addedQuorums completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH3C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-    } else if (![missingMasternodeListsAtH3C count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH3C]) {
+    } else if (![missingMasternodeListsAtH3C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH3C]) {
         DSLog(@"••• updateStoreWithMasternodeList (h-3c): %u: %@ (%@)", masternodeListAtH3C.height, uint256_hex(blockHashAtH3C), uint256_reverse_hex(blockHashAtH3C));
         [self updateStoreWithMasternodeList:masternodeListAtH3C addedMasternodes:mnListDiffResultAtH3C.addedMasternodes modifiedMasternodes:mnListDiffResultAtH3C.modifiedMasternodes addedQuorums:mnListDiffResultAtH3C.addedQuorums completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH2C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-    } else if (![missingMasternodeListsAtH2C count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH2C]) {
+    } else if (![missingMasternodeListsAtH2C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH2C]) {
         DSLog(@"••• updateStoreWithMasternodeList (h-2c): %u: %@ (%@)", masternodeListAtH2C.height, uint256_hex(blockHashAtH2C), uint256_reverse_hex(blockHashAtH2C));
         [self updateStoreWithMasternodeList:masternodeListAtH2C addedMasternodes:mnListDiffResultAtH2C.addedMasternodes modifiedMasternodes:mnListDiffResultAtH2C.modifiedMasternodes addedQuorums:mnListDiffResultAtH2C.addedQuorums completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtHC skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-    } else if (![missingMasternodeListsAtHC count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtHC]) {
+    } else if (![missingMasternodeListsAtHC count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtHC]) {
         DSLog(@"••• updateStoreWithMasternodeList (h-c): %u: %@ (%@)", masternodeListAtHC.height, uint256_hex(blockHashAtHC), uint256_reverse_hex(blockHashAtHC));
         [self updateStoreWithMasternodeList:masternodeListAtHC addedMasternodes:mnListDiffResultAtHC.addedMasternodes modifiedMasternodes:mnListDiffResultAtHC.modifiedMasternodes addedQuorums:mnListDiffResultAtHC.addedQuorums completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-    } else if (![missingMasternodeListsAtH count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH]) {
+    } else if (![missingMasternodeListsAtH count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH]) {
         DSLog(@"••• updateStoreWithMasternodeList (h): %u: %@ (%@)", masternodeListAtH.height, uint256_hex(blockHashAtH), uint256_reverse_hex(blockHashAtH));
         [self updateStoreWithMasternodeList:masternodeListAtH addedMasternodes:mnListDiffResultAtH.addedMasternodes modifiedMasternodes:mnListDiffResultAtH.modifiedMasternodes addedQuorums:mnListDiffResultAtH.addedQuorums completion:^(NSError *error) {}];
     }
@@ -613,13 +628,15 @@
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtTip skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else {
-        if ([missingMasternodeListsAtTip count] && [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtTip]) {
+        if ([missingMasternodeListsAtTip count] && [masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtTip]) {
             [self.quorumRotationService removeFromRetrievalQueue:blockHashDataAtTip];
             [self processMissingMasternodeLists:missingMasternodeLists forMasternodeList:masternodeListAtTip];
         } else {
             if (uint256_eq(self.store.lastQueriedBlockHash, blockHashAtTip)) {
                 self.quorumRotationService.currentMasternodeList = masternodeListAtTip;
-                [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:blockHashDataAtTip];
+                @synchronized (self.store.masternodeListQueriesNeedingQuorumsValidated) {
+                    [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:blockHashDataAtTip];
+                }
             }
             DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
             [self updateStoreWithMasternodeList:masternodeListAtTip addedMasternodes:mnListDiffResultAtTip.addedMasternodes modifiedMasternodes:mnListDiffResultAtTip.modifiedMasternodes addedQuorums:mnListDiffResultAtTip.addedQuorums completion:^(NSError *error) {}];
@@ -639,7 +656,7 @@
         NSData *diffBlockHashData = uint256_data(diffBlockHash);
         if (![self.quorumRotationService shouldProcessDiffResult:diffResult skipPresenceInRetrieval:YES]) {
             [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-        } else if (![diffResult.neededMissingMasternodeLists count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:diffBlockHashData]) {
+        } else if (![diffResult.neededMissingMasternodeLists count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:diffBlockHashData]) {
             [self updateStoreWithMasternodeList:diffMasternodeList addedMasternodes:diffResult.addedMasternodes modifiedMasternodes:diffResult.modifiedMasternodes addedQuorums:diffResult.addedQuorums completion:^(NSError *error) {}];
         }
     }

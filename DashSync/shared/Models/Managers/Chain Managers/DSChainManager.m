@@ -393,11 +393,15 @@
 }
 
 - (void)relayedNewItem {
-    self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    });
 }
 
 - (void)resetLastRelayedItemTime {
-    self.lastChainRelayTime = 0;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        self.lastChainRelayTime = 0;
+    });
 }
 
 // MARK: - Mining
@@ -471,11 +475,12 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
+    DSLog(@"startSync -> peerManager::connect");
     [self.peerManager connect];
 }
 
 - (void)stopSync {
-    [self.peerManager disconnect];
+    [self.peerManager disconnect:DSDisconnectReason_ChainSwitch];
     self.syncPhase = DSChainSyncPhase_Offline;
 }
 
@@ -497,6 +502,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
+    DSLog(@"disconnectedMasternodeListAndBlocksRescan -> peerManager::connect");
     [self.peerManager connect];
 }
 
@@ -510,6 +516,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
+    DSLog(@"disconnectedMasternodeListRescan -> peerManager::connect");
     [self.peerManager connect];
 }
 
@@ -523,6 +530,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
+    DSLog(@"disconnectedSyncBlocksRescan -> peerManager::connect");
     [self.peerManager connect];
 }
 
@@ -650,7 +658,8 @@
 }
 
 - (void)chainFinishedSyncingInitialHeaders:(DSChain *)chain fromPeer:(DSPeer *)peer onMainChain:(BOOL)onMainChain {
-    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) [self relayedNewItem];
+    
     [self.peerManager chainSyncStopped];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
@@ -659,7 +668,7 @@
 }
 
 - (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *)peer onMainChain:(BOOL)onMainChain {
-    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) [self relayedNewItem];
     DSLog(@"chain finished syncing");
     self.chainSyncStartHeight = 0;
     self.syncPhase = DSChainSyncPhase_Synced;
@@ -678,6 +687,7 @@
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
             self.syncPhase = DSChainSyncPhase_ChainSync;
         }
+        DSLog(@"syncBlockchain -> peerManager::connect");
         [self.peerManager connect];
     } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];

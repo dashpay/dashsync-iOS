@@ -221,7 +221,9 @@
 
 - (void)connect {
     if (self.status != DSPeerStatus_Disconnected) return;
-    _status = DSPeerStatus_Connecting;
+    @synchronized (self) {
+        _status = DSPeerStatus_Connecting;
+    }
     _pingTime = DBL_MAX;
     if (!self.reachability) self.reachability = [DSReachabilityManager sharedManager];
 
@@ -235,7 +237,9 @@
                                                                        queue:nil
                                                                   usingBlock:^(NSNotification *note) {
                         if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
-                            self->_status = DSPeerStatus_Disconnected;
+                            @synchronized (self) {
+                                self->_status = DSPeerStatus_Disconnected;
+                            }
                             [self connect];
                         }
                     }];
@@ -319,7 +323,9 @@
     }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
-    _status = DSPeerStatus_Disconnected;
+    @synchronized (self) {
+        _status = DSPeerStatus_Disconnected;
+    }
 
     if (self.reachabilityObserver) {
         self.reachability = nil;
@@ -333,7 +339,9 @@
     
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
-    _status = DSPeerStatus_Disconnected;
+    @synchronized (self) {
+        _status = DSPeerStatus_Disconnected;
+    }
     
     dispatch_async(self.handlersQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -362,7 +370,9 @@
 
     DSLog(@"%@:%u handshake completed %@", self.host, self.port, (self.peerDelegate.downloadPeer == self) ? @"(download peer)" : @"");
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
-    _status = DSPeerStatus_Connected;
+    @synchronized (self) {
+        _status = DSPeerStatus_Connected;
+    }
 
     dispatch_async(self.delegateQueue, ^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peerConnected:self];
@@ -1071,7 +1081,11 @@
             }
         }
     }
-
+    uint32_t currentHeight;
+    @synchronized (self) {
+        currentHeight = self.currentBlockHeight;
+    }
+    
     if ([self.chain syncsBlockchain] && !self.sentFilter && !self.sentMempool && !self.sentGetblocks && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
         [self error:@"got tx inv message before loading a filter"];
         return;
@@ -1079,8 +1093,8 @@
         DSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
-    } else if (self.currentBlockHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
-               self.currentBlockHeight + self.knownBlockHashes.count + blockHashes.count < self.lastBlockHeight) {
+    } else if (currentHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
+               currentHeight + self.knownBlockHashes.count + blockHashes.count < self.lastBlockHeight) {
         [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
         return;
     }
