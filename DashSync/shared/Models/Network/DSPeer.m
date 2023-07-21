@@ -1594,7 +1594,7 @@
     } else if ([message UInt64AtOffset:0] != self.localNonce) {
         [self error:@"pong message contained wrong nonce: %llu, expected: %llu", [message UInt64AtOffset:0], self.localNonce];
         return;
-    } else if (!self.pongHandlers.count) {
+    } else {
         __block BOOL hasNoHandlers;
         dispatch_sync(self.handlersQueue, ^{
             hasNoHandlers = ![self.pongHandlers count];
