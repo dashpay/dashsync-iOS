@@ -350,7 +350,9 @@
                 //A quorum references the masternode list by it's block
                 //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
                 [self.managedObjectContext deleteObject:masternodeListEntity];
-                [self.masternodeListsByBlockHash removeObjectForKey:masternodeListEntity.block.blockHash];
+                @synchronized (self.masternodeListsByBlockHash) {
+                    [self.masternodeListsByBlockHash removeObjectForKey:masternodeListEntity.block.blockHash];
+                }
             }
             if (removedItems) {
                 //Now we should delete old quorums
