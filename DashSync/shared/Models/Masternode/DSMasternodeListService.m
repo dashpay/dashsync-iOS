@@ -57,35 +57,36 @@
 
 - (void)startTimeOutObserver {
     __block NSSet *requestsInRetrieval;
-    @synchronized (self.requestsInRetrieval) {
+    __block NSUInteger masternodeListCount;
+    __block uint16_t timeOutObserverTry;
+    dispatch_time_t timeout;
+    @synchronized (self) {
         requestsInRetrieval = [self.requestsInRetrieval copy];
+        masternodeListCount = [self.store knownMasternodeListsCount];
+        self.timeOutObserverTry++;
+        timeOutObserverTry = self.timeOutObserverTry;
+        timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC));
     }
-    __block NSUInteger masternodeListCount = [self.store knownMasternodeListsCount];
-    self.timeOutObserverTry++;
-    __block uint16_t timeOutObserverTry = self.timeOutObserverTry;
-    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC));
     dispatch_after(timeout, self.chain.networkingQueue, ^{
-        
-        if (!self.retrievalQueueMaxAmount || self.timeOutObserverTry != timeOutObserverTry) {
-            return;
-        }
         __block NSSet *requestsInRetrieval2;
-        @synchronized (self.requestsInRetrieval) {
+        __block NSUInteger masternodeListCount2;
+        @synchronized (self) {
+            if (!self.retrievalQueueMaxAmount || self.timeOutObserverTry != timeOutObserverTry) {
+                return;
+            }
             requestsInRetrieval2 = [self.requestsInRetrieval copy];
-        }
-
-        // Removes from the receiving set each object that isn’t a member of another given set.
-        NSMutableSet *leftToGet = [requestsInRetrieval mutableCopy];
-        [leftToGet intersectSet:requestsInRetrieval2];
-
-        if ((masternodeListCount == [self.store knownMasternodeListsCount]) && [requestsInRetrieval isEqualToSet:leftToGet]) {
-            DSLog(@"TimedOut");
-            self.timedOutAttempt++;
-            [self disconnectFromDownloadPeer];
-            [self cleanRequestsInRetrieval];
-            [self dequeueMasternodeListRequest];
-        } else {
-            [self startTimeOutObserver];
+            // Removes from the receiving set each object that isn’t a member of another given set.
+            NSMutableSet *leftToGet = [requestsInRetrieval mutableCopy];
+            [leftToGet intersectSet:requestsInRetrieval2];
+            if ((masternodeListCount == [self.store knownMasternodeListsCount]) && [requestsInRetrieval isEqualToSet:leftToGet]) {
+                DSLog(@"TimedOut");
+                self.timedOutAttempt++;
+                [self disconnectFromDownloadPeer];
+                [self cleanRequestsInRetrieval];
+                [self dequeueMasternodeListRequest];
+            } else {
+                [self startTimeOutObserver];
+            }
         }
     });
 }
@@ -285,7 +286,11 @@
         DSLog(@"A masternode list is already in retrieval: %@", self);
         return;
     }
-    if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
+    BOOL peerIsDisconnected;
+    @synchronized (self.peerManager.downloadPeer) {
+        peerIsDisconnected = !self.peerManager.downloadPeer || self.peerManager.downloadPeer.status != DSPeerStatus_Connected;
+    }
+    if (peerIsDisconnected) {
         if (self.chain.chainManager.syncPhase != DSChainSyncPhase_Offline) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
                 [self fetchMasternodeListsToRetrieve:completion];

@@ -203,8 +203,15 @@
 
 
 - (BOOL)hasMasternodeListAt:(NSData *)blockHashData {
-    //    DSLog(@"We already have this masternodeList %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
-    return [self.masternodeListsByBlockHash objectForKey:blockHashData] || [self.masternodeListsBlockHashStubs containsObject:blockHashData];
+    BOOL hasList;
+    @synchronized (self.masternodeListsByBlockHash) {
+        hasList = [self.masternodeListsByBlockHash objectForKey:blockHashData];
+    }
+    BOOL hasStub;
+    @synchronized (self.masternodeListsBlockHashStubs) {
+        hasStub = [self.masternodeListsBlockHashStubs containsObject:blockHashData];
+    }
+    return hasList || hasStub;
 }
 
 - (BOOL)hasMasternodeListCurrentlyBeingSaved {

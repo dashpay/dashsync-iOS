@@ -474,7 +474,9 @@
 }
 
 - (void)sendFilterloadMessage:(NSData *)filter {
-    self.sentFilter = YES;
+    @synchronized (self) {
+        self.sentFilter = YES;
+    }
 #if DEBUG
     DSLogPrivate(@"Sending filter with fingerprint %@ to node %@ %@", [NSData dataWithUInt256:filter.SHA256].shortHexString, self.host, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"");
 #else
@@ -1082,11 +1084,13 @@
         }
     }
     uint32_t currentHeight;
+    BOOL isFilterNotLoaded;
     @synchronized (self) {
         currentHeight = self.currentBlockHeight;
+        isFilterNotLoaded = !self.sentFilter && !self.sentMempool && !self.sentGetblocks;
     }
     
-    if ([self.chain syncsBlockchain] && !self.sentFilter && !self.sentMempool && !self.sentGetblocks && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
+    if ([self.chain syncsBlockchain] && isFilterNotLoaded && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
         [self error:@"got tx inv message before loading a filter"];
         return;
     } else if (txHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?

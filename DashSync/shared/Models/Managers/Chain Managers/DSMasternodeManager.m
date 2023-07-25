@@ -701,7 +701,9 @@
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
     DSLog(@"•••• -> received mnlistdiff: %@", uint256_hex(message.SHA256));
-    self.masternodeListDiffService.timedOutAttempt = 0;
+    @synchronized (self.masternodeListDiffService) {
+        self.masternodeListDiffService.timedOutAttempt = 0;
+    }
     dispatch_async(self.processingQueue, ^{
         dispatch_group_enter(self.processingGroup);
         DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet isFromSnapshot:NO isDIP0024:NO peer:peer merkleRootLookup:^UInt256(UInt256 blockHash) {
@@ -736,7 +738,9 @@
 
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
     DSLog(@"•••• -> received qrinfo: %@", uint256_hex(message.SHA256));
-    self.quorumRotationService.timedOutAttempt = 0;
+    @synchronized (self.quorumRotationService) {
+        self.quorumRotationService.timedOutAttempt = 0;
+    }
     dispatch_async(self.processingQueue, ^{
         dispatch_group_enter(self.processingGroup);
         MerkleRootFinder merkleRootLookup = ^UInt256(UInt256 blockHash) {
