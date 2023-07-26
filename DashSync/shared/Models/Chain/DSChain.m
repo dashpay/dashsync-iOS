@@ -1890,7 +1890,6 @@ static dispatch_once_t devnetToken = 0;
         equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
     }
     
-    
     if (!equivalentTerminalBlock && ((blockPosition & DSBlockPosition_Terminal) || [block canCalculateDifficultyWithPreviousBlocks:self.mSyncBlocks])) { //no need to check difficulty if we already have terminal blocks
         uint32_t foundDifficulty = 0;
         if ((block.height > self.minimumDifficultyBlocks) && (block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
@@ -2911,8 +2910,12 @@ static dispatch_once_t devnetToken = 0;
     [self.viewingAccount wipeBlockchainInfo];
     [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
-    _mSyncBlocks = [NSMutableDictionary dictionary];
-    _mTerminalBlocks = [NSMutableDictionary dictionary];
+    @synchronized (_mSyncBlocks) {
+        _mSyncBlocks = [NSMutableDictionary dictionary];
+    }
+    @synchronized (_mTerminalBlocks) {
+        _mTerminalBlocks = [NSMutableDictionary dictionary];
+    }
     _lastSyncBlock = nil;
     _lastTerminalBlock = nil;
     _lastPersistedChainSyncLocators = nil;
@@ -2935,7 +2938,9 @@ static dispatch_once_t devnetToken = 0;
     [self.viewingAccount wipeBlockchainInfo];
     [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
-    _mSyncBlocks = [NSMutableDictionary dictionary];
+    @synchronized (_mSyncBlocks) {
+        _mSyncBlocks = [NSMutableDictionary dictionary];
+    }
     _lastSyncBlock = nil;
     _lastPersistedChainSyncLocators = nil;
     _lastPersistedChainSyncBlockHash = UINT256_ZERO;
