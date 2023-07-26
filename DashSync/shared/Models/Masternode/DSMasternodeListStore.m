@@ -336,8 +336,12 @@
 
 - (void)removeAllMasternodeLists {
     DSLog(@"••• removeAllMasternodeLists -> ");
-    [self.masternodeListsByBlockHash removeAllObjects];
-    [self.masternodeListsBlockHashStubs removeAllObjects];
+    @synchronized (self.masternodeListsByBlockHash) {
+        [self.masternodeListsByBlockHash removeAllObjects];
+    }
+    @synchronized (self.masternodeListsBlockHashStubs) {
+        [self.masternodeListsBlockHashStubs removeAllObjects];
+    }
     self.masternodeListAwaitingQuorumValidation = nil;
 }
 
