@@ -178,6 +178,8 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     if (!(self = [super init])) return nil;
     NSAssert([NSThread isMainThread], @"Chains should only be created on main thread (for chain entity optimizations)");
     self.mOrphans = [NSMutableDictionary dictionary];
+    self.mSyncBlocks = [NSMutableDictionary dictionary];
+    self.mTerminalBlocks = [NSMutableDictionary dictionary];
     self.mWallets = [NSMutableArray array];
     self.estimatedBlockHeights = [NSMutableDictionary dictionary];
     
@@ -209,6 +211,8 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     self.headersMaxAmount = chain_headers_max_amount(type);
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].blockHash;
+    _checkpointsByHashDictionary = [NSMutableDictionary dictionary];
+    _checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
     dispatch_sync(self.networkingQueue, ^{
         self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
     });
@@ -763,55 +767,59 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (uint32_t)minProtocolVersion {
-    if (_cachedMinProtocolVersion) return _cachedMinProtocolVersion;
-    switch (self.chainType.tag) {
-        case ChainType_MainNet: {
-            NSError *error = nil;
-            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
-            if (!error && minProtocolVersion)
-                _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_MAINNET);
-            else
-                _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
-            break;
+    @synchronized(self) {
+        if (_cachedMinProtocolVersion) return _cachedMinProtocolVersion;
+        switch (self.chainType.tag) {
+            case ChainType_MainNet: {
+                NSError *error = nil;
+                uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
+                if (!error && minProtocolVersion)
+                    _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_MAINNET);
+                else
+                    _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
+                break;
+            }
+            case ChainType_TestNet: {
+                NSError *error = nil;
+                uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
+                if (!error && minProtocolVersion)
+                    _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_TESTNET);
+                else
+                    _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
+                break;
+            }
+            case ChainType_DevNet: {
+                NSError *error = nil;
+                uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@", [DSKeyManager devnetIdentifierFor:self.chainType], DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
+                if (!error && minProtocolVersion)
+                    _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
+                else
+                    _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
+                break;
+            }
         }
-        case ChainType_TestNet: {
-            NSError *error = nil;
-            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
-            if (!error && minProtocolVersion)
-                _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_TESTNET);
-            else
-                _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
-            break;
-        }
-        case ChainType_DevNet: {
-            NSError *error = nil;
-            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@", [DSKeyManager devnetIdentifierFor:self.chainType], DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
-            if (!error && minProtocolVersion)
-                _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
-            else
-                _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
-            break;
-        }
+        return _cachedMinProtocolVersion;
     }
-    return _cachedMinProtocolVersion;
 }
 
 
 - (void)setMinProtocolVersion:(uint32_t)minProtocolVersion {
-    if (minProtocolVersion < MIN_VALID_MIN_PROTOCOL_VERSION || minProtocolVersion > MAX_VALID_MIN_PROTOCOL_VERSION) return;
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
-            setKeychainInt(MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_MAINNET), [NSString stringWithFormat:@"MAINNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
-            _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_MAINNET);
-            break;
-        case ChainType_TestNet:
-            setKeychainInt(MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_TESTNET), [NSString stringWithFormat:@"TESTNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
-            _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_TESTNET);
-            break;
-        case ChainType_DevNet: {
-            setKeychainInt(MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET), [NSString stringWithFormat:@"%@%@", [DSKeyManager devnetIdentifierFor:self.chainType], DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
-            _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
-            break;
+    @synchronized(self) {
+        if (minProtocolVersion < MIN_VALID_MIN_PROTOCOL_VERSION || minProtocolVersion > MAX_VALID_MIN_PROTOCOL_VERSION) return;
+        switch (self.chainType.tag) {
+            case ChainType_MainNet:
+                setKeychainInt(MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_MAINNET), [NSString stringWithFormat:@"MAINNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
+                _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_MAINNET);
+                break;
+            case ChainType_TestNet:
+                setKeychainInt(MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_TESTNET), [NSString stringWithFormat:@"TESTNET_%@", DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
+                _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_TESTNET);
+                break;
+            case ChainType_DevNet: {
+                setKeychainInt(MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET), [NSString stringWithFormat:@"%@%@", [DSKeyManager devnetIdentifierFor:self.chainType], DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
+                _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
+                break;
+            }
         }
     }
 }
@@ -1352,17 +1360,6 @@ static dispatch_once_t devnetToken = 0;
     return [self.checkpointsByHeightDictionary objectForKey:@(blockHeight)];
 }
 
-
-- (NSMutableDictionary *)checkpointsByHashDictionary {
-    if (!_checkpointsByHashDictionary) [self mSyncBlocks];
-    return _checkpointsByHashDictionary;
-}
-
-- (NSMutableDictionary *)checkpointsByHeightDictionary {
-    if (!_checkpointsByHeightDictionary) [self mSyncBlocks];
-    return _checkpointsByHeightDictionary;
-}
-
 - (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight {
     DSCheckpoint *checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
     self.terminalHeadersOverrideUseCheckpoint = checkpoint;
@@ -1568,27 +1565,21 @@ static dispatch_once_t devnetToken = 0;
 - (NSMutableDictionary *)mSyncBlocks {
     @synchronized (_mSyncBlocks) {
         if (_mSyncBlocks.count > 0) {
-            if (!_checkpointsByHashDictionary) _checkpointsByHashDictionary = [NSMutableDictionary dictionary];
-            if (!_checkpointsByHeightDictionary) _checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
             return _mSyncBlocks;
         }
     
         [self.chainManagedObjectContext performBlockAndWait:^{
             if (self->_mSyncBlocks.count > 0) return;
-            self->_mSyncBlocks = [NSMutableDictionary dictionary];
-            
             if (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash)) {
                 self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
             }
             
-            self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
-            self.checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
             for (DSCheckpoint *checkpoint in self.checkpoints) { // add checkpoints to the block collection
                 UInt256 checkpointHash = checkpoint.blockHash;
                 
                 self->_mSyncBlocks[uint256_obj(checkpointHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-                self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
-                self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
+                self->_checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
+                self->_checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
             }
         }];
         
@@ -2242,26 +2233,20 @@ static dispatch_once_t devnetToken = 0;
 - (NSMutableDictionary *)mTerminalBlocks {
     @synchronized (_mTerminalBlocks) {
         if (_mTerminalBlocks.count > 0) {
-            if (!_checkpointsByHashDictionary) _checkpointsByHashDictionary = [NSMutableDictionary dictionary];
-            if (!_checkpointsByHeightDictionary) _checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
             return _mTerminalBlocks;
         }
         [self.chainManagedObjectContext performBlockAndWait:^{
             if (self->_mTerminalBlocks.count > 0) return;
-            self->_mTerminalBlocks = [NSMutableDictionary dictionary];
-            self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
-            self.checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
             for (DSCheckpoint *checkpoint in self.checkpoints) { // add checkpoints to the block collection
                 UInt256 checkpointHash = checkpoint.blockHash;
                 
                 self->_mTerminalBlocks[uint256_obj(checkpointHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-                self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
-                self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
+                self->_checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
+                self->_checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
             }
             for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastTerminalBlocks:KEEP_RECENT_TERMINAL_BLOCKS onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]]) {
                 @autoreleasepool {
                     DSMerkleBlock *b = e.merkleBlock;
-                    
                     if (b) self->_mTerminalBlocks[b.blockHashValue] = b;
                 }
             };
@@ -2526,15 +2511,17 @@ static dispatch_once_t devnetToken = 0;
     if (checkpoint) {
         return checkpoint.height;
     }
-    
-    DSBlock *syncBlock = [self.mSyncBlocks objectForKey:uint256_obj(blockhash)];
-    if (syncBlock && (syncBlock.height != UINT32_MAX)) {
-        return syncBlock.height;
+    @synchronized (_mSyncBlocks) {
+        DSBlock *syncBlock = [_mSyncBlocks objectForKey:uint256_obj(blockhash)];
+        if (syncBlock && (syncBlock.height != UINT32_MAX)) {
+            return syncBlock.height;
+        }
     }
-
-    DSBlock *terminalBlock = [self.mTerminalBlocks objectForKey:uint256_obj(blockhash)];
-    if (terminalBlock && (terminalBlock.height != UINT32_MAX)) {
-        return terminalBlock.height;
+    @synchronized (_mTerminalBlocks) {
+        DSBlock *terminalBlock = [_mTerminalBlocks objectForKey:uint256_obj(blockhash)];
+        if (terminalBlock && (terminalBlock.height != UINT32_MAX)) {
+            return terminalBlock.height;
+        }
     }
 
     for (DSCheckpoint *checkpoint in self.checkpoints) {
@@ -2551,14 +2538,17 @@ static dispatch_once_t devnetToken = 0;
     if (checkpoint) {
         return checkpoint.height;
     }
-    DSBlock *syncBlock = [self.mSyncBlocks objectForKey:uint256_obj(blockhash)];
-    if (syncBlock && (syncBlock.height != UINT32_MAX)) {
-        return syncBlock.height;
+    @synchronized (_mSyncBlocks) {
+        DSBlock *syncBlock = [_mSyncBlocks objectForKey:uint256_obj(blockhash)];
+        if (syncBlock && (syncBlock.height != UINT32_MAX)) {
+            return syncBlock.height;
+        }
     }
-
-    DSBlock *terminalBlock = [self.mTerminalBlocks objectForKey:uint256_obj(blockhash)];
-    if (terminalBlock && (terminalBlock.height != UINT32_MAX)) {
-        return terminalBlock.height;
+    @synchronized (_mTerminalBlocks) {
+        DSBlock *terminalBlock = [_mTerminalBlocks objectForKey:uint256_obj(blockhash)];
+        if (terminalBlock && (terminalBlock.height != UINT32_MAX)) {
+            return terminalBlock.height;
+        }
     }
 
     DSBlock *b = self.lastTerminalBlock;
@@ -2921,8 +2911,8 @@ static dispatch_once_t devnetToken = 0;
     [self.viewingAccount wipeBlockchainInfo];
     [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
-    _mSyncBlocks = nil;
-    _mTerminalBlocks = nil;
+    _mSyncBlocks = [NSMutableDictionary dictionary];
+    _mTerminalBlocks = [NSMutableDictionary dictionary];
     _lastSyncBlock = nil;
     _lastTerminalBlock = nil;
     _lastPersistedChainSyncLocators = nil;
@@ -2945,7 +2935,7 @@ static dispatch_once_t devnetToken = 0;
     [self.viewingAccount wipeBlockchainInfo];
     [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
-    _mSyncBlocks = nil;
+    _mSyncBlocks = [NSMutableDictionary dictionary];
     _lastSyncBlock = nil;
     _lastPersistedChainSyncLocators = nil;
     _lastPersistedChainSyncBlockHash = UINT256_ZERO;
