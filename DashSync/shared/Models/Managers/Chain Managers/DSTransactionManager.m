@@ -1143,8 +1143,7 @@
 
 #define TEST_NO_RELAY (0 && !DEBUG)
 
-- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash;
-{
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash {
 #if TEST_NO_RELAY
     return;
 #endif
