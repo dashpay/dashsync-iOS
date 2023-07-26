@@ -284,17 +284,15 @@
     uint32_t terminalWeight = terminalBlocks / 4;
     uint32_t masternodeWeight = masternodeListsToSync ? (20000 + 2000 * (masternodeListsToSync - 1)) : 0;
     uint32_t totalWeight = chainWeight + terminalWeight + masternodeWeight;
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        if (totalWeight == 0) {
-            self.terminalHeaderSyncWeight = 0;
-            self.masternodeListSyncWeight = 0;
-            self.chainSyncWeight = 1;
-        } else {
-            self.chainSyncWeight = ((float)chainWeight) / totalWeight;
-            self.terminalHeaderSyncWeight = ((float)terminalWeight) / totalWeight;
-            self.masternodeListSyncWeight = ((float)masternodeWeight) / totalWeight;
-        }
-    });
+    if (totalWeight == 0) {
+        self.terminalHeaderSyncWeight = 0;
+        self.masternodeListSyncWeight = 0;
+        self.chainSyncWeight = 1;
+    } else {
+        self.chainSyncWeight = ((float)chainWeight) / totalWeight;
+        self.terminalHeaderSyncWeight = ((float)terminalWeight) / totalWeight;
+        self.masternodeListSyncWeight = ((float)masternodeWeight) / totalWeight;
+    }
 }
 
 - (uint32_t)chainBlocksToSync {
