@@ -741,11 +741,11 @@
         @synchronized(self.mutableConnectedPeers) {
             NSMutableSet *disconnectedPeers = [NSMutableSet set];
             for (DSPeer *peer in self.mutableConnectedPeers) {
-                @synchronized(peer) {
+//                @synchronized(peer) {
                     if (peer.status == DSPeerStatus_Disconnected) {
                         [disconnectedPeers addObject:peer];
                     }
-                }
+//                }
             }
             [self.mutableConnectedPeers minusSet:disconnectedPeers];
         }
@@ -957,24 +957,22 @@
     }
     bestPeer.currentBlockHeight = self.chain.lastSyncBlockHeight;
 
-    [self.chainManager assignSyncWeights];
-    if ([self.chain syncsBlockchain] &&
-        ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) ||
-         (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
-        [self.chainManager resetLastRelayedItemTime];
-        dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
-            [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
+    dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
+        [self.chainManager assignSyncWeights];
+        if ([self.chain syncsBlockchain] &&
+            ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) ||
+             (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
+            [self.chainManager resetLastRelayedItemTime];
+                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+                [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 
-            [self.chainManager chainWillStartSyncingBlockchain:self.chain];
-            [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:bestPeer];
-        });
-    } else { // we're already synced
-        [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self.chain fromPeer:nil onMainChain:TRUE];
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
+                [self.chainManager chainWillStartSyncingBlockchain:self.chain];
+                [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:bestPeer];
+        } else { // we're already synced
+            [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self.chain fromPeer:nil onMainChain:TRUE];
+        }
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];

@@ -391,15 +391,11 @@
 }
 
 - (void)relayedNewItem {
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        self.lastChainRelayTime = [NSDate timeIntervalSince1970];
-    });
+    self.lastChainRelayTime = [NSDate timeIntervalSince1970];
 }
 
 - (void)resetLastRelayedItemTime {
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        self.lastChainRelayTime = 0;
-    });
+    self.lastChainRelayTime = 0;
 }
 
 // MARK: - Mining
