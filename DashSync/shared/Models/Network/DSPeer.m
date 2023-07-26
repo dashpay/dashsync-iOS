@@ -124,7 +124,6 @@
 @property (nonatomic, assign) uint64_t receivedOrphanCount;
 @property (nonatomic, assign) NSTimeInterval mempoolRequestTime;
 @property (nonatomic, strong) dispatch_semaphore_t outputBufferSemaphore;
-//@property (nonatomic, strong) dispatch_queue_t handlersQueue;
 
 @end
 
@@ -151,7 +150,6 @@
     _port = (port == 0) ? [chain standardPort] : port;
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
-//    _handlersQueue = dispatch_queue_create("org.dash.dashsync.peerHandlers", DISPATCH_QUEUE_SERIAL);
     return self;
 }
 
@@ -177,7 +175,6 @@
     if (_port == 0) _port = chain.standardPort;
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
-//    _handlersQueue = dispatch_queue_create("org.dash.dashsync.peerHandlers", DISPATCH_QUEUE_SERIAL);
     return self;
 }
 
@@ -333,18 +330,16 @@
     
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
-//    dispatch_async(self.handlersQueue, ^{
-        [NSObject cancelPreviousPerformRequestsWithTarget:self];
-        while (self.pongHandlers.count) {
-            ((void (^)(BOOL))self.pongHandlers[0])(NO);
-            [self.pongHandlers removeObjectAtIndex:0];
-        }
-        if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO, YES, YES);
-        self.mempoolTransactionCompletion = nil;
-        [self dispatchAsyncInDelegateQueue:^{
-            [self.peerDelegate peer:self disconnectedWithError:error];
-        }];
-//    });
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    while (self.pongHandlers.count) {
+        ((void (^)(BOOL))self.pongHandlers[0])(NO);
+        [self.pongHandlers removeObjectAtIndex:0];
+    }
+    if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO, YES, YES);
+    self.mempoolTransactionCompletion = nil;
+    [self dispatchAsyncInDelegateQueue:^{
+        [self.peerDelegate peer:self disconnectedWithError:error];
+    }];
 }
 
 - (void)error:(NSString *)message, ... NS_FORMAT_FUNCTION(1, 2) {
@@ -686,19 +681,17 @@
 }
 
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler {
-//    dispatch_async(self.handlersQueue, ^{
-        if (!self.pongHandlers) self.pongHandlers = [NSMutableArray array];
-        [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
-        uint64_t localNonce = self.localNonce;
-        self.pingStartTime = [NSDate timeIntervalSince1970];
+    if (!self.pongHandlers) self.pongHandlers = [NSMutableArray array];
+    [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
+    uint64_t localNonce = self.localNonce;
+    self.pingStartTime = [NSDate timeIntervalSince1970];
 
 #if MESSAGE_LOGGING
-        DSLog(@"%@:%u sending ping", self.host, self.port);
+    DSLog(@"%@:%u sending ping", self.host, self.port);
 #endif
-        [self dispatchAsyncInDelegateQueue:^{
-            [self sendRequest:[DSPingRequest requestWithLocalNonce:localNonce]];
-        }];
-//    });
+    [self dispatchAsyncInDelegateQueue:^{
+        [self sendRequest:[DSPingRequest requestWithLocalNonce:localNonce]];
+    }];
 }
 
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
@@ -1605,9 +1598,6 @@
         return;
     } else {
         __block BOOL hasNoHandlers = ![self.pongHandlers count];
-//        dispatch_sync(self.handlersQueue, ^{
-//            hasNoHandlers = ![self.pongHandlers count];
-//        });
         if (hasNoHandlers) {
             DSLog(@"%@:%u got unexpected pong", self.host, self.port);
             return;
@@ -1625,15 +1615,13 @@
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 #endif
-//    dispatch_async(self.handlersQueue, ^{
-        if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
-            void (^handler)(BOOL) = [self.pongHandlers objectAtIndex:0];
-            [self.pongHandlers removeObjectAtIndex:0];
-            [self dispatchAsyncInDelegateQueue:^{
-                handler(YES);
-            }];
-        }
-//    });
+    if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
+        void (^handler)(BOOL) = [self.pongHandlers objectAtIndex:0];
+        [self.pongHandlers removeObjectAtIndex:0];
+        [self dispatchAsyncInDelegateQueue:^{
+            handler(YES);
+        }];
+    }
 }
 
 #define SAVE_INCOMING_BLOCKS 0
