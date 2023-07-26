@@ -256,8 +256,12 @@
         masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
         if (masternodeList) {
             DSLog(@"••• addMasternodeList (loadMasternodeListAtBlockHash) -> %@: %@", blockHash.hexString, masternodeList);
-            [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
-            [self.masternodeListsBlockHashStubs removeObject:blockHash];
+            @synchronized (self.masternodeListsByBlockHash) {
+                [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
+            }
+            @synchronized (self.masternodeListsByBlockHash) {
+                [self.masternodeListsBlockHashStubs removeObject:blockHash];
+            }
             DSLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries", masternodeList.height, uint256_hex(masternodeList.blockHash), (unsigned long)masternodeList.simplifiedMasternodeEntries.count);
         }
     }];
