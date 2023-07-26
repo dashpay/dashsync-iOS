@@ -221,9 +221,7 @@
 
 - (void)connect {
     if (self.status != DSPeerStatus_Disconnected) return;
-    @synchronized (self) {
-        _status = DSPeerStatus_Connecting;
-    }
+    _status = DSPeerStatus_Connecting;
     _pingTime = DBL_MAX;
     if (!self.reachability) self.reachability = [DSReachabilityManager sharedManager];
 
@@ -237,9 +235,7 @@
                                                                        queue:nil
                                                                   usingBlock:^(NSNotification *note) {
                         if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
-                            @synchronized (self) {
-                                self->_status = DSPeerStatus_Disconnected;
-                            }
+                            self->_status = DSPeerStatus_Disconnected;
                             [self connect];
                         }
                     }];
@@ -323,10 +319,7 @@
     }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
-    @synchronized (self) {
-        _status = DSPeerStatus_Disconnected;
-    }
-
+    _status = DSPeerStatus_Disconnected;
     if (self.reachabilityObserver) {
         self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
@@ -339,10 +332,6 @@
     
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
-    @synchronized (self) {
-        _status = DSPeerStatus_Disconnected;
-    }
-    
     dispatch_async(self.handlersQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
         while (self.pongHandlers.count) {
@@ -370,9 +359,7 @@
 
     DSLog(@"%@:%u handshake completed %@", self.host, self.port, (self.peerDelegate.downloadPeer == self) ? @"(download peer)" : @"");
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
-    @synchronized (self) {
-        _status = DSPeerStatus_Connected;
-    }
+    _status = DSPeerStatus_Connected;
 
     [self dispatchAsyncInDelegateQueue:^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peerConnected:self];
