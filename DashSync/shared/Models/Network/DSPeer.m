@@ -566,16 +566,14 @@
 
 #if MESSAGE_LOGGING
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
-    dispatch_sync(self.delegateQueue, ^{
-        [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            uint32_t knownHeight = [self.chain quickHeightForBlockHash:((NSData *)obj).UInt256];
-            if (knownHeight == UINT32_MAX) {
-                [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height unknown)", ((NSData *)obj).reverse.hexString]];
-            } else {
-                [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)", ((NSData *)obj).reverse.hexString, knownHeight]];
-            }
-        }];
-    });
+    [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        uint32_t knownHeight = [self.chain quickHeightForBlockHash:((NSData *)obj).UInt256];
+        if (knownHeight == UINT32_MAX) {
+            [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height unknown)", ((NSData *)obj).reverse.hexString]];
+        } else {
+            [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)", ((NSData *)obj).reverse.hexString, knownHeight]];
+        }
+    }];
 #if DEBUG
     DSLogPrivate(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"", locatorHexes);
 #else
