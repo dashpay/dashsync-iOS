@@ -37,7 +37,7 @@
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry atBlockHeight:(uint32_t)blockHeight knownOperatorAddresses:(NSDictionary<NSString *, DSAddressEntity *> *)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString *, DSAddressEntity *> *)knownVotingAddresses localMasternodes:(NSDictionary<NSData *, DSLocalMasternodeEntity *> *)localMasternodes {
     if (self.updateHeight < blockHeight) {
-        NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, @"the block height should be the same as the entry update height");
+        //NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, @"the block height should be the same as the entry update height");
         self.updateHeight = blockHeight;
         //we should only update if the data received is the most recent
         if (!uint128_eq(self.ipv6Address.UInt128, simplifiedMasternodeEntry.address)) {

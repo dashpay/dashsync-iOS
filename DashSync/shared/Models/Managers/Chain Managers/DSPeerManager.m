@@ -254,12 +254,12 @@
 }
 
 - (void)removeTrustedPeerHost {
-    [self disconnect];
+    [self disconnect:DSDisconnectReason_TrustedPeerSet];
     [self setTrustedPeerHost:nil];
 }
 
-- (void)clearPeers {
-    [self disconnect];
+- (void)clearPeers:(DSDisconnectReason)reason {
+    [self disconnect:reason];
     @synchronized(self) {
         _peers = nil;
     }
@@ -431,6 +431,7 @@
             }
 
             [peer disconnectWithError:[NSError errorWithCode:500 localizedDescriptionKey:errorMessage]];
+            DSLog(@"peerMisbehaving -> peerManager::connect");
             [self connect];
         }
     }
@@ -551,8 +552,7 @@
     if (!host)
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self settingsFixedPeerKey]];
     else
-        [[NSUserDefaults standardUserDefaults] setObject:host
-                                                  forKey:[self settingsFixedPeerKey]];
+        [[NSUserDefaults standardUserDefaults] setObject:host forKey:[self settingsFixedPeerKey]];
 }
 
 // MARK: - Peer Registration
@@ -566,6 +566,7 @@
     if (self.downloadPeer) {
         [self updateFilterOnPeers];
     } else {
+        DSLog(@"resumeBlockchainSynchronizationOnPeers -> peerManager::connect");
         [self connect];
     }
 }
@@ -610,7 +611,7 @@
 // MARK: - Peer Registration
 
 - (void)clearRegisteredPeers {
-    [self clearPeers];
+    [self clearPeers:DSDisconnectReason_ChainWipe];
     setKeychainArray(@[], self.chain.registeredPeersKey, NO);
 }
 
@@ -673,7 +674,7 @@
         if (!_peers) {
             _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
         } else {
-            [self clearPeers];
+            [self clearPeers:DSDisconnectReason_StartNewPhase];
             _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
             [self.peers minusSet:self.misbehavingPeers];
         }
@@ -683,6 +684,7 @@
     if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
 
     if (connected) {
+        DSLog(@"useMasternodeList -> peerManager::connect");
         [self connect];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -700,42 +702,54 @@
     dispatch_async(self.networkingQueue, ^{
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0;    // this attempt is a manual retry
+        @synchronized (self.chainManager) {
+            if (self.chainManager.terminalHeaderSyncProgress < 1.0) {
+                [self.chainManager resetTerminalSyncStartHeight];
+    #if TARGET_OS_IOS
+                if (self.blockLocatorsSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+                    self.blockLocatorsSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                        dispatch_async(self.networkingQueue, ^{
+                            [self.chain saveBlockLocators];
+                        });
 
-        if (self.chainManager.terminalHeaderSyncProgress < 1.0) {
-            [self.chainManager resetTerminalSyncStartHeight];
-#if TARGET_OS_IOS
-            if (self.blockLocatorsSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-                self.blockLocatorsSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-                    dispatch_async(self.networkingQueue, ^{
-                        [self.chain saveBlockLocators];
-                    });
-
-                    [self chainSyncStopped];
-                }];
+                        [self chainSyncStopped];
+                    }];
+                }
+    #endif
             }
-#endif
-        }
 
-        if (self.chainManager.chainSyncProgress < 1.0) {
-            [self.chainManager resetChainSyncStartHeight];
-#if TARGET_OS_IOS
-            if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-                self.terminalHeadersSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-                    dispatch_async(self.networkingQueue, ^{
-                        [self.chain saveTerminalBlocks];
-                    });
+            if (self.chainManager.chainSyncProgress < 1.0) {
+                [self.chainManager resetChainSyncStartHeight];
+    #if TARGET_OS_IOS
+                if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+                    self.terminalHeadersSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                        dispatch_async(self.networkingQueue, ^{
+                            [self.chain saveTerminalBlocks];
+                        });
 
-                    [self chainSyncStopped];
-                }];
+                        [self chainSyncStopped];
+                    }];
+                }
+    #endif
             }
-#endif
         }
-
+//        @synchronized(self.mutableConnectedPeers) {
+//            [self.mutableConnectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+//                return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
+//            }]];
+//        }
         @synchronized(self.mutableConnectedPeers) {
-            [self.mutableConnectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-                return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
-            }]];
+            NSMutableSet *disconnectedPeers = [NSMutableSet set];
+            for (DSPeer *peer in self.mutableConnectedPeers) {
+//                @synchronized(peer) {
+                    if (peer.status == DSPeerStatus_Disconnected) {
+                        [disconnectedPeers addObject:peer];
+                    }
+//                }
+            }
+            [self.mutableConnectedPeers minusSet:disconnectedPeers];
         }
+
 
         self.fixedPeer = [self trustedPeerHost] ? [DSPeer peerWithHost:[self trustedPeerHost] onChain:self.chain] : nil;
         self.maxConnectCount = (self.fixedPeer) ? 1 : PEER_MAX_CONNECTIONS;
@@ -781,11 +795,12 @@
     });
 }
 
-- (void)disconnect {
+- (void)disconnect:(DSDisconnectReason)reason {
     self.desiredState = DSPeerManagerDesiredState_Disconnected;
     dispatch_async(self.networkingQueue, ^{
-        for (DSPeer *peer in self.connectedPeers) {
+        if (reason != DSDisconnectReason_StartNewPhase)
             self.connectFailures = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
+        for (DSPeer *peer in self.connectedPeers) {
             [peer disconnect];
         }
     });
@@ -802,15 +817,18 @@
 }
 
 - (void)syncTimeout {
-    NSTimeInterval now = [NSDate timeIntervalSince1970];
-
-    if (now - self.chainManager.lastChainRelayTime < PROTOCOL_TIMEOUT) { // the download peer relayed something in time, so restart timer
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
-        [self performSelector:@selector(syncTimeout)
-                   withObject:nil
-                   afterDelay:PROTOCOL_TIMEOUT - (now - self.chainManager.lastChainRelayTime)];
-        return;
+    @synchronized (self.chainManager) {
+        NSTimeInterval now = [NSDate timeIntervalSince1970];
+        NSTimeInterval delta = now - self.chainManager.lastChainRelayTime;
+        if (delta < PROTOCOL_TIMEOUT) { // the download peer relayed something in time, so restart timer
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+            [self performSelector:@selector(syncTimeout)
+                       withObject:nil
+                       afterDelay:PROTOCOL_TIMEOUT - delta];
+            return;
+        }
     }
+
     [self disconnectDownloadPeerForError:[NSError errorWithCode:500 descriptionKey:DSLocalizedString(@"Synchronization Timeout", @"An error message for notifying that chain sync has timed out")] withCompletion:nil];
 }
 
@@ -931,28 +949,30 @@
 
     [self.downloadPeer disconnect];
     self.downloadPeer = bestPeer;
-    _connected = YES;
+    @synchronized (self) {
+        _connected = YES;
+    }
     if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
         [bestPeer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:bestPeer].data];
     }
     bestPeer.currentBlockHeight = self.chain.lastSyncBlockHeight;
 
-    [self.chainManager assignSyncWeights];
-    if ([self.chain syncsBlockchain] && ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) || (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
-        [self.chainManager resetLastRelayedItemTime];
-        dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
-            [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
+    dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
+        [self.chainManager assignSyncWeights];
+        if ([self.chain syncsBlockchain] &&
+            ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) ||
+             (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
+            [self.chainManager resetLastRelayedItemTime];
+                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+                [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 
-            [self.chainManager chainWillStartSyncingBlockchain:self.chain];
-            [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:bestPeer];
-        });
-    } else { // we're already synced
-        [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self.chain fromPeer:nil onMainChain:TRUE];
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
+                [self.chainManager chainWillStartSyncingBlockchain:self.chain];
+                [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:bestPeer];
+        } else { // we're already synced
+            [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self.chain fromPeer:nil onMainChain:TRUE];
+        }
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
@@ -964,9 +984,10 @@
 
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error {
     DSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
-
+    BOOL banned = NO;
     if ([error.domain isEqual:@"DashSync"]) {                                //} && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
+        banned = YES;
     } else if (error) {                                                      // timeout or some non-protocol related network error
         [self.peers removeObject:peer];
         self.connectFailures++;
@@ -981,7 +1002,7 @@
         if (self.connectFailures > MAX_CONNECT_FAILURES) self.connectFailures = MAX_CONNECT_FAILURES;
     }
 
-    if (!self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
+    if (!self.connected && self.connectFailures >= MAX_CONNECT_FAILURES) {
         [self chainSyncStopped];
 
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
@@ -1008,7 +1029,8 @@
 #if TARGET_OS_IOS
             if ((self.desiredState == DSPeerManagerDesiredState_Connected) && (self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid ||
                                                                                   [UIApplication sharedApplication].applicationState != UIApplicationStateBackground)) {
-                [self connect]; // try connecting to another peer
+                DSLog(@"peer disconnectedWithError -> peerManager::connect");
+                if (!banned) [self connect]; // try connecting to another peer
             }
 #else
                 if (self.desiredState == DSPeerManagerDesiredState_Connected) {

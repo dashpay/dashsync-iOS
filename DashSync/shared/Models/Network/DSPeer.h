@@ -235,7 +235,7 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 @protocol DSPeerSporkDelegate <NSObject>
 @required
 
-- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
+- (void)peer:(DSPeer *)peer relayedSpork:(NSData *)message;
 - (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet *)sporkHashes;
 
 @end

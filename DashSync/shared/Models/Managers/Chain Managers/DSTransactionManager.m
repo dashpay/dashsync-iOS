@@ -70,6 +70,7 @@
 #define MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING 500
 
 #define SAVE_MAX_TRANSACTIONS_INFO (DEBUG && 0)
+#define DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS (DEBUG && 0)
 
 @interface DSTransactionManager ()
 
@@ -885,8 +886,7 @@
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
 
-    [peer sendInvMessageForHashes:self.publishedTx.allKeys
-                           ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendInvMessageForHashes:self.publishedTx.allKeys ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@", peer.host);
@@ -1143,8 +1143,7 @@
 
 #define TEST_NO_RELAY (0 && !DEBUG)
 
-- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash;
-{
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash {
 #if TEST_NO_RELAY
     return;
 #endif
@@ -1751,7 +1750,7 @@
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
             });
         } else {
-#if DEBUG
+#if DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS
             DSMasternodeList *masternodeList = nil;
             DSQuorumEntry *quorum = [chainLock findSigningQuorumReturnMasternodeList:&masternodeList];
             if (quorum && masternodeList) {

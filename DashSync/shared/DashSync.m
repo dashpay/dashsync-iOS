@@ -121,7 +121,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 - (void)stopSyncAllChains {
     NSArray *chains = [[DSChainsManager sharedInstance] chains];
     for (DSChain *chain in chains) {
-        [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect];
+        [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect: DSDisconnectReason_ChainWipe];
     }
 }
 
@@ -136,7 +136,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 
     [self stopSyncForChain:chain];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager removeTrustedPeerHost];
-    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager clearPeers];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager clearPeers:DSDisconnectReason_ChainWipe];
     [context performBlockAndWait:^{
         DSChainEntity *chainEntity = [chain chainEntityInContext:context];
         [DSPeerEntity deletePeersForChainEntity:chainEntity];
