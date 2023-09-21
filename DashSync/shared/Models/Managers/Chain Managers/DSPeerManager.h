@@ -56,6 +56,14 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerFilterDidChangeNotificat
                                UIAlertViewDelegate
 #endif
                                >
+typedef NS_ENUM(uint16_t, DSDisconnectReason)
+{
+    DSDisconnectReason_StartNewPhase = 0,
+    DSDisconnectReason_ChainWipe,
+    DSDisconnectReason_ChainSwitch,
+    DSDisconnectReason_TrustedPeerSet,
+    DSDisconnectReason_Error,
+};
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) NSUInteger peerCount;
@@ -74,9 +82,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerFilterDidChangeNotificat
 - (void)removeTrustedPeerHost;
 
 
-- (void)clearPeers;
+- (void)clearPeers:(DSDisconnectReason)reason;
 - (void)connect;
-- (void)disconnect;
+- (void)disconnect:(DSDisconnectReason)reason;
 
 - (void)clearRegisteredPeers;
 - (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort;

@@ -94,7 +94,7 @@
 - (BOOL)sporksUpdatedSignatures {
     DSSpork *updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
     if (!updateSignatureSpork) return FALSE; //assume false
-    return updateSignatureSpork.value <= self.chain.lastTerminalBlockHeight;
+    return updateSignatureSpork.value <= self.chain.lastTerminalBlock.height;
 }
 
 - (BOOL)deterministicMasternodeListEnabled {
@@ -122,7 +122,9 @@
 }
 
 - (NSDictionary *)sporkDictionary {
-    return [_mSporkDictionary copy];
+    @synchronized (self) {
+        return [_mSporkDictionary copy];
+    }
 }
 
 // MARK: - Spork Sync
@@ -171,12 +173,16 @@
     if (hasNew) [self getSporks];
 }
 
-- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
+- (void)peer:(DSPeer *)peer relayedSpork:(NSData *)message {
+    DSSpork *spork = [DSSpork sporkWithMessage:message onChain:self.chain];
+    DSLog(@"received spork %u (%@) with message %@", spork.identifier, spork.identifierString, message.hexString);
     if (!spork.isValid) {
         [self.peerManager peerMisbehaving:peer errorMessage:@"Spork is not valid"];
         return;
     }
-    self.lastSyncedSporks = [NSDate timeIntervalSince1970];
+    @synchronized (self) {
+        self.lastSyncedSporks = [NSDate timeIntervalSince1970];
+    }
     DSSpork *currentSpork = self.sporkDictionary[@(spork.identifier)];
     BOOL updatedSpork = FALSE;
     __block NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
@@ -195,8 +201,7 @@
         [self setSporkValue:spork forKeyIdentifier:spork.identifier];
     }
     if (!currentSpork || updatedSpork) {
-        [dictionary setObject:spork
-                       forKey:@"new"];
+        [dictionary setObject:spork forKey:@"new"];
         [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
         [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
@@ -206,8 +211,7 @@
                     if (!sporkEntity) {
                         sporkEntity = [DSSporkEntity managedObjectInBlockedContext:self.managedObjectContext];
                     }
-                    [sporkEntity setAttributesFromSpork:spork
-                                          withSporkHash:hashEntity]; // add new peers
+                    [sporkEntity setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
                     [self.managedObjectContext ds_save];
                 } else {
                     DSLog(@"Spork was received that wasn't requested");

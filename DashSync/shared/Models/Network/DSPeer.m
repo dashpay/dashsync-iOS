@@ -308,6 +308,7 @@
 }
 
 - (void)disconnectWithError:(NSError *)error {
+
     if (_status == DSPeerStatus_Disconnected) return;
     if (!error) {
         DSLog(@"Disconnected from peer %@ (%@ protocol %d) with no error", self.host, self.useragent, self.version);
@@ -317,7 +318,6 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
     _status = DSPeerStatus_Disconnected;
-
     if (self.reachabilityObserver) {
         self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
@@ -330,19 +330,16 @@
     
     CFRunLoopStop([self.runLoop getCFRunLoop]);
 
-    _status = DSPeerStatus_Disconnected;
-    dispatch_async(self.delegateQueue, ^{
-        [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
-        while (self.pongHandlers.count) {
-            ((void (^)(BOOL))self.pongHandlers[0])(NO);
-            [self.pongHandlers removeObjectAtIndex:0];
-        }
-
-        if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO, YES, YES);
-        self.mempoolTransactionCompletion = nil;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    while (self.pongHandlers.count) {
+        ((void (^)(BOOL))self.pongHandlers[0])(NO);
+        [self.pongHandlers removeObjectAtIndex:0];
+    }
+    if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO, YES, YES);
+    self.mempoolTransactionCompletion = nil;
+    [self dispatchAsyncInDelegateQueue:^{
         [self.peerDelegate peer:self disconnectedWithError:error];
-    });
+    }];
 }
 
 - (void)error:(NSString *)message, ... NS_FORMAT_FUNCTION(1, 2) {
@@ -360,9 +357,9 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = DSPeerStatus_Connected;
 
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peerConnected:self];
-    });
+    }];
 }
 
 - (void)receivedOrphanBlock {
@@ -460,7 +457,9 @@
 }
 
 - (void)sendFilterloadMessage:(NSData *)filter {
-    self.sentFilter = YES;
+    @synchronized (self) {
+        self.sentFilter = YES;
+    }
 #if DEBUG
     DSLogPrivate(@"Sending filter with fingerprint %@ to node %@ %@", [NSData dataWithUInt256:filter.SHA256].shortHexString, self.host, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"");
 #else
@@ -486,14 +485,16 @@
 #else
     DSLog(@"%@:%u sendMempoolMessage %@", self.host, self.port, @"<REDACTED>");
 #endif
-    [self.knownTxHashes addObjectsFromArray:publishedTxHashes];
+    @synchronized (self.knownTxHashes) {
+        [self.knownTxHashes addObjectsFromArray:publishedTxHashes];
+    }
     self.sentMempool = YES;
 
     if (completion) {
         if (self.mempoolTransactionCompletion) {
-            dispatch_async(self.delegateQueue, ^{
+            [self dispatchAsyncInDelegateQueue:^{
                 if (self->_status == DSPeerStatus_Connected) completion(NO, NO, NO);
-            });
+            }];
         } else {
             self.mempoolTransactionCompletion = completion;
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MEMPOOL_TIMEOUT * NSEC_PER_SEC)), self.delegateQueue, ^{
@@ -576,14 +577,18 @@
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType {
     DSLogPrivate(@"%@:%u sending inv message of type %@ hashes count %lu", self.host, self.port, [self nameOfInvMessage:invType], (unsigned long)invHashes.count);
     NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
-    [hashes minusOrderedSet:self.knownTxHashes];
+    @synchronized (self.knownTxHashes) {
+        [hashes minusOrderedSet:self.knownTxHashes];
+    }
     if (hashes.count == 0) return;
     DSInvRequest *request = [DSInvRequest requestWithHashes:hashes ofInvType:invType];
     [self sendRequest:request];
     
     switch (invType) {
         case DSInvType_Tx:
-            [self.knownTxHashes unionOrderedSet:hashes];
+            @synchronized (self.knownTxHashes) {
+                [self.knownTxHashes unionOrderedSet:hashes];
+            }
             break;
         case DSInvType_GovernanceObjectVote:
             [self.knownGovernanceObjectVoteHashes unionOrderedSet:hashes];
@@ -605,13 +610,17 @@
 - (void)sendTransactionInvMessagesforTransactionHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray *)txLockRequestInvHashes {
     NSMutableOrderedSet *txHashes = txInvHashes ? [NSMutableOrderedSet orderedSetWithArray:txInvHashes] : nil;
     NSMutableOrderedSet *txLockRequestHashes = txLockRequestInvHashes ? [NSMutableOrderedSet orderedSetWithArray:txLockRequestInvHashes] : nil;
-    [txHashes minusOrderedSet:self.knownTxHashes];
-    [txLockRequestHashes minusOrderedSet:self.knownTxHashes];
+    @synchronized (self.knownTxHashes) {
+        [txHashes minusOrderedSet:self.knownTxHashes];
+        [txLockRequestHashes minusOrderedSet:self.knownTxHashes];
+    }
     if (txHashes.count + txLockRequestHashes.count == 0) return;
     DSTransactionInvRequest *request = [DSTransactionInvRequest requestWithTransactionHashes:txHashes txLockRequestHashes:txLockRequestHashes];
     [self sendRequest:request];
-    txHashes ? [self.knownTxHashes unionOrderedSet:txHashes] : nil;
-    txLockRequestHashes ? [self.knownTxHashes unionOrderedSet:txLockRequestHashes] : nil;
+    @synchronized (self.knownTxHashes) {
+        txHashes ? [self.knownTxHashes unionOrderedSet:txHashes] : nil;
+        txLockRequestHashes ? [self.knownTxHashes unionOrderedSet:txLockRequestHashes] : nil;
+    }
 }
 
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash {
@@ -672,22 +681,17 @@
 }
 
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler {
-    NSMutableData *msg = [NSMutableData data];
-
-    dispatch_async(self.delegateQueue, ^{
-        if (!self.pongHandlers) self.pongHandlers = [NSMutableArray array];
-        [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {
-        } copy]];
-        
-        [msg appendUInt64:self.localNonce];
-        self.pingStartTime = [NSDate timeIntervalSince1970];
+    if (!self.pongHandlers) self.pongHandlers = [NSMutableArray array];
+    [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
+    uint64_t localNonce = self.localNonce;
+    self.pingStartTime = [NSDate timeIntervalSince1970];
 
 #if MESSAGE_LOGGING
-        DSLog(@"%@:%u sending ping", self.host, self.port);
+    DSLog(@"%@:%u sending ping", self.host, self.port);
 #endif
-
-        [self sendRequest:[DSPingRequest requestWithLocalNonce:self.localNonce]];
-    });
+    [self dispatchAsyncInDelegateQueue:^{
+        [self sendRequest:[DSPingRequest requestWithLocalNonce:localNonce]];
+    }];
 }
 
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
@@ -931,10 +935,9 @@
                                                timestamp:timestamp - 2 * 60 * 60
                                                 services:services]];
     }
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peer:self relayedPeers:peers];
-    });
+    }];
 }
 
 - (void)acceptAddrV2Message:(NSData *)message {
@@ -1070,16 +1073,22 @@
             }
         }
     }
-
-    if ([self.chain syncsBlockchain] && !self.sentFilter && !self.sentMempool && !self.sentGetblocks && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
+    uint32_t currentHeight;
+    BOOL isFilterNotLoaded;
+    @synchronized (self) {
+        currentHeight = self.currentBlockHeight;
+        isFilterNotLoaded = !self.sentFilter && !self.sentMempool && !self.sentGetblocks;
+    }
+    
+    if ([self.chain syncsBlockchain] && isFilterNotLoaded && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
         [self error:@"got tx inv message before loading a filter"];
         return;
     } else if (txHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         DSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
-    } else if (self.currentBlockHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
-               self.currentBlockHeight + self.knownBlockHashes.count + blockHashes.count < self.lastBlockHeight) {
+    } else if (currentHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
+               currentHeight + self.knownBlockHashes.count + blockHashes.count < self.lastBlockHeight) {
         [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
         return;
     }
@@ -1094,27 +1103,27 @@
     if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];
 
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             [self.knownBlockHashes unionOrderedSet:blockHashes];
-
             while (self.knownBlockHashes.count > MAX_GETDATA_HASHES) {
                 [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, self.knownBlockHashes.count / 3)];
             }
-        });
+        }];
     }
-
-    if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
-        for (NSValue *hash in txHashes) {
-            UInt256 h;
-            if (![self.knownTxHashes containsObject:hash]) continue;
-            [hash getValue:&h];
-            dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h];
-            });
+    @synchronized (self.knownTxHashes) {
+        if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
+            for (NSValue *hash in txHashes) {
+                UInt256 h;
+                if (![self.knownTxHashes containsObject:hash]) continue;
+                [hash getValue:&h];
+                [self dispatchAsyncInDelegateQueue:^{
+                    if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h];
+                }];
+            }
+            [txHashes minusOrderedSet:self.knownTxHashes];
         }
-        [txHashes minusOrderedSet:self.knownTxHashes];
+        [self.knownTxHashes unionOrderedSet:txHashes];
     }
-    [self.knownTxHashes unionOrderedSet:txHashes];
 
     if (instantSendLockHashes.count > 0) {
         for (NSValue *hash in instantSendLockHashes) {
@@ -1125,10 +1134,9 @@
         }
 
         [instantSendLockHashes minusOrderedSet:self.knownInstantSendLockHashes];
-
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockHashes:instantSendLockHashes];
-        });
+        }];
 
         [self.knownInstantSendLockHashes unionOrderedSet:instantSendLockHashes];
     }
@@ -1143,9 +1151,9 @@
 
         [instantSendLockDHashes minusOrderedSet:self.knownInstantSendLockDHashes];
 
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockDHashes:instantSendLockDHashes];
-        });
+        }];
 
         [self.knownInstantSendLockDHashes unionOrderedSet:instantSendLockDHashes];
     }
@@ -1161,10 +1169,9 @@
         }
 
         [chainLockHashes minusOrderedSet:self.knownChainLockHashes];
-
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasChainLockHashes:chainLockHashes];
-        });
+        }];
 
         [self.knownChainLockHashes unionOrderedSet:chainLockHashes];
     }
@@ -1246,9 +1253,9 @@
 
     if (tx) {
         __block DSMerkleBlock *currentBlock = self.currentBlock;
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock];
-        });
+        }];
 #if LOG_FULL_TX_MESSAGE
 #if DEBUG
         DSLogPrivate(@"%@:%u got tx %@ %@", self.host, self.port, uint256_obj(tx.txHash), message.hexString);
@@ -1316,10 +1323,9 @@
         [self error:@"got islock message before loading a filter"];
         return;
     }
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         [self.transactionDelegate peer:self relayedInstantSendTransactionLock:instantSendTransactionLock];
-    });
+    }];
 }
 
 - (void)acceptIsdlockMessage:(NSData *)message {
@@ -1343,10 +1349,9 @@
         [self error:@"got isdlock message before loading a filter"];
         return;
     }
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         [self.transactionDelegate peer:self relayedInstantSendTransactionLock:instantSendTransactionLock];
-    });
+    }];
 }
 
 // HEADER FORMAT:
@@ -1453,9 +1458,9 @@
             [self error:@"invalid block header %@", uint256_obj(block.blockHash)];
             return;
         }
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             [self.transactionDelegate peer:self relayedHeader:block];
-        });
+        }];
     }
 }
 
@@ -1480,8 +1485,7 @@
     }
 
     DSLog(@"%@:%u %@got getdata for %u item%@", self.host, self.port, self.peerDelegate.downloadPeer == self ? @"(download peer)" : @"", (int)count, count == 1 ? @"" : @"s");
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         NSMutableData *notfound = [NSMutableData data];
 
         for (NSUInteger off = l; off < l + count * 36; off += 36) {
@@ -1543,7 +1547,7 @@
             DSNotFoundRequest *request = [DSNotFoundRequest requestWithData:notfound];
             [self sendRequest:request];
         }
-    });
+    }];
 }
 
 - (void)acceptNotfoundMessage:(NSData *)message {
@@ -1569,10 +1573,9 @@
             [blockHashes addObject:uint256_obj([message UInt256AtOffset:off + sizeof(uint32_t)])];
         }
     }
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         [self.transactionDelegate peer:self relayedNotFoundMessagesWithTransactionHashes:txHashes andBlockHashes:blockHashes];
-    });
+    }];
 }
 
 - (void)acceptPingMessage:(NSData *)message {
@@ -1593,9 +1596,12 @@
     } else if ([message UInt64AtOffset:0] != self.localNonce) {
         [self error:@"pong message contained wrong nonce: %llu, expected: %llu", [message UInt64AtOffset:0], self.localNonce];
         return;
-    } else if (!self.pongHandlers.count) {
-        DSLog(@"%@:%u got unexpected pong", self.host, self.port);
-        return;
+    } else {
+        __block BOOL hasNoHandlers = ![self.pongHandlers count];
+        if (hasNoHandlers) {
+            DSLog(@"%@:%u got unexpected pong", self.host, self.port);
+            return;
+        }
     }
 
     if (self.pingStartTime > 1) {
@@ -1609,13 +1615,13 @@
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 #endif
-
-    dispatch_async(self.delegateQueue, ^{
-        if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
-            ((void (^)(BOOL))self.pongHandlers[0])(YES);
-            [self.pongHandlers removeObjectAtIndex:0];
-        }
-    });
+    if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
+        void (^handler)(BOOL) = [self.pongHandlers objectAtIndex:0];
+        [self.pongHandlers removeObjectAtIndex:0];
+        [self dispatchAsyncInDelegateQueue:^{
+            handler(YES);
+        }];
+    }
 }
 
 #define SAVE_INCOMING_BLOCKS 0
@@ -1636,21 +1642,21 @@
     //else DSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
 
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.transactionHashes];
-
-    [txHashes minusOrderedSet:self.knownTxHashes];
+    @synchronized (self.knownTxHashes) {
+        [txHashes minusOrderedSet:self.knownTxHashes];
+    }
 
     if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
         self.currentBlock = block;
         self.currentBlockTxHashes = txHashes;
     } else {
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             [self.transactionDelegate peer:self relayedBlock:block];
-
 #if SAVE_INCOMING_BLOCKS
             NSString *fileName = [NSString stringWithFormat:@"%@-%d-%@.block", self.chain.devnetIdentifier, block.height, uint256_hex(block.blockHash)];
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
-        });
+        }];
     }
 }
 
@@ -1673,10 +1679,9 @@
         [self error:@"got chain lock message before loading a filter"];
         return;
     }
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         [self.transactionDelegate peer:self relayedChainLock:chainLock];
-    });
+    }];
 }
 
 // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
@@ -1700,9 +1705,9 @@
     reason = nil; // fixes an unused variable warning for non-debug builds
 
     if (uint256_is_not_zero(txHash)) {
-        dispatch_async(self.delegateQueue, ^{
+        [self dispatchAsyncInDelegateQueue:^{
             [self.transactionDelegate peer:self rejectedTransaction:txHash withCode:code];
-        });
+        }];
     }
 }
 
@@ -1715,18 +1720,15 @@
 
     _feePerByte = ceilf((float)[message UInt64AtOffset:0] / 1000.0f);
     DSLog(@"%@:%u got feefilter with rate %llu per Byte", self.host, self.port, self.feePerByte);
-
-    dispatch_async(self.delegateQueue, ^{
+    [self dispatchAsyncInDelegateQueue:^{
         [self.transactionDelegate peer:self setFeePerByte:self.feePerByte];
-    });
+    }];
 }
 
 // MARK: - accept Control
 
 - (void)acceptSporkMessage:(NSData *)message {
-    DSSpork *spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    DSLog(@"received spork %u (%@) with message %@", spork.identifier, spork.identifierString, message.hexString);
-    [self.sporkDelegate peer:self relayedSpork:spork];
+    [self.sporkDelegate peer:self relayedSpork:message];
 }
 
 // MARK: - accept Masternode
@@ -2049,4 +2051,7 @@
     }
 }
 
+- (void)dispatchAsyncInDelegateQueue:(void (^)(void))block {
+    dispatch_async(self.delegateQueue, ^{ block(); });
+}
 @end
