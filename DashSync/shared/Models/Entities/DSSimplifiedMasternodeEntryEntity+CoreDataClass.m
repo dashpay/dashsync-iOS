@@ -156,6 +156,7 @@
     if (simplifiedMasternodeEntry.updateHeight != blockHeight) {
         DSLog(@"• setAttributesFromSimplifiedMasternodeEntry: list.height %u != entry.height %u", blockHeight, simplifiedMasternodeEntry.updateHeight);
     }
+    // TODO: make sure we're doing
 //    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) for %@ should be the same as the entry update height (%i)", blockHeight, uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), simplifiedMasternodeEntry.updateHeight]));
     if (!chainEntity) {
         self.chain = [simplifiedMasternodeEntry.chain chainEntityInContext:self.managedObjectContext];
