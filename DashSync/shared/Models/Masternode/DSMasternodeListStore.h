@@ -44,6 +44,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) BOOL masternodeListsAndQuorumsIsSynced;
 
 @property (nonatomic, readonly) NSMutableDictionary<NSData *, DSQuorumSnapshot *> *cachedQuorumSnapshots;
+@property (nonatomic, readonly) NSMutableDictionary<NSData *, NSData *> *cachedCLSignatures;
 
 - (instancetype)initWithChain:(DSChain *)chain;
 - (void)setUp:(void (^)(DSMasternodeList *masternodeList))completion;
@@ -65,13 +66,12 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList
           addedMasternodes:(NSDictionary *)addedMasternodes
        modifiedMasternodes:(NSDictionary *)modifiedMasternodes
-              addedQuorums:(NSDictionary *)addedQuorums
                 completion:(void (^)(NSError *error))completion;
 - (void)saveQuorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot
                    toChain:(DSChain *)chain
                 completion:(void (^)(NSError *error))completion;
 
-+ (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
++ (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
 
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight;
 

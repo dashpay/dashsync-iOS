@@ -227,7 +227,7 @@
     } else {
         [self.peerManager setTrustedPeerHost:trustedPeerHost];
         if (self.peerManager.connected) {
-            [self.peerManager disconnect];
+            [self.peerManager disconnect:DSDisconnectReason_TrustedPeerSet];
             [self.peerManager connect];
         }
     }

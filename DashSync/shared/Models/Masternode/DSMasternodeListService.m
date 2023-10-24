@@ -69,7 +69,6 @@
     }
     dispatch_after(timeout, self.chain.networkingQueue, ^{
         __block NSSet *requestsInRetrieval2;
-        __block NSUInteger masternodeListCount2;
         @synchronized (self) {
             if (!self.retrievalQueueMaxAmount || self.timeOutObserverTry != timeOutObserverTry) {
                 return;

@@ -38,6 +38,9 @@ typedef DSMerkleBlock *_Nullable(^_Nullable MerkleBlockFinder)(UInt256 blockHash
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
 @property (nonatomic, copy) MerkleRootFinder merkleRootLookup;
 
+- (BOOL)saveCLSignature:(UInt256)blockHash signature:(UInt768)signature;
+- (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash;
+
 @end
 
 NS_ASSUME_NONNULL_END

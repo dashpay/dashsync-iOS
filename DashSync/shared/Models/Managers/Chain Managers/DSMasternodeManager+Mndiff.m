@@ -68,7 +68,7 @@ void destroyMasternodeList(MasternodeList *masternode_list) {
     [DSMasternodeList ffi_free:masternode_list];
 }
 
-void destroyHash(uint8_t *block_hash) { // UInt256
+void destroyU8(uint8_t *block_hash) { // big uint
     if (block_hash) {
         free(block_hash);
     }
@@ -149,13 +149,33 @@ void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
     [DSQuorumSnapshot ffi_free:snapshot];
 }
 
-void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
+uint8_t *getCLSignatureByBlockHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 blockHash = *((UInt256 *)block_hash);
+    uint8_t (*cl_signature)[96] = NULL;
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        [chain blockUntilGetInsightForBlockHash:blockHash];
+        NSData *signature = [processorContext.chain.chainManager.masternodeManager CLSignatureForBlockHash:blockHash];
+        if (signature) {
+            cl_signature = uint768_malloc(signature.UInt768);
+        }
+    }
+    processor_destroy_block_hash(block_hash);
+    return (uint8_t *)cl_signature;
+}
+bool saveCLSignature(uint8_t (*block_hash)[32], uint8_t (*cl_signature)[96], const void *context) {
+    BOOL saved = NO;
+    @synchronized (context) {
+        saved = [(__bridge DSMasternodeProcessorContext *)context saveCLSignature:*((UInt256 *)block_hash) signature:*((UInt768 *)cl_signature)];
+    }
+    processor_destroy_block_hash(block_hash);
+    processor_destroy_cl_signature(cl_signature);
+    return saved;
+}
+
+void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
+    @synchronized (context) {
+        [(__bridge DSMasternodeProcessorContext *)context blockUntilGetInsightForBlockHash:*((UInt256 *)block_hash)];
     }
     processor_destroy_block_hash(block_hash);
 }
@@ -215,11 +235,13 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                               getBlockHashByHeight,
                               getLLMQSnapshotByBlockHash,
                               saveLLMQSnapshot,
+                              getCLSignatureByBlockHash,
+                              saveCLSignature,
                               getMasternodeListByBlockHash,
                               saveMasternodeList,
                               destroyMasternodeList,
                               addInsightForBlockHash,
-                              destroyHash,
+                              destroyU8,
                               destroyLLMQSnapshot,
                               shouldProcessDiffWithRange);
 }

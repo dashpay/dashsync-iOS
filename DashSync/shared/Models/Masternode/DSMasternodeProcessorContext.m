@@ -17,11 +17,22 @@
 
 #import "DSMasternodeProcessorContext.h"
 #import "NSData+Dash.h"
+#import "DSChain+Protected.h"
+#import "DSChainManager.h"
+#import "DSMasternodeManager.h"
 
 @implementation DSMasternodeProcessorContext
 
 - (NSString *)description {
     return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%@}: [%@: %@ (%u)] genesis: %@ protocol: %u, insight: %i, from_snapshot: %i, dip-24: %i}", self.chain.name, self.peer.location, self.peer.useragent, self.peer.version, uint256_hex(self.chain.genesisHash), self.chain.protocolVersion, self.useInsightAsBackup, self.isFromSnapshot, self.isDIP0024]];
+}
+
+- (BOOL)saveCLSignature:(UInt256)blockHash signature:(UInt768)signature {
+    return [self.chain.chainManager.masternodeManager saveCLSignature:uint256_data(blockHash) signatureData:uint768_data(signature)];
+}
+
+- (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash {
+    [self.chain blockUntilGetInsightForBlockHash:blockHash];
 }
 
 @end

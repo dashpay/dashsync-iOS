@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
 bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context);
 void destroyMasternodeList(MasternodeList *masternode_list);
-void destroyHash(uint8_t *block_hash);
+void destroyU8(uint8_t *block_hash);
 uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
 uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
 uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context);

@@ -634,7 +634,6 @@
                 [DSMasternodeManager saveMasternodeList:masternodeList
                                                 toChain:chain
                               havingModifiedMasternodes:result.modifiedMasternodes
-                                           addedQuorums:result.addedQuorums
                                     createUnknownBlocks:YES
                                               inContext:context
                                              completion:^(NSError *_Nonnull error) {
@@ -747,7 +746,6 @@
         [DSMasternodeManager saveMasternodeList:result.masternodeList
                                         toChain:chain
                       havingModifiedMasternodes:result.modifiedMasternodes
-                                   addedQuorums:result.addedQuorums
                             createUnknownBlocks:YES
                                       inContext:context
                                      completion:^(NSError *_Nonnull error) {
@@ -812,7 +810,6 @@
         [DSMasternodeManager saveMasternodeList:masternodeList
                                         toChain:chain
                       havingModifiedMasternodes:result.modifiedMasternodes
-                                   addedQuorums:result.addedQuorums
                             createUnknownBlocks:YES
                                       inContext:context
                                      completion:^(NSError *_Nonnull error) {
@@ -888,7 +885,6 @@
         [DSMasternodeManager saveMasternodeList:masternodeList122064
                                         toChain:chain
                       havingModifiedMasternodes:result.modifiedMasternodes
-                                   addedQuorums:result.addedQuorums
                             createUnknownBlocks:YES
                                       inContext:context
                                      completion:^(NSError *_Nonnull error) {
@@ -936,7 +932,6 @@
             [DSMasternodeManager saveMasternodeList:masternodeList122088
                                             toChain:chain
                           havingModifiedMasternodes:result122088.modifiedMasternodes
-                                       addedQuorums:result122088.addedQuorums
                                 createUnknownBlocks:YES
                                           inContext:context
                                          completion:^(NSError *_Nonnull error) {
@@ -2839,7 +2834,6 @@
                                [DSMasternodeManager saveMasternodeList:masternodeList1092912
                                                                toChain:chain
                                              havingModifiedMasternodes:result.modifiedMasternodes
-                                                          addedQuorums:result.addedQuorums
                                                    createUnknownBlocks:YES
                                                              inContext:context
                                                             completion:^(NSError *_Nonnull error) {
@@ -2879,10 +2873,10 @@
                                                                 XCTAssert(result1092940.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash1092940]);
                                                                 XCTAssert(result1092940.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash1092940]);
                                                                 XCTAssert(result1092940.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash1092940]);
-                                                                DSQuorumEntry *quorum1092912 = [[[[result1092940.addedQuorums allValues] firstObject] allValues] firstObject];
+                                                                DSQuorumEntry *quorum1092912 = [result1092940.addedQuorums firstObject];
                                                                 // 1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off a reloaded 109
-                                                                NSArray *masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:quorum1092912.llmqQuorumHash atBlockHeight:1092912];
-                                                                NSArray *masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash atBlockHeight:1092912];
+                                   NSArray *masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:[quorum1092912 buildQuorumHash:nil] atBlockHeight:1092912];
+                                   NSArray *masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:[quorum1092912 buildQuorumHash: nil] atBlockHeight:1092912];
 
                                                                 //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
                                                                 //
@@ -2908,9 +2902,9 @@
 
                                                                 XCTAssertEqualObjects(masternodeScores1092912, masternodeScores1092916, @"These should be the same");
 
-                                                                NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092912 = [masternodeList1092912 validMasternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092912.blockHash)];
+                                   NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092912 = [masternodeList1092912 validMasternodesForQuorumModifier:[quorum1092912 buildQuorumHash:nil] quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092912.blockHash)];
 
-                                                                NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092916 = [masternodeList1092916 validMasternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092916.blockHash)];
+                                                                NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092916 = [masternodeList1092916 validMasternodesForQuorumModifier:[quorum1092912 buildQuorumHash:nil] quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092916.blockHash)];
                                                                 XCTAssertEqualObjects(masternodes1092912, masternodes1092916, @"These should be the same");
                                                                 //                NSMutableArray * publicKeyArray = [NSMutableArray array];
                                                                 //                uint32_t i = 0;
@@ -2927,7 +2921,6 @@
                                                                 [DSMasternodeManager saveMasternodeList:masternodeList1092940
                                                                                                 toChain:chain
                                                                               havingModifiedMasternodes:result1092940.modifiedMasternodes
-                                                                                           addedQuorums:result1092940.addedQuorums
                                                                                     createUnknownBlocks:YES
                                                                                               inContext:context
                                                                                              completion:^(NSError *_Nonnull error) {
@@ -3059,7 +3052,11 @@
         XCTAssert(result119200.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
         XCTAssert(result119200.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash]);
 
-        DSQuorumEntry *quorumToVerify = [result119200.addedQuorums[@1] objectForKey:uint256_data(blockHash119064)];
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(DSQuorumEntry *entry, NSDictionary *bindings) {
+            return uint256_eq(entry.quorumHash, blockHash119064) && entry.llmqType == LLMQType_Llmqtype50_60;
+        }];
+
+        DSQuorumEntry *quorumToVerify = [[result119200.addedQuorums filteredArrayUsingPredicate:predicate] firstObject];
         XCTAssert(quorumToVerify, @"There should be a quorum using 119064");
         [quorumToVerify validateWithMasternodeList:masternodeList119064];
         XCTAssert(quorumToVerify.verified, @"Unable to verify quorum");
@@ -3211,11 +3208,14 @@
         XCTAssert(result370944.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
         XCTAssert(result370944.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash]);
 
-        DSQuorumEntry *quorumToVerify = [result370944.addedQuorums[@1] objectForKey:uint256_data(blockHash370368)];
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(DSQuorumEntry *entry, NSDictionary *bindings) {
+            return uint256_eq(entry.quorumHash, blockHash370368) && entry.llmqType == LLMQType_Llmqtype50_60;
+        }];
+        DSQuorumEntry *quorumToVerify = [[result370944.addedQuorums filteredArrayUsingPredicate:predicate] firstObject];
 
         XCTAssert(quorumToVerify, @"There should be a quorum using 119064");
         DSMasternodeList *masternodeList370944 = result370944.masternodeList;
-        NSArray<DSSimplifiedMasternodeEntry *> *masternodes = [masternodeList370944 validMasternodesForQuorumModifier:quorumToVerify.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorumToVerify.llmqType] blockHeight:370944];
+        NSArray<DSSimplifiedMasternodeEntry *> *masternodes = [masternodeList370944 validMasternodesForQuorumModifier:[quorumToVerify buildQuorumHash:NULL] quorumCount:[DSQuorumEntry quorumSizeForType:quorumToVerify.llmqType] blockHeight:370944];
 
         NSArray *masternodeHashOrder = [masternodes map:^(DSSimplifiedMasternodeEntry *masternode) {
             return uint256_reverse_hex([masternode providerRegistrationTransactionHash]);

@@ -86,6 +86,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot;
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash;
 
+- (NSData *_Nullable)CLSignatureForBlockHeight:(uint32_t)blockHeight;
+- (NSData *_Nullable)CLSignatureForBlockHash:(UInt256)blockHash;
+- (BOOL)saveCLSignature:(NSData *)blockHashData signatureData:(NSData *)signatureData;
+
 - (void)startSync;
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;
 - (BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash;

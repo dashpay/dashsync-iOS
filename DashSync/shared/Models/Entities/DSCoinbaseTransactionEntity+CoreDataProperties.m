@@ -16,5 +16,9 @@
 
 @dynamic height;
 @dynamic merkleRootMNList;
+@dynamic merkleRootLLMQList;
+@dynamic bestCLHeightDiff;
+@dynamic bestCLSignature;
+@dynamic creditPoolBalance;
 
 @end

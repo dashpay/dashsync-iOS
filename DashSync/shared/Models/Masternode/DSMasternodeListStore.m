@@ -421,7 +421,7 @@
     });
 }
 
-- (void)saveMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
+- (void)saveMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes completion:(void (^)(NSError *error))completion {
     UInt256 blockHash = masternodeList.blockHash;
     NSData *blockHashData = uint256_data(blockHash);
     DSLog(@"•••• store (%d) masternode list at: %u: %@", [self hasMasternodeListAt:blockHashData], [self heightForBlockHash:blockHash], uint256_hex(blockHash));
@@ -451,7 +451,6 @@
     [DSMasternodeListStore saveMasternodeList:masternodeList
                                     toChain:self.chain
                   havingModifiedMasternodes:modifiedMasternodes
-                               addedQuorums:addedQuorums
                         createUnknownBlocks:createUnknownBlocks
                                   inContext:self.managedObjectContext
                                completion:^(NSError *error) {
@@ -522,7 +521,6 @@
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList
                    toChain:(DSChain *)chain
  havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes
-              addedQuorums:(NSDictionary *)addedQuorums
        createUnknownBlocks:(BOOL)createUnknownBlocks
                  inContext:(NSManagedObjectContext *)context
                 completion:(void (^)(NSError *error))completion {
