@@ -1,5 +1,5 @@
 def common_pods
-  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :branch => 'feat/core-20-beacons'
+#  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :branch => 'feat/core-20-beacons'
 #  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => 'e2dc943'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.14.3'
