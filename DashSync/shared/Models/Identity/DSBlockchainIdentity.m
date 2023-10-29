@@ -477,13 +477,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     }];
 }
 
-- (void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
-    [self continueRegisteringOnNetwork:steps withFundingAccount:fundingAccount forTopupAmount:topupDuffAmount inContext:self.platformContext stepCompletion:stepCompletion completion:completion];
+- (void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
+    [self continueRegisteringOnNetwork:steps withFundingAccount:fundingAccount forTopupAmount:topupDuffAmount pinPrompt:prompt inContext:self.platformContext stepCompletion:stepCompletion completion:completion];
 }
 
-- (void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount inContext:(NSManagedObjectContext *)context stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
+- (void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt inContext:(NSManagedObjectContext *)context stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
     if (!self.registrationCreditFundingTransaction) {
-        [self registerOnNetwork:steps withFundingAccount:fundingAccount forTopupAmount:topupDuffAmount stepCompletion:stepCompletion completion:completion];
+        [self registerOnNetwork:steps withFundingAccount:fundingAccount forTopupAmount:topupDuffAmount pinPrompt:prompt stepCompletion:stepCompletion completion:completion];
     } else if (self.registrationStatus != DSBlockchainIdentityRegistrationStatus_Registered) {
         [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps stepCompletion:stepCompletion completion:completion];
     } else if ([self.unregisteredUsernameFullPaths count]) {
@@ -494,7 +494,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 
-- (void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
+- (void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
     __block DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
     if (![self hasBlockchainIdentityExtendedPublicKeys]) {
         if (completion) {
@@ -526,7 +526,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             return;
         }
         [fundingAccount signTransaction:fundingTransaction
-                             withPrompt:@"Would you like to create this user?"
+                             withPrompt:prompt
                              completion:^(BOOL signedTransaction, BOOL cancelled) {
             if (!signedTransaction) {
                 if (completion) {
