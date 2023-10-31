@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define DASHRETAIL_TICKER_URL @"https://rates2.dashretail.org/rates?source=dashretail"
+#define DASHRETAIL_TICKER_URL @"https://rates.ctx.com/rates?source=ctx" // former https://rates2.dashretail.org/
 
 @interface DSFetchDashRetailPricesOperation ()
 
@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)priceSourceInfo {
-    return @"dashretail.org";
+    return @"ctx.com";
 }
 
 @end
