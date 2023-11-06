@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "NSData+Dash.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSMasternodeList+Mndiff.h"
 #import "DSQuorumEntry+Mndiff.h"
@@ -59,6 +60,15 @@
         [neededMissingMasternodeLists addObject:hash];
     }
     [processingResult setNeededMissingMasternodeLists:[neededMissingMasternodeLists copy]];
+    uint8_t (**quorums_cl_signatures_hashes)[32] = result->quorums_cl_signatures_hashes;
+    uint8_t (**quorums_cl_signatures)[96] = result->quorums_cl_signatures;
+    uintptr_t quorums_cl_sigs_count = result->quorums_cl_sigs_count;
+    NSMutableDictionary<NSData *, NSData *> *clSignatures = [NSMutableDictionary dictionaryWithCapacity:quorums_cl_sigs_count];
+    for (NSUInteger i = 0; i < quorums_cl_sigs_count; i++) {
+        [clSignatures setObject:uint768_data(*(UInt768 *)quorums_cl_signatures[i])
+                         forKey:uint256_data(*(UInt256 *)quorums_cl_signatures_hashes[i])];
+    }
+    [processingResult setClSignatures:clSignatures];
     return processingResult;
 }
 

@@ -794,4 +794,8 @@
     [self.masternodeManager wipeMasternodeInfo];
 }
 
+- (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash {
+    return [self.transactionManager chainLockForBlockHash:blockHash];
+}
+
 @end

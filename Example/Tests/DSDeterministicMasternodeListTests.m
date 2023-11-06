@@ -2875,9 +2875,9 @@
                                                                 XCTAssert(result1092940.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash1092940]);
                                                                 DSQuorumEntry *quorum1092912 = [result1092940.addedQuorums firstObject];
                                                                 // 1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off a reloaded 109
-                                   NSArray *masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:[quorum1092912 buildQuorumHash:nil] atBlockHeight:1092912];
-                                   NSArray *masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:[quorum1092912 buildQuorumHash: nil] atBlockHeight:1092912];
-
+                                                                UInt256 llmqHash1092912 = [chain.chainManager.masternodeManager buildLLMQHashFor:quorum1092912];
+                                                                NSArray *masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:llmqHash1092912 atBlockHeight:1092912];
+                                                                NSArray *masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:llmqHash1092912 atBlockHeight:1092912];
                                                                 //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
                                                                 //
                                                                 //                BOOL b = [quorum1092912 validateWithMasternodeList:masternodeList1092916];
@@ -2901,10 +2901,9 @@
                                                                 //                NSDictionary * interesting = [masternodeList1092912 compare:masternodeList1092916];
 
                                                                 XCTAssertEqualObjects(masternodeScores1092912, masternodeScores1092916, @"These should be the same");
+                                                                NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092912 = [masternodeList1092912 validMasternodesForQuorumModifier:llmqHash1092912 quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092912.blockHash)];
 
-                                   NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092912 = [masternodeList1092912 validMasternodesForQuorumModifier:[quorum1092912 buildQuorumHash:nil] quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092912.blockHash)];
-
-                                                                NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092916 = [masternodeList1092916 validMasternodesForQuorumModifier:[quorum1092912 buildQuorumHash:nil] quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092916.blockHash)];
+                                                                NSArray<DSSimplifiedMasternodeEntry *> *masternodes1092916 = [masternodeList1092916 validMasternodesForQuorumModifier:llmqHash1092912 quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType] blockHeight:blockHeightLookup(masternodeList1092916.blockHash)];
                                                                 XCTAssertEqualObjects(masternodes1092912, masternodes1092916, @"These should be the same");
                                                                 //                NSMutableArray * publicKeyArray = [NSMutableArray array];
                                                                 //                uint32_t i = 0;
@@ -3215,7 +3214,7 @@
 
         XCTAssert(quorumToVerify, @"There should be a quorum using 119064");
         DSMasternodeList *masternodeList370944 = result370944.masternodeList;
-        NSArray<DSSimplifiedMasternodeEntry *> *masternodes = [masternodeList370944 validMasternodesForQuorumModifier:[quorumToVerify buildQuorumHash:NULL] quorumCount:[DSQuorumEntry quorumSizeForType:quorumToVerify.llmqType] blockHeight:370944];
+        NSArray<DSSimplifiedMasternodeEntry *> *masternodes = [masternodeList370944 validMasternodesForQuorumModifier:[chain.chainManager.masternodeManager buildLLMQHashFor:quorumToVerify] quorumCount:[DSQuorumEntry quorumSizeForType:quorumToVerify.llmqType] blockHeight:370944];
 
         NSArray *masternodeHashOrder = [masternodes map:^(DSSimplifiedMasternodeEntry *masternode) {
             return uint256_reverse_hex([masternode providerRegistrationTransactionHash]);

@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)fetchMempoolFromPeer:(DSPeer *)peer;
 - (void)fetchMempoolFromNetwork;
 
+- (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash;
+
 @end
 
 NS_ASSUME_NONNULL_END

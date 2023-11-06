@@ -187,11 +187,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     return quorum_threshold_for_type(self.llmqType);
 }
 
-- (UInt256)buildQuorumHash:(NSData *_Nullable)bestCLSignature /*UInt768*/{
-    return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(self.llmqType, self.quorumHash.u8, bestCLSignature.bytes)].UInt256;
-
-}
-
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList {
     return [self validateWithMasternodeList:masternodeList
                           blockHeightLookup:^uint32_t(UInt256 blockHash) {

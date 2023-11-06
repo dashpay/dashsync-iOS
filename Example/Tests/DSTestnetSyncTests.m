@@ -94,7 +94,7 @@
                                                               [headerFinishedExpectation fulfill];
                                                           }];
     });
-    [self waitForExpectations:@[headerFinishedExpectation] timeout:600];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:900];
     [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 

@@ -66,7 +66,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 - (void)mergedWithQuorumEntry:(DSQuorumEntry *)quorumEntry;
 
 - (BOOL)useLegacyBLSScheme;
-- (UInt256)buildQuorumHash:(NSData *_Nullable)bestCLSignature;
 
 @end
 
