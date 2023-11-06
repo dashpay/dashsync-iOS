@@ -49,7 +49,7 @@
 @property (nonatomic, strong) dispatch_queue_t masternodeSavingQueue;
 @property (nonatomic, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (atomic, assign) uint32_t masternodeListCurrentlyBeingSavedCount;
-@property (nonatomic, strong) NSMutableDictionary<NSData *, DSQuorumEntry *> *activeQuorums;
+@property (nonatomic, strong) NSMutableOrderedSet<DSQuorumEntry *> *activeQuorums;
 @property (nonatomic, strong) dispatch_group_t savingGroup;
 @end
 

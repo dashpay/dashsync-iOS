@@ -690,9 +690,7 @@
         [self.store saveQuorumSnapshot:snapshot toChain:self.chain completion:^(NSError * _Nonnull error) {}];
     }
     
-    for (DSQuorumEntry *entry in result.lastQuorumPerIndex) {
-        [self.store.activeQuorums setObject:entry forKey:uint256_data([self buildLLMQHashFor:entry])];
-    }
+    [self.store.activeQuorums unionOrderedSet:result.lastQuorumPerIndex];
 }
 
 - (void)processMissingMasternodeLists:(NSOrderedSet *)neededMissingMasternodeLists forMasternodeList:(DSMasternodeList *)masternodeList {
@@ -883,9 +881,11 @@
 - (UInt256)buildLLMQHashFor:(DSQuorumEntry *)quorum {
     uint32_t workHeight = [self heightForBlockHash:quorum.quorumHash] - 8;
     if (workHeight >= chain_core20_activation_height(self.chain.chainType)) {
+        DSLog(@"buildLLMQHashFor: [%u: %u] (core 20): %@", quorum.llmqType, workHeight, uint256_hex(quorum.quorumHash));
         NSData *bestCLSignature = [self CLSignatureForBlockHeight:workHeight];
         return [DSKeyManager NSDataFrom:quorum_build_llmq_hash_v20(quorum.llmqType, workHeight, bestCLSignature.bytes)].UInt256;
     } else {
+        DSLog(@"buildLLMQHashFor: [%u: %u] (pre core 20): %@", quorum.llmqType, workHeight, uint256_hex(quorum.quorumHash));
         return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(quorum.llmqType, quorum.quorumHash.u8)].UInt256;
     }
 }
