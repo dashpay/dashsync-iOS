@@ -586,11 +586,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.4.12)
+  - DashSharedCore (0.4.13)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.4.12)
+    - DashSharedCore (= 0.4.13)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -667,7 +667,6 @@ PODS:
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `https://github.com/dashpay/dash-shared-core.git`, branch `fix/core-20-test`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
   - SDWebImage (= 5.14.3)
@@ -680,6 +679,7 @@ SPEC REPOS:
     - BoringSSL-GRPC
     - CocoaLumberjack
     - DAPI-GRPC
+    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - gRPC
@@ -696,9 +696,6 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
-  DashSharedCore:
-    :branch: fix/core-20-test
-    :git: https://github.com/dashpay/dash-shared-core.git
   DashSync:
     :path: "../"
 
@@ -706,9 +703,6 @@ CHECKOUT OPTIONS:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
-  DashSharedCore:
-    :commit: bd73bff9593cee5c7ee9c80231808b3f21e3b387
-    :git: https://github.com/dashpay/dash-shared-core.git
 
 SPEC CHECKSUMS:
   "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
@@ -718,8 +712,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 842f752df2a9cdb357b377c1a1abebdac5c0cefa
-  DashSync: 86a678ae3bc1600245ade93c22acd90377ffb3b6
+  DashSharedCore: 46e9d9fb8b934933f319ece1ae35b9914e4c1a24
+  DashSync: 81344e983fe2afe12c2b98c32ea50e20fed186f9
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
@@ -732,6 +726,6 @@ SPEC CHECKSUMS:
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: 1db7bfe9fa728d3d9ee296b3b5513864533505cf
+PODFILE CHECKSUM: e9255ead15dc2359c99dacd021e2a7861c085334
 
 COCOAPODS: 1.14.2
