@@ -198,7 +198,7 @@
     BOOL hasInRetrieval = [self.retrievalQueue containsObject:masternodeListBlockHashData];
     uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
     BOOL shouldNot = !hasInRetrieval && !skipPresenceInRetrieval;
-    DSLog(@"•••• shouldProcessDiffResult: %d: %@ %d", masternodeListBlockHeight, uint256_reverse_hex(masternodeListBlockHash), !shouldNot);
+    //DSLog(@"•••• shouldProcessDiffResult: %d: %@ %d", masternodeListBlockHeight, uint256_reverse_hex(masternodeListBlockHash), !shouldNot);
     if (shouldNot) {
         //We most likely wiped data in the meantime
         [self cleanRequestsInRetrieval];
