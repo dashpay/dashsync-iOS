@@ -755,13 +755,14 @@
         DSLog(@"%@:%u accept message %@", self.host, self.port, type);
     }
 #endif
-    if (self.currentBlock && (!([MSG_TX isEqual:type] || [MSG_IX isEqual:type] || [MSG_ISLOCK isEqual:type]))) { // if we receive a non-tx message, merkleblock is done
+    if (self.currentBlock && (!([MSG_TX isEqual:type] || [MSG_IX isEqual:type] || [MSG_ISLOCK isEqual:type]))) {
+        // if we receive a non-tx message, merkleblock is done
         UInt256 hash = self.currentBlock.blockHash;
-
+        NSUInteger txExpected = self.currentBlockTxHashes.count;
         self.currentBlock = nil;
         self.currentBlockTxHashes = nil;
-        [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
-              uint256_obj(hash), (int)self.currentBlockTxHashes.count, type];
+        [self error:@"incomplete merkleblock %@, expected %lu more tx, got %@",
+              uint256_obj(hash), txExpected, type];
     } else if ([MSG_VERSION isEqual:type])
         [self acceptVersionMessage:message];
     else if ([MSG_VERACK isEqual:type])
