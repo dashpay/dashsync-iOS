@@ -97,6 +97,8 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 
 - (void)mineBlockAfterBlock:(DSBlock *)block toPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *_Nullable)transactions previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
+- (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash;
+
 @end
 
 NS_ASSUME_NONNULL_END

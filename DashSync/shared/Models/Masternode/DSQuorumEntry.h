@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) uint32_t quorumIndex;
 @property (nonatomic, readonly) UInt256 quorumHash;
-@property (nonatomic, readonly) UInt256 llmqQuorumHash;
 @property (nonatomic, readonly) UInt384 quorumPublicKey;
 @property (nonatomic, readonly) UInt768 quorumThresholdSignature;
 @property (nonatomic, readonly) UInt256 quorumVerificationVectorHash;

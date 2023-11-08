@@ -25,6 +25,7 @@
 
 #import "DSMasternodeManager.h"
 #import "DSChain+Protected.h"
+#import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
 #import "DSCheckpoint.h"
 #import "DSGetMNListDiffRequest.h"
@@ -297,14 +298,40 @@
     return YES;
 }
 
+// MARK: - ChainLock Signature List Helpers
+- (NSData *_Nullable)CLSignatureForBlockHeight:(uint32_t)blockHeight {
+    DSBlock *block = [self.chain blockAtHeight:blockHeight];
+    if (!block) {
+        DSLog(@"No block for snapshot at height: %ul: ", blockHeight);
+        return nil;
+    }
+    return [self.store.cachedCLSignatures objectForKey:uint256_data(block.blockHash)];
+}
+
+- (NSData *_Nullable)CLSignatureForBlockHash:(UInt256)blockHash {
+    NSData *cachedSig = [self.store.cachedCLSignatures objectForKey:uint256_data(blockHash)];
+    if (!cachedSig) {
+        DSChainLock *chainLock = [self.chain.chainManager chainLockForBlockHash:blockHash];
+        if (chainLock) {
+            return uint768_data(chainLock.signature);
+        }
+    }
+    return cachedSig;
+}
+
+- (BOOL)saveCLSignature:(NSData *)blockHashData signatureData:(NSData *)signatureData {
+    [self.store.cachedCLSignatures setObject:signatureData forKey:blockHashData];
+    return YES;
+}
+
+// MARK: - Masternode List Helpers
+
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash {
     /// TODO: need to properly store in CoreData or wait for rust SQLite
     DSLog(@"••• addMasternodeList (saveMasternodeList) -> %@: %@", uint256_hex(blockHash), masternodeList);
     [self.store.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(blockHash)];
     return YES;
 }
-
-// MARK: - Masternode List Helpers
 
 - (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash {
     return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
@@ -411,7 +438,6 @@
     [self.store saveMasternodeList:masternodeList
                   addedMasternodes:result.addedMasternodes
                modifiedMasternodes:result.modifiedMasternodes
-                      addedQuorums:result.addedQuorums
                         completion:^(NSError *_Nonnull error) {
         DSLog(@"MNL Saved from file");
     }];
@@ -522,7 +548,7 @@
                 }
             }
             DSLog(@"••• updateStoreWithMasternodeList: %u: %@ (%@)", masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
-            [self updateStoreWithMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError *error) {
+            [self updateStoreWithProcessingResult:masternodeList result:result completion:^(NSError *error) {
                 if ([result hasRotatedQuorumsForChain:self.chain] && !self.chain.isRotatedQuorumsPresented) {
                     uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
                     DSLog(@"•••• processMasternodeListDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
@@ -597,32 +623,32 @@
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH4C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH4C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH4C]) {
-        DSLog(@"••• updateStoreWithMasternodeList (h-4c): %u: %@ (%@)", masternodeListAtH4C.height, uint256_hex(blockHashAtH4C), uint256_reverse_hex(blockHashAtH4C));
-        [self updateStoreWithMasternodeList:masternodeListAtH4C addedMasternodes:mnListDiffResultAtH4C.addedMasternodes modifiedMasternodes:mnListDiffResultAtH4C.modifiedMasternodes addedQuorums:mnListDiffResultAtH4C.addedQuorums completion:^(NSError *error) {}];
+//        DSLog(@"••• updateStoreWithMasternodeList (h-4c): %u: %@ (%@)", masternodeListAtH4C.height, uint256_hex(blockHashAtH4C), uint256_reverse_hex(blockHashAtH4C));
+        [self updateStoreWithProcessingResult:masternodeListAtH4C result:mnListDiffResultAtH4C completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH3C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH3C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH3C]) {
-        DSLog(@"••• updateStoreWithMasternodeList (h-3c): %u: %@ (%@)", masternodeListAtH3C.height, uint256_hex(blockHashAtH3C), uint256_reverse_hex(blockHashAtH3C));
-        [self updateStoreWithMasternodeList:masternodeListAtH3C addedMasternodes:mnListDiffResultAtH3C.addedMasternodes modifiedMasternodes:mnListDiffResultAtH3C.modifiedMasternodes addedQuorums:mnListDiffResultAtH3C.addedQuorums completion:^(NSError *error) {}];
+//        DSLog(@"••• updateStoreWithMasternodeList (h-3c): %u: %@ (%@)", masternodeListAtH3C.height, uint256_hex(blockHashAtH3C), uint256_reverse_hex(blockHashAtH3C));
+        [self updateStoreWithProcessingResult:masternodeListAtH3C result:mnListDiffResultAtH3C completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH2C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH2C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH2C]) {
-        DSLog(@"••• updateStoreWithMasternodeList (h-2c): %u: %@ (%@)", masternodeListAtH2C.height, uint256_hex(blockHashAtH2C), uint256_reverse_hex(blockHashAtH2C));
-        [self updateStoreWithMasternodeList:masternodeListAtH2C addedMasternodes:mnListDiffResultAtH2C.addedMasternodes modifiedMasternodes:mnListDiffResultAtH2C.modifiedMasternodes addedQuorums:mnListDiffResultAtH2C.addedQuorums completion:^(NSError *error) {}];
+//        DSLog(@"••• updateStoreWithMasternodeList (h-2c): %u: %@ (%@)", masternodeListAtH2C.height, uint256_hex(blockHashAtH2C), uint256_reverse_hex(blockHashAtH2C));
+        [self updateStoreWithProcessingResult:masternodeListAtH2C result:mnListDiffResultAtH2C completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtHC skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtHC count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtHC]) {
-        DSLog(@"••• updateStoreWithMasternodeList (h-c): %u: %@ (%@)", masternodeListAtHC.height, uint256_hex(blockHashAtHC), uint256_reverse_hex(blockHashAtHC));
-        [self updateStoreWithMasternodeList:masternodeListAtHC addedMasternodes:mnListDiffResultAtHC.addedMasternodes modifiedMasternodes:mnListDiffResultAtHC.modifiedMasternodes addedQuorums:mnListDiffResultAtHC.addedQuorums completion:^(NSError *error) {}];
+//        DSLog(@"••• updateStoreWithMasternodeList (h-c): %u: %@ (%@)", masternodeListAtHC.height, uint256_hex(blockHashAtHC), uint256_reverse_hex(blockHashAtHC));
+        [self updateStoreWithProcessingResult:masternodeListAtHC result:mnListDiffResultAtHC completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH]) {
-        DSLog(@"••• updateStoreWithMasternodeList (h): %u: %@ (%@)", masternodeListAtH.height, uint256_hex(blockHashAtH), uint256_reverse_hex(blockHashAtH));
-        [self updateStoreWithMasternodeList:masternodeListAtH addedMasternodes:mnListDiffResultAtH.addedMasternodes modifiedMasternodes:mnListDiffResultAtH.modifiedMasternodes addedQuorums:mnListDiffResultAtH.addedQuorums completion:^(NSError *error) {}];
+//        DSLog(@"••• updateStoreWithMasternodeList (h): %u: %@ (%@)", masternodeListAtH.height, uint256_hex(blockHashAtH), uint256_reverse_hex(blockHashAtH));
+        [self updateStoreWithProcessingResult:masternodeListAtH result:mnListDiffResultAtH completion:^(NSError *error) {}];
     }
 
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtTip skipPresenceInRetrieval:YES]) {
@@ -638,12 +664,11 @@
                     [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:blockHashDataAtTip];
                 }
             }
-            DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
-            [self updateStoreWithMasternodeList:masternodeListAtTip addedMasternodes:mnListDiffResultAtTip.addedMasternodes modifiedMasternodes:mnListDiffResultAtTip.modifiedMasternodes addedQuorums:mnListDiffResultAtTip.addedQuorums completion:^(NSError *error) {}];
+//            DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
+            [self updateStoreWithProcessingResult:masternodeListAtTip result:mnListDiffResultAtTip completion:^(NSError *error) {}];
             [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:blockHashDataAtTip fromPeer:peer];
         }
     }
-        
     [self.store saveQuorumSnapshot:result.snapshotAtHC toChain:self.chain completion:^(NSError * _Nonnull error) {}];
     [self.store saveQuorumSnapshot:result.snapshotAtH2C toChain:self.chain completion:^(NSError * _Nonnull error) {}];
     [self.store saveQuorumSnapshot:result.snapshotAtH3C toChain:self.chain completion:^(NSError * _Nonnull error) {}];
@@ -657,16 +682,14 @@
         if (![self.quorumRotationService shouldProcessDiffResult:diffResult skipPresenceInRetrieval:YES]) {
             [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
         } else if (![diffResult.neededMissingMasternodeLists count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:diffBlockHashData]) {
-            [self updateStoreWithMasternodeList:diffMasternodeList addedMasternodes:diffResult.addedMasternodes modifiedMasternodes:diffResult.modifiedMasternodes addedQuorums:diffResult.addedQuorums completion:^(NSError *error) {}];
+            [self updateStoreWithProcessingResult:diffMasternodeList result:diffResult completion:^(NSError *error) {}];
         }
     }
     for (DSQuorumSnapshot *snapshot in result.snapshotList) {
         [self.store saveQuorumSnapshot:snapshot toChain:self.chain completion:^(NSError * _Nonnull error) {}];
     }
     
-    for (DSQuorumEntry *entry in result.lastQuorumPerIndex) {
-        [self.store.activeQuorums setObject:entry forKey:uint256_data(entry.llmqQuorumHash)];
-    }
+    [self.store.activeQuorums unionOrderedSet:result.lastQuorumPerIndex];
 }
 
 - (void)processMissingMasternodeLists:(NSOrderedSet *)neededMissingMasternodeLists forMasternodeList:(DSMasternodeList *)masternodeList {
@@ -677,15 +700,14 @@
     [neededMasternodeLists addObject:masternodeListBlockHashData]; //also get the current one again
     [self getMasternodeListsForBlockHashes:neededMasternodeLists];
 }
-
-- (void)updateStoreWithMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
+- (void)updateStoreWithProcessingResult:(DSMasternodeList *)masternodeList result:(DSMnDiffProcessingResult *)result completion:(void (^)(NSError *error))completion {
     if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeList.blockHash)) {
         self.store.masternodeListAwaitingQuorumValidation = nil;
     }
+    [self.store.cachedCLSignatures addEntriesFromDictionary:result.clSignatures];
     [self.store saveMasternodeList:masternodeList
-                  addedMasternodes:addedMasternodes
-               modifiedMasternodes:modifiedMasternodes
-                      addedQuorums:addedQuorums
+                  addedMasternodes:result.addedMasternodes
+               modifiedMasternodes:result.modifiedMasternodes
                         completion:^(NSError *error) {
         completion(error);
         if (!error || !([self.masternodeListDiffService retrievalQueueCount] + [self.quorumRotationService retrievalQueueCount])) { //if it is 0 then we most likely have wiped chain info
@@ -696,7 +718,6 @@
             [self getRecentMasternodeList];
         });
     }];
-
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
@@ -802,8 +823,18 @@
     return [self.store hasMasternodeListCurrentlyBeingSaved];
 }
 
-+ (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion {
-    [DSMasternodeListStore saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:createUnknownBlocks inContext:context completion:completion];
++ (void)saveMasternodeList:(DSMasternodeList *)masternodeList
+                   toChain:(DSChain *)chain
+ havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes
+       createUnknownBlocks:(BOOL)createUnknownBlocks
+                 inContext:(NSManagedObjectContext *)context
+                completion:(void (^)(NSError *error))completion {
+    [DSMasternodeListStore saveMasternodeList:masternodeList
+                                      toChain:chain
+                    havingModifiedMasternodes:modifiedMasternodes
+                          createUnknownBlocks:createUnknownBlocks
+                                    inContext:context
+                                   completion:completion];
 }
 
 // MARK: - Quorums
@@ -846,4 +877,15 @@
 
 }
 
+- (UInt256)buildLLMQHashFor:(DSQuorumEntry *)quorum {
+    uint32_t workHeight = [self heightForBlockHash:quorum.quorumHash] - 8;
+    if (workHeight >= chain_core20_activation_height(self.chain.chainType)) {
+        DSLog(@"buildLLMQHashFor: [%u: %u] (core 20): %@", quorum.llmqType, workHeight, uint256_hex(quorum.quorumHash));
+        NSData *bestCLSignature = [self CLSignatureForBlockHeight:workHeight];
+        return [DSKeyManager NSDataFrom:quorum_build_llmq_hash_v20(quorum.llmqType, workHeight, bestCLSignature.bytes)].UInt256;
+    } else {
+        DSLog(@"buildLLMQHashFor: [%u: %u] (pre core 20): %@", quorum.llmqType, workHeight, uint256_hex(quorum.quorumHash));
+        return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(quorum.llmqType, quorum.quorumHash.u8)].UInt256;
+    }
+}
 @end

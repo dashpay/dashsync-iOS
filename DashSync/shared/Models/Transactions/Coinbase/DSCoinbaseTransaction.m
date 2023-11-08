@@ -27,27 +27,31 @@
     uint16_t version = [message UInt16AtOffset:off];
     off += 2;
     if (length - off < 4) return nil;
-    uint32_t height = [message UInt32AtOffset:off];
+    self.height = [message UInt32AtOffset:off];
     off += 4;
     if (length - off < 32) return nil;
-    UInt256 merkleRootMNList = [message UInt256AtOffset:off];
+    self.merkleRootMNList = [message UInt256AtOffset:off];
     off += 32;
 
-    if (version >= 2) {
+    if (version >= COINBASE_TX_CORE_19) {
         if (length - off < 32) return nil;
         self.merkleRootLLMQList = [message UInt256AtOffset:off];
         off += 32;
+        
+        if (version >= COINBASE_TX_CORE_20) {
+            if (length - off < 4) return nil;
+            self.bestCLHeightDiff = [message UInt32AtOffset:off];
+            off += 4;
+            if (length - off < 96) return nil;
+            self.bestCLSignature = [message UInt768AtOffset:off];
+            off += 96;
+            if (length - off < 8) return nil;
+            NSNumber *len;
+            self.creditPoolBalance = [message varIntAtOffset:off length:&len];
+            off += len.unsignedIntegerValue;
+        }
     }
-    
-    if (version >= 3) {
-        if (length - off < 8) return nil;
-        self.lockedAmount = [message UInt64AtOffset:off];
-        off += 8;
-    }
-
     self.coinbaseTransactionVersion = version;
-    self.height = height;
-    self.merkleRootMNList = merkleRootMNList;
 
     self.payloadOffset = off;
     self.txHash = self.data.SHA256_2;
@@ -86,11 +90,14 @@
     [data appendUInt16:self.coinbaseTransactionVersion];
     [data appendUInt32:self.height];
     [data appendUInt256:self.merkleRootMNList];
-    if (self.coinbaseTransactionVersion >= 2) {
+    if (self.coinbaseTransactionVersion >= COINBASE_TX_CORE_19) {
         [data appendUInt256:self.merkleRootLLMQList];
-    }
-    if (self.coinbaseTransactionVersion >= 3) {
-        [data appendUInt64:self.lockedAmount];
+        if (self.coinbaseTransactionVersion >= COINBASE_TX_CORE_20) {
+            [data appendUInt32:self.bestCLHeightDiff];
+            // TODO: check whether it matters to check for optionals
+            [data appendUInt768:self.bestCLSignature];
+            [data appendInt64:self.creditPoolBalance];
+        }
     }
     return data;
 }

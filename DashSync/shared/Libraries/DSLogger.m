@@ -19,6 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface NoTimestampLogFormatter : NSObject <DDLogFormatter>
+@end
+@implementation NoTimestampLogFormatter
+- (nullable NSString *)formatLogMessage:(DDLogMessage *)logMessage {
+    return logMessage.message;
+}
+@end
+
 @interface DSLogger ()
 
 @property (readonly, nonatomic, strong) DDFileLogger *fileLogger;
@@ -44,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
         DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
         fileLogger.rollingFrequency = 60 * 60 * 24;            // 24 hour rolling
         fileLogger.logFileManager.maximumNumberOfLogFiles = 3; // keep a 3 days worth of log files
+        //[fileLogger setLogFormatter:[[NoTimestampLogFormatter alloc] init]]; // Use the custom formatter
         [DDLog addLogger:fileLogger];
         _fileLogger = fileLogger;
     }

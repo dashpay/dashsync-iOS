@@ -29,18 +29,20 @@
 #import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "NSData+Dash.h"
 
+#define AS_OBJC(context) ((__bridge DSMasternodeProcessorContext *)(context))
+#define AS_RUST(context) ((__bridge void *)(context))
+
 @implementation DSMasternodeManager (Mndiff)
+
 
 ///
 /// MARK: Rust FFI callbacks
 ///
 MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context) {
     UInt256 blockHash = *((UInt256 *)block_hash);
-    DSMasternodeProcessorContext *processorContext = NULL;
     MasternodeList *c_list = NULL;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
+        DSMasternodeList *list = [AS_OBJC(context) masternodeListForBlockHash:blockHash];
         if (list) {
             c_list = [list ffi_malloc];
         }
@@ -51,13 +53,11 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
 
 bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context) {
     UInt256 blockHash = *((UInt256 *)block_hash);
-    DSMasternodeProcessorContext *processorContext = NULL;
     BOOL saved = NO;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:masternode_list onChain:chain];
-        saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:blockHash];
+        DSMasternodeProcessorContext *processorContext = AS_OBJC(context);
+        DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:masternode_list onChain:processorContext.chain];
+        saved = [processorContext saveMasternodeList:masternodeList forBlockHash:blockHash];
     }
     processor_destroy_block_hash(block_hash);
     processor_destroy_masternode_list(masternode_list);
@@ -68,31 +68,26 @@ void destroyMasternodeList(MasternodeList *masternode_list) {
     [DSMasternodeList ffi_free:masternode_list];
 }
 
-void destroyHash(uint8_t *block_hash) { // UInt256
+void destroyU8(uint8_t *block_hash) { // big uint
     if (block_hash) {
         free(block_hash);
     }
 }
 
 uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 blockHash = *((UInt256 *)block_hash);
     uint32_t block_height = UINT32_MAX;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        block_height = processorContext.blockHeightLookup(blockHash);
+        block_height = [AS_OBJC(context) blockHeightForBlockHash:blockHash];
     }
     processor_destroy_block_hash(block_hash);
     return block_height;
 }
 
 uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     uint8_t (*block_hash)[32] = NULL;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        DSBlock *block = [chain blockAtHeight:block_height];
+        DSBlock *block = [AS_OBJC(context) blockForBlockHeight:block_height];
         if (block) {
             block_hash = uint256_malloc(block.blockHash);
         }
@@ -102,12 +97,10 @@ uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
 
 
 uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 blockHash = *((UInt256 *)block_hash);
     uint8_t (*merkle_root)[32] = NULL;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        UInt256 merkleRoot = processorContext.merkleRootLookup(blockHash);
+        UInt256 merkleRoot = [AS_OBJC(context) merkleRootForBlockHash:blockHash];
         merkle_root = uint256_malloc(merkleRoot);
     }
     processor_destroy_block_hash(block_hash);
@@ -115,13 +108,10 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
 }
 
 LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 blockHash = *((UInt256 *)block_hash);
     LLMQSnapshot *c_snapshot = NULL;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        DSQuorumSnapshot *snapshot = [chain.chainManager.masternodeManager quorumSnapshotForBlockHash:blockHash];
+        DSQuorumSnapshot *snapshot = [AS_OBJC(context) quorumSnapshotForBlockHash:blockHash];
         if (snapshot) {
             c_snapshot = [snapshot ffi_malloc];
         }
@@ -132,14 +122,10 @@ LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *
 
 
 bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 blockHash = *((UInt256 *)block_hash);
     BOOL saved = NO;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        DSQuorumSnapshot *quorumSnapshot = [DSQuorumSnapshot quorumSnapshotWith:snapshot forBlockHash:blockHash];
-        saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:quorumSnapshot];
+        saved = [AS_OBJC(context) saveQuorumSnapshot:[DSQuorumSnapshot quorumSnapshotWith:snapshot forBlockHash:blockHash]];
     }
     processor_destroy_block_hash(block_hash);
     processor_destroy_llmq_snapshot(snapshot);
@@ -149,59 +135,48 @@ void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
     [DSQuorumSnapshot ffi_free:snapshot];
 }
 
+uint8_t *getCLSignatureByBlockHash(uint8_t (*block_hash)[32], const void *context) {
+    UInt256 blockHash = *((UInt256 *)block_hash);
+    uint8_t (*cl_signature)[96] = NULL;
+    @synchronized (context) {
+        NSData *signature = [AS_OBJC(context) CLSignatureForBlockHash:blockHash];
+        if (signature) {
+            cl_signature = uint768_malloc(signature.UInt768);
+        }
+    }
+    processor_destroy_block_hash(block_hash);
+    return (uint8_t *)cl_signature;
+}
+bool saveCLSignature(uint8_t (*block_hash)[32], uint8_t (*cl_signature)[96], const void *context) {
+    UInt256 blockHash = *((UInt256 *)block_hash);
+    UInt768 clSignature = *((UInt768 *)cl_signature);
+    BOOL saved = NO;
+    @synchronized (context) {
+        saved = [AS_OBJC(context) saveCLSignature:blockHash signature:clSignature];
+    }
+    processor_destroy_block_hash(block_hash);
+    processor_destroy_cl_signature(cl_signature);
+    return saved;
+}
+
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 blockHash = *((UInt256 *)block_hash);
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        DSChain *chain = processorContext.chain;
-        [chain blockUntilGetInsightForBlockHash:blockHash];
+        [AS_OBJC(context) blockUntilGetInsightForBlockHash:blockHash];
     }
     processor_destroy_block_hash(block_hash);
 }
 
 ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeProcessorContext *processorContext = NULL;
     UInt256 baseBlockHash = *((UInt256 *)base_block_hash);
     UInt256 blockHash = *((UInt256 *)block_hash);
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
+    ProcessingError error = ProcessingError_None;
     @synchronized (context) {
-        processorContext = (__bridge DSMasternodeProcessorContext *)context;
-        uint32_t baseBlockHeight = processorContext.blockHeightLookup(baseBlockHash);
-        uint32_t blockHeight = processorContext.blockHeightLookup(blockHash);
-        if (blockHeight == UINT32_MAX) {
-            DSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
-            return ProcessingError_UnknownBlockHash;
-        }
-        DSChain *chain = processorContext.chain;
-        DSMasternodeManager *manager = chain.chainManager.masternodeManager;
-        DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
-        BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
-        if (!hasRemovedFromRetrieval) {
-            DSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
-            return ProcessingError_PersistInRetrieval;
-        }
-        NSData *blockHashData = uint256_data(blockHash);
-        DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
-        BOOL needToVerifyRotatedQuorums = processorContext.isDIP0024 && (!manager.quorumRotationService.masternodeListAtH || [manager.quorumRotationService.masternodeListAtH hasUnverifiedRotatedQuorums]);
-        BOOL needToVerifyNonRotatedQuorums = !processorContext.isDIP0024 && [list hasUnverifiedNonRotatedQuorums];
-        BOOL noNeedToVerifyQuorums = !(needToVerifyRotatedQuorums || needToVerifyNonRotatedQuorums);
-        BOOL hasLocallyStored = [manager.store hasMasternodeListAt:blockHashData];
-        if (hasLocallyStored && noNeedToVerifyQuorums) {
-            DSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ needToVerifyRotatedQuorums: %d needToVerifyNonRotatedQuorums: %d", blockHeight, uint256_reverse_hex(blockHash), needToVerifyRotatedQuorums, needToVerifyNonRotatedQuorums);
-            [service removeFromRetrievalQueue:blockHashData];
-            return ProcessingError_LocallyStored;
-        }
-        DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
-        if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
-            // this could have been deleted in the meantime, if so rerequest
-            [service issueWithMasternodeListFromPeer:processorContext.peer];
-            DSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_reverse_hex(baseBlockHash));
-            return ProcessingError_HasNoBaseBlockHash;
-        }
+        error = [AS_OBJC(context) shouldProcessDiffWithRange:baseBlockHash blockHash:blockHash];
     }
-    return ProcessingError_None;
+    return error;
 }
     
 ///
@@ -215,11 +190,13 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                               getBlockHashByHeight,
                               getLLMQSnapshotByBlockHash,
                               saveLLMQSnapshot,
+                              getCLSignatureByBlockHash,
+                              saveCLSignature,
                               getMasternodeListByBlockHash,
                               saveMasternodeList,
                               destroyMasternodeList,
                               addInsightForBlockHash,
-                              destroyHash,
+                              destroyU8,
                               destroyLLMQSnapshot,
                               shouldProcessDiffWithRange);
 }
@@ -255,7 +232,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                                                                context.peer ? context.peer.version : context.chain.protocolVersion,
                                                                self.processor,
                                                                self.processorCache,
-                                                               (__bridge void *)(context));
+                                                               AS_RUST(context));
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_mnlistdiff_result(result);
     completion(processingResult);
@@ -274,7 +251,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                                                        context.peer ? context.peer.version : context.chain.protocolVersion,
                                                        self.processor,
                                                        self.processorCache,
-                                                       (__bridge void *)(context));
+                                                       AS_RUST(context));
     DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_qr_info_result(result);
     completion(processingResult);
@@ -294,7 +271,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
                                                  protocolVersion,
                                                  self.processor,
                                                  self.processorCache,
-                                                 (__bridge void *)(context));
+                                                 AS_RUST(context));
     }
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_mnlistdiff_result(result);

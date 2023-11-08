@@ -61,7 +61,6 @@
     ctx.version = tx->version;
     ctx.txHash = *(UInt256 *)tx->tx_hash;
     ctx.type = tx->tx_type;
-    ctx.payloadOffset = (uint32_t)tx->payload_offset;
     ctx.blockHeight = tx->block_height;
     return ctx;
 }*/

@@ -34,8 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) DSMasternodeList *masternodeList;
 @property (nonatomic) NSDictionary *addedMasternodes;
 @property (nonatomic) NSDictionary *modifiedMasternodes;
-@property (nonatomic) NSDictionary *addedQuorums;
+@property (nonatomic) NSArray<DSQuorumEntry *> *addedQuorums;
 @property (nonatomic) NSOrderedSet *neededMissingMasternodeLists;
+///<UInt256, UInt768>
+@property (nonatomic) NSDictionary<NSData *, NSData *> *clSignatures;
 
 + (instancetype)processingResultWith:(MNListDiffResult *)result onChain:(DSChain *)chain;
 

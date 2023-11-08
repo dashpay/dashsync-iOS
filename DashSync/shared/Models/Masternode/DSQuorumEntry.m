@@ -187,10 +187,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     return quorum_threshold_for_type(self.llmqType);
 }
 
-- (UInt256)llmqQuorumHash {
-    return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(self.llmqType, self.quorumHash.u8)].UInt256;
-}
-
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList {
     return [self validateWithMasternodeList:masternodeList
                           blockHeightLookup:^uint32_t(UInt256 blockHash) {
@@ -210,7 +206,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     }
     MasternodeList *list = [masternodeList ffi_malloc];
     LLMQEntry *quorum = [self ffi_malloc];
-    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash), self.chain.chainType);
+    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash), self.chain.chainType, NULL);
     [DSMasternodeList ffi_free:list];
     [DSQuorumEntry ffi_free:quorum];
     self.verified = is_valid;

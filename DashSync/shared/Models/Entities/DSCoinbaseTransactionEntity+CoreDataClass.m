@@ -20,6 +20,14 @@
         self.specialTransactionVersion = coinbaseTransaction.coinbaseTransactionVersion;
         self.height = coinbaseTransaction.height;
         self.merkleRootMNList = uint256_data(coinbaseTransaction.merkleRootMNList);
+        if (self.specialTransactionVersion >= COINBASE_TX_CORE_19) {
+            self.merkleRootLLMQList = uint256_data(coinbaseTransaction.merkleRootLLMQList);
+            if (self.specialTransactionVersion >= COINBASE_TX_CORE_20) {
+                self.bestCLHeightDiff = coinbaseTransaction.bestCLHeightDiff;
+                self.bestCLSignature = uint768_data(coinbaseTransaction.bestCLSignature);
+                self.creditPoolBalance = coinbaseTransaction.creditPoolBalance;
+            }
+        }
     }];
 
     return self;
@@ -32,10 +40,21 @@
         transaction.coinbaseTransactionVersion = self.specialTransactionVersion;
         transaction.height = self.height;
         transaction.merkleRootMNList = self.merkleRootMNList.UInt256;
+        
+        if (self.specialTransactionVersion >= COINBASE_TX_CORE_19) {
+            transaction.merkleRootLLMQList = self.merkleRootLLMQList.UInt256;
+            if (self.specialTransactionVersion >= COINBASE_TX_CORE_20) {
+                transaction.bestCLHeightDiff = self.bestCLHeightDiff;
+                transaction.bestCLSignature = self.bestCLSignature.UInt768;
+                transaction.creditPoolBalance = self.creditPoolBalance;
+            }
+        }
     }];
 
     return transaction;
 }
+
+
 
 - (Class)transactionClass {
     return [DSCoinbaseTransaction class];

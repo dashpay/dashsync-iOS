@@ -1787,4 +1787,9 @@
     [self checkChainLocksWaitingForQuorums];
 }
 
+- (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash {
+    DSChainLock *chainLock = [self.chainLocksWaitingForQuorums objectForKey:uint256_data(blockHash)];
+    return chainLock;
+}
+
 @end

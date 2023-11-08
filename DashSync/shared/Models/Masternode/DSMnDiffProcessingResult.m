@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "NSData+Dash.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSMasternodeList+Mndiff.h"
 #import "DSQuorumEntry+Mndiff.h"
@@ -49,7 +50,7 @@
     [processingResult setAddedMasternodes:addedMasternodes];
     NSDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
     [processingResult setModifiedMasternodes:modifiedMasternodes];
-    NSDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_llmq_type_maps count:result->added_llmq_type_maps_count onChain:chain];
+    NSArray<DSQuorumEntry *> *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorums count:result->added_quorums_count onChain:chain];
     [processingResult setAddedQuorums:addedQuorums];
     uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
     uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
@@ -59,6 +60,15 @@
         [neededMissingMasternodeLists addObject:hash];
     }
     [processingResult setNeededMissingMasternodeLists:[neededMissingMasternodeLists copy]];
+    uint8_t (**quorums_cl_signatures_hashes)[32] = result->quorums_cl_signatures_hashes;
+    uint8_t (**quorums_cl_signatures)[96] = result->quorums_cl_signatures;
+    uintptr_t quorums_cl_sigs_count = result->quorums_cl_sigs_count;
+    NSMutableDictionary<NSData *, NSData *> *clSignatures = [NSMutableDictionary dictionaryWithCapacity:quorums_cl_sigs_count];
+    for (NSUInteger i = 0; i < quorums_cl_sigs_count; i++) {
+        [clSignatures setObject:uint768_data(*(UInt768 *)quorums_cl_signatures[i])
+                         forKey:uint256_data(*(UInt256 *)quorums_cl_signatures_hashes[i])];
+    }
+    [processingResult setClSignatures:clSignatures];
     return processingResult;
 }
 
@@ -71,9 +81,9 @@
 }
 
 - (BOOL)hasRotatedQuorumsForChain:(DSChain*)chain {
-    return [[self.addedQuorums keysOfEntriesPassingTest:^BOOL(NSNumber *_Nonnull llmqType, id _Nonnull obj, BOOL *_Nonnull stop) {
+    return [[self.addedQuorums indexesOfObjectsPassingTest:^BOOL(DSQuorumEntry * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         // TODO: make it more reliable as quorum type values may change
-        return ([llmqType unsignedIntValue] == quorum_type_for_isd_locks(chain.chainType)) && (*stop = TRUE);
+        return obj.llmqType == quorum_type_for_isd_locks(chain.chainType) && (*stop = TRUE);
     }] count] > 0;
 }
 
