@@ -123,26 +123,24 @@
     DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
     [blockchainInvitation generateBlockchainInvitationsExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
                                                                          completion:^(BOOL registered) {
-                                                                             [blockchainInvitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?"
-                                                                                                                                                completion:^(BOOL success, BOOL cancelled) {
-                                                                                                                                                    if (success && !cancelled) {
-                                                                                                                                                        [blockchainInvitation.identity registerOnNetwork:steps
-                                                                                                                                                            withFundingAccount:self.fundingAccount
-                                                                                                                                                            forTopupAmount:topupAmount
-                                                                                                                                                            stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
-
-                                                                                                                                                            }
-                                                                                                                                                            completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                                                                                                                                                                if (error) {
-                                                                                                                                                                    [self raiseIssue:@"Error" message:error.localizedDescription];
-                                                                                                                                                                    return;
-                                                                                                                                                                } else {
-                                                                                                                                                                    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                                                                                                                                                                }
-                                                                                                                                                            }];
-                                                                                                                                                    }
-                                                                                                                                                }];
-                                                                         }];
+        [blockchainInvitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?" completion:^(BOOL success, BOOL cancelled) {
+            if (success && !cancelled) {
+                [blockchainInvitation.identity registerOnNetwork:steps
+                                              withFundingAccount:self.fundingAccount
+                                                  forTopupAmount:topupAmount
+                                                       pinPrompt:@"Enter your PIN?"
+                                                  stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
+                                                      completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                    if (error) {
+                        [self raiseIssue:@"Error" message:error.localizedDescription];
+                        return;
+                    } else {
+                        [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                    }
+                }];
+            }
+        }];
+    }];
 }
 
 - (void)viewController:(UIViewController *)controller didChooseWallet:(DSWallet *)wallet {
