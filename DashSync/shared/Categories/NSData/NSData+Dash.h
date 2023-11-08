@@ -193,6 +193,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset;
 - (uint32_t)UInt32BigToHostAtOffset:(NSUInteger)offset;
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset;
+- (int64_t)Int64AtOffset:(NSUInteger)offset;
 - (UInt128)UInt128AtOffset:(NSUInteger)offset;
 - (UInt160)UInt160AtOffset:(NSUInteger)offset;
 - (UInt256)UInt256AtOffset:(NSUInteger)offset;

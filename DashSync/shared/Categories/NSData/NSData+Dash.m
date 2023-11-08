@@ -1211,6 +1211,11 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return CFSwapInt64LittleToHost(*(const uint64_t *)((const uint8_t *)self.bytes + offset));
 }
 
+- (int64_t)Int64AtOffset:(NSUInteger)offset {
+    if (self.length < offset + sizeof(int64_t)) return 0;
+    return CFSwapInt64LittleToHost(*(const int64_t *)((const uint8_t *)self.bytes + offset));
+}
+
 - (UInt128)UInt128AtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(UInt128)) return UINT128_ZERO;
     return *(UInt128 *)(self.bytes + offset);
