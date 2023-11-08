@@ -1016,6 +1016,7 @@
         [allAddressesArray addObjectsFromArray:[wallet providerOwnerAddresses]];
         [allAddressesArray addObjectsFromArray:[wallet providerVotingAddresses]];
         [allAddressesArray addObjectsFromArray:[wallet providerOperatorAddresses]];
+        [allAddressesArray addObjectsFromArray:[wallet platformNodeAddresses]];
     }
 
     for (DSFundsDerivationPath *derivationPath in self.chain.standaloneDerivationPaths) {
