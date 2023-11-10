@@ -424,7 +424,6 @@
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes completion:(void (^)(NSError *error))completion {
     UInt256 blockHash = masternodeList.blockHash;
     NSData *blockHashData = uint256_data(blockHash);
-    DSLog(@"•••• store (%d) masternode list at: %u: %@", [self hasMasternodeListAt:blockHashData], [self heightForBlockHash:blockHash], uint256_hex(blockHash));
     if ([self hasMasternodeListAt:blockHashData]) {
         // in rare race conditions this might already exist
         // but also as we can get it from different sources
@@ -524,7 +523,7 @@
        createUnknownBlocks:(BOOL)createUnknownBlocks
                  inContext:(NSManagedObjectContext *)context
                 completion:(void (^)(NSError *error))completion {
-    DSLog(@"Queued saving MNL at height %u", masternodeList.height);
+    DSLog(@"Queued saving MNL at height %u: %@", masternodeList.height, uint256_hex(masternodeList.blockHash));
     [context performBlockAndWait:^{
         //masternodes
         @autoreleasepool {
@@ -607,7 +606,7 @@
                     }
                 }
                 chainEntity.baseBlockHash = mnlBlockHashData;
-                DSLog(@"Finished merging MNL at height %u", mnlHeight);
+                DSLog(@"Finished merging MNL at height %u: %@", mnlHeight, mnlBlockHashData.hexString);
 
             } else if (!error) {
                 DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity managedObjectInBlockedContext:context];

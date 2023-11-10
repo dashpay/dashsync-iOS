@@ -1265,9 +1265,9 @@
 #endif
 #else
 #if DEBUG
-        DSLogPrivate(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+        DSLogPrivate(@"%@:%u got tx (%lu): %@", self.host, self.port, tx.type, uint256_obj(tx.txHash));
 #else
-        DSLog(@"%@:%u got tx %@", self.host, self.port, @"<REDACTED>");
+        DSLog(@"%@:%u got tx (%lu): %@", self.host, self.port, tx.type, @"<REDACTED>");
 #endif
 #endif
     }
@@ -1640,8 +1640,8 @@
         [self error:@"got merkleblock message before loading a filter"];
         return;
     }
-    //else DSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
-
+    //else DSLog(@"%@:%u got merkleblock %@", self.host, self.port, uint256_hex(block.blockHash));
+    
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.transactionHashes];
     @synchronized (self.knownTxHashes) {
         [txHashes minusOrderedSet:self.knownTxHashes];
