@@ -92,7 +92,7 @@
     if (self.coinbaseTransactionVersion >= COINBASE_TX_CORE_19) {
         [data appendUInt256:self.merkleRootLLMQList];
         if (self.coinbaseTransactionVersion >= COINBASE_TX_CORE_20) {
-            [data appendUInt32:self.bestCLHeightDiff];
+            [data appendVarInt:self.bestCLHeightDiff];
             // TODO: check whether it matters to check for optionals
             [data appendUInt768:self.bestCLSignature];
             [data appendInt64:self.creditPoolBalance];
