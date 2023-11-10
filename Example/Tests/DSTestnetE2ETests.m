@@ -266,71 +266,63 @@
     XCTestExpectation *identityRegistrationFinishedExpectation1a = [[XCTestExpectation alloc] init];
     [blockchainIdentity1a generateBlockchainIdentityExtendedPublicKeysWithPrompt:@""
                                                                       completion:^(BOOL registered) {
-                                                                          [blockchainIdentity1a createFundingPrivateKeyWithPrompt:@""
-                                                                                                                       completion:^(BOOL success, BOOL cancelled) {
-                                                                                                                           if (success && !cancelled) {
-                                                                                                                               [blockchainIdentity1a registerOnNetwork:steps
-                                                                                                                                   withFundingAccount:self.fundingAccount1
-                                                                                                                                   forTopupAmount:10000
-                                                                                                                                   stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
-
-                                                                                                                                   }
-                                                                                                                                   completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                                                                                                                                       XCTAssertNil(error, @"There should not be an error");
-                                                                                                                                       XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
-                                                                                                                                       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                                                                                                                                           [identityRegistrationFinishedExpectation1a fulfill];
-                                                                                                                                       });
-                                                                                                                                   }];
-                                                                                                                           }
-                                                                                                                       }];
-                                                                      }];
+        [blockchainIdentity1a createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+            if (success && !cancelled) {
+                [blockchainIdentity1a registerOnNetwork:steps
+                                     withFundingAccount:self.fundingAccount1
+                                         forTopupAmount:10000
+                                              pinPrompt:@"PIN?"
+                                         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
+                                             completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                    XCTAssertNil(error, @"There should not be an error");
+                    XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [identityRegistrationFinishedExpectation1a fulfill];
+                    });
+                }];
+            }
+        }];
+    }];
     [self waitForExpectations:@[identityRegistrationFinishedExpectation1a] timeout:600];
     XCTestExpectation *identityRegistrationFinishedExpectation1b = [[XCTestExpectation alloc] init];
-    [blockchainIdentity1b generateBlockchainIdentityExtendedPublicKeysWithPrompt:@""
-                                                                      completion:^(BOOL registered) {
-                                                                          [blockchainIdentity1b createFundingPrivateKeyWithPrompt:@""
-                                                                                                                       completion:^(BOOL success, BOOL cancelled) {
-                                                                                                                           if (success && !cancelled) {
-                                                                                                                               [blockchainIdentity1b registerOnNetwork:steps
-                                                                                                                                   withFundingAccount:self.fundingAccount1
-                                                                                                                                   forTopupAmount:10000
-                                                                                                                                   stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
-
-                                                                                                                                   }
-                                                                                                                                   completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                                                                                                                                       XCTAssertNil(error, @"There should not be an error");
-                                                                                                                                       XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
-                                                                                                                                       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                                                                                                                                           [identityRegistrationFinishedExpectation1b fulfill];
-                                                                                                                                       });
-                                                                                                                                   }];
-                                                                                                                           }
-                                                                                                                       }];
-                                                                      }];
+    [blockchainIdentity1b generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"" completion:^(BOOL registered) {
+        [blockchainIdentity1b createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+            if (success && !cancelled) {
+                [blockchainIdentity1b registerOnNetwork:steps
+                                     withFundingAccount:self.fundingAccount1
+                                         forTopupAmount:10000
+                                              pinPrompt:@"PIN?"
+                                         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
+                                             completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                    XCTAssertNil(error, @"There should not be an error");
+                    XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [identityRegistrationFinishedExpectation1b fulfill];
+                    });
+                }];
+            }
+        }];
+    }];
     [self waitForExpectations:@[identityRegistrationFinishedExpectation1b] timeout:600];
     XCTestExpectation *identityRegistrationFinishedExpectation2a = [[XCTestExpectation alloc] init];
-    [blockchainIdentity2a generateBlockchainIdentityExtendedPublicKeysWithPrompt:@""
-                                                                      completion:^(BOOL registered) {
-                                                                          [blockchainIdentity2a createFundingPrivateKeyWithPrompt:@""
-                                                                                                                       completion:^(BOOL success, BOOL cancelled) {
-                                                                                                                           if (success && !cancelled) {
-                                                                                                                               [blockchainIdentity2a registerOnNetwork:steps
-                                                                                                                                   withFundingAccount:self.fundingAccount1
-                                                                                                                                   forTopupAmount:10000
-                                                                                                                                   stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
-
-                                                                                                                                   }
-                                                                                                                                   completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                                                                                                                                       XCTAssertNil(error, @"There should not be an error");
-                                                                                                                                       XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
-                                                                                                                                       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                                                                                                                                           [identityRegistrationFinishedExpectation2a fulfill];
-                                                                                                                                       });
-                                                                                                                                   }];
-                                                                                                                           }
-                                                                                                                       }];
-                                                                      }];
+    [blockchainIdentity2a generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"" completion:^(BOOL registered) {
+        [blockchainIdentity2a createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+            if (success && !cancelled) {
+                [blockchainIdentity2a registerOnNetwork:steps
+                                     withFundingAccount:self.fundingAccount1
+                                         forTopupAmount:10000
+                                              pinPrompt:@"PIN?"
+                                         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
+                                             completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                    XCTAssertNil(error, @"There should not be an error");
+                    XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [identityRegistrationFinishedExpectation2a fulfill];
+                    });
+                }];
+            }
+        }];
+    }];
     [self waitForExpectations:@[identityRegistrationFinishedExpectation2a] timeout:600];
 }
 
