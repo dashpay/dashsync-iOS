@@ -1239,6 +1239,7 @@ static dispatch_once_t devnetToken = 0;
         [allAddresses addObjectsFromArray:[wallet providerOwnerAddresses]];
         [allAddresses addObjectsFromArray:[wallet providerVotingAddresses]];
         [allAddresses addObjectsFromArray:[wallet providerOperatorAddresses]];
+        [allAddresses addObjectsFromArray:[wallet platformNodeAddresses]];
     }
     
     for (DSFundsDerivationPath *derivationPath in self.standaloneDerivationPaths) {

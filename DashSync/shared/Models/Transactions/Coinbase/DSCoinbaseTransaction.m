@@ -39,15 +39,14 @@
         off += 32;
         
         if (version >= COINBASE_TX_CORE_20) {
-            if (length - off < 4) return nil;
-            self.bestCLHeightDiff = [message UInt32AtOffset:off];
-            off += 4;
+            NSNumber *len;
+            self.bestCLHeightDiff = [message varIntAtOffset:off length:&len];
+            off += len.unsignedIntegerValue;
             if (length - off < 96) return nil;
             self.bestCLSignature = [message UInt768AtOffset:off];
             off += 96;
             if (length - off < 8) return nil;
-            NSNumber *len;
-            self.creditPoolBalance = [message varIntAtOffset:off length:&len];
+            self.creditPoolBalance = [message Int64AtOffset:off];
             off += len.unsignedIntegerValue;
         }
     }
@@ -93,7 +92,7 @@
     if (self.coinbaseTransactionVersion >= COINBASE_TX_CORE_19) {
         [data appendUInt256:self.merkleRootLLMQList];
         if (self.coinbaseTransactionVersion >= COINBASE_TX_CORE_20) {
-            [data appendUInt32:self.bestCLHeightDiff];
+            [data appendVarInt:self.bestCLHeightDiff];
             // TODO: check whether it matters to check for optionals
             [data appendUInt768:self.bestCLSignature];
             [data appendInt64:self.creditPoolBalance];

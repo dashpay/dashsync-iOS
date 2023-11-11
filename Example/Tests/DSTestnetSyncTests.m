@@ -102,7 +102,7 @@
     // give time for saving of other tests to complete
     XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:2000];
+        [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:530000];
         [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
         [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];

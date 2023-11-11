@@ -755,13 +755,14 @@
         DSLog(@"%@:%u accept message %@", self.host, self.port, type);
     }
 #endif
-    if (self.currentBlock && (!([MSG_TX isEqual:type] || [MSG_IX isEqual:type] || [MSG_ISLOCK isEqual:type]))) { // if we receive a non-tx message, merkleblock is done
+    if (self.currentBlock && (!([MSG_TX isEqual:type] || [MSG_IX isEqual:type] || [MSG_ISLOCK isEqual:type]))) {
+        // if we receive a non-tx message, merkleblock is done
         UInt256 hash = self.currentBlock.blockHash;
-
+        NSUInteger txExpected = self.currentBlockTxHashes.count;
         self.currentBlock = nil;
         self.currentBlockTxHashes = nil;
-        [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
-              uint256_obj(hash), (int)self.currentBlockTxHashes.count, type];
+        [self error:@"incomplete merkleblock %@, expected %lu more tx, got %@",
+              uint256_obj(hash), txExpected, type];
     } else if ([MSG_VERSION isEqual:type])
         [self acceptVersionMessage:message];
     else if ([MSG_VERACK isEqual:type])
@@ -1264,9 +1265,9 @@
 #endif
 #else
 #if DEBUG
-        DSLogPrivate(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+        DSLogPrivate(@"%@:%u got tx (%lu): %@", self.host, self.port, tx.type, uint256_obj(tx.txHash));
 #else
-        DSLog(@"%@:%u got tx %@", self.host, self.port, @"<REDACTED>");
+        DSLog(@"%@:%u got tx (%lu): %@", self.host, self.port, tx.type, @"<REDACTED>");
 #endif
 #endif
     }
@@ -1639,8 +1640,8 @@
         [self error:@"got merkleblock message before loading a filter"];
         return;
     }
-    //else DSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
-
+    //else DSLog(@"%@:%u got merkleblock %@", self.host, self.port, uint256_hex(block.blockHash));
+    
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.transactionHashes];
     @synchronized (self.knownTxHashes) {
         [txHashes minusOrderedSet:self.knownTxHashes];

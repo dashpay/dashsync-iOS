@@ -13,7 +13,7 @@
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 merkleRootMNList;
 @property (nonatomic, assign) UInt256 merkleRootLLMQList;
-@property (nonatomic, assign) uint32_t bestCLHeightDiff;
+@property (nonatomic, assign) NSUInteger bestCLHeightDiff;
 @property (nonatomic, assign) UInt768 bestCLSignature;
 @property (nonatomic, assign) int64_t creditPoolBalance;
 

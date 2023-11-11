@@ -1016,6 +1016,7 @@
         [allAddressesArray addObjectsFromArray:[wallet providerOwnerAddresses]];
         [allAddressesArray addObjectsFromArray:[wallet providerVotingAddresses]];
         [allAddressesArray addObjectsFromArray:[wallet providerOperatorAddresses]];
+        [allAddressesArray addObjectsFromArray:[wallet platformNodeAddresses]];
     }
 
     for (DSFundsDerivationPath *derivationPath in self.chain.standaloneDerivationPaths) {
@@ -1216,11 +1217,7 @@
 #endif
     }
 
-    if (block) {
-        transaction.timestamp = block.timestamp;
-    } else {
-        transaction.timestamp = [NSDate timeIntervalSince1970];
-    }
+    transaction.timestamp = block ? block.timestamp : [NSDate timeIntervalSince1970];
     NSArray<DSAccount *> *accounts = [self.chain accountsThatCanContainTransaction:transaction];
     NSMutableArray<DSAccount *> *accountsAcceptingTransaction = [NSMutableArray array];
     NSMutableArray<DSAccount *> *accountsWithValidTransaction = [NSMutableArray array];
