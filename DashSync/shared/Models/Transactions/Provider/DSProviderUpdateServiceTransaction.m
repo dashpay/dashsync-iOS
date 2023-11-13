@@ -43,7 +43,7 @@
     self.providerUpdateServiceTransactionVersion = [message UInt16AtOffset:off];
     off += 2;
     
-    if (self.version == 2 /*BLS Basic*/) {
+    if ([self usesBasicBLS]) {
         if (length - off < 2) return nil;
         self.providerType = [message UInt16AtOffset:off];
         off += 2;
@@ -70,7 +70,7 @@
     self.inputsHash = [message UInt256AtOffset:off];
     off += 32;
     
-    if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
+    if ([self usesBasicBLS] && [self usesHPMN]) {
         if (length - off < 20) return nil;
         self.platformNodeID = [message UInt160AtOffset:off];
         off += 20;
@@ -166,7 +166,7 @@
 - (NSData *)basePayloadData {
     NSMutableData *data = [NSMutableData data];
     [data appendUInt16:self.providerUpdateServiceTransactionVersion];
-    if (self.version == 2 /*BLS Basic*/) {
+    if ([self usesBasicBLS]) {
         [data appendUInt16:self.providerType];
     }
     [data appendUInt256:self.providerRegistrationTransactionHash];
@@ -175,7 +175,7 @@
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
-    if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
+    if ([self usesBasicBLS] && [self usesHPMN]) {
         [data appendUInt160:self.platformNodeID];
         [data appendUInt16:CFSwapInt16BigToHost(self.platformP2PPort)];
         [data appendUInt16:CFSwapInt16BigToHost(self.platformHTTPPort)];
@@ -229,6 +229,14 @@
 
 - (void)hasSetInputsAndOutputs {
     [self updateInputsHash];
+}
+
+- (BOOL)usesBasicBLS {
+    return self.providerUpdateServiceTransactionVersion == 2;
+}
+
+- (BOOL)usesHPMN {
+    return self.providerType == 1;
 }
 
 @end
