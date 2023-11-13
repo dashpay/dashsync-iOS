@@ -71,9 +71,9 @@
     off += 32;
     
     if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
-        if (length - off < 32) return nil;
+        if (length - off < 20) return nil;
         self.platformNodeID = [message UInt160AtOffset:off];
-        off += 32;
+        off += 20;
         if (length - off < 2) return nil;
         self.platformP2PPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
         off += 2;

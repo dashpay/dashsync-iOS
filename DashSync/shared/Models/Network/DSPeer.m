@@ -1265,7 +1265,7 @@
 #endif
 #else
 #if DEBUG
-        DSLogPrivate(@"%@:%u got tx (%lu): %@", self.host, self.port, tx.type, uint256_obj(tx.txHash));
+        DSLogPrivate(@"%@:%u got tx (%hu): %@", self.host, self.port, tx.type, uint256_obj(tx.txHash));
 #else
         DSLog(@"%@:%u got tx (%lu): %@", self.host, self.port, tx.type, @"<REDACTED>");
 #endif

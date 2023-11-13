@@ -47,7 +47,7 @@
             off += 96;
             if (length - off < 8) return nil;
             self.creditPoolBalance = [message Int64AtOffset:off];
-            off += len.unsignedIntegerValue;
+            off += 8;
         }
     }
     self.coinbaseTransactionVersion = version;

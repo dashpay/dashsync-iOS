@@ -90,12 +90,12 @@
     off += 32;
     
     if ([self usesBasicBLS] && [self usesHPMN]) {
-        if (length - off < 32) return nil;
+        if (length - off < 20) return nil;
         self.platformNodeID = [message UInt160AtOffset:off];
-        off += 32;
+        off += 20;
         if (length - off < 2) return nil;
         self.platformP2PPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
-       off += 2;
+        off += 2;
         if (length - off < 2) return nil;
         self.platformHTTPPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
         off += 2;
@@ -334,7 +334,7 @@
 }
 
 - (BOOL)usesBasicBLS {
-    return self.version == 2;
+    return self.providerRegistrationTransactionVersion == 2;
 }
 
 - (BOOL)usesHPMN {
