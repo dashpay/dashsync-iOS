@@ -480,6 +480,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (BOOL)isEvolutionEnabled;
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
 - (BOOL)isCore19Active;
+- (BOOL)isCore20Active;
+- (BOOL)isCore20ActiveAtHeight:(uint32_t)height;
 - (KeyKind)activeBLSType;
 
 @end

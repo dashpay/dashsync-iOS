@@ -413,6 +413,14 @@ static dispatch_once_t devnetToken = 0;
     return self.lastTerminalBlockHeight >= chain_core19_activation_height(self.chainType);
 }
 
+- (BOOL)isCore20Active {
+    return self.lastTerminalBlockHeight >= chain_core20_activation_height(self.chainType);
+}
+
+- (BOOL)isCore20ActiveAtHeight:(uint32_t)height {
+    return height >= chain_core20_activation_height(self.chainType);
+}
+
 - (KeyKind)activeBLSType {
     return [self isCore19Active] ? KeyKind_BLSBasic : KeyKind_BLS;
 }
