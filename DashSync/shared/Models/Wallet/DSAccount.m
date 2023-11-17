@@ -225,7 +225,7 @@
         NSArray<DSTransactionEntity *> *transactions = [DSTransactionEntity objectsInContext:self.managedObjectContext matching:@"transactionHash.chain == %@", [self.wallet.chain chainEntityInContext:self.managedObjectContext]];
         for (DSTransactionEntity *entity in transactions) {
             DSTransaction *transaction = [entity transactionForChain:self.wallet.chain];
-            DSLogPrivate(@"Transaction %@", [transaction longDescription]);
+            DSLogPrivate(@"[%@] Transaction %@", _wallet.chain.name, [transaction longDescription]);
         }
 #endif
 
@@ -1079,7 +1079,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
                 // check for sufficient total funds before building a smaller transaction
                 if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]) {
-                    DSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
+                    DSLog(@"[%@] Insufficient funds. %llu is less than transaction amount:%llu", self.wallet.chain.name, self.balance,
                         amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]);
                     return nil;
                 }
@@ -1118,7 +1118,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
 
         if (balance < amount + feeAmount) { // insufficient funds
-            DSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
+            DSLog(@"[%@] Insufficient funds. %llu is less than transaction amount:%llu", self.wallet.chain.name, balance, amount + feeAmount);
             return nil;
         }
 
@@ -1164,9 +1164,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
             if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
     #if DEBUG
-            DSLogPrivate(@"Setting account tx %@ height to %d", tx, height);
+            DSLogPrivate(@"[%@] Setting account tx %@ height to %d", self.wallet.chain.name, tx, height);
     #else
-            DSLogPrivate(@"Setting account tx %@ height to %d", @"<REDACTED>", height);
+            DSLogPrivate(@"[%@] Setting account tx %@ height to %d", self.wallet.chain.name, @"<REDACTED>", height);
     #endif
             tx.blockHeight = height;
             if (tx.timestamp == UINT32_MAX || tx.timestamp == 0) {
@@ -1406,9 +1406,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 - (BOOL)registerTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
     NSParameterAssert(transaction);
 #if DEBUG
-    DSLogPrivate(@"[DSAccount] registering transaction %@", transaction);
+    DSLogPrivate(@"[%@] [DSAccount] registering transaction %@", self.wallet.chain.name, transaction);
 #else
-    DSLog(@"[DSAccount] registering transaction %@", @"<REDACTED>");
+    DSLog(@"[%@] [DSAccount] registering transaction %@", self.wallet.chain.name, @"<REDACTED>");
 #endif
     @synchronized (self) {
         UInt256 txHash = transaction.txHash;
@@ -1424,17 +1424,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
         if (self.allTx[hash] != nil) {
     #if DEBUG
-            DSLogPrivate(@"[DSAccount] transaction already registered %@", transaction);
+            DSLogPrivate(@"[%@] [DSAccount] transaction already registered %@", self.wallet.chain.name, transaction);
     #else
-            DSLog(@"[DSAccount] transaction already registered %@", @"<REDACTED>");
+            DSLog(@"[%@] [DSAccount] transaction already registered %@", self.wallet.chain.name, @"<REDACTED>");
     #endif
             return YES;
         }
         //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     #if DEBUG
-        DSLogPrivate(@"[DSAccount] received unseen transaction %@", transaction);
+        DSLogPrivate(@"[%@] [DSAccount] received unseen transaction %@", self.wallet.chain.name, transaction);
     #else
-        DSLog(@"[DSAccount] received unseen transaction %@", @"<REDACTED>");
+        DSLog(@"[%@] [DSAccount] received unseen transaction %@", self.wallet.chain.name, @"<REDACTED>");
     #endif
         if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
         self.allTx[hash] = transaction;

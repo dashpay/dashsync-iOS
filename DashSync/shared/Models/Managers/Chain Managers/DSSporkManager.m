@@ -175,7 +175,7 @@
 
 - (void)peer:(DSPeer *)peer relayedSpork:(NSData *)message {
     DSSpork *spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    DSLog(@"received spork %u (%@) with message %@", spork.identifier, spork.identifierString, message.hexString);
+    DSLog(@"[%@: %@:%d] received spork %u (%@) with message %@", self.chain.name, peer.host, peer.port, spork.identifier, spork.identifierString, message.hexString);
     if (!spork.isValid) {
         [self.peerManager peerMisbehaving:peer errorMessage:@"Spork is not valid"];
         return;
@@ -214,7 +214,7 @@
                     [sporkEntity setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
                     [self.managedObjectContext ds_save];
                 } else {
-                    DSLog(@"Spork was received that wasn't requested");
+                    DSLog(@"[%@: %@:%d] Spork was received that wasn't requested", self.chain.name, peer.host, peer.port);
                 }
             }
         }];

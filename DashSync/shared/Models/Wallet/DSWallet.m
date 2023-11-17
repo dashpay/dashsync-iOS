@@ -561,9 +561,9 @@
             if (realWalletCreationTime && (realWalletCreationTime != REFERENCE_DATE_2001)) {
                 _walletCreationTime = MAX(realWalletCreationTime, BIP39_CREATION_TIME); //safeguard
 #if DEBUG
-                DSLogPrivate(@"real wallet creation set to %@", realWalletCreationDate);
+                DSLogPrivate(@"[%@] real wallet creation set to %@", self.chain.name, realWalletCreationDate);
 #else
-                DSLog(@"real wallet creation set to %@", @"<REDACTED>");
+                DSLog(@"[%@] real wallet creation set to %@", self.chain.name, @"<REDACTED>");
 #endif
                 setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
             } else if (realWalletCreationTime == REFERENCE_DATE_2001) {
@@ -1324,7 +1324,7 @@
             [context performBlockAndWait:^{
                 NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE", [self.chain chainEntityInContext:context]];
                 if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
-                    DSLog(@"Unmatching blockchain entities count");
+                    DSLog(@"[%@] Unmatching blockchain entities count", self.chain.name);
                 }
                 DSBlockchainIdentityEntity *blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uniqueIdData];
                 DSBlockchainIdentity *blockchainIdentity = nil;
@@ -1443,7 +1443,7 @@
             [context performBlockAndWait:^{
                 NSUInteger blockchainInvitationEntitiesCount = [DSBlockchainInvitationEntity countObjectsInContext:context matching:@"chain == %@", [self.chain chainEntityInContext:context]];
                 if (blockchainInvitationEntitiesCount != keyChainDictionary.count) {
-                    DSLog(@"Unmatching blockchain invitations count");
+                    DSLog(@"[%@] Unmatching blockchain invitations count", self.chain.name);
                 }
                 DSBlockchainInvitationEntity *blockchainInvitationEntity = [DSBlockchainInvitationEntity anyObjectInContext:context matching:@"blockchainIdentity.uniqueID == %@", uint256_data([dsutxo_data(blockchainInvitationLockedOutpoint) SHA256_2])];
                 DSBlockchainInvitation *blockchainInvitation = nil;

@@ -223,7 +223,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
 ///
 - (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
-    DSLog(@"processMasternodeDiffWith: %@", context);
+    DSLog(@"[%@] processMasternodeDiffWith: %@", context.chain.name, context);
     MNListDiffResult *result = process_mnlistdiff_from_message(message.bytes,
                                                                message.length,
                                                                context.chain.chainType,
@@ -241,7 +241,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
 - (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
     NSAssert(self.processor, @"processQRInfoMessage: No processor created");
     NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
-    DSLog(@"processQRInfoWith: %@", context);
+    DSLog(@"[%@] processQRInfoWith: %@", context.chain.name, context);
     QRInfoResult *result = process_qrinfo_from_message(message.bytes,
                                                        message.length,
                                                        context.chain.chainType,
@@ -259,7 +259,7 @@ ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8
 
 - (DSMnDiffProcessingResult *)processMasternodeDiffFromFile:(NSData *)message protocolVersion:(uint32_t)protocolVersion withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
-    DSLog(@"processMasternodeDiffMessage: %@", context);
+    DSLog(@"[%@] processMasternodeDiffMessage: %@", context.chain.name, context);
     MNListDiffResult *result = NULL;
     @synchronized (context) {
         result = process_mnlistdiff_from_message(
