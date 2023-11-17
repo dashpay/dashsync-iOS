@@ -91,6 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)saveCLSignature:(NSData *)blockHashData signatureData:(NSData *)signatureData;
 
 - (void)startSync;
+- (void)stopSync;
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;
 - (BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash;
 

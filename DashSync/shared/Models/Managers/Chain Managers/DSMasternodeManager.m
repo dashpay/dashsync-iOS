@@ -64,7 +64,8 @@
 @property (nonatomic, assign) uint32_t rotatedQuorumsActivationHeight;
 @property (nonatomic, strong) dispatch_group_t processingGroup;
 @property (nonatomic, strong) dispatch_queue_t processingQueue;
-
+@property (nonatomic, strong) dispatch_source_t masternodeListTimer;
+@property (nonatomic) BOOL isSyncing;
 @end
 
 
@@ -348,7 +349,19 @@
 // MARK: - Requesting Masternode List
 
 - (void)startSync {
+    DSLog(@"[%@] [DSMasternodeManager] startSync", self.chain.name);
+    self.isSyncing = YES;
     [self getRecentMasternodeList];
+}
+
+- (void)stopSync {
+    DSLog(@"[%@] [DSMasternodeManager] stopSync", self.chain.name);
+    self.isSyncing = NO;
+    [self cancelMasternodeListTimer];
+    if (self.chain.isRotatedQuorumsPresented) {
+        [self.quorumRotationService stop];
+    }
+    [self.masternodeListDiffService stop];
 }
 
 - (void)getRecentMasternodeList {
@@ -363,14 +376,29 @@
 // the safety delay checks to see if this was called in the last n seconds.
 - (void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay {
     self.timeIntervalForMasternodeRetrievalSafetyDelay = [[NSDate date] timeIntervalSince1970];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
-        NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
-        if (timeElapsed > safetyDelay) {
-            [self getRecentMasternodeList];
+    [self cancelMasternodeListTimer];
+    @synchronized (self) {
+        self.masternodeListTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.chain.networkingQueue);
+        if (self.masternodeListTimer) {
+            dispatch_source_set_timer(self.masternodeListTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), DISPATCH_TIME_FOREVER, 1ull * NSEC_PER_SEC);
+            dispatch_source_set_event_handler(self.masternodeListTimer, ^{
+                NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
+                if (timeElapsed > safetyDelay) {
+                    [self getRecentMasternodeList];
+                }
+            });
+            dispatch_resume(self.masternodeListTimer);
         }
-    });
+    }
 }
-
+- (void)cancelMasternodeListTimer {
+    @synchronized (self) {
+        if (self.masternodeListTimer) {
+            dispatch_source_cancel(self.masternodeListTimer);
+            self.masternodeListTimer = nil;
+        }
+    }
+}
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes {
     [self.masternodeListDiffService populateRetrievalQueueWithBlockHashes:blockHashes];
 }
@@ -554,10 +582,13 @@
                     DSLog(@"[%@] •••• processMasternodeListDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", self.chain.name, masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
                     self.chain.isRotatedQuorumsPresented = YES;
                     self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
-                    [self.quorumRotationService addToRetrievalQueue:masternodeListBlockHashData];
-                    [self.quorumRotationService dequeueMasternodeListRequest];
+                    if (self.isSyncing) {
+                        [self.quorumRotationService addToRetrievalQueue:masternodeListBlockHashData];
+                        [self.quorumRotationService dequeueMasternodeListRequest];
+                    }
                 }
-                [self.masternodeListDiffService updateAfterProcessingMasternodeListWithBlockHash:masternodeListBlockHashData fromPeer:peer];
+                if (self.isSyncing)
+                    [self.masternodeListDiffService updateAfterProcessingMasternodeListWithBlockHash:masternodeListBlockHashData fromPeer:peer];
                 completion();
             }];
         }
@@ -623,31 +654,26 @@
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH4C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH4C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH4C]) {
-//        DSLog(@"••• updateStoreWithMasternodeList (h-4c): %u: %@ (%@)", masternodeListAtH4C.height, uint256_hex(blockHashAtH4C), uint256_reverse_hex(blockHashAtH4C));
         [self updateStoreWithProcessingResult:masternodeListAtH4C result:mnListDiffResultAtH4C completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH3C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH3C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH3C]) {
-//        DSLog(@"••• updateStoreWithMasternodeList (h-3c): %u: %@ (%@)", masternodeListAtH3C.height, uint256_hex(blockHashAtH3C), uint256_reverse_hex(blockHashAtH3C));
         [self updateStoreWithProcessingResult:masternodeListAtH3C result:mnListDiffResultAtH3C completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH2C skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH2C count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH2C]) {
-//        DSLog(@"••• updateStoreWithMasternodeList (h-2c): %u: %@ (%@)", masternodeListAtH2C.height, uint256_hex(blockHashAtH2C), uint256_reverse_hex(blockHashAtH2C));
         [self updateStoreWithProcessingResult:masternodeListAtH2C result:mnListDiffResultAtH2C completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtHC skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtHC count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtHC]) {
-//        DSLog(@"••• updateStoreWithMasternodeList (h-c): %u: %@ (%@)", masternodeListAtHC.height, uint256_hex(blockHashAtHC), uint256_reverse_hex(blockHashAtHC));
         [self updateStoreWithProcessingResult:masternodeListAtHC result:mnListDiffResultAtHC completion:^(NSError *error) {}];
     }
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH count] || ![masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH]) {
-//        DSLog(@"••• updateStoreWithMasternodeList (h): %u: %@ (%@)", masternodeListAtH.height, uint256_hex(blockHashAtH), uint256_reverse_hex(blockHashAtH));
         [self updateStoreWithProcessingResult:masternodeListAtH result:mnListDiffResultAtH completion:^(NSError *error) {}];
     }
 
@@ -664,7 +690,6 @@
                     [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:blockHashDataAtTip];
                 }
             }
-//            DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
             [self updateStoreWithProcessingResult:masternodeListAtTip result:mnListDiffResultAtTip completion:^(NSError *error) {}];
             [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:blockHashDataAtTip fromPeer:peer];
         }
@@ -698,7 +723,8 @@
     self.store.masternodeListAwaitingQuorumValidation = masternodeList;
     NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
     [neededMasternodeLists addObject:masternodeListBlockHashData]; //also get the current one again
-    [self getMasternodeListsForBlockHashes:neededMasternodeLists];
+    if (self.isSyncing)
+        [self getMasternodeListsForBlockHashes:neededMasternodeLists];
 }
 - (void)updateStoreWithProcessingResult:(DSMasternodeList *)masternodeList result:(DSMnDiffProcessingResult *)result completion:(void (^)(NSError *error))completion {
     if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeList.blockHash)) {
@@ -714,9 +740,11 @@
             return;
         }
         [self wipeMasternodeInfo];
-        dispatch_async(self.chain.networkingQueue, ^{
-            [self getRecentMasternodeList];
-        });
+        if (self.isSyncing) {
+            dispatch_async(self.chain.networkingQueue, ^{
+                [self getRecentMasternodeList];
+            });
+        }
     }];
 }
 

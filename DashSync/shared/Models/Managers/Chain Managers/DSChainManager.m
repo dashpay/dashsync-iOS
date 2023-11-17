@@ -474,6 +474,8 @@
 }
 
 - (void)stopSync {
+    DSLog(@"[%@] stopSync (chain switch)", self.chain.name);
+    [self.masternodeManager stopSync];
     [self.peerManager disconnect:DSDisconnectReason_ChainSwitch];
     self.syncPhase = DSChainSyncPhase_Offline;
 }

@@ -1012,15 +1012,16 @@
                 [self.managedObjectContext deleteObject:obj];
             }
         }];
-        DSLog(@"[%@: %@:%d] [DSPeerManager] disconnectedWithError: max connect failures exceeded", self.chain.name, peer.host, peer.port);
         @synchronized(self) {
             _peers = nil;
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
-                                                                object:nil
-                                                              userInfo:(error) ? @{@"error": error, DSChainManagerNotificationChainKey: self.chain} : @{DSChainManagerNotificationChainKey: self.chain}];
-        });
+        if (_desiredState != DSPeerManagerDesiredState_Disconnected)
+            DSLog(@"[%@: %@:%d] [DSPeerManager] disconnectedWithError: max connect failures exceeded", self.chain.name, peer.host, peer.port);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
+                                                                        object:nil
+                                                                      userInfo:(error) ? @{@"error": error, DSChainManagerNotificationChainKey: self.chain} : @{DSChainManagerNotificationChainKey: self.chain}];
+                });
     } else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
 #if TARGET_OS_IOS
