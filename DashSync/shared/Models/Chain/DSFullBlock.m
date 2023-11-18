@@ -83,15 +83,15 @@
     self.totalTransactions = (uint32_t)transactions.count;
 
     if (![self isMerkleTreeValid]) {
-        DSLog(@"Merkle tree not valid for block");
+        DSLog(@"[%@] Merkle tree not valid for block", self.chain.name);
         return nil;
     }
 
 #if LOG_BLOCKS || LOG_BLOCKS_FULL
 #if LOG_BLOCKS_FULL
-    DSLog(@"%d - block %@ (%@) has %d transactions", self.height, uint256_hex(self.blockHash), message.hexString, self.totalTransactions);
+    DSLog(@"[%@] %d - block %@ (%@) has %d transactions", self.chain.name, self.height, uint256_hex(self.blockHash), message.hexString, self.totalTransactions);
 #else
-    DSLog(@"%d - block %@ has %d transactions", self.height, uint256_hex(self.blockHash), self.totalTransactions);
+    DSLog(@"[%@] %d - block %@ has %d transactions", self.chain.name, self.height, uint256_hex(self.blockHash), self.totalTransactions);
 #endif
 #endif
 
@@ -171,7 +171,7 @@
     NSMutableData *preNonceMutableData = [self preNonceMutableData];
     uint32_t i = 0;
     UInt256 fullTarget = setCompactLE(block.target);
-    DSLog(@"Trying to mine a block at height %d with target %@", block.height, uint256_bin(fullTarget));
+    DSLog(@"[%@] Trying to mine a block at height %d with target %@", self.chain.name, block.height, uint256_bin(fullTarget));
 #if LOG_MINING_BEST_TRIES
     UInt256 bestTry = UINT256_MAX;
 #endif
@@ -182,14 +182,14 @@
 
         if (!uint256_sup(potentialBlockHash, fullTarget)) {
             //We found a block
-            DSLog(@"A Block was found %@ %@", uint256_bin(fullTarget), uint256_bin(potentialBlockHash));
+            DSLog(@"[%@] A Block was found %@ %@", self.chain.name, uint256_bin(fullTarget), uint256_bin(potentialBlockHash));
             self.blockHash = potentialBlockHash;
             found = TRUE;
             break;
         }
 #if LOG_MINING_BEST_TRIES
         else if (uint256_sup(bestTry, potentialBlockHash)) {
-            DSLog(@"New best try (%d) found for target %@ %@", i, uint256_bin(fullTarget), uint256_bin(potentialBlockHash));
+            DSLog(@"[%@] New best try (%d) found for target %@ %@", self.chain.name, i, uint256_bin(fullTarget), uint256_bin(potentialBlockHash));
             bestTry = potentialBlockHash;
         }
 #endif

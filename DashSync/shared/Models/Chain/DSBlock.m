@@ -133,7 +133,7 @@
         }
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
         if (!currentBlock) {
-            DSLog(@"Could not retrieve previous block");
+            DSLog(@"[%@] Could not retrieve previous block", self.chain.name);
             return FALSE;
         }
     }
@@ -150,7 +150,7 @@
     }
     int32_t diff = self.target - darkGravityWaveTarget;
     if (abs(diff) > 1) {
-        DSLog(@"weird difficulty for block at height %u with target %@ (off by %u)", self.height, uint256_hex(setCompactBE(self.target)), diff);
+        DSLog(@"[%@] weird difficulty for block at height %u with target %@ (off by %u)", self.chain.name, self.height, uint256_hex(setCompactBE(self.target)), diff);
     }
     return (abs(diff) < 2); //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
 }
@@ -173,7 +173,7 @@
     if (self.chain.allowMinDifficultyBlocks) {
         // recent block is more than 2 hours old
         if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
-            DSLog(@"Our block is way ahead of previous block %d > %d", self.timestamp, previousBlock.timestamp);
+            DSLog(@"[%@] Our block is way ahead of previous block %d > %d", self.chain.name, self.timestamp, previousBlock.timestamp);
             return self.chain.maxProofOfWorkTarget;
         }
         // recent block is more than 10 minutes old
@@ -218,7 +218,7 @@
         DSBlock *oldCurrentBlock = currentBlock;
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
         if (!currentBlock) {
-            DSLog(@"Block %d missing for dark gravity wave calculation", oldCurrentBlock.height - 1);
+            DSLog(@"[%@] Block %d missing for dark gravity wave calculation", self.chain.name, oldCurrentBlock.height - 1);
         }
     }
     UInt256 blockCount256 = ((UInt256){.u64 = {blockCount, 0, 0, 0}});

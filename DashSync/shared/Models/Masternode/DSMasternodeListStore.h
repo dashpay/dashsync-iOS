@@ -68,7 +68,6 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
        modifiedMasternodes:(NSDictionary *)modifiedMasternodes
                 completion:(void (^)(NSError *error))completion;
 - (void)saveQuorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot
-                   toChain:(DSChain *)chain
                 completion:(void (^)(NSError *error))completion;
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;

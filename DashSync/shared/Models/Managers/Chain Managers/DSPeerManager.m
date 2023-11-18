@@ -320,7 +320,7 @@
                     struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL}, *servinfo, *p;
                     UInt128 addr = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
 
-                    DSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
+                    DSLog(@"[%@] [DSPeerManager] DNS lookup %@", self.chain.name, [dnsSeeds objectAtIndex:i]);
                     NSString *dnsSeed = [dnsSeeds objectAtIndex:i];
                     if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
                         for (p = servinfo; p != NULL; p = p->ai_next) {
@@ -346,7 +346,7 @@
 
                         freeaddrinfo(servinfo);
                     } else {
-                        DSLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
+                        DSLog(@"[%@] [DSPeerManager] failed getaddrinfo for %@", self.chain.name, dnsSeeds[i]);
                     }
                 });
             }
@@ -369,7 +369,7 @@
                         uint32_t ip = ntohl(addrV4.s_addr);
                         ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
                     } else {
-                        DSLog(@"invalid address");
+                        DSLog(@"[%@] [DSPeerManager] invalid address", self.chain.name);
                     }
                     [_peers addObject:[[DSPeer alloc] initWithAddress:ipAddress
                                                                  port:port ? [port intValue] : self.chain.standardPort
@@ -431,7 +431,7 @@
             }
 
             [peer disconnectWithError:[NSError errorWithCode:500 localizedDescriptionKey:errorMessage]];
-            DSLog(@"peerMisbehaving -> peerManager::connect");
+            DSLog(@"[%@] [DSPeerManager] peerMisbehaving -> peerManager::connect", self.chain.name);
             [self connect];
         }
     }
@@ -462,11 +462,11 @@
     //    for (DSPeer * peer in _peers) {
     //        DSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
     //    }
-    DSLog(@"peers sorted");
+    DSLog(@"[%@] [DSPeerManager] peers sorted", self.chain.name);
 }
 
 - (void)savePeers {
-    DSLog(@"[DSPeerManager] save peers");
+    DSLog(@"[%@] [DSPeerManager] save peers", self.chain.name);
     NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavingPeers] mutableCopy];
     NSMutableSet *addrs = [NSMutableSet set];
 
@@ -566,7 +566,7 @@
     if (self.downloadPeer) {
         [self updateFilterOnPeers];
     } else {
-        DSLog(@"resumeBlockchainSynchronizationOnPeers -> peerManager::connect");
+        DSLog(@"[%@] [DSPeerManager] resumeBlockchainSynchronizationOnPeers", self.chain.name);
         [self connect];
     }
 }
@@ -574,12 +574,12 @@
 - (void)updateFilterOnPeers {
     if (self.downloadPeer.needsFilterUpdate) return;
     self.downloadPeer.needsFilterUpdate = YES;
-    DSLog(@"filter update needed, waiting for pong");
+    DSLog(@"[%@] [DSPeerManager] filter update needed, waiting for pong", self.chain.name);
 
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (!success) return;
         //we are on chainPeerManagerQueue
-        DSLog(@"updating filter with newly created wallet addresses");
+        DSLog(@"[%@] [DSPeerManager] updating filter with newly created wallet addresses", self.chain.name);
         [self.transactionManager clearTransactionsBloomFilter];
 
         if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
@@ -684,7 +684,7 @@
     if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
 
     if (connected) {
-        DSLog(@"useMasternodeList -> peerManager::connect");
+        DSLog(@"[%@] [DSPeerManager] useMasternodeList -> connect", self.chain.name);
         [self connect];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -697,7 +697,7 @@
 // MARK: - Connectivity
 
 - (void)connect {
-    DSLog(@"[DSPeerManager] connect");
+    DSLog(@"[%@] [DSPeerManager] connect", self.chain.name);
     self.desiredState = DSPeerManagerDesiredState_Connected;
     dispatch_async(self.networkingQueue, ^{
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
@@ -773,7 +773,7 @@
 
                         [self.mutableConnectedPeers addObject:peer];
 
-                        DSLog(@"Will attempt to connect to peer %@", peer.host);
+                        DSLog(@"[%@: %@:%d] [DSPeerManager] Will attempt to connect to peer", self.chain.name, peer.host, peer.port);
 
                         [peer connect];
                     }
@@ -856,7 +856,7 @@
 
     if (peer.timestamp > now + 2 * 60 * 60 || peer.timestamp < now - 2 * 60 * 60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
-    DSLog(@"%@:%d connected with lastblock %d (our last header %d - last block %d)", peer.host, peer.port, peer.lastBlockHeight, self.chain.lastTerminalBlockHeight, self.chain.lastSyncBlockHeight);
+    DSLog(@"[%@: %@:%d] [DSPeerManager] connected with lastblock %d (our last header %d - last block %d)", self.chain.name, peer.host, peer.port, peer.lastBlockHeight, self.chain.lastTerminalBlockHeight, self.chain.lastSyncBlockHeight);
 
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
@@ -881,41 +881,38 @@
         }
         if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastSyncBlockHeight >= peer.lastBlockHeight) {
             if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) {
-                DSLog(@"self.chain.lastSyncBlockHeight %u, self.chain.estimatedBlockHeight %u", self.chain.lastSyncBlockHeight, self.chain.estimatedBlockHeight);
+                DSLog(@"[%@: %@:%d] [DSPeerManager] lastSyncBlockHeight %u, estimatedBlockHeight %u", self.chain.name, peer.host, peer.port, self.chain.lastSyncBlockHeight, self.chain.estimatedBlockHeight);
                 return; // don't get mempool yet if we're syncing
             }
 
             [peer sendPingMessageWithPongHandler:^(BOOL success) {
                 if (!success) {
-                    DSLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@", peer.host);
+                    DSLog(@"[%@: %@:%d] [DSPeerManager] fetching mempool ping on connection failure peer", self.chain.name, peer.host, peer.port);
                     return;
                 }
-                DSLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@", peer.host);
+                DSLog(@"[%@: %@:%d] [DSPeerManager] fetching mempool ping on connection success peer", self.chain.name, peer.host, peer.port);
                 [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys
                               completion:^(BOOL success, BOOL needed, BOOL interruptedByDisconnect) {
-                                  if (!success) {
-                                      if (!needed) {
-                                          DSLog(@"[DSTransactionManager] fetching mempool message on connection not needed (already happening) peer %@", peer.host);
-                                      } else if (interruptedByDisconnect) {
-                                          DSLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@", peer.host);
-                                      } else {
-                                          DSLog(@"[DSTransactionManager] fetching mempool message on connection failure disconnect peer %@", peer.host);
-                                      }
-                                      return;
-                                  }
-                                  DSLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@", peer.host);
-                                  peer.synced = YES;
-                                  [self.transactionManager removeUnrelayedTransactionsFromPeer:peer];
-                                  if (!self.masternodeList) {
-                                      [peer sendGetaddrMessage]; // request a list of other dash peers
-                                  }
-
-                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                      [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
-                                                                                          object:nil
-                                                                                        userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-                                  });
-                              }];
+                    if (!success) {
+                        if (!needed) {
+                            DSLog(@"[%@: %@:%d] [DSPeerManager] fetching mempool message on connection not needed (already happening) peer", self.chain.name, peer.host, peer.port);
+                        } else if (interruptedByDisconnect) {
+                            DSLog(@"[%@: %@:%d] [DSPeerManager] fetching mempool message on connection failure peer", self.chain.name, peer.host, peer.port);
+                        } else {
+                            DSLog(@"[%@: %@:%d] [DSPeerManager] fetching mempool message on connection failure disconnect peer", self.chain.name, peer.host, peer.port);
+                        }
+                        return;
+                    }
+                    DSLog(@"[%@: %@:%d] [DSPeerManager] fetching mempool message on connection success peer", self.chain.name, peer.host, peer.port);
+                    peer.synced = YES;
+                    [self.transactionManager removeUnrelayedTransactionsFromPeer:peer];
+                    if (!self.masternodeList) {
+                        [peer sendGetaddrMessage]; // request a list of other dash peers
+                    }
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+                    });
+                }];
             }];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
@@ -983,7 +980,7 @@
 }
 
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error {
-    DSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
+    DSLog(@"[%@: %@:%d] [DSPeerManager] disconnected %@%@", self.chain.name, peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     BOOL banned = NO;
     if ([error.domain isEqual:@"DashSync"]) {                                //} && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
@@ -1015,21 +1012,22 @@
                 [self.managedObjectContext deleteObject:obj];
             }
         }];
-        DSLog(@"[DSPeerManager] disconnectedWithError: max connect failures exceeded");
         @synchronized(self) {
             _peers = nil;
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
-                                                                object:nil
-                                                              userInfo:(error) ? @{@"error": error, DSChainManagerNotificationChainKey: self.chain} : @{DSChainManagerNotificationChainKey: self.chain}];
-        });
+        if (_desiredState != DSPeerManagerDesiredState_Disconnected)
+            DSLog(@"[%@: %@:%d] [DSPeerManager] disconnectedWithError: max connect failures exceeded", self.chain.name, peer.host, peer.port);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
+                                                                        object:nil
+                                                                      userInfo:(error) ? @{@"error": error, DSChainManagerNotificationChainKey: self.chain} : @{DSChainManagerNotificationChainKey: self.chain}];
+                });
     } else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
 #if TARGET_OS_IOS
             if ((self.desiredState == DSPeerManagerDesiredState_Connected) && (self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid ||
                                                                                   [UIApplication sharedApplication].applicationState != UIApplicationStateBackground)) {
-                DSLog(@"peer disconnectedWithError -> peerManager::connect");
+                DSLog(@"[%@: %@:%d] [DSPeerManager] peer disconnectedWithError -> peerManager::connect", self.chain.name, peer.host, peer.port);
                 if (!banned) [self connect]; // try connecting to another peer
             }
 #else
@@ -1052,7 +1050,7 @@
 
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers {
     if (self.masternodeList) return;
-    DSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
+    DSLog(@"[%@: %@:%d] [DSPeerManager] relayed %d peer(s)", self.chain.name, peer.host, peer.port, (int)peers.count);
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavingPeers];
     [self sortPeers];

@@ -64,6 +64,7 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 - (void)populateRetrievalQueueWithBlockHashes:(NSOrderedSet *)blockHashes;
 - (void)getRecentMasternodeList;
 - (void)dequeueMasternodeListRequest;
+- (void)stop;
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
 - (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;

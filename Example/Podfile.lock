@@ -657,7 +657,7 @@ PODS:
   - gRPC/Interface-Legacy (1.49.0):
     - gRPC-RxLibrary/Interface (= 1.49.0)
   - KVO-MVVM (0.5.1)
-  - Protobuf (3.25.0)
+  - Protobuf (3.25.1)
   - SDWebImage (5.14.3):
     - SDWebImage/Core (= 5.14.3)
   - SDWebImage/Core (5.14.3)
@@ -721,7 +721,7 @@ SPEC CHECKSUMS:
   gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
   gRPC-RxLibrary: 92327f150e11cf3b1c0f52e083944fd9f5cb5d1e
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  Protobuf: 6a4183ec1d51649eb2be7b86ccc286e5c539219c
+  Protobuf: d94761c33f1239c0a43a0817ca1a5f7f7c900241
   SDWebImage: 9c36e66c8ce4620b41a7407698dda44211a96764
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80

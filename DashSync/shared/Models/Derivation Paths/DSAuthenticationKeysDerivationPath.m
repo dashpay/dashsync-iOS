@@ -126,9 +126,9 @@
                         
                         if (![DSKeyManager isValidDashAddress:e.address forChain:self.wallet.chain]) {
 #if DEBUG
-                            DSLogPrivate(@"address %@ loaded but was not valid on chain %@", e.address, self.wallet.chain.name);
+                            DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.wallet.chain.name, e.address);
 #else
-                                DSLog(@"address %@ loaded but was not valid on chain %@", @"<REDACTED>", self.wallet.chain.name);
+                                DSLog(@"[%@] address %@ loaded but was not valid on chain", self.wallet.chain.name, @"<REDACTED>");
 #endif
                             continue;
                         }
@@ -199,7 +199,7 @@
             NSString *addr = [DSKeyManager NSStringFrom:key_address_with_public_key_data(pubKey.bytes, pubKey.length, self.chain.chainType)];
 
             if (!addr) {
-                DSLog(@"error generating keys");
+                DSLog(@"[%@] error generating keys", self.chain.name);
                 if (error) {
                     *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }
