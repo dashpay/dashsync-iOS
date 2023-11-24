@@ -20,7 +20,7 @@
 
 @implementation DSQuorumEntry (Mndiff)
 
-+ (NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
++ (NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *)entriesWithMap:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
         LLMQMap *llmq_map = entries[i];
@@ -35,6 +35,14 @@
         [quorums setObject:quorumsOfType forKey:@(llmqType)];
     }
     return quorums;
+}
+
++ (NSArray<DSQuorumEntry *> *)entriesWith:(LLMQEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
+    NSMutableArray<DSQuorumEntry *> *result = [NSMutableArray arrayWithCapacity:count];
+    for (NSUInteger i = 0; i < count; i++) {
+        [result addObject:[[DSQuorumEntry alloc] initWithEntry:entries[i] onChain:chain]];
+    }
+    return result;
 }
 
 - (LLMQEntry *)ffi_malloc {

@@ -187,16 +187,12 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     return quorum_threshold_for_type(self.llmqType);
 }
 
-- (UInt256)llmqQuorumHash {
-    return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(self.llmqType, self.quorumHash.u8)].UInt256;
-}
-
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList {
     return [self validateWithMasternodeList:masternodeList
                           blockHeightLookup:^uint32_t(UInt256 blockHash) {
                               DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
                               if (!block) {
-                                  DSLog(@"Unknown block %@", uint256_reverse_hex(blockHash));
+                                  DSLog(@"[%@] Unknown block %@", self.chain.name, uint256_reverse_hex(blockHash));
                                   NSAssert(block, @"block should be known");
                               }
                               return block.height;
@@ -205,12 +201,12 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (!masternodeList) {
-        DSLog(@"Trying to validate a quorum without a masternode list");
+        DSLog(@"[%@] Trying to validate a quorum without a masternode list", self.chain.name);
         return NO;
     }
     MasternodeList *list = [masternodeList ffi_malloc];
     LLMQEntry *quorum = [self ffi_malloc];
-    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash), self.chain.chainType);
+    BOOL is_valid = validate_masternode_list(list, quorum, blockHeightLookup(masternodeList.blockHash), self.chain.chainType, NULL);
     [DSMasternodeList ffi_free:list];
     [DSQuorumEntry ffi_free:quorum];
     self.verified = is_valid;

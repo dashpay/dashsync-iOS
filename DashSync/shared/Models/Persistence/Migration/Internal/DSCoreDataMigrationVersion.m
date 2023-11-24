@@ -20,7 +20,7 @@
 @implementation DSCoreDataMigrationVersion
 
 + (DSCoreDataMigrationVersionValue)current {
-    return DSCoreDataMigrationVersionValue_19;
+    return DSCoreDataMigrationVersionValue_20;
 }
 
 + (NSString *)modelResourceForVersion:(DSCoreDataMigrationVersionValue)version {
@@ -44,6 +44,7 @@
         case DSCoreDataMigrationVersionValue_17: return @"DashSync 17";
         case DSCoreDataMigrationVersionValue_18: return @"DashSync 18";
         case DSCoreDataMigrationVersionValue_19: return @"DashSync 19";
+        case DSCoreDataMigrationVersionValue_20: return @"DashSync 20";
         default:
             return [NSString stringWithFormat:@"DashSync %ld", (long)version];
     }

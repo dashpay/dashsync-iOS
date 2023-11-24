@@ -195,7 +195,7 @@
         uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(*(UInt256 *)(blockInfo.u8)), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            DSLog(@"[%@] SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", self.chain.name,  uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(*(UInt256 *)(blockInfo.u8)), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
        }
     }

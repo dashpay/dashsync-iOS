@@ -13,7 +13,9 @@
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 merkleRootMNList;
 @property (nonatomic, assign) UInt256 merkleRootLLMQList;
-@property (nonatomic, assign) uint64_t lockedAmount;
+@property (nonatomic, assign) NSUInteger bestCLHeightDiff;
+@property (nonatomic, assign) UInt768 bestCLSignature;
+@property (nonatomic, assign) int64_t creditPoolBalance;
 
 - (instancetype)initWithCoinbaseMessage:(NSString *)coinbaseMessage atHeight:(uint32_t)height onChain:(DSChain *)chain;
 - (instancetype)initWithCoinbaseMessage:(NSString *)coinbaseMessage paymentAddresses:(NSArray<NSString *> *)paymentAddresses atHeight:(uint32_t)height onChain:(DSChain *)chain;

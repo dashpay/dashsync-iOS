@@ -67,12 +67,6 @@
     self.operatorKey = [message UInt384AtOffset:off];
     off += 48;
     
-    if ([self usesBasicBLS]) {
-        if (length - off < 2) return nil;
-        self.operatorKeyVersion = [message UInt16AtOffset:off];
-        off += 2;
-    }
-
     if (length - off < 20) return nil;
     self.votingKeyHash = [message UInt160AtOffset:off];
     off += 20;
@@ -90,12 +84,12 @@
     off += 32;
     
     if ([self usesBasicBLS] && [self usesHPMN]) {
-        if (length - off < 32) return nil;
+        if (length - off < 20) return nil;
         self.platformNodeID = [message UInt160AtOffset:off];
-        off += 32;
+        off += 20;
         if (length - off < 2) return nil;
         self.platformP2PPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
-       off += 2;
+        off += 2;
         if (length - off < 2) return nil;
         self.platformHTTPPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
         off += 2;
@@ -139,7 +133,7 @@
     self.platformNodeID = platformNodeID;
     self.operatorReward = operatorReward;
     self.scriptPayout = scriptPayout;
-    DSLogPrivate(@"Creating provider (masternode) with ownerKeyHash %@", uint160_data(ownerKeyHash));
+    DSLogPrivate(@"[%@] Creating provider (masternode) with ownerKeyHash %@", chain.name, uint160_data(ownerKeyHash));
     return self;
 }
 
@@ -170,7 +164,7 @@
     self.scriptPayout = scriptPayout;
     [self hasSetInputsAndOutputs];
 
-    DSLogPrivate(@"Creating provider (masternode) with ownerKeyHash %@", uint160_data(ownerKeyHash));
+    DSLogPrivate(@"[%@] Creating provider (masternode) with ownerKeyHash %@", chain.name, uint160_data(ownerKeyHash));
     return self;
 }
 
@@ -206,6 +200,7 @@
     [data appendUInt128:self.ipAddress];                             //212
     [data appendUInt16:CFSwapInt16BigToHost(self.port)];             //228
     [data appendUInt160:self.ownerKeyHash];                          //388
+    // TODO: check case with legacy/non-legacy
     [data appendUInt384:self.operatorKey];                           //772
     [data appendUInt160:self.votingKeyHash];                         //788
     [data appendUInt16:self.operatorReward];                         //804
@@ -334,7 +329,7 @@
 }
 
 - (BOOL)usesBasicBLS {
-    return self.version == 2;
+    return self.providerRegistrationTransactionVersion == 2;
 }
 
 - (BOOL)usesHPMN {

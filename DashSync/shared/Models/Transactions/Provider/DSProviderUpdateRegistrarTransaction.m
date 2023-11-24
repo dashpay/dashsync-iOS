@@ -157,6 +157,7 @@
     [data appendUInt16:self.providerUpdateRegistrarTransactionVersion];
     [data appendUInt256:self.providerRegistrationTransactionHash];
     [data appendUInt16:self.providerMode];
+    // TODO: check case with legacy/non-legacy
     [data appendUInt384:self.operatorKey];
     [data appendUInt160:self.votingKeyHash];
     [data appendVarInt:self.scriptPayout.length];

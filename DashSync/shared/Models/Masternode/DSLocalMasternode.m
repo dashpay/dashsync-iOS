@@ -149,7 +149,6 @@
     DSWallet *operatorWallet = [providerRegistrationTransaction.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:&operatorAddressIndex];
     DSWallet *holdingWallet = [providerRegistrationTransaction.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:&holdingAddressIndex];
     DSWallet *platformNodeWallet = [providerRegistrationTransaction.chain walletHavingPlatformNodeAuthenticationHash:providerRegistrationTransaction.platformNodeID foundAtIndex:&platformNodeAddressIndex];
-    //DSLogPrivate(@"%@",[uint160_data(providerRegistrationTransaction.ownerKeyHash) addressFromHash160DataForChain:providerRegistrationTransaction.chain]);
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = holdingWallet;
     self.ownerKeysWallet = ownerWallet;

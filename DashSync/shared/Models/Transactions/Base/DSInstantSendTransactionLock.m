@@ -166,7 +166,7 @@
         [data appendData:input];
     }
     _requestID = [data SHA256_2];
-    DSLogPrivate(@"the request ID is %@", uint256_hex(_requestID));
+    DSLogPrivate(@"[%@] the request ID is %@", self.chain.name, uint256_hex(_requestID));
     return _requestID;
 }
 
@@ -206,28 +206,28 @@
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
         if (!self.signatureVerified) {
-            DSLog(@"unable to verify IS signature with offset %d", offset);
+            DSLog(@"[%@] unable to verify IS signature with offset %d", self.chain.name, offset);
         } else {
-            DSLog(@"IS signature verified with offset %d", offset);
+            DSLog(@"[%@] IS signature verified with offset %d", self.chain.name, offset);
         }
 
     } else if (quorumEntry) {
-        DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
+        DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, uint256_hex(quorumEntry.quorumHash));
     } else {
-        DSLog(@"no quorum entry found");
+        DSLog(@"[%@] no quorum entry found", self.chain.name);
     }
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
     } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
-        DSLog(@"trying with offset 0");
+        DSLog(@"[%@] trying with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
     } else if (quorumEntry.verified && offset == 0) {
         //try again a few blocks more in the future
-        DSLog(@"trying with offset 16");
+        DSLog(@"[%@] trying with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];
     }
-    DSLog(@"returning signature verified %d with offset %d", self.signatureVerified, offset);
+    DSLog(@"[%@] returning signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
     return self.signatureVerified;
 }
 

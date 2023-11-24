@@ -65,7 +65,7 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
 }
 
 // Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.
-CFAllocatorRef SecureAllocator() {
+CFAllocatorRef SecureAllocator(void) {
     static CFAllocatorRef alloc = NULL;
     static dispatch_once_t onceToken = 0;
 

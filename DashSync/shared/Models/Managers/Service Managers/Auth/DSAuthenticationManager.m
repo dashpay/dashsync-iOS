@@ -203,7 +203,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     if (!isSecure && errorMessage.length > 0) prompt = [prompt stringByAppendingString:REDX @" "];
     if (name.length > 0) prompt = [prompt stringByAppendingString:sanitizeString(name)];
     if (!isSecure && prompt.length > 0) prompt = [prompt stringByAppendingString:@"\n"];
-    if (!isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address];
+    if (!isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address ? address : @""];
     if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
     prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\n\n     amount %@ (%@)", nil),
                      [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];

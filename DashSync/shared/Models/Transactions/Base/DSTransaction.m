@@ -307,7 +307,7 @@
 
 - (NSString *)description {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
-    return [NSString stringWithFormat:@"%@(id=%@-block=%@) + (%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED) ? @"Not mined" : @(self.blockHeight), [super description]];
+    return [NSString stringWithFormat:@"%@(id=%@-block=%@)", [super description], txid, (self.blockHeight == TX_UNCONFIRMED) ? @"Not mined" : @(self.blockHeight)];
 }
 
 - (NSString *)longDescription {
@@ -864,7 +864,7 @@
             if (![context ds_save]) {
                 self.persistenceStatus = DSTransactionPersistenceStatus_Saved;
             } else {
-                DSLog(@"There was an error saving the transaction");
+                DSLog(@"[%@] There was an error saving the transaction", self.chain.name);
                 self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
             }
         } else {

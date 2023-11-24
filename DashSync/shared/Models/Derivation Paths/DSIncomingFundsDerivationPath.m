@@ -112,9 +112,9 @@
                     while (e.index >= a.count) [a addObject:[NSNull null]];
                     if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
 #if DEBUG
-                        DSLogPrivate(@"address %@ loaded but was not valid on chain %@", e.address, self.account.wallet.chain.name);
+                        DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
 #else
-                            DSLog(@"address %@ loaded but was not valid on chain %@", @"<REDACTED>", self.account.wallet.chain.name);
+                            DSLog(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, @"<REDACTED>");
 #endif /* DEBUG */
                         continue;
                     }
@@ -212,7 +212,7 @@
         while (a.count < upperLimit) { // generate new addresses up to gapLimit
             NSString *address = [self addressAtIndex:n];
             if (!address) {
-                DSLog(@"error generating keys");
+                DSLog(@"[%@] error generating keys", self.chain.name);
                 if (error) {
                     *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }

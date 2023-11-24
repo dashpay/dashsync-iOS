@@ -95,9 +95,9 @@
 
 #if LOG_MERKLE_BLOCKS || LOG_MERKLE_BLOCKS_FULL
 #if LOG_MERKLE_BLOCKS_FULL
-    DSLog(@"%d - merkle block %@ (%@) has %d transactions", self.height, uint256_hex(self.blockHash), message.hexString, self.totalTransactions);
+    DSLog(@"[%@] %d - merkle block %@ (%@) has %d transactions", self.chain.name, self.height, uint256_hex(self.blockHash), message.hexString, self.totalTransactions);
 #else
-    DSLog(@"%d - merkle block %@ has %d transactions", self.height, uint256_hex(self.blockHash), self.totalTransactions);
+    DSLog(@"[%@] %d - merkle block %@ has %d transactions", self.chain.name, self.height, uint256_hex(self.blockHash), self.totalTransactions);
 #endif
 #endif
 
