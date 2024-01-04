@@ -215,6 +215,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
 
+// returns input value if no previous account transaction spends this input, and the input is valid, -1 otherwise.
+- (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index;
+
 // received, sent or moved inside an account
 - (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
 

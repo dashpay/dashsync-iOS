@@ -1502,6 +1502,22 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 }
 
+- (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index {
+    NSValue *hash = uint256_obj(txHash);
+    DSTransaction *tx = self.allTx[hash];
+    
+    if (tx == NULL) {
+        return -1;
+    }
+    
+    if (![self transactionIsValid:tx] ||
+        [self.spentOutputs containsObject:dsutxo_obj(((DSUTXO){txHash, index}))]) {
+        return -1;
+    }
+    
+    return (int64_t)tx.outputs[index].amount;
+}
+
 // true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee)
 - (BOOL)transactionIsPending:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
