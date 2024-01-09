@@ -1084,6 +1084,14 @@
     return TRUE;
 }
 
+- (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index {
+    for (DSAccount *account in self.accounts) {
+        int64_t value = [account inputValue:txHash inputIndex:index];
+        if (value != -1) return value;
+    }
+    return -1;
+}
+
 - (OpaqueKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed {
     NSParameterAssert(address);
     NSParameterAssert(seed);

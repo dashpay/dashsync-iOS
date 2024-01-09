@@ -65,6 +65,7 @@
 		6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
+		758719952B3ECB7A004C0E2D /* DSCoinJoinViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758719942B3ECB7A004C0E2D /* DSCoinJoinViewController.m */; };
 		798A60FA627EC43C0AB39611 /* libPods-DashSync-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 192956F40996DE819B9D64AC /* libPods-DashSync-DashSync_Example.a */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
@@ -616,6 +617,8 @@
 		6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NetworkInfo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
+		758719932B3ECB28004C0E2D /* DSCoinJoinViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSCoinJoinViewController.h; sourceTree = "<group>"; };
+		758719942B3ECB7A004C0E2D /* DSCoinJoinViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCoinJoinViewController.m; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		93099D7028E7275300160709 /* MNLIST_1746460.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MNLIST_1746460.dat; sourceTree = "<group>"; };
 		93099D7128E7275400160709 /* MNL_1746460_1746516.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1746460_1746516.dat; sourceTree = "<group>"; };
@@ -2032,6 +2035,8 @@
 				FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */,
 				FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */,
 				FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */,
+				758719932B3ECB28004C0E2D /* DSCoinJoinViewController.h */,
+				758719942B3ECB7A004C0E2D /* DSCoinJoinViewController.m */,
 			);
 			name = Actions;
 			sourceTree = "<group>";
@@ -2984,6 +2989,7 @@
 				FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,
+				758719952B3ECB7A004C0E2D /* DSCoinJoinViewController.m in Sources */,
 				FB9762F724BC4C3E00CF28EC /* DSMiningViewController.m in Sources */,
 				FB850013261A7B9A0002E5EA /* DSIdentityChooserViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
@@ -3144,6 +3150,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_FAST_MATH = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3199,6 +3206,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_FAST_MATH = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -3225,6 +3233,48 @@
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MODULE_NAME = ExampleApp;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"BoringSSL-GRPC-iOS\"",
+					"-l\"CocoaImageHashing-iOS\"",
+					"-l\"CocoaLumberjack-iOS\"",
+					"-l\"DAPI-GRPC-iOS\"",
+					"-l\"DSDynamicOptions-iOS\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync-iOS\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"Protobuf-iOS\"",
+					"-l\"SDWebImage-iOS\"",
+					"-l\"TinyCborObjc-iOS\"",
+					"-l\"abseil-iOS\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC-Core-iOS\"",
+					"-l\"gRPC-ProtoRPC-iOS\"",
+					"-l\"gRPC-RxLibrary-iOS\"",
+					"-l\"gRPC-iOS\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor-iOS\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-ld64",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -3243,6 +3293,48 @@
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MODULE_NAME = ExampleApp;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"BoringSSL-GRPC-iOS\"",
+					"-l\"CocoaImageHashing-iOS\"",
+					"-l\"CocoaLumberjack-iOS\"",
+					"-l\"DAPI-GRPC-iOS\"",
+					"-l\"DSDynamicOptions-iOS\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync-iOS\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"Protobuf-iOS\"",
+					"-l\"SDWebImage-iOS\"",
+					"-l\"TinyCborObjc-iOS\"",
+					"-l\"abseil-iOS\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC-Core-iOS\"",
+					"-l\"gRPC-ProtoRPC-iOS\"",
+					"-l\"gRPC-RxLibrary-iOS\"",
+					"-l\"gRPC-iOS\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor-iOS\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-ld64",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;

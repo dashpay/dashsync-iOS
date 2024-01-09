@@ -700,7 +700,10 @@
     DSLog(@"[%@] [DSPeerManager] connect", self.chain.name);
     self.desiredState = DSPeerManagerDesiredState_Connected;
     dispatch_async(self.networkingQueue, ^{
-        if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
+        if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) {
+            DSLog(@"[%@] [DSPeerManager] failed to connect: check that wallet is created", self.chain.name);
+            return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
+        }
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0;    // this attempt is a manual retry
         @synchronized (self.chainManager) {
             if (self.chainManager.terminalHeaderSyncProgress < 1.0) {
