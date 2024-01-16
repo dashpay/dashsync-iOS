@@ -83,7 +83,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
             }
         }
     }
-// check
+
     NSData *oldData = nil;
     if (chain.wallets.count) {
         DSWallet *wallet = [chain.wallets objectAtIndex:0];

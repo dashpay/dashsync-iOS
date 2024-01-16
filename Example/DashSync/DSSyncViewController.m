@@ -548,7 +548,7 @@
         return;
     }
     DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:self.pasteboardAddressLabel.text onChain:account.wallet.chain];
-    paymentRequest.amount = 10000100;
+    paymentRequest.amount = 1000;
 
     if ([paymentRequest isValidAsNonDashpayPaymentRequest]) {
         __block BOOL displayedSentMessage = FALSE;

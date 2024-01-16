@@ -32,7 +32,7 @@
 
 
 - (BOOL)hasCollateralInputs:(BOOL)onlyConfirmed {
-    //
+    // TODO
     return NO;
 }
 
