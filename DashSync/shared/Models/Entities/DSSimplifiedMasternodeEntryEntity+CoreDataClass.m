@@ -74,6 +74,21 @@
             self.operatorPublicKeyVersion = simplifiedMasternodeEntry.operatorPublicKeyVersion;
             DSDSMNELog(@"changing operatorBLSPublicKey to %@", operatorPublicKeyData.hexString);
         }
+        
+        if (self.type != simplifiedMasternodeEntry.type) {
+            self.type = simplifiedMasternodeEntry.type;
+            DSDSMNELog(@"changing type to %d", simplifiedMasternodeEntry.type);
+        }
+        NSData *platformNodeIDData = uint160_data(simplifiedMasternodeEntry.platformNodeID);
+        if (![self.platformNodeID isEqualToData:platformNodeIDData]) {
+            self.platformNodeID = platformNodeIDData;
+            DSDSMNELog(@"changing platformNodeID to %d", platformNodeIDData.hexString);
+        }
+        if (self.platformHTTPPort != simplifiedMasternodeEntry.platformHTTPPort) {
+            self.platformHTTPPort = simplifiedMasternodeEntry.platformHTTPPort;
+            DSDSMNELog(@"changing platformHTTPPort to %d", simplifiedMasternodeEntry.platformHTTPPort);
+        }
+
         if (self.isValid != simplifiedMasternodeEntry.isValid) {
             self.isValid = simplifiedMasternodeEntry.isValid;
             DSDSMNELog(@"changing isValid to %@", simplifiedMasternodeEntry.isValid ? @"TRUE" : @"FALSE");
@@ -149,6 +164,9 @@
     self.keyIDVoting = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
     self.operatorBLSPublicKey = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
     self.operatorPublicKeyVersion = simplifiedMasternodeEntry.operatorPublicKeyVersion;
+    self.type = simplifiedMasternodeEntry.type;
+    self.platformNodeID = [NSData dataWithUInt160:simplifiedMasternodeEntry.platformNodeID];
+    self.platformHTTPPort = simplifiedMasternodeEntry.platformHTTPPort;
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     self.updateHeight = blockHeight;
@@ -169,6 +187,7 @@
     self.localMasternode = localMasternode;
     NSString *operatorAddress = [DSKeyManager addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
     NSString *votingAddress = [DSKeyManager addressFromHash160:self.keyIDVoting.UInt160 forChain:simplifiedMasternodeEntry.chain];
+    // TODO: check do we have to do the same for platform node addresses
     DSAddressEntity *operatorAddressEntity = knownOperatorAddresses
         ? [knownOperatorAddresses objectForKey:operatorAddress]
         : [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
