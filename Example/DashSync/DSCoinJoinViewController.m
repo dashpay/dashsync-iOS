@@ -117,13 +117,7 @@
         _walletEx = register_wallet_ex(_options, getTransaction, destroyTransaction, isMineInput, AS_RUST(self.wrapper));
     }
     
-    DSUTXO o;
-    for (NSValue *utxo in self.wrapper.chain.wallets.firstObject.unspentOutputs) {
-        [utxo getValue:&o];
-        DSTransaction *tx = [self.wrapper.chain transactionForHash:o.hash];
-        int32_t result = call_wallet_ex(_walletEx, (uint8_t (*)[32])&(o.hash.u8), (uint32_t)o.n);
-        DSLog(@"[OBJ-C] CoinJoin: get_real_outpoint_coinjoin_rounds for %llu: %d", tx.outputs[o.n].amount, result);
-    }
+    [self.wrapper hasCollateralInputs:_walletEx onlyConfirmed:true];
 }
 
 ///
@@ -198,16 +192,16 @@ bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
     return result;
 }
 
-bool hasCollateralInputs(BOOL onlyConfirmed, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasCollateralInputs");
-    BOOL result = NO;
-    
-    @synchronized (context) {
-        result = [AS_OBJC(context) hasCollateralInputs:onlyConfirmed];
-    }
-    
-    return result;
-}
+//bool hasCollateralInputs(BOOL onlyConfirmed, const void *context) {
+//    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasCollateralInputs");
+//    BOOL result = NO;
+//    
+//    @synchronized (context) {
+//        result = [AS_OBJC(context) hasCollateralInputs:onlyConfirmed];
+//    }
+//    
+//    return result;
+//}
 
 void destroyInputValue(InputValue *value) {
     DSLog(@"[OBJ-C] CoinJoin: 💀 InputValue");

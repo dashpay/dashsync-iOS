@@ -379,6 +379,19 @@
     }
 }
 
+- (BOOL)isImmatureCoinBase {
+    // note GetBlocksToMaturity is 0 for non-coinbase tx
+    return [self getBlocksToMaturity] > 0;
+}
+
+- (int32_t)getBlocksToMaturity {
+    if (![self isCoinbaseClassicTransaction])
+        return 0;
+    
+    uint32_t chainDepth = [self confirmations];
+    return MAX(0, (COINBASE_MATURITY + 1) - chainDepth);
+}
+
 - (BOOL)isCreditFundingTransaction {
     for (DSTransactionOutput *output in self.outputs) {
         NSData *script = output.outScript;

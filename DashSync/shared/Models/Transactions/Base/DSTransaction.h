@@ -104,6 +104,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
+@property (nonatomic, readonly) BOOL isImmatureCoinBase;
 @property (nonatomic, readonly) BOOL isCreditFundingTransaction;
 @property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
 

@@ -82,3 +82,5 @@
 #define MAX_FEE_PER_B 1000         // slightly higher than a 1000bit fee on a 191byte tx
 
 #define HEADER_WINDOW_BUFFER_TIME (WEEK_TIME_INTERVAL / 2) //This is about the time if we consider a block every 10 mins (for 500 blocks)
+ 
+#define COINBASE_MATURITY 100 // Coinbase transaction outputs can only be spent after this number of new blocks (network rule)

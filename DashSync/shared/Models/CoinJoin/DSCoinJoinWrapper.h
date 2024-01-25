@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import "DSTransactionOutput.h"
+#import "DSCoinControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,8 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithChain:(DSChain *)chain;
 
-- (BOOL)hasCollateralInputs:(BOOL)onlyConfirmed;
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index;
+- (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed;
+- (NSArray<DSTransactionOutput *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount;
 
 @end
 
