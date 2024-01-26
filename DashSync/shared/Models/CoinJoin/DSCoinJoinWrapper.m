@@ -19,6 +19,11 @@
 #import "DSTransaction.h"
 #import "DSTransactionOutput.h"
 #import "DSAccount.h"
+#import "DSCoinControl.h"
+#import "DSWallet.h"
+
+int32_t const DEFAULT_MIN_DEPTH = 0;
+int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 @implementation DSCoinJoinWrapper
 
@@ -28,12 +33,6 @@
         _chain = chain;
     }
     return self;
-}
-
-
-- (BOOL)hasCollateralInputs:(BOOL)onlyConfirmed {
-    // TODO
-    return NO;
 }
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index {
@@ -50,5 +49,166 @@
     
     return NO;
 }
+
+- (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed {
+    DSCoinControl *coinControl = [[DSCoinControl alloc] init];
+    coinControl.coinType = CoinTypeOnlyCoinJoinCollateral;
+    coinControl.minDepth = 0;
+    coinControl.maxDepth = 9999999;
+    
+    NSArray<DSTransactionOutput *> *vCoins = [self availableCoins:walletEx onlySafe:onlyConfirmed coinControl:coinControl minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
+    DSLog(@"CoinJoin: availableCoins returned %lu coins", (unsigned long)vCoins.count);
+    
+    return vCoins.count > 0;
+}
+
+- (NSArray<DSTransactionOutput *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount {
+    NSMutableArray<DSTransactionOutput *> *vCoins = [NSMutableArray array];
+    
+    @synchronized(self) {
+        CoinType coinType = coinControl != nil ? coinControl.coinType : CoinTypeAllCoins;
+
+        uint64_t total = 0;
+        // Either the WALLET_FLAG_AVOID_REUSE flag is not set (in which case we always allow), or we default to avoiding, and only in the case where a coin control object is provided, and has the avoid address reuse flag set to false, do we allow already used addresses
+        BOOL allowUsedAddresses = /* !IsWalletFlagSet(WALLET_FLAG_AVOID_REUSE) || */ (coinControl != nil && !coinControl.avoidAddressReuse);
+        int32_t minDepth = coinControl != nil ? coinControl.minDepth : DEFAULT_MIN_DEPTH;
+        int32_t maxDepth = coinControl != nil ? coinControl.maxDepth : DEFAULT_MAX_DEPTH;
+        
+        for (DSTransaction *coin in [self getSpendableTXs]) {
+            UInt256 wtxid = coin.txHash;
+            DSAccount *account = [self.chain firstAccountThatCanContainTransaction:coin];
+            
+            if ([account transactionIsPending:coin]) {
+                continue;
+            }
+            
+            if (coin.isImmatureCoinBase) {
+                continue;
+            }
+            
+            BOOL safeTx = coin.instantSendReceived || [account transactionIsVerified:coin];
+            
+            if (onlySafe && !safeTx) {
+                continue;
+            }
+            
+            uint32_t depth = coin.confirmations;
+            
+            if (depth < minDepth || depth > maxDepth) {
+                continue;
+            }
+            
+            for (uint32_t i = 0; i < coin.outputs.count; i++) {
+                DSTransactionOutput *output = coin.outputs[i];
+                uint64_t value = output.amount;
+                BOOL found = NO;
+                
+                if (coinType == CoinTypeOnlyFullyMixed) {
+                    if (!is_denominated_amount(value)) {
+                        continue;
+                    }
+                    
+                    found = is_fully_mixed(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i);
+                } else if (coinType == CoinTypeOnlyReadyToMix) {
+                    if (!is_denominated_amount(value)) {
+                        continue;
+                    }
+                    
+                    found = !is_fully_mixed(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i);
+                } else if (coinType == CoinTypeOnlyNonDenominated) {
+                    if (is_collateral_amount(value)) {
+                        continue; // do not use collateral amounts
+                    }
+                    
+                    found = !is_denominated_amount(value);
+                } else if (coinType == CoinTypeOnlyMasternodeCollateral) {
+                    found = value == 1000 * DUFFS;
+                } else if (coinType == CoinTypeOnlyCoinJoinCollateral) {
+                    found = is_collateral_amount(value);
+                } else {
+                    found = YES;
+                }
+                
+                if (!found) {
+                    continue;
+                }
+                
+                if (value < minimumAmount || value > maximumAmount) {
+                    continue;
+                }
+                
+                NSValue *outputValue = dsutxo_obj(((DSUTXO){wtxid, i}));
+                
+                if (coinControl != nil && coinControl.hasSelected && !coinControl.allowOtherInputs && ![coinControl isSelected:outputValue]) {
+                    continue;
+                }
+                
+                if (is_locked_coin(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i) && coinType != CoinTypeOnlyMasternodeCollateral) {
+                    continue;
+                }
+                
+                if ([account isSpent:outputValue]) {
+                    continue;
+                }
+                
+                if (![account containsAddress:output.address]) {
+                    continue;
+                }
+                
+                if (!allowUsedAddresses && [account transactionAddressAlreadySeenInOutputs:output.address]) {
+                    continue;
+                }
+                
+                [vCoins addObject:output];
+                
+                // Checks the sum amount of all UTXO's.
+                if (minimumSumAmount != MAX_MONEY) {
+                    total += value;
+                    
+                    if (total >= minimumSumAmount) {
+                        return vCoins;
+                    }
+                }
+                
+                // Checks the maximum number of UTXO's.
+                if (maximumCount > 0 && vCoins.count >= maximumCount) {
+                    return vCoins;
+                }
+            }
+        }
+    }
+    
+    return vCoins;
+}
+
+- (NSSet<DSTransaction *> *)getSpendableTXs {
+    NSMutableSet<DSTransaction *> *ret = [[NSMutableSet alloc] init];
+    NSArray *unspent = self.chain.wallets.firstObject.unspentOutputs;
+    
+    DSUTXO outpoint;
+    for (uint32_t i = 0; i < unspent.count; i++) {
+        [unspent[i] getValue:&outpoint];
+        DSWallet *foundWallet = nil;
+        DSTransaction *tx = [self.chain transactionForHash:outpoint.hash];
+        
+        if (tx) {
+            [ret addObject:tx];
+            
+            // Skip entries until we encounter a new TX
+            DSUTXO nextOutpoint;
+            while (i + 1 < unspent.count) {
+                [unspent[i + 1] getValue:&nextOutpoint];
+                
+                if (!uint256_eq(nextOutpoint.hash, outpoint.hash)) {
+                    break;
+                }
+                i++;
+            }
+        }
+    }
+    
+    return ret;
+}
+
 
 @end

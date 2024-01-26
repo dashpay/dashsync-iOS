@@ -1502,6 +1502,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 }
 
+- (BOOL)isSpent:(NSValue *)output {
+    return [self.spentOutputs containsObject:output];
+}
+
 - (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index {
     NSValue *hash = uint256_obj(txHash);
     DSTransaction *tx = self.allTx[hash];

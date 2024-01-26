@@ -37,7 +37,8 @@ typedef NS_ENUM(NSInteger, CoinType) {
 @property (nonatomic, assign) BOOL overrideFeeRate;
 @property (nonatomic, assign) BOOL avoidPartialSpends;
 @property (nonatomic, assign) BOOL avoidAddressReuse;
-@property (nonatomic, assign) int minDepth;
+@property (nonatomic, assign) int32_t minDepth;
+@property (nonatomic, assign) int32_t maxDepth;
 @property (nonatomic, assign) uint64_t feeRate;
 @property (nonatomic, assign) uint64_t discardFeeRate;
 @property (nonatomic, strong) NSNumber *confirmTarget;
