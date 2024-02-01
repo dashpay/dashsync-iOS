@@ -1,6 +1,6 @@
 //  
 //  Created by Andrei Ashikhmin
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,19 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-#import "DSCoinJoinWrapper.h"
+#import <Foundation/Foundation.h>
+#import "DSInputCoin.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSCoinJoinViewController : UIViewController
+@interface DSCompactTallyItem : NSObject
 
-@property (nonatomic, strong) DSChainManager *chainManager;
-@property (strong, nonatomic) IBOutlet UISwitch *coinJoinSwitch;
-@property (strong, nonatomic) IBOutlet UILabel *infoLabel;
-@property (nonatomic, assign, nullable) CoinJoin *coinJoin;
-@property (nonatomic, strong) DSCoinJoinWrapper *wrapper;
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
-@property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+@property (strong, nonatomic) NSData *txDestination;
+@property (nonatomic, assign) uint64_t amount;
+@property (strong, nonatomic) NSMutableArray<DSInputCoin *> *inputCoins;
+
+- (CompactTallyItem *)ffi_malloc:(ChainType)type;
++ (void)ffi_free:(CompactTallyItem *)item;
 
 @end
 

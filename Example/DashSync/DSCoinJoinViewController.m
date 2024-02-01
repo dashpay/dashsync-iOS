@@ -25,16 +25,6 @@
 #define AS_OBJC(context) ((__bridge DSCoinJoinWrapper *)(context))
 #define AS_RUST(context) ((__bridge void *)(context))
 
-@interface DSCoinJoinViewController ()
-@property (strong, nonatomic) IBOutlet UISwitch *coinJoinSwitch;
-@property (strong, nonatomic) IBOutlet UILabel *infoLabel;
-@property (nonatomic, assign, nullable) CoinJoin *coinJoin;
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
-@property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
-@property (nonatomic, strong) DSCoinJoinWrapper *wrapper;
-
-@end
-
 @implementation DSCoinJoinViewController
 
 - (IBAction)coinJoinSwitchDidChangeValue:(id)sender {
@@ -77,23 +67,40 @@
 //    [path setAccount:account];
     
     
-//    [self runCoinJoin];
-    [self runWalletEx];
+    [self runCoinJoin];
+//    [self runWalletEx];
 }
 
 -(void)runCoinJoin {
     if (_coinJoin == NULL) {
         DSLog(@"[OBJ-C] CoinJoin: register");
-        _coinJoin = register_coinjoin(getInputValueByPrevoutHash, hasChainLock, destroyInputValue, AS_RUST(self.wrapper));
+        
+        if (_walletEx == NULL) {
+            DSLog(@"[OBJ-C] WalletEx: register");
+            
+            if (_options != NULL) {
+                free(_options);
+            }
+            
+            _options = malloc(sizeof(CoinJoinClientOptions));
+            _options->enable_coinjoin = YES;
+            _options->coinjoin_rounds = 1;
+            _options->coinjoin_sessions = 1;
+            _options->coinjoin_amount = 4 * DUFFS;
+            _options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
+            _options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
+            _options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
+            _options->coinjoin_multi_session = NO;
+            
+            _walletEx = register_wallet_ex(_options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, AS_RUST(self.wrapper));
+        }
+        
+        _coinJoin = register_coinjoin(_walletEx, _options, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, AS_RUST(self.wrapper));
     }
 
-    DSTransaction *tx = self.chainManager.chain.allTransactions.firstObject;
-    Transaction *transaction = [tx ffi_malloc:self.wrapper.chain.chainType];
-
     DSLog(@"[OBJ-C] CoinJoin: call");
-    BOOL result = call_coinjoin(_coinJoin, transaction, AS_RUST(self.wrapper));
+    BOOL result = call_coinjoin(_coinJoin);
     DSLog(@"[OBJ-C] CoinJoin: call result: %s", result ? "TRUE" : "FALSE");
-    [DSTransaction ffi_free:transaction];
 }
 
 -(void)runWalletEx {
@@ -114,7 +121,7 @@
         _options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
         _options->coinjoin_multi_session = NO;
         
-        _walletEx = register_wallet_ex(_options, getTransaction, destroyTransaction, isMineInput, AS_RUST(self.wrapper));
+        _walletEx = register_wallet_ex(_options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, AS_RUST(self.wrapper));
     }
     
     [self.wrapper hasCollateralInputs:_walletEx onlyConfirmed:true];
@@ -192,16 +199,36 @@ bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
     return result;
 }
 
-//bool hasCollateralInputs(BOOL onlyConfirmed, const void *context) {
-//    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasCollateralInputs");
-//    BOOL result = NO;
-//    
-//    @synchronized (context) {
-//        result = [AS_OBJC(context) hasCollateralInputs:onlyConfirmed];
-//    }
-//    
-//    return result;
-//}
+bool hasCollateralInputs(BOOL onlyConfirmed, WalletEx* walletEx, const void *context) {
+    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasCollateralInputs");
+    BOOL result = NO;
+    
+    @synchronized (context) {
+        result = [AS_OBJC(context) hasCollateralInputs:walletEx onlyConfirmed:onlyConfirmed];
+    }
+    
+    return result;
+}
+
+SelectedCoins* selectCoinsGroupedByAddresses(bool skipDenominated, bool anonymizable, bool skipUnconfirmed, int maxOupointsPerAddress, WalletEx* walletEx, const void *context) {
+    DSLog(@"[OBJ-C CALLBACK] CoinJoin: selectCoinsGroupedByAddresses");
+    SelectedCoins *vecTallyRet;
+    
+    @synchronized (context) {
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        NSArray<DSCompactTallyItem *> *tempVecTallyRet = [wrapper selectCoinsGroupedByAddresses:walletEx skipDenominated:skipDenominated anonymizable:anonymizable skipUnconfirmed:skipUnconfirmed maxOupointsPerAddress:maxOupointsPerAddress];
+        
+        vecTallyRet = malloc(sizeof(SelectedCoins));
+        vecTallyRet->item_count = tempVecTallyRet.count;
+        vecTallyRet->items = malloc(tempVecTallyRet.count * sizeof(CompactTallyItem *));
+        
+        for (uint32_t i = 0; i < tempVecTallyRet.count; i++) {
+            vecTallyRet->items[i] = [tempVecTallyRet[i] ffi_malloc:wrapper.chain.chainType];
+        }
+    }
+    
+    return vecTallyRet;
+}
 
 void destroyInputValue(InputValue *value) {
     DSLog(@"[OBJ-C] CoinJoin: 💀 InputValue");
@@ -215,6 +242,22 @@ void destroyTransaction(Transaction *value) {
     if (value) {
         [DSTransaction ffi_free:value];
     }
+}
+
+void destroySelectedCoins(SelectedCoins *selectedCoins) {
+    if (!selectedCoins) {
+        return;
+    }
+    
+    if (selectedCoins->item_count > 0 && selectedCoins->items) {
+        for (int i = 0; i < selectedCoins->item_count; i++) {
+            [DSCompactTallyItem ffi_free:selectedCoins->items[i]];
+        }
+        
+        free(selectedCoins->items);
+    }
+    
+    free(selectedCoins);
 }
 
 @end
