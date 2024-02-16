@@ -171,6 +171,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 - (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
+- (int32_t)getBlocksToMaturity;
+
 @end
 
 @interface DSTransaction (Extensions)

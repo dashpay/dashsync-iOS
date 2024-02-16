@@ -1,6 +1,6 @@
 //  
 //  Created by Andrei Ashikhmin
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-#import "DSCoinJoinWrapper.h"
+#import <Foundation/Foundation.h>
+#import "DSTransactionOutput.h"
+#import "BigIntTypes.h"
+#import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSCoinJoinViewController : UIViewController
+@interface DSInputCoin : NSObject
 
-@property (nonatomic, strong) DSChainManager *chainManager;
-@property (strong, nonatomic) IBOutlet UISwitch *coinJoinSwitch;
-@property (strong, nonatomic) IBOutlet UILabel *infoLabel;
-@property (nonatomic, assign, nullable) CoinJoin *coinJoin;
-@property (nonatomic, strong) DSCoinJoinWrapper *wrapper;
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
-@property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+@property (nonatomic, assign) UInt256 outpointHash;
+@property (nonatomic, assign) uint32_t outpointIndex;
+@property (strong, nonatomic) DSTransactionOutput *output;
+@property (nonatomic, assign) uint64_t effectiveValue;
+
+- (instancetype)initWithTx:(DSTransaction *)tx index:(int32_t)i;
+- (InputCoin *)ffi_malloc:(ChainType)type;
++ (void)ffi_free:(InputCoin *)inputCoin;
 
 @end
 

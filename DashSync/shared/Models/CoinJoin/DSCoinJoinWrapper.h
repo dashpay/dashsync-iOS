@@ -19,18 +19,26 @@
 #import "DSChain.h"
 #import "DSTransactionOutput.h"
 #import "DSCoinControl.h"
+#import "DSCompactTallyItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCoinJoinWrapper : NSObject
 
-@property (nonatomic, readonly) DSChain *chain;
+// TODO: free on dealloc
+@property (strong, nonatomic, readonly) DSChain *chain;
+@property (nonatomic, assign, nullable) WalletEx *walletEx;
+@property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+
+@property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
+@property (nonatomic, assign) BOOL anonymizableTallyCached;
 
 - (instancetype)initWithChain:(DSChain *)chain;
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index;
 - (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed;
 - (NSArray<DSTransactionOutput *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount;
+- (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress;
 
 @end
 

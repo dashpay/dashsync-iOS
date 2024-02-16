@@ -21,6 +21,8 @@
 #import "DSAccount.h"
 #import "DSCoinControl.h"
 #import "DSWallet.h"
+#import "BigIntTypes.h"
+#import "NSString+Bitcoin.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
@@ -50,6 +52,117 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return NO;
 }
 
+- (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress {
+    
+    @synchronized(self) {
+        // Note: cache is checked in dash-shared-core.
+        
+        uint64_t smallestDenom = coinjoin_get_smallest_denomination();
+        NSMutableDictionary<NSData*, DSCompactTallyItem*> *mapTally = [[NSMutableDictionary alloc] init];
+        NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
+        
+        DSUTXO outpoint;
+        for (NSValue *value in self.chain.wallets.firstObject.unspentOutputs) {
+            [value getValue:&outpoint];
+            
+            if ([setWalletTxesCounted containsObject:uint256_data(outpoint.hash)]) {
+                continue;
+            }
+            
+            [setWalletTxesCounted addObject:uint256_data(outpoint.hash)];
+            DSTransaction *wtx = [self.chain transactionForHash:outpoint.hash];
+            
+            if (wtx == nil) {
+                continue;
+            }
+            
+            if (wtx.isCoinbaseClassicTransaction && [wtx getBlocksToMaturity] > 0) {
+                continue;
+            }
+            
+            DSAccount *account = [self.chain firstAccountThatCanContainTransaction:wtx];
+            BOOL isTrusted = wtx.instantSendReceived || [account transactionIsVerified:wtx];
+            
+            if (skipUnconfirmed && !isTrusted) {
+                continue;
+            }
+            
+            for (int32_t i = 0; i < wtx.outputs.count; i++) {
+                DSTransactionOutput *output = wtx.outputs[i];
+                NSData *txDest = output.outScript;
+                NSString *address = [NSString bitcoinAddressWithScriptPubKey:txDest forChain:self.chain];
+                
+                if (address == nil) {
+                    continue;
+                }
+                
+                if (![account containsAddress:output.address]) { // TODO: is it the same as isPubKeyMine?
+                    continue;
+                }
+                
+                DSCompactTallyItem *tallyItem = mapTally[txDest];
+                
+                if (maxOupointsPerAddress != -1 && tallyItem != nil && tallyItem.inputCoins.count >= maxOupointsPerAddress) {
+                    continue;
+                }
+
+                if (is_locked_coin(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
+                    continue;
+                }
+                
+                if (skipDenominated && is_denominated_amount(output.amount)) {
+                    continue;
+                }
+                
+                if (anonymizable) {
+                    // ignore collaterals
+                    if (is_collateral_amount(output.amount)) {
+                        continue;
+                    }
+                    
+                    // ignore outputs that are 10 times smaller then the smallest denomination
+                    // otherwise they will just lead to higher fee / lower priority
+                    if (output.amount <= smallestDenom/10) {
+                        continue;
+                    }
+                    
+                    // ignore mixed
+                    if (is_fully_mixed(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
+                        continue;
+                    }
+                }
+                
+                if (tallyItem == nil) {
+                    tallyItem = [[DSCompactTallyItem alloc] init];
+                    tallyItem.txDestination = txDest;
+                    mapTally[txDest] = tallyItem;
+                }
+                
+                tallyItem.amount += output.amount;
+                DSInputCoin *coin = [[DSInputCoin alloc] initWithTx:wtx index:i];
+                [tallyItem.inputCoins addObject:coin];
+            }
+        }
+
+        // construct resulting vector
+        // NOTE: vecTallyRet is "sorted" by txdest (i.e. address), just like mapTally
+        NSMutableArray<DSCompactTallyItem *> *vecTallyRet = [[NSMutableArray alloc] init];
+        
+        for (DSCompactTallyItem *item in mapTally.allValues) {
+            // TODO: (dashj) ignore this to get this dust back in
+            if (anonymizable && item.amount < smallestDenom) {
+                continue;
+            }
+            
+            [vecTallyRet addObject:item];
+        }
+
+        // Note: cache is assigned in dash-shared-core
+        
+        return vecTallyRet;
+    }
+}
+
 - (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed {
     DSCoinControl *coinControl = [[DSCoinControl alloc] init];
     coinControl.coinType = CoinTypeOnlyCoinJoinCollateral;
@@ -57,7 +170,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     coinControl.maxDepth = 9999999;
     
     NSArray<DSTransactionOutput *> *vCoins = [self availableCoins:walletEx onlySafe:onlyConfirmed coinControl:coinControl minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
-    DSLog(@"CoinJoin: availableCoins returned %lu coins", (unsigned long)vCoins.count);
+    DSLog(@"[OBJ-C] CoinJoin: availableCoins returned %lu coins", (unsigned long)vCoins.count);
     
     return vCoins.count > 0;
 }
@@ -100,6 +213,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
             
             for (uint32_t i = 0; i < coin.outputs.count; i++) {
                 DSTransactionOutput *output = coin.outputs[i];
+                DSLog(@"[OBJ-C] CoinJoin: check output: %llu", output.amount);
                 uint64_t value = output.amount;
                 BOOL found = NO;
                 
@@ -188,7 +302,6 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     DSUTXO outpoint;
     for (uint32_t i = 0; i < unspent.count; i++) {
         [unspent[i] getValue:&outpoint];
-        DSWallet *foundWallet = nil;
         DSTransaction *tx = [self.chain transactionForHash:outpoint.hash];
         
         if (tx) {
@@ -209,6 +322,5 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     
     return ret;
 }
-
 
 @end
