@@ -68,64 +68,38 @@
     
     
     [self runCoinJoin];
-//    [self runWalletEx];
 }
 
 -(void)runCoinJoin {
+    if (_options != NULL) {
+        free(_options);
+    }
+    
+    _options = malloc(sizeof(CoinJoinClientOptions));
+    _options->enable_coinjoin = YES;
+    _options->coinjoin_rounds = 1;
+    _options->coinjoin_sessions = 1;
+    _options->coinjoin_amount = 4 * DUFFS;
+    _options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
+    _options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
+    _options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
+    _options->coinjoin_multi_session = NO;
+    
     if (_coinJoin == NULL) {
         DSLog(@"[OBJ-C] CoinJoin: register");
-        
-        if (_walletEx == NULL) {
-            DSLog(@"[OBJ-C] WalletEx: register");
-            
-            if (_options != NULL) {
-                free(_options);
-            }
-            
-            _options = malloc(sizeof(CoinJoinClientOptions));
-            _options->enable_coinjoin = YES;
-            _options->coinjoin_rounds = 1;
-            _options->coinjoin_sessions = 1;
-            _options->coinjoin_amount = 4 * DUFFS;
-            _options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
-            _options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
-            _options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-            _options->coinjoin_multi_session = NO;
-            
-            _walletEx = register_wallet_ex(_options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, AS_RUST(self.wrapper));
-        }
-        
-        _coinJoin = register_coinjoin(_walletEx, _options, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, AS_RUST(self.wrapper));
+        _coinJoin = register_coinjoin(getInputValueByPrevoutHash, hasChainLock, destroyInputValue, AS_RUST(self.wrapper));
+    }
+    
+    if (_clientSession == NULL) {
+        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, AS_RUST(self.wrapper));
+        self.wrapper.clientSession = _clientSession;
     }
 
     DSLog(@"[OBJ-C] CoinJoin: call");
-    BOOL result = call_coinjoin(_coinJoin);
+    BOOL result = call_session(_clientSession, 300000000);
     DSLog(@"[OBJ-C] CoinJoin: call result: %s", result ? "TRUE" : "FALSE");
 }
 
--(void)runWalletEx {
-    if (_walletEx == NULL) {
-        DSLog(@"[OBJ-C] WalletEx: register");
-        
-        if (_options != NULL) {
-            free(_options);
-        }
-        
-        _options = malloc(sizeof(CoinJoinClientOptions));
-        _options->enable_coinjoin = YES;
-        _options->coinjoin_rounds = 1;
-        _options->coinjoin_sessions = 1;
-        _options->coinjoin_amount = 4 * DUFFS;
-        _options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
-        _options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
-        _options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-        _options->coinjoin_multi_session = NO;
-        
-        _walletEx = register_wallet_ex(_options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, AS_RUST(self.wrapper));
-    }
-    
-    [self.wrapper hasCollateralInputs:_walletEx onlyConfirmed:true];
-}
 
 ///
 /// MARK: Rust FFI callbacks
@@ -258,6 +232,30 @@ void destroySelectedCoins(SelectedCoins *selectedCoins) {
     }
     
     free(selectedCoins);
+}
+
+void signTransaction(Transaction *transaction, const void *context) {
+    DSLog(@"[OBJ-C CALLBACK] CoinJoin: signTransaction");
+    
+    @synchronized (context) {
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
+        destroy_transaction(transaction);
+        
+        [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx completion:^(BOOL signedTransaction, BOOL cancelled) {
+            if (signedTransaction && !cancelled) {
+                Transaction *returnTx = [tx ffi_malloc:wrapper.chain.chainType];
+                on_transaction_signed_for_session(returnTx, wrapper.clientSession, destroyTransaction);
+            } else {
+                DSLog(@"[OBJ-C CALLBACK] CoinJoin: signTransaction error: not signed or canceled");
+            }
+        }];
+    }
+}
+
+unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *context) {
+    DSLog(@"[OBJ-C CALLBACK] CoinJoin: countInputsWithAmount");
+    return [AS_OBJC(context) countInputsWithAmount:inputAmount];
 }
 
 @end

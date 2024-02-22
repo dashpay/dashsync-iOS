@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransaction (CoinJoin)
 
+- (DSTransaction *)initWithTransaction:(Transaction *)transaction onChain:(DSChain *)chain;
+
 - (Transaction *)ffi_malloc:(ChainType)chainType;
 + (void)ffi_free:(Transaction *)tx;
 

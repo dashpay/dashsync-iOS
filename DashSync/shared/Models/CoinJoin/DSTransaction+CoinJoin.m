@@ -21,8 +21,45 @@
 #import "DSTransactionInput+CoinJoin.h"
 #import "DSTransactionOutput+CoinJoin.h"
 #import "NSData+Dash.h"
+#import "DSKeyManager.h"
 
 @implementation DSTransaction (CoinJoin)
+
+- (DSTransaction *)initWithTransaction:(Transaction *)transaction onChain:(DSChain *)chain {
+    NSMutableArray *hashes = [NSMutableArray array];
+    NSMutableArray *indexes = [NSMutableArray array];
+    NSMutableArray *scripts = [NSMutableArray array];
+    NSMutableArray *inputSequences = [NSMutableArray array];
+
+    for (uintptr_t i = 0; i < transaction->inputs_count; i++) {
+        TransactionInput *input = transaction->inputs[i];
+        UInt256 hashValue;
+        memcpy(hashValue.u8, *input->input_hash, 32);
+        NSNumber *index = @(input->index);
+        NSData *script = [NSData dataWithBytes:input->script length:input->script_length];
+        NSNumber *sequence = @(input->sequence);
+        
+        [hashes addObject:uint256_obj(hashValue)];
+        [indexes addObject:index];
+        [scripts addObject:script];
+        [inputSequences addObject:sequence];
+    }
+    
+    NSMutableArray *addresses = [NSMutableArray array];
+    NSMutableArray *amounts = [NSMutableArray array];
+
+    for (uintptr_t i = 0; i < transaction->outputs_count; i++) {
+        TransactionOutput *output = transaction->outputs[i];
+        NSData *scriptPubKey = [NSData dataWithBytes:output->script length:output->script_length];
+        NSString *address = [DSKeyManager addressWithScriptPubKey:scriptPubKey forChain:chain];
+        NSNumber *amount = @(output->amount);
+        
+        [addresses addObject:address ?: [NSNull null]]; // Use NSNull for OP_RETURN or similar
+        [amounts addObject:amount];
+    }
+
+    return [[DSTransaction alloc] initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain];
+}
 
 - (Transaction *)ffi_malloc:(ChainType)chainType {
     Transaction *transaction = malloc(sizeof(Transaction));
