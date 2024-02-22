@@ -163,6 +163,37 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     }
 }
 
+- (uint32_t)countInputsWithAmount:(uint64_t)inputAmount {
+    uint32_t total = 0;
+    
+    @synchronized(self) {
+        NSArray *unspent = self.chain.wallets.firstObject.unspentOutputs;
+        
+        DSUTXO outpoint;
+        for (uint32_t i = 0; i < unspent.count; i++) {
+            [unspent[i] getValue:&outpoint];
+            DSTransaction *tx = [self.chain transactionForHash:outpoint.hash];
+            
+            if (tx == NULL) {
+                continue;
+            }
+            
+            if (tx.outputs[outpoint.n].amount != inputAmount) {
+                continue;
+            }
+            
+            if (tx.confirmations < 0) {
+                continue;
+            }
+            
+            total++;
+        }
+    }
+    
+    return total;
+}
+
+
 - (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed {
     DSCoinControl *coinControl = [[DSCoinControl alloc] init];
     coinControl.coinType = CoinTypeOnlyCoinJoinCollateral;

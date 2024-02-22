@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *infoLabel;
 @property (nonatomic, assign, nullable) CoinJoin *coinJoin;
 @property (nonatomic, strong) DSCoinJoinWrapper *wrapper;
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
+@property (nonatomic, assign, nullable) CoinJoinClientSession *clientSession;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
 
 @end

@@ -1247,10 +1247,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSMutableArray *usedDerivationPaths = [NSMutableArray array];
 
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
+        if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
+        
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
         *internalIndexes = [NSMutableOrderedSet orderedSet];
         for (NSString *addr in transaction.inputAddresses) {
-            if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
             if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
                 NSInteger index = [derivationPath.allChangeAddresses indexOfObject:addr];
                 if (index != NSNotFound) {
@@ -1360,10 +1361,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         for (DSTransaction *transaction in transactions) {
             NSMutableArray *usedDerivationPaths = [NSMutableArray array];
             for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
+                if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
+                
                 NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
                                     *internalIndexes = [NSMutableOrderedSet orderedSet];
                 for (NSString *addr in transaction.inputAddresses) {
-                    if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
                     NSInteger index = [derivationPath.allChangeAddresses indexOfObject:addr];
                     if (index != NSNotFound) {
                         [internalIndexes addObject:@(index)];

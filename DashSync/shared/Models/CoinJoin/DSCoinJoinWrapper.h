@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // TODO: free on dealloc
 @property (strong, nonatomic, readonly) DSChain *chain;
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
+@property (nonatomic, assign, nullable) CoinJoinClientSession *clientSession;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
 
 @property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed;
 - (NSArray<DSTransactionOutput *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount;
 - (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress;
+- (uint32_t)countInputsWithAmount:(uint64_t)inputAmount;
 
 @end
 
