@@ -37,6 +37,12 @@
     BOOL hardenedIndexes[] = {YES, YES, YES};
     return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
++ (instancetype _Nonnull)coinJoinDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long((uint64_t) chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_COINJOIN), uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES, YES, YES, YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_AnonymousFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_CoinJoin onChain:chain];
+}
+
 
 - (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;

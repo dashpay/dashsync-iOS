@@ -23,6 +23,8 @@
 #import "DSWallet.h"
 #import "BigIntTypes.h"
 #import "NSString+Bitcoin.h"
+#import "DSChainManager.h"
+#import "DSTransactionManager.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
@@ -352,6 +354,39 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     }
     
     return ret;
+}
+
+- (ByteArray)freshReceiveAddress {
+    NSString *address = self.chain.wallets.firstObject.accounts.firstObject.coinJoinReceiveAddress;
+    DSLog(@"[OBJ-C CALLBACK] CoinJoin: freshReceiveAddress, address: %@", address);
+    return script_pubkey_for_address([address UTF8String], self.chain.chainType);
+}
+
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs {
+    DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
+    DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES];
+    
+    [account signTransaction:transaction completion:^(BOOL signedTransaction, BOOL cancelled) {
+                                  if (!signedTransaction) {
+                                      DSLog(@"[OBJ-C] Error: not signed");
+                                  } else {
+                                      if (!transaction.isSigned) { // double check
+                                          DSLog(@"[OBJ-C] Error: not signed in double check");
+                                          return;
+                                      }
+
+                                      [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
+                                          if (error) {
+                                              DSLog(@"[OBJ-C] Publish error%@", error.description);
+                                          } else {
+                                              DSLog(@"[OBJ-C] Publish success");
+                                          }
+                                      }];
+                                  }
+                              }];
+    
+    
+    return YES;
 }
 
 @end

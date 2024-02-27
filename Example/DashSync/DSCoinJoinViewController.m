@@ -54,18 +54,7 @@
     if (_wrapper == NULL) {
         DSChain *chain = self.chainManager.chain;
         _wrapper = [[DSCoinJoinWrapper alloc] initWithChain:chain];
-    }
-    
-//
-//    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_COINJOIN), uint256_from_long(0)};
-//    BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-//    DSDerivationPath *path = [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_Unknown /* ??? DSDerivationPathType_AnonymousFunds ??? */ signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding onChain:chain];
-//    
-//    DSAccount *account = chain.wallets.firstObject.accounts.firstObject;
-//    [account addDerivationPath:path];
-//    
-//    [path setAccount:account];
-    
+    }    
     
     [self runCoinJoin];
 }
@@ -91,12 +80,12 @@
     }
     
     if (_clientSession == NULL) {
-        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, AS_RUST(self.wrapper));
+        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, freshReceiveCoinJoinAddress, commitTransaction, AS_RUST(self.wrapper));
         self.wrapper.clientSession = _clientSession;
     }
 
     DSLog(@"[OBJ-C] CoinJoin: call");
-    BOOL result = call_session(_clientSession, 300000000);
+    BOOL result = call_session(_clientSession, 190000000);
     DSLog(@"[OBJ-C] CoinJoin: call result: %s", result ? "TRUE" : "FALSE");
 }
 
@@ -256,6 +245,33 @@ void signTransaction(Transaction *transaction, const void *context) {
 unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *context) {
     DSLog(@"[OBJ-C CALLBACK] CoinJoin: countInputsWithAmount");
     return [AS_OBJC(context) countInputsWithAmount:inputAmount];
+}
+
+ByteArray freshReceiveCoinJoinAddress(const void *context) {
+    ByteArray array = [AS_OBJC(context) freshReceiveAddress];
+    DSLog(@"[OBJ-C] CoinJoin: return from freshReceiveCoinJoinAddress");
+    
+    return array;
+}
+
+void commitTransaction(struct Recipient **items, uintptr_t item_count, const void *context) {
+    DSLog(@"[OBJ-C] CoinJoin: commitTransaction");
+    
+    NSMutableArray *amounts = [NSMutableArray array];
+    NSMutableArray *scripts = [NSMutableArray array];
+    
+    for (uintptr_t i = 0; i < item_count; i++) {
+        Recipient *recipient = items[i];
+        [amounts addObject:@(recipient->amount)];
+        NSData *script = [NSData dataWithBytes:recipient->script_pub_key.ptr length:recipient->script_pub_key.len];
+        [scripts addObject:script];
+    }
+    
+    // TODO: check subtract_fee_from_amount
+    
+    @synchronized (context) {
+        [AS_OBJC(context) commitTransactionForAmounts:amounts outputs:scripts];
+    }
 }
 
 @end
