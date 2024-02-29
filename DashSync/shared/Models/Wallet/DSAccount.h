@@ -53,6 +53,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 
 @property (nullable, nonatomic, readonly) DSDerivationPath *masterContactsDerivationPath;
 
+@property (nullable, nonatomic, readonly) DSFundsDerivationPath *coinJoinDerivationPath;
+
 @property (nullable, nonatomic, weak) DSWallet *wallet;
 
 @property (nonatomic, readonly) NSString *uniqueID;
@@ -93,6 +95,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray<NSString *> *internalAddresses;
+
+// returns the first unused coinjoin address
+@property (nullable, nonatomic, readonly) NSString *coinJoinReceiveAddress;
 
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray<DSPotentialOneWayFriendship *> *_Nonnull contacts;

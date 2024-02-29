@@ -109,6 +109,8 @@
 
 @property (nonatomic, strong) DSDerivationPath *masterContactsDerivationPath;
 
+@property (nonatomic, strong) DSFundsDerivationPath *coinJoinDerivationPath;
+
 @property (nonatomic, assign) BOOL isViewOnlyAccount;
 
 @property (nonatomic, assign) UInt256 firstTransactionHash;
@@ -160,7 +162,13 @@
                 NSAssert(TRUE, @"There should only be one master contacts derivation path");
             }
             self.masterContactsDerivationPath = derivationPath;
+        } else if (derivationPath.reference == DSDerivationPathReference_CoinJoin) {
+            if (self.coinJoinDerivationPath) {
+                NSAssert(TRUE, @"There should only be one CoinJoin derivation path");
+            }
+            self.coinJoinDerivationPath = derivationPath;
         }
+        
         for (int j = i + 1; j < [derivationPaths count]; j++) {
             DSDerivationPath *derivationPath2 = [derivationPaths objectAtIndex:j];
             NSAssert([derivationPath isDerivationPathEqual:derivationPath2] == NO, @"Derivation paths should all be different");
@@ -336,6 +344,13 @@
 // returns the first unused internal address
 - (NSString *)changeAddress {
     return self.defaultDerivationPath.changeAddress;
+}
+
+// returns the first unused coinjoin address
+- (NSString *)coinJoinReceiveAddress {
+    NSString *address = self.coinJoinDerivationPath.receiveAddress;
+    [self.coinJoinDerivationPath registerTransactionAddress:address];
+    return address;
 }
 
 // NSData objects containing serialized UTXOs
