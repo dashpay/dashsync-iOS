@@ -99,6 +99,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // returns the first unused coinjoin address
 @property (nullable, nonatomic, readonly) NSString *coinJoinReceiveAddress;
 
+// returns the first unused coinjoin internal address
+@property (nullable, nonatomic, readonly) NSString *coinJoinChangeAddress;
+
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray<DSPotentialOneWayFriendship *> *_Nonnull contacts;
 
@@ -180,11 +183,12 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 ///
 /// - Parameters:
 ///   - transaction: Instance of `DSTransaction` you want to sign
-///   - completion: Completion block that has type `TransactionValidityCompletionBlock`
+///
+/// - Returns: boolean value indicating if the transaction was signed
 ///
 /// - Note: Using this method to sign a tx doesn't present pin controller, use this method carefully from UI
 ///
-- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion;
+- (BOOL)signTransaction:(DSTransaction *)transaction;
 
 /// Sign any inputs in the given transaction that can be signed using private keys from the wallet
 ///
