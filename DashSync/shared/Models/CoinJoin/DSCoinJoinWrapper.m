@@ -64,7 +64,8 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
         NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
         
         DSUTXO outpoint;
-        for (NSValue *value in self.chain.wallets.firstObject.unspentOutputs) {
+        NSArray *utxos = self.chain.wallets.firstObject.unspentOutputs;
+        for (NSValue *value in utxos) {
             [value getValue:&outpoint];
             
             if ([setWalletTxesCounted containsObject:uint256_data(outpoint.hash)]) {
@@ -195,24 +196,11 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return total;
 }
 
-
-- (BOOL)hasCollateralInputs:(WalletEx *)walletEx onlyConfirmed:(BOOL)onlyConfirmed {
-    DSCoinControl *coinControl = [[DSCoinControl alloc] init];
-    coinControl.coinType = CoinTypeOnlyCoinJoinCollateral;
-    coinControl.minDepth = 0;
-    coinControl.maxDepth = 9999999;
-    
-    NSArray<DSTransactionOutput *> *vCoins = [self availableCoins:walletEx onlySafe:onlyConfirmed coinControl:coinControl minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
-    DSLog(@"[OBJ-C] CoinJoin: availableCoins returned %lu coins", (unsigned long)vCoins.count);
-    
-    return vCoins.count > 0;
-}
-
-- (NSArray<DSTransactionOutput *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount {
-    NSMutableArray<DSTransactionOutput *> *vCoins = [NSMutableArray array];
+- (NSArray<DSInputCoin *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount {
+    NSMutableArray<DSInputCoin *> *vCoins = [NSMutableArray array];
     
     @synchronized(self) {
-        CoinType coinType = coinControl != nil ? coinControl.coinType : CoinTypeAllCoins;
+        CoinType coinType = coinControl != nil ? coinControl.coinType : CoinType_AllCoins;
 
         uint64_t total = 0;
         // Either the WALLET_FLAG_AVOID_REUSE flag is not set (in which case we always allow), or we default to avoiding, and only in the case where a coin control object is provided, and has the avoid address reuse flag set to false, do we allow already used addresses
@@ -250,27 +238,27 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
                 uint64_t value = output.amount;
                 BOOL found = NO;
                 
-                if (coinType == CoinTypeOnlyFullyMixed) {
+                if (coinType == CoinType_OnlyFullyMixed) {
                     if (!is_denominated_amount(value)) {
                         continue;
                     }
                     
                     found = is_fully_mixed(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i);
-                } else if (coinType == CoinTypeOnlyReadyToMix) {
+                } else if (coinType == CoinType_OnlyReadyToMix) {
                     if (!is_denominated_amount(value)) {
                         continue;
                     }
                     
                     found = !is_fully_mixed(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i);
-                } else if (coinType == CoinTypeOnlyNonDenominated) {
+                } else if (coinType == CoinType_OnlyNonDenominated) {
                     if (is_collateral_amount(value)) {
                         continue; // do not use collateral amounts
                     }
                     
                     found = !is_denominated_amount(value);
-                } else if (coinType == CoinTypeOnlyMasternodeCollateral) {
+                } else if (coinType == CoinType_OnlyMasternodeCollateral) {
                     found = value == 1000 * DUFFS;
-                } else if (coinType == CoinTypeOnlyCoinJoinCollateral) {
+                } else if (coinType == CoinType_OnlyCoinJoinCollateral) {
                     found = is_collateral_amount(value);
                 } else {
                     found = YES;
@@ -290,7 +278,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
                     continue;
                 }
                 
-                if (is_locked_coin(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i) && coinType != CoinTypeOnlyMasternodeCollateral) {
+                if (is_locked_coin(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i) && coinType != CoinType_OnlyMasternodeCollateral) {
                     continue;
                 }
                 
@@ -306,7 +294,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
                     continue;
                 }
                 
-                [vCoins addObject:output];
+                [vCoins addObject:[[DSInputCoin alloc] initWithTx:coin index:i]];
                 
                 // Checks the sum amount of all UTXO's.
                 if (minimumSumAmount != MAX_MONEY) {
@@ -356,9 +344,18 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return ret;
 }
 
-- (ByteArray)freshReceiveAddress {
-    NSString *address = self.chain.wallets.firstObject.accounts.firstObject.coinJoinReceiveAddress;
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: freshReceiveAddress, address: %@", address);
+- (ByteArray)freshAddress:(BOOL)internal {
+    NSString *address;
+    DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
+    
+    if (internal) {
+        address = account.coinJoinChangeAddress;
+        DSLog(@"[OBJ-C] CoinJoin: freshChangeAddress, address: %@", address);
+    } else {
+        address = account.coinJoinReceiveAddress;
+        DSLog(@"[OBJ-C] CoinJoin: freshReceiveAddress, address: %@", address);
+    }
+    
     return script_pubkey_for_address([address UTF8String], self.chain.chainType);
 }
 
@@ -366,25 +363,24 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES];
     
-    [account signTransaction:transaction completion:^(BOOL signedTransaction, BOOL cancelled) {
-                                  if (!signedTransaction) {
-                                      DSLog(@"[OBJ-C] Error: not signed");
-                                  } else {
-                                      if (!transaction.isSigned) { // double check
-                                          DSLog(@"[OBJ-C] Error: not signed in double check");
-                                          return;
-                                      }
-
-                                      [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
-                                          if (error) {
-                                              DSLog(@"[OBJ-C] Publish error%@", error.description);
-                                          } else {
-                                              DSLog(@"[OBJ-C] Publish success");
-                                          }
-                                      }];
-                                  }
-                              }];
+    if (!transaction) {
+        return NO;
+    }
     
+    BOOL signedTransaction = [account signTransaction:transaction];
+    
+    if (!signedTransaction || !transaction.isSigned) {
+        DSLog(@"[OBJ-C] CoinJoin error: not signed");
+        return NO;
+    } else {
+        [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
+            if (error) {
+                DSLog(@"[OBJ-C] CoinJoin publish error: %@", error.description);
+            } else {
+                DSLog(@"[OBJ-C] CoinJoin publish success: %@", transaction.description);
+            }
+        }];
+    }
     
     return YES;
 }

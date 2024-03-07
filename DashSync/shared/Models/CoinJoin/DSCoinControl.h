@@ -16,17 +16,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "dash_shared_core.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSInteger, CoinType) {
-    CoinTypeAllCoins,
-    CoinTypeOnlyFullyMixed,
-    CoinTypeOnlyReadyToMix,
-    CoinTypeOnlyNonDenominated,
-    CoinTypeOnlyMasternodeCollateral,
-    CoinTypeOnlyCoinJoinCollateral
-};
 
 // CoinControl comes from Dash Core.  Not all functions fields and functions are supported within the Wallet class
 @interface DSCoinControl : NSObject
@@ -44,6 +36,8 @@ typedef NS_ENUM(NSInteger, CoinType) {
 @property (nonatomic, strong) NSNumber *confirmTarget;
 @property (nonatomic, assign) CoinType coinType;
 @property (nonatomic, strong) NSMutableOrderedSet *setSelected;
+
+- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl;
 
 - (BOOL)hasSelected;
 - (BOOL)isSelected:(NSValue *)output;

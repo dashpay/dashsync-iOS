@@ -166,7 +166,7 @@
             if (self.coinJoinDerivationPath) {
                 NSAssert(TRUE, @"There should only be one CoinJoin derivation path");
             }
-            self.coinJoinDerivationPath = derivationPath;
+            self.coinJoinDerivationPath = (DSFundsDerivationPath *)derivationPath;
         }
         
         for (int j = i + 1; j < [derivationPaths count]; j++) {
@@ -349,7 +349,14 @@
 // returns the first unused coinjoin address
 - (NSString *)coinJoinReceiveAddress {
     NSString *address = self.coinJoinDerivationPath.receiveAddress;
-    [self.coinJoinDerivationPath registerTransactionAddress:address];
+    [self.coinJoinDerivationPath registerTransactionAddress:address]; // TODO: recheck if needed
+    return address;
+}
+
+// returns the first unused coinjoin address
+- (NSString *)coinJoinChangeAddress {
+    NSString *address = self.coinJoinDerivationPath.changeAddress;
+    [self.coinJoinDerivationPath registerTransactionAddress:address]; // TODO: recheck if needed
     return address;
 }
 
@@ -1288,41 +1295,21 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return usedDerivationPaths;
 }
 
-- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion {
+- (BOOL)signTransaction:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
 
-    if (_isViewOnlyAccount) return;
-
-    //int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    if (_isViewOnlyAccount) return NO;
     
     NSArray *usedDerivationPaths = [self usedDerivationPathsForTransaction:transaction];
-
+    
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.wallet.seedRequestBlock(^void(NSData *_Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                if (completion) completion(NO, YES);
-            } else {
-                NSMutableArray *privkeys = [NSMutableArray array];
-                for (NSDictionary *dictionary in usedDerivationPaths) {
-                    DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
-                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
-                    *internalIndexes = dictionary[@"internalIndexes"];
-                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
-                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
-                    } else {
-                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
-                    }
-                }
-
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
-                if (completion) completion(signedSuccessfully, NO);
-            }
-        });
+        NSData *seed = [self.wallet requestSeedNoAuth];
+        
+        if (!seed) {
+            return NO;
+        } else {
+            return [self signTxWithDerivationPaths:usedDerivationPaths tx:transaction seed:seed];
+        }
     }
 }
 
@@ -1340,28 +1327,32 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if (!seed) {
                 if (completion) completion(NO, YES);
             } else {
-                NSMutableArray *privkeys = [NSMutableArray array];
-                for (NSDictionary *dictionary in usedDerivationPaths) {
-                    DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
-                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
-                                        *internalIndexes = dictionary[@"internalIndexes"];
-                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
-                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
-                    } else {
-                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
-                    }
-                }
-
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                BOOL signedSuccessfully = [self signTxWithDerivationPaths:usedDerivationPaths tx:transaction seed:seed];
                 if (completion) completion(signedSuccessfully, NO);
             }
         });
     }
+}
+
+- (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed {
+    NSMutableArray *privkeys = [NSMutableArray array];
+    for (NSDictionary *dictionary in usedDerivationPaths) {
+        DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
+        NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+        *internalIndexes = dictionary[@"internalIndexes"];
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+            [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+            [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+            [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
+        } else {
+            NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
+        }
+    }
+
+    return [tx signWithPrivateKeys:privkeys];
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet

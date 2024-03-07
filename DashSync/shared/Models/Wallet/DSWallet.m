@@ -185,12 +185,6 @@
     if (!(self = [self initWithChain:chain])) return nil;
     self.uniqueIDString = uniqueID;
     __weak typeof(self) weakSelf = self;
-    self.seedRequestBlock = ^void(SeedCompletionBlock seedCompletion) {
-        //this happens when we request the seed
-        NSString *seed = [weakSelf seedPhrase];
-        NSData *seedData = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seed withPassphrase:nil];
-        seedCompletion(seedData, false);
-    };
 
     self.secureSeedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
         //this happens when we request the seed and want to auth with pin
@@ -289,6 +283,14 @@
             }
         }
     }];
+}
+
+- (NSData *_Nullable)requestSeedNoAuth {
+    //this happens when we request the seed without a pin code
+    NSString *seed = [self seedPhrase];
+    NSData *seedData = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seed withPassphrase:nil];
+    
+    return seedData;
 }
 
 
@@ -790,7 +792,7 @@
                                                                               return;
                                                                           }
                                                                       }
-                                                                      weakSelf.seedRequestBlock(completion);
+                                                                      completion([self requestSeedNoAuth], cancelled);
                                                                   }
                                                               }];
     }

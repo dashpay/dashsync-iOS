@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -848,7 +849,7 @@
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="APb-Fs-peP"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DWG-2b-HJh" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -874,7 +875,7 @@
                                     <nil key="highlightedColor"/>
                                 </label>
                             </subviews>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             <constraints>
                                 <constraint firstItem="A1P-ii-hwq" firstAttribute="leading" secondItem="yZb-Da-24v" secondAttribute="leading" constant="16" id="s3K-pi-GKi"/>
                                 <constraint firstItem="A1P-ii-hwq" firstAttribute="top" secondItem="yZb-Da-24v" secondAttribute="top" constant="19" id="vQq-eb-gea"/>
@@ -910,6 +911,7 @@
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cvZ-SB-Uob">
                                             <rect key="frame" x="16" y="15" width="26" height="26"/>
                                             <constraints>
+                                                <constraint firstAttribute="width" secondItem="cvZ-SB-Uob" secondAttribute="height" multiplier="1:1" id="tyQ-g0-RvJ"/>
                                                 <constraint firstAttribute="width" secondItem="cvZ-SB-Uob" secondAttribute="height" multiplier="1:1" id="yqC-4R-0Iw"/>
                                             </constraints>
                                             <color key="tintColor" systemColor="darkTextColor"/>
@@ -939,7 +941,6 @@
                                         <constraint firstItem="cvZ-SB-Uob" firstAttribute="leading" secondItem="96v-7V-yiY" secondAttribute="leading" constant="16" id="m5X-my-aOj"/>
                                         <constraint firstItem="DOe-oU-xMw" firstAttribute="leading" secondItem="cvZ-SB-Uob" secondAttribute="trailing" constant="5" id="nwk-KX-jgs"/>
                                         <constraint firstItem="pHH-3A-WFB" firstAttribute="top" secondItem="cvZ-SB-Uob" secondAttribute="bottom" constant="10" id="ojW-WV-CDN"/>
-                                        <constraint firstItem="cvZ-SB-Uob" firstAttribute="width" secondItem="cvZ-SB-Uob" secondAttribute="height" multiplier="1:1" id="tyQ-g0-RvJ"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
@@ -1013,7 +1014,7 @@
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="TlP-zd-vWL"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" title="Passphrase" id="I7m-4w-uyq">
                         <barButtonItem key="rightBarButtonItem" systemItem="save" id="TM5-bP-yov">
@@ -1382,6 +1383,9 @@
         </systemColor>
         <systemColor name="groupTableViewBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>

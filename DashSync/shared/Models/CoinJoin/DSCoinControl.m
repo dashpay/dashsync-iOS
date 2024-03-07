@@ -19,11 +19,22 @@
 
 @implementation DSCoinControl
 
+- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl {
+    if (!(self = [super init])) return nil;
+    self.coinType = coinControl->coin_type;
+    self.minDepth = coinControl->min_depth;
+    self.maxDepth = coinControl->max_depth;
+    self.avoidAddressReuse = coinControl->avoid_address_reuse;
+    self.allowOtherInputs = coinControl->allow_other_inputs;
+    
+    return self;
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
         _setSelected = [[NSMutableOrderedSet alloc] init];
-        _coinType = CoinTypeAllCoins;
+        _coinType = CoinType_AllCoins;
         _allowOtherInputs = NO;
         _requireAllInputs = NO;
         _allowWatchOnly = NO;
@@ -56,11 +67,11 @@
 }
 
 - (void)useCoinJoin:(BOOL)useCoinJoin {
-    self.coinType = useCoinJoin ? CoinTypeOnlyFullyMixed : CoinTypeAllCoins;
+    self.coinType = useCoinJoin ? CoinType_OnlyFullyMixed : CoinType_AllCoins;
 }
 
 - (BOOL)isUsingCoinJoin {
-    return self.coinType == CoinTypeOnlyFullyMixed;
+    return self.coinType == CoinType_OnlyFullyMixed;
 }
 
 @end
