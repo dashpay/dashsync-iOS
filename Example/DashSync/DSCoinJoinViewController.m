@@ -19,6 +19,7 @@
 #import "DSChainManager.h"
 #import "NSString+Dash.h"
 #import "DSTransaction+CoinJoin.h"
+#import "DSTransactionOutput+CoinJoin.h"
 #import "DSCoinControl.h"
 #import "DSCoinJoinWrapper.h"
 
@@ -36,7 +37,7 @@
 }
 
 - (void)stopCoinJoin {
-    
+    // TODO
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -68,7 +69,7 @@
     _options->enable_coinjoin = YES;
     _options->coinjoin_rounds = 1;
     _options->coinjoin_sessions = 1;
-    _options->coinjoin_amount = 4 * DUFFS;
+    _options->coinjoin_amount = DUFFS / 4; // 0.25 DASH
     _options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
     _options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
     _options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
@@ -80,13 +81,25 @@
     }
     
     if (_clientSession == NULL) {
-        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, hasCollateralInputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, freshReceiveCoinJoinAddress, commitTransaction, AS_RUST(self.wrapper));
+        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, freshCoinJoinAddress, commitTransaction, AS_RUST(self.wrapper));
         self.wrapper.clientSession = _clientSession;
     }
-
+    
     DSLog(@"[OBJ-C] CoinJoin: call");
-    BOOL result = call_session(_clientSession, 190000000);
+    Balance *balance = malloc(sizeof(Balance));
+    balance->my_trusted = self.wrapper.chain.balance;
+    balance->my_immature = 0;
+    balance->anonymized = 0;
+    balance->my_untrusted_pending = 0;
+    balance->denominated_trusted = 0;
+    balance->denominated_untrusted_pending = 0;
+    balance->watch_only_trusted = 0;
+    balance->watch_only_untrusted_pending = 0;
+    balance->watch_only_immature = 0;
+    DSLog(@"[OBJ-C] CoinJoin: trusted balance: %llu", self.wrapper.chain.balance);
+    BOOL result = call_session(_clientSession, *balance);
     DSLog(@"[OBJ-C] CoinJoin: call result: %s", result ? "TRUE" : "FALSE");
+    free(balance);
 }
 
 
@@ -162,15 +175,28 @@ bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
     return result;
 }
 
-bool hasCollateralInputs(BOOL onlyConfirmed, WalletEx* walletEx, const void *context) {
+GatheredOutputs* availableCoins(bool onlySafe, CoinControl coinControl, WalletEx *walletEx, const void *context) {
     DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasCollateralInputs");
-    BOOL result = NO;
+    GatheredOutputs *gatheredOutputs;
     
     @synchronized (context) {
-        result = [AS_OBJC(context) hasCollateralInputs:walletEx onlyConfirmed:onlyConfirmed];
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        ChainType chainType = wrapper.chain.chainType;
+        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:&coinControl];
+        NSArray<DSInputCoin *> *coins = [wrapper availableCoins:walletEx onlySafe:onlySafe coinControl:cc minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
+        
+        gatheredOutputs = malloc(sizeof(GatheredOutputs));
+        InputCoin **coinsArray = malloc(coins.count * sizeof(InputCoin *));
+        
+        for (uintptr_t i = 0; i < coins.count; ++i) {
+            coinsArray[i] = [coins[i] ffi_malloc:chainType];
+        }
+        
+        gatheredOutputs->items = coinsArray;
+        gatheredOutputs->item_count = (uintptr_t)coins.count;
     }
     
-    return result;
+    return gatheredOutputs;
 }
 
 SelectedCoins* selectCoinsGroupedByAddresses(bool skipDenominated, bool anonymizable, bool skipUnconfirmed, int maxOupointsPerAddress, WalletEx* walletEx, const void *context) {
@@ -212,6 +238,8 @@ void destroySelectedCoins(SelectedCoins *selectedCoins) {
         return;
     }
     
+    DSLog(@"[OBJ-C] CoinJoin: 💀 SelectedCoins");
+    
     if (selectedCoins->item_count > 0 && selectedCoins->items) {
         for (int i = 0; i < selectedCoins->item_count; i++) {
             [DSCompactTallyItem ffi_free:selectedCoins->items[i]];
@@ -223,7 +251,26 @@ void destroySelectedCoins(SelectedCoins *selectedCoins) {
     free(selectedCoins);
 }
 
-void signTransaction(Transaction *transaction, const void *context) {
+void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
+    if (!gatheredOutputs) {
+        return;
+    }
+    
+    DSLog(@"[OBJ-C] CoinJoin: 💀 GatheredOutputs");
+    
+    if (gatheredOutputs->item_count > 0 && gatheredOutputs->items) {
+        for (int i = 0; i < gatheredOutputs->item_count; i++) {
+            [DSTransactionOutput ffi_free:gatheredOutputs->items[i]->output];
+            free(gatheredOutputs->items[i]->outpoint_hash);
+        }
+        
+        free(gatheredOutputs->items);
+    }
+    
+    free(gatheredOutputs);
+}
+
+Transaction* signTransaction(Transaction *transaction, const void *context) {
     DSLog(@"[OBJ-C CALLBACK] CoinJoin: signTransaction");
     
     @synchronized (context) {
@@ -231,15 +278,14 @@ void signTransaction(Transaction *transaction, const void *context) {
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
         destroy_transaction(transaction);
         
-        [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx completion:^(BOOL signedTransaction, BOOL cancelled) {
-            if (signedTransaction && !cancelled) {
-                Transaction *returnTx = [tx ffi_malloc:wrapper.chain.chainType];
-                on_transaction_signed_for_session(returnTx, wrapper.clientSession, destroyTransaction);
-            } else {
-                DSLog(@"[OBJ-C CALLBACK] CoinJoin: signTransaction error: not signed or canceled");
-            }
-        }];
+        BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx];
+        
+        if (isSigned) {
+            return [tx ffi_malloc:wrapper.chain.chainType];
+        }
     }
+    
+    return nil;
 }
 
 unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *context) {
@@ -247,14 +293,14 @@ unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *c
     return [AS_OBJC(context) countInputsWithAmount:inputAmount];
 }
 
-ByteArray freshReceiveCoinJoinAddress(const void *context) {
-    ByteArray array = [AS_OBJC(context) freshReceiveAddress];
-    DSLog(@"[OBJ-C] CoinJoin: return from freshReceiveCoinJoinAddress");
+ByteArray freshCoinJoinAddress(bool internal, const void *context) {
+    DSLog(@"[OBJ-C CALLBACK] CoinJoin: freshCoinJoinAddress");
+    ByteArray array = [AS_OBJC(context) freshAddress:internal];
     
     return array;
 }
 
-void commitTransaction(struct Recipient **items, uintptr_t item_count, const void *context) {
+bool commitTransaction(struct Recipient **items, uintptr_t item_count, const void *context) {
     DSLog(@"[OBJ-C] CoinJoin: commitTransaction");
     
     NSMutableArray *amounts = [NSMutableArray array];
@@ -268,10 +314,13 @@ void commitTransaction(struct Recipient **items, uintptr_t item_count, const voi
     }
     
     // TODO: check subtract_fee_from_amount
+    bool result = false;
     
     @synchronized (context) {
-        [AS_OBJC(context) commitTransactionForAmounts:amounts outputs:scripts];
+        result = [AS_OBJC(context) commitTransactionForAmounts:amounts outputs:scripts];
     }
+    
+    return result;
 }
 
 @end
