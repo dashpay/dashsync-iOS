@@ -564,6 +564,7 @@
                 NSMutableSet<NSString *> *operatorAddressStrings = [NSMutableSet set];
                 NSMutableSet<NSData *> *providerRegistrationTransactionHashes = [NSMutableSet set];
                 NSArray<DSSimplifiedMasternodeEntry *> *masternodes = masternodeList.simplifiedMasternodeEntries;
+                // TODO: check do we have to do the same for platform node addresses
                 for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodes) {
                     [votingAddressStrings addObject:simplifiedMasternodeEntry.votingAddress];
                     [operatorAddressStrings addObject:simplifiedMasternodeEntry.operatorAddress];
