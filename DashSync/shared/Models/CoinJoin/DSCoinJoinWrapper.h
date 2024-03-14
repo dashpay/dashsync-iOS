@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic, readonly) DSChain *chain;
 @property (nonatomic, assign, nullable) CoinJoinClientSession *clientSession;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+@property (nonatomic, assign) uint64_t balance_needs_anonymized;
 
 @property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
@@ -40,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress;
 - (uint32_t)countInputsWithAmount:(uint64_t)inputAmount;
 - (ByteArray)freshAddress:(BOOL)internal;
-- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs;
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(NSError * _Nullable error))onPublished;
 
 @end
 
