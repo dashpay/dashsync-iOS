@@ -97,8 +97,8 @@
     balance->watch_only_untrusted_pending = 0;
     balance->watch_only_immature = 0;
     DSLog(@"[OBJ-C] CoinJoin: trusted balance: %llu", self.wrapper.chain.balance);
-    BOOL result = call_session(_clientSession, *balance);
-    DSLog(@"[OBJ-C] CoinJoin: call result: %s", result ? "TRUE" : "FALSE");
+    self.wrapper.balance_needs_anonymized = do_automatic_denominating(_clientSession, *balance);
+    DSLog(@"[OBJ-C] CoinJoin: do_automatic_denominating result: %llu", self.wrapper.balance_needs_anonymized);
     free(balance);
 }
 
@@ -317,7 +317,16 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, const voi
     bool result = false;
     
     @synchronized (context) {
-        result = [AS_OBJC(context) commitTransactionForAmounts:amounts outputs:scripts];
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        result = [wrapper commitTransactionForAmounts:amounts outputs:scripts onPublished:^(NSError * _Nullable error) {
+            if (!error) {
+                // TODO: let balance_denominated_unconf = balance_info.denominated_untrusted_pending;
+                uint64_t balanceDenominatedUnconf = 0;
+                DSLog(@"[OBJ-C] CoinJoin: call finish_automatic_denominating");
+                bool isFinished = finish_automatic_denominating(wrapper.clientSession, balanceDenominatedUnconf, wrapper.balance_needs_anonymized);
+                DSLog(@"[OBJ-C] CoinJoin: is automatic_denominating finished: %s", isFinished ? "YES" : "NO");
+            }
+        }];
     }
     
     return result;

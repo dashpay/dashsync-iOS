@@ -359,7 +359,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return script_pubkey_for_address([address UTF8String], self.chain.chainType);
 }
 
-- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs {
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(NSError * _Nullable error))onPublished {
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES];
     
@@ -376,8 +376,10 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
         [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
             if (error) {
                 DSLog(@"[OBJ-C] CoinJoin publish error: %@", error.description);
+                onPublished(error);
             } else {
                 DSLog(@"[OBJ-C] CoinJoin publish success: %@", transaction.description);
+                onPublished(nil);
             }
         }];
     }
