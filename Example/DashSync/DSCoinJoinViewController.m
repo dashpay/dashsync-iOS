@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -22,6 +22,8 @@
 #import "DSTransactionOutput+CoinJoin.h"
 #import "DSCoinControl.h"
 #import "DSCoinJoinWrapper.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
+#import "DSMasternodeList+Mndiff.h"
 
 #define AS_OBJC(context) ((__bridge DSCoinJoinWrapper *)(context))
 #define AS_RUST(context) ((__bridge void *)(context))
@@ -53,10 +55,9 @@
     // TODO: refreshUnusedKeys()
     
     if (_wrapper == NULL) {
-        DSChain *chain = self.chainManager.chain;
-        _wrapper = [[DSCoinJoinWrapper alloc] initWithChain:chain];
-    }    
-    
+        _wrapper = [[DSCoinJoinWrapper alloc] initWithChainManager:self.chainManager];
+    }
+
     [self runCoinJoin];
 }
 
@@ -81,7 +82,7 @@
     }
     
     if (_clientSession == NULL) {
-        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, freshCoinJoinAddress, commitTransaction, AS_RUST(self.wrapper));
+        _clientSession = register_client_session(_coinJoin, _options, getTransaction, destroyTransaction, isMineInput, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, signTransaction, countInputsWithAmount, freshCoinJoinAddress, commitTransaction, masternodeByHash, destroyMasternodeEntry, AS_RUST(self.wrapper));
         self.wrapper.clientSession = _clientSession;
     }
     
@@ -295,9 +296,10 @@ unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *c
 
 ByteArray freshCoinJoinAddress(bool internal, const void *context) {
     DSLog(@"[OBJ-C CALLBACK] CoinJoin: freshCoinJoinAddress");
-    ByteArray array = [AS_OBJC(context) freshAddress:internal];
+    DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+    NSString *address = [wrapper freshAddress:internal];
     
-    return array;
+    return script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
 }
 
 bool commitTransaction(struct Recipient **items, uintptr_t item_count, const void *context) {
@@ -330,6 +332,55 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, const voi
     }
     
     return result;
+}
+
+MasternodeEntry* masternodeByHash(uint8_t (*hash)[32], const void *context) {
+    UInt256 mnHash = *((UInt256 *)hash);
+    MasternodeEntry *masternode;
+    
+    @synchronized (context) {
+        masternode = [[AS_OBJC(context) masternodeEntryByHash:mnHash] ffi_malloc];
+    }
+    
+    return masternode;
+}
+
+void destroyMasternodeEntry(MasternodeEntry *masternodeEntry) {
+    if (!masternodeEntry) {
+        return;
+    }
+    
+    DSLog(@"[OBJ-C] CoinJoin: 💀 MasternodeEntry");
+    [DSSimplifiedMasternodeEntry ffi_free:masternodeEntry];
+}
+
+uint64_t validMNCount(const void *context) {
+    uint64_t result = 0;
+    
+    @synchronized (context) {
+        result = [AS_OBJC(context) validMNCount];
+    }
+    
+    return result;
+}
+
+MasternodeList* getMNList(const void *context) {
+    MasternodeList *masternodes;
+    
+    @synchronized (context) {
+        masternodes = [[AS_OBJC(context) mnList] ffi_malloc];
+    }
+    
+    return masternodes;
+}
+
+void destroyMNList(MasternodeList *masternodeList) {
+    if (!masternodeList) {
+        return;
+    }
+    
+    DSLog(@"[OBJ-C] CoinJoin: 💀 MasternodeList");
+    [DSMasternodeList ffi_free:masternodeList];
 }
 
 @end
