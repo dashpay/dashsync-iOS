@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2024 Dash Core Group. All rights reserved.
 //
@@ -25,18 +25,23 @@
 #import "NSString+Bitcoin.h"
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
+#import "DSMasternodeManager.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 @implementation DSCoinJoinWrapper
 
-- (instancetype)initWithChain:(DSChain *)chain {
+- (instancetype)initWithChainManager:(DSChainManager *)chainManager {
     self = [super init];
     if (self) {
-        _chain = chain;
+        _chainManager = chainManager;
     }
     return self;
+}
+
+- (DSChain *)chain {
+    return self.chainManager.chain;
 }
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index {
@@ -344,7 +349,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return ret;
 }
 
-- (ByteArray)freshAddress:(BOOL)internal {
+- (NSString *)freshAddress:(BOOL)internal {
     NSString *address;
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     
@@ -356,7 +361,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
         DSLog(@"[OBJ-C] CoinJoin: freshReceiveAddress, address: %@", address);
     }
     
-    return script_pubkey_for_address([address UTF8String], self.chain.chainType);
+    return address;
 }
 
 - (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(NSError * _Nullable error))onPublished {
@@ -387,4 +392,17 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return YES;
 }
 
+- (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash {
+    return [self.chainManager.masternodeManager.currentMasternodeList masternodeForRegistrationHash:hash];
+}
+
+- (uint64_t)validMNCount {
+    return self.chainManager.masternodeManager.currentMasternodeList.validMasternodeCount;
+}
+
+- (DSMasternodeList *)mnList {
+    return self.chainManager.masternodeManager.currentMasternodeList;
+}
+
 @end
+
