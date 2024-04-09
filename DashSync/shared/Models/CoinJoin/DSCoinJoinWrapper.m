@@ -32,10 +32,11 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 @implementation DSCoinJoinWrapper
 
-- (instancetype)initWithChainManager:(DSChainManager *)chainManager {
+- (instancetype)initWithManagers:(DSChainManager *)chainManager coinJoinManager: (DSCoinJoinManager*)coinJoinMnager {
     self = [super init];
     if (self) {
         _chainManager = chainManager;
+        _manager = coinJoinMnager;
     }
     return self;
 }
@@ -404,5 +405,8 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return self.chainManager.masternodeManager.currentMasternodeList;
 }
 
-@end
+- (BOOL)isMasternodeOrDisconnectRequested {
+    return [_masternodeGroup isMasternodeOrDisconnectRequested];
+}
 
+@end
