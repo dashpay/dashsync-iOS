@@ -26,6 +26,8 @@
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
 #import "DSMasternodeManager.h"
+#import "DSCoinJoinAcceptMessage.h"
+#import "DSPeerManager.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
@@ -292,7 +294,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
                     continue;
                 }
                 
-                if (![account containsAddress:output.address]) {
+                if (output.address == nil || ![account containsAddress:output.address]) {
                     continue;
                 }
                 
@@ -407,6 +409,13 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 - (BOOL)isMasternodeOrDisconnectRequested {
     return [_masternodeGroup isMasternodeOrDisconnectRequested];
+}
+
+- (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
+    DSCoinJoinAcceptMessage *request = [[DSCoinJoinAcceptMessage alloc] initWithData:message];
+    DSPeer *peer = [self.chainManager.peerManager peerForLocation:address port:port];
+    [peer sendRequest:request];
+//    [self.chainManager.peerManager sendRequest:request];
 }
 
 @end

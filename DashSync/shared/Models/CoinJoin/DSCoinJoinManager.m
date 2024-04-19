@@ -50,7 +50,7 @@
     _options = [self createOptions];
     
     DSLog(@"[OBJ-C] CoinJoin: register");
-    _walletEx = register_wallet_ex(AS_RUST(self.wrapper), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested);
+    _walletEx = register_wallet_ex(AS_RUST(self.wrapper), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, sendMessage);
     _clientManager = register_client_manager(AS_RUST(self.wrapper), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
     
     DSLog(@"[OBJ-C] CoinJoin: call");
@@ -59,6 +59,20 @@
     run_client_manager(_clientManager, *balance);
 //    DSLog(@"[OBJ-C] CoinJoin: do_automatic_denominating result: %llu", self.wrapper.balance_needs_anonymized);
 //    free(balance);
+    
+    
+    // Might be useful:
+//    - (DSPeer *)peerForLocation:(UInt128)IPAddress port:(uint16_t)port
+    
+//    if ([self.masternodeManager hasMasternodeAtLocation:IPAddress port:port]) {
+//        return DSPeerType_MasterNode;
+//    } else {
+//        return DSPeerType_FullNode;
+//    }
+
+//    - (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry
+    
+//    - (void)sendRequest:(DSMessageRequest *)request
 }
 
 - (CoinJoinClientOptions *)createOptions {
@@ -395,6 +409,18 @@ bool isMasternodeOrDisconnectRequested(uint8_t (*ip_address)[16], uint16_t port,
     @synchronized (context) {
         // TODO: ip_address, port
         result = AS_OBJC(context).isMasternodeOrDisconnectRequested;
+    }
+    
+    return result;
+}
+
+bool sendMessage(ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, const void *context) {
+    UInt128 ipAddress = *((UInt128 *)ip_address);
+    BOOL result = YES; // TODO
+    
+    @synchronized (context) {
+        NSData *message = [NSData dataWithBytes:byteArray->ptr length:byteArray->len];
+        [AS_OBJC(context) sendAcceptMessage:message withPeerIP:ipAddress port:port];
     }
     
     return result;

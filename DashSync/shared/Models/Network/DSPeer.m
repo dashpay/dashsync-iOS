@@ -843,9 +843,7 @@
     //else if ([MSG_GOVOBJSYNC isEqual:type]) [self acceptGovObjectSyncMessage:message];
 
     //private send
-    else if ([MSG_DARKSENDANNOUNCE isEqual:type])
-        [self acceptDarksendAnnounceMessage:message];
-    else if ([MSG_DARKSENDCONTROL isEqual:type])
+    if ([MSG_DARKSENDCONTROL isEqual:type])
         [self acceptDarksendControlMessage:message];
     else if ([MSG_DARKSENDFINISH isEqual:type])
         [self acceptDarksendFinishMessage:message];
@@ -1824,21 +1822,25 @@
 }
 
 - (void)acceptDarksendControlMessage:(NSData *)message {
+    DSLog(@"[OBJ-C] CoinJoin: got dsc");
 }
 
 - (void)acceptDarksendFinishMessage:(NSData *)message {
+    DSLog(@"[OBJ-C] CoinJoin: got dsf");
 }
 
 - (void)acceptDarksendInitiateMessage:(NSData *)message {
 }
 
 - (void)acceptDarksendQuorumMessage:(NSData *)message {
+    DSLog(@"[OBJ-C] CoinJoin: got dsq");
 }
 
 - (void)acceptDarksendSessionMessage:(NSData *)message {
 }
 
 - (void)acceptDarksendSessionUpdateMessage:(NSData *)message {
+    DSLog(@"[OBJ-C] CoinJoin: got dssu");
 }
 
 - (void)acceptDarksendTransactionMessage:(NSData *)message {
