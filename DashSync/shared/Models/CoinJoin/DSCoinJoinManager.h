@@ -16,25 +16,41 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
+#import "DSTransactionOutput.h"
+#import "DSCoinControl.h"
+#import "DSCompactTallyItem.h"
+#import "DSCoinJoinManager.h"
+#import "DSCoinJoinWrapper.h"
 #import "DSMasternodeGroup.h"
-#import "DSChainManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSCoinJoinWrapper;
-
 @interface DSCoinJoinManager : NSObject
 
-@property (nonatomic, strong, nullable) DSChainManager *chainManager;
-@property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
+@property (nonatomic, assign, nullable) DSChainManager *chainManager;
 @property (nonatomic, strong, nullable) DSMasternodeGroup *masternodeGroup;
-
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
-@property (nonatomic, assign, nullable) CoinJoinClientManager *clientManager;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+@property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
+@property (nonatomic, assign) BOOL anonymizableTallyCached;
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, weak, nullable) DSCoinJoinWrapper *wrapper;
 
-- (instancetype)initWithChainManager:(DSChainManager *)chainManager;
-- (void)runCoinJoin;
+- (instancetype)initWithWrapper:(DSCoinJoinWrapper *)coinJoinWrapper chainManager:(DSChainManager *)chainManager;
+
+- (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index;
+- (NSArray<DSInputCoin *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount;
+- (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress;
+- (uint32_t)countInputsWithAmount:(uint64_t)inputAmount;
+- (NSString *)freshAddress:(BOOL)internal;
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(NSError * _Nullable error))onPublished;
+- (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
+- (uint64_t)validMNCount;
+- (DSMasternodeList *)mnList;
+- (BOOL)isMasternodeOrDisconnectRequested;
+- (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
+- (uint64_t)getDenominatedBalance;
+- (uint64_t)getAnonymizedBalance;
 
 @end
 
