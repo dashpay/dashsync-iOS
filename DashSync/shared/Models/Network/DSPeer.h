@@ -137,9 +137,9 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define MSG_GOVOBJVOTE @"govobjvote"
 #define MSG_GOVOBJSYNC @"govsync"
 
-//Private send
+// CoinJoin
 
-#define MSG_DARKSENDANNOUNCE @"dsa"
+#define MSG_COINJOIN_ACCEPT @"dsa"
 #define MSG_DARKSENDCONTROL @"dsc"
 #define MSG_DARKSENDFINISH @"dsf"
 #define MSG_DARKSENDINITIATE @"dsi"

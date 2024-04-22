@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint64_t)validMNCount;
 - (DSMasternodeList *)mnList;
 - (BOOL)isMasternodeOrDisconnectRequested;
+- (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
 
 @end
 

@@ -76,6 +76,7 @@ typedef NS_ENUM(uint16_t, DSDisconnectReason)
 @property (nonatomic, readonly) NSArray *registeredDevnetPeerServices;
 @property (nullable, nonatomic, readonly) NSString *trustedPeerHost;
 
+- (DSPeer *)peerForLocation:(UInt128)IPAddress port:(uint16_t)port;
 - (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (void)setTrustedPeerHost:(NSString *_Nullable)host;
