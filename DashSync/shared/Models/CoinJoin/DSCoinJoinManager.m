@@ -34,17 +34,21 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 @implementation DSCoinJoinManager
 
-- (instancetype)initWithWrapper:(DSCoinJoinWrapper *)coinJoinWrapper chainManager:(DSChainManager *)chainManager {
+- (instancetype)initWithChainManager:(DSChainManager *)chainManager {
     self = [super init];
     if (self) {
         _chainManager = chainManager;
-        _wrapper = coinJoinWrapper;
+        _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chainManager];
     }
     return self;
 }
 
 - (DSChain *)chain {
     return self.chainManager.chain;
+}
+
+- (void)runCoinJoin {
+    [_wrapper runCoinJoin];
 }
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index {
@@ -242,7 +246,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
             
             for (uint32_t i = 0; i < coin.outputs.count; i++) {
                 DSTransactionOutput *output = coin.outputs[i];
-                DSLog(@"[OBJ-C] CoinJoin: check output: %llu", output.amount);
+//                DSLog(@"[OBJ-C] CoinJoin: check output: %llu", output.amount);
                 uint64_t value = output.amount;
                 BOOL found = NO;
                 
@@ -336,8 +340,10 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return [self.chain.wallets.firstObject.accounts.firstObject.coinJoinDerivationPath containsAddress:output.address];
 }
 
--(uint64_t)getDenominatedBalance {
+- (Balance *)getBalance {
     NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
+    uint64_t anonymizedBalance = 0;
+    uint64_t denominatedBalance = 0;
     
     DSUTXO outpoint;
     NSArray *utxos = self.chain.wallets.firstObject.unspentOutputs;
@@ -349,30 +355,36 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
         }
         
         [setWalletTxesCounted addObject:uint256_data(outpoint.hash)];
-        DSTransaction *wtx = [self.chain transactionForHash:outpoint.hash];
-    }
-}
-
--(uint64_t)getAnonymizedBalance {
-    
-    NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
-    
-    DSUTXO outpoint;
-    NSArray *utxos = self.chain.wallets.firstObject.unspentOutputs;
-    for (NSValue *value in utxos) {
-        [value getValue:&outpoint];
+        DSTransaction *tx = [self.chain transactionForHash:outpoint.hash];
         
-        if ([setWalletTxesCounted containsObject:uint256_data(outpoint.hash)]) {
-            continue;
-        }
-        
-        [setWalletTxesCounted addObject:uint256_data(outpoint.hash)];
-        DSTransaction *wtx = [self.chain transactionForHash:outpoint.hash];
-        
-        if ([self isCoinJoinOutput:wtx.outputs[outpoint.n] utxo:outpoint]) {
+        for (int32_t i = 0; i < tx.outputs.count; i++) {
+            DSTransactionOutput *output = tx.outputs[i];
             
+            if ([self isCoinJoinOutput:output utxo:outpoint]) {
+                anonymizedBalance += output.amount;
+            }
+            
+            if (is_denominated_amount(output.amount)) {
+                denominatedBalance += output.amount;
+            }
         }
     }
+    
+    DSLog(@"[OBJ-C] CoinJoin: denominatedBalance: %llu", denominatedBalance);
+    
+    Balance *balance = malloc(sizeof(Balance));
+    balance->my_trusted = self.chainManager.chain.balance;
+    balance->denominated_trusted = denominatedBalance;
+    balance->anonymized = anonymizedBalance;
+    
+    balance->my_immature = 0;
+    balance->my_untrusted_pending = 0;
+    balance->denominated_untrusted_pending = 0;
+    balance->watch_only_trusted = 0;
+    balance->watch_only_untrusted_pending = 0;
+    balance->watch_only_immature = 0;
+    
+    return balance;
 }
 
 - (NSSet<DSTransaction *> *)getSpendableTXs {
@@ -466,7 +478,6 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     DSCoinJoinAcceptMessage *request = [[DSCoinJoinAcceptMessage alloc] initWithData:message];
     DSPeer *peer = [self.chainManager.peerManager peerForLocation:address port:port];
     [peer sendRequest:request];
-//    [self.chainManager.peerManager sendRequest:request];
 }
 
 @end

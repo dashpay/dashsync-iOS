@@ -34,9 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, weak, nullable) DSCoinJoinWrapper *wrapper;
+@property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
 
-- (instancetype)initWithWrapper:(DSCoinJoinWrapper *)coinJoinWrapper chainManager:(DSChainManager *)chainManager;
+- (instancetype)initWithChainManager:(DSChainManager *)chainManager;
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index;
 - (NSArray<DSInputCoin *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount;
@@ -49,8 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMasternodeList *)mnList;
 - (BOOL)isMasternodeOrDisconnectRequested;
 - (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
-- (uint64_t)getDenominatedBalance;
-- (uint64_t)getAnonymizedBalance;
+- (Balance *)getBalance;
+- (void)runCoinJoin;
 
 @end
 

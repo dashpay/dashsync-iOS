@@ -42,23 +42,25 @@
 }
 
 - (void)runCoinJoin {
-    if (_options != NULL) {
-        free(_options);
-        _options = NULL;
+    if (_options == NULL) {
+        _options = [self createOptions];
     }
     
-    _options = [self createOptions];
+    if (_walletEx == NULL) {
+        DSLog(@"[OBJ-C] CoinJoin: register");
+        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, sendMessage);
+    }
     
-    DSLog(@"[OBJ-C] CoinJoin: register");
-    _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, sendMessage);
-    _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
+    if (_clientManager == NULL) {
+        _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
+    }
     
     DSLog(@"[OBJ-C] CoinJoin: call");
-    Balance *balance = [self getBalance];
+    Balance *balance = [self.manager getBalance];
     
     run_client_manager(_clientManager, *balance);
 //    DSLog(@"[OBJ-C] CoinJoin: do_automatic_denominating result: %llu", self.wrapper.balance_needs_anonymized);
-//    free(balance);
+    free(balance);
     
     
     // Might be useful:
@@ -88,22 +90,6 @@
     DSLog(@"[OBJ-C] CoinJoin: trusted balance: %llu", self.chainManager.chain.balance);
     
     return options;
-}
-
--(Balance *)getBalance {
-    Balance *balance = malloc(sizeof(Balance));
-    balance->my_trusted = self.chainManager.chain.balance;
-    balance->denominated_trusted = [self.manager getDenominatedBalance];
-    balance->anonymized = [self.manager getAnonymizedBalance];
-    
-    balance->my_immature = 0;
-    balance->my_untrusted_pending = 0;
-    balance->denominated_untrusted_pending = 0;
-    balance->watch_only_trusted = 0;
-    balance->watch_only_untrusted_pending = 0;
-    balance->watch_only_immature = 0;
-    
-    return balance;
 }
 
 - (DSChain *)chain {
