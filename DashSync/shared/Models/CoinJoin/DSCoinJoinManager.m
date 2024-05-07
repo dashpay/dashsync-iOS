@@ -246,7 +246,6 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
             
             for (uint32_t i = 0; i < coin.outputs.count; i++) {
                 DSTransactionOutput *output = coin.outputs[i];
-//                DSLog(@"[OBJ-C] CoinJoin: check output: %llu", output.amount);
                 uint64_t value = output.amount;
                 BOOL found = NO;
                 
@@ -476,7 +475,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 - (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
     DSCoinJoinAcceptMessage *request = [[DSCoinJoinAcceptMessage alloc] initWithData:message];
-    DSPeer *peer = [self.chainManager.peerManager peerForLocation:address port:port];
+    DSPeer *peer = [self.chainManager.peerManager connectedPeer]; // TODO: coinjoin peer management
     [peer sendRequest:request];
 }
 

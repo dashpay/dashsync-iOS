@@ -367,7 +367,11 @@ MasternodeList* getMNList(const void *context) {
     MasternodeList *masternodes;
     
     @synchronized (context) {
-        masternodes = [[AS_OBJC(context).manager mnList] ffi_malloc];
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        DSMasternodeList *mnList = [wrapper.manager mnList];
+        // TODO: might have 0 valid MNs, account for this
+        DSLog(@"[OBJ-C] CoinJoin: getMNList, valid count: %llu", mnList.validMasternodeCount);
+        masternodes = [mnList ffi_malloc];
     }
     
     return masternodes;
