@@ -169,6 +169,10 @@
     }
 }
 
+- (DSPeer *)connectedPeer { // TODO(coinjoin): temp
+    return self.connectedPeers.objectEnumerator.nextObject;
+}
+
 // MARK: - Managers
 
 - (DSMasternodeManager *)masternodeManager {

@@ -92,6 +92,8 @@ typedef NS_ENUM(uint16_t, DSDisconnectReason)
 
 - (void)sendRequest:(DSMessageRequest *)request;
 
+- (DSPeer *)connectedPeer; // TODO(coinjoin): temp
+
 @end
 
 NS_ASSUME_NONNULL_END
