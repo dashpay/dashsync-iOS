@@ -16,12 +16,28 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSCoinJoinManager;
+
 @interface DSMasternodeGroup : NSObject
 
--(BOOL)isMasternodeOrDisconnectRequested;
+@property (atomic, readonly) BOOL isRunning;
+@property (nonatomic, strong) id blocksObserver;
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
+@property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
+@property (nonatomic, strong) NSMutableDictionary *masternodeMap;
+@property (atomic, readonly) NSUInteger maxConnections;
+
+- (instancetype)initWithManager:(DSCoinJoinManager *)manager;
+
+- (void)startAsync;
+- (void)stopAsync;
+- (BOOL)isMasternodeOrDisconnectRequested;
+- (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
 
 @end
 

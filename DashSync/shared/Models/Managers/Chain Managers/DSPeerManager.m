@@ -55,6 +55,7 @@
 #import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Bitcoin.h"
+#import "DSSendCoinJoinQueue.h"
 #import <arpa/inet.h>
 #import <netdb.h>
 
@@ -167,10 +168,6 @@
     @synchronized(self.mutableMisbehavingPeers) {
         return [self.mutableMisbehavingPeers copy];
     }
-}
-
-- (DSPeer *)connectedPeer { // TODO(coinjoin): temp
-    return self.connectedPeers.objectEnumerator.nextObject;
 }
 
 // MARK: - Managers
@@ -916,6 +913,11 @@
                     if (!self.masternodeList) {
                         [peer sendGetaddrMessage]; // request a list of other dash peers
                     }
+                    
+                    if (self.shouldSendDsq) {
+                        [peer sendRequest:[DSSendCoinJoinQueue requestWithShouldSend:true]];
+                    }
+                    
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
                     });
@@ -1082,6 +1084,20 @@
 
 - (void)sendRequest:(DSMessageRequest *)request {
     [self.downloadPeer sendRequest:request];
+}
+
+// MARK: CoinJoin
+
+- (DSPeer *)connectedPeer { // TODO(coinjoin): temp
+    return self.connectedPeers.objectEnumerator.nextObject;
+}
+
+- (void)shouldSendDsq:(BOOL)shouldSendDsq {
+    for (DSPeer *peer in self.connectedPeers) {
+        DSSendCoinJoinQueue *request = [DSSendCoinJoinQueue requestWithShouldSend:shouldSendDsq];
+        [peer sendRequest:request];
+    }
+    _shouldSendDsq = shouldSendDsq;
 }
 
 @end

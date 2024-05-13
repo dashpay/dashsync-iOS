@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSData *data;
 
-- (instancetype)initWithData:(NSData *)data;
++ (instancetype)requestWithData:(NSData *)data;
 
 @end
 

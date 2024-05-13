@@ -49,6 +49,7 @@
         _coinJoinManager = [[DSCoinJoinManager alloc] initWithChainManager:self.chainManager];
     }
     
+    [_coinJoinManager startAsync];
     [_coinJoinManager runCoinJoin];
 }
 

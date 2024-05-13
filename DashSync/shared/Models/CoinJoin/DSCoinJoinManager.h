@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
+@property (nonatomic, readonly) BOOL isWaitingForNewBlock;
+@property (nonatomic, readonly) BOOL isMixing;
 
 - (instancetype)initWithChainManager:(DSChainManager *)chainManager;
 
@@ -49,9 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMasternodeList *)mnList;
 - (BOOL)isMasternodeOrDisconnectRequested;
 - (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
-- (void)connectToMasternodeWithIP:(UInt128)address port:(uint16_t)port;
 - (Balance *)getBalance;
+
+- (void)startAsync;
+- (void)stopAsync;
 - (void)runCoinJoin;
+- (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
 
 @end
 
