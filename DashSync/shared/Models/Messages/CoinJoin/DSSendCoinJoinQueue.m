@@ -15,29 +15,25 @@
 //  limitations under the License.
 //
 
-
-#import "DSCoinJoinAcceptMessage.h"
+#import "DSSendCoinJoinQueue.h"
 #import "DSPeer.h"
+#import "NSData+Dash.h"
 
-@implementation DSCoinJoinAcceptMessage
+@implementation DSSendCoinJoinQueue
 
-+ (instancetype)requestWithData:(NSData *)data {
-    return [[DSCoinJoinAcceptMessage alloc] initWithData:data];
++ (instancetype)requestWithShouldSend:(BOOL)shouldSend {
+    return [[DSSendCoinJoinQueue alloc] initWithShouldSend:shouldSend];
 }
 
-- (instancetype)initWithData:(NSData *)data {
-    self = [super init];
+- (instancetype)initWithShouldSend:(BOOL)shouldSend {
+    self = [super initWithType:MSG_SENDDSQ];
     if (self) {
-        _data = data;
+        _send = shouldSend;
     }
     return self;
 }
 
-- (NSString *)type {
-    return MSG_COINJOIN_ACCEPT;
-}
-
 - (NSData *)toData {
-    return self.data;
+    return [NSData dataWithUInt8:(uint8_t)_send];
 }
 @end

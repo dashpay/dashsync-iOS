@@ -39,12 +39,29 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     if (self) {
         _chainManager = chainManager;
         _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chainManager];
+        _masternodeGroup = [[DSMasternodeGroup alloc] initWithManager:self];
     }
     return self;
 }
 
 - (DSChain *)chain {
     return self.chainManager.chain;
+}
+
+- (void)startAsync {
+    if (!_masternodeGroup.isRunning) {
+        DSLog(@"[OBJ-C] CoinJoin: broadcasting senddsq(true) to all peers");
+        [self.chainManager.peerManager shouldSendDsq:true];
+        [_masternodeGroup startAsync];
+    }
+}
+
+- (void)stopAsync {
+     if (_masternodeGroup != nil && _masternodeGroup.isRunning) {
+        [self.chainManager.peerManager shouldSendDsq:false];
+        [_masternodeGroup stopAsync];
+        _masternodeGroup = nil;
+    }
 }
 
 - (void)runCoinJoin {
@@ -474,9 +491,21 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 }
 
 - (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
-    DSCoinJoinAcceptMessage *request = [[DSCoinJoinAcceptMessage alloc] initWithData:message];
+    DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
     DSPeer *peer = [self.chainManager.peerManager connectedPeer]; // TODO: coinjoin peer management
     [peer sendRequest:request];
+}
+
+- (BOOL)isWaitingForNewBlock {
+    return [self.wrapper isWaitingForNewBlock];
+}
+
+- (BOOL)isMixing {
+    return false;
+}
+
+- (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId {
+    return [_masternodeGroup addPendingMasternode:proTxHash clientSessionId:sessionId];
 }
 
 @end

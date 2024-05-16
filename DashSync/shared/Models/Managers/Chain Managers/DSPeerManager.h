@@ -75,6 +75,7 @@ typedef NS_ENUM(uint16_t, DSDisconnectReason)
 @property (nonatomic, readonly) NSArray *registeredDevnetPeers;
 @property (nonatomic, readonly) NSArray *registeredDevnetPeerServices;
 @property (nullable, nonatomic, readonly) NSString *trustedPeerHost;
+@property (nonatomic, readonly) BOOL shouldSendDsq;
 
 - (DSPeer *)peerForLocation:(UInt128)IPAddress port:(uint16_t)port;
 - (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
@@ -92,7 +93,10 @@ typedef NS_ENUM(uint16_t, DSDisconnectReason)
 
 - (void)sendRequest:(DSMessageRequest *)request;
 
+// MARK: CoinJoin
+
 - (DSPeer *)connectedPeer; // TODO(coinjoin): temp
+- (void)shouldSendDsq:(BOOL)shouldSendDsq;
 
 @end
 

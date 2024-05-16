@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) DSChainManager *chainManager;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, weak, nullable) DSCoinJoinManager *manager;
-@property (nonatomic, strong, nullable) DSMasternodeGroup *masternodeGroup;
 
 @property (nonatomic, assign, nullable) WalletEx *walletEx;
 @property (nonatomic, assign, nullable) CoinJoinClientManager *clientManager;
@@ -36,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithManagers:(DSCoinJoinManager *)manager chainManager:(DSChainManager *)chainManager;
 - (void)runCoinJoin;
+- (BOOL)isWaitingForNewBlock;
 
 @end
 

@@ -35,8 +35,6 @@
     if (self) {
         _chainManager = chainManager;
         _manager = manager;
-        _masternodeGroup = [[DSMasternodeGroup alloc] init];
-//        _wrapper.masternodeGroup = _masternodeGroup;
     }
     return self;
 }
@@ -48,7 +46,7 @@
     
     if (_walletEx == NULL) {
         DSLog(@"[OBJ-C] CoinJoin: register");
-        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, sendMessage);
+        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, sendMessage, addPendingMasternode);
     }
     
     if (_clientManager == NULL) {
@@ -75,6 +73,10 @@
 //    - (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry
     
 //    - (void)sendRequest:(DSMessageRequest *)request
+}
+
+- (BOOL)isWaitingForNewBlock {
+    return is_waiting_for_new_block(_clientManager);
 }
 
 - (CoinJoinClientOptions *)createOptions {
@@ -413,7 +415,20 @@ bool sendMessage(ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port,
     
     @synchronized (context) {
         NSData *message = [NSData dataWithBytes:byteArray->ptr length:byteArray->len];
+        // TODO: different messages support
         [AS_OBJC(context).manager sendAcceptMessage:message withPeerIP:ipAddress port:port];
+    }
+    
+    return result;
+}
+
+bool addPendingMasternode(uint8_t (*pro_tx_hash)[32], uint8_t (*session_id)[32], const void *context) {
+    UInt256 sessionId = *((UInt256 *)session_id);
+    UInt256 proTxHash = *((UInt256 *)pro_tx_hash);
+    BOOL result = NO;
+    
+    @synchronized (context) {
+        result = [AS_OBJC(context).manager addPendingMasternode:proTxHash clientSessionId:sessionId];
     }
     
     return result;
