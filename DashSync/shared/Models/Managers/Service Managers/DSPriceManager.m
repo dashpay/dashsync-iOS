@@ -55,13 +55,12 @@
 #import "dash_shared_core.h"
 
 #define TICKER_REFRESH_TIME 60.0
+#define VOLATILE_RATES_CUTTOFF_PERIOD 7 * 24 * 60 * 60 // 7 Days
 
 #define DEFAULT_CURRENCY_CODE @"USD"
 #define DEFAULT_SPENT_LIMIT DUFFS
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
-
-#define PRICESBYCODE_KEY @"DS_PRICEMANAGER_PRICESBYCODE"
 
 #define USER_ACCOUNT_KEY @"https://api.dashwallet.com"
 
@@ -182,7 +181,6 @@
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-
     NSMutableDictionary<NSString *, NSNumber *> *plainPricesByCode = [defaults objectForKey:PRICESBYCODE_KEY];
     if (plainPricesByCode) {
         NSMutableDictionary<NSString *, DSCurrencyPriceObject *> *pricesByCode = [NSMutableDictionary dictionary];
@@ -267,9 +265,16 @@
     [self performSelector:@selector(updatePrices) withObject:nil afterDelay:TICKER_REFRESH_TIME];
 
     __weak typeof(self) weakSelf = self;
-    DSOperation *priceOperation = [DSPriceOperationProvider fetchPrices:^(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource) {
+    DSOperation *priceOperation = [DSPriceOperationProvider fetchPrices:^(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource, NSError *_Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            return;
+        }
+        
+        if (error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSExchangeRatesReportedNotification object:nil userInfo:@{DSExchangeRatesErrorKey: error}];
+            });
             return;
         }
 
@@ -283,11 +288,24 @@
 
             strongSelf.lastPriceSourceInfo = priceSource;
 
-            [[NSUserDefaults standardUserDefaults] setObject:plainPricesByCode forKey:PRICESBYCODE_KEY];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            NSNumber *lastPrice = strongSelf.pricesByCode[strongSelf.localCurrencyCode].price;
+            NSInteger lastRetrievalTime = [defaults integerForKey:LAST_RATES_RETRIEVAL_TIME];
+            NSInteger now = [[NSDate date] timeIntervalSince1970];
+            
+            [defaults setObject:plainPricesByCode forKey:PRICESBYCODE_KEY];
+            [defaults setInteger:now forKey:LAST_RATES_RETRIEVAL_TIME];
 
             strongSelf.prices = [strongSelf.class sortPrices:prices usingDictionary:pricesByCode];
             strongSelf.pricesByCode = pricesByCode;
             strongSelf.localCurrencyCode = strongSelf->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
+            
+            NSNumber *newPrice = strongSelf.pricesByCode[strongSelf.localCurrencyCode].price;
+            strongSelf.isVolatile = lastRetrievalTime + VOLATILE_RATES_CUTTOFF_PERIOD > now && [self isDifferenceMoreThanFiftyPercentBetween:lastPrice and:newPrice];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSExchangeRatesReportedNotification object:nil];
+            });
         }
     }];
     [self.operationQueue addOperation:priceOperation];
@@ -591,6 +609,16 @@
     }
 
     return [mutablePrices copy];
+}
+
+- (BOOL)isDifferenceMoreThanFiftyPercentBetween:(NSNumber *)number1 and: (NSNumber *)number2 {
+    double value1 = number1.doubleValue;
+    double value2 = number2.doubleValue;
+    
+    double difference = fabs(value1 - value2);
+    double fiftyPercentOfValue1 = 0.5 * value1;
+    
+    return difference > fiftyPercentOfValue1;
 }
 
 @end
