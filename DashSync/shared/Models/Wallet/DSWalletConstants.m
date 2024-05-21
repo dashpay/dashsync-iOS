@@ -37,6 +37,8 @@ NSString *const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
 NSString *const DSTransactionManagerFilterDidChangeNotification = @"DSTransactionManagerFilterDidChangeNotification";
 
 NSString *const DSWalletBalanceDidChangeNotification = @"DSWalletBalanceChangedNotification";
+NSString *const DSExchangeRatesReportedNotification = @"DSExchangeRatesReportedNotification";
+NSString *const DSExchangeRatesErrorKey = @"DSExchangeRatesErrorKey";
 
 NSString *const DSAccountNewAccountFromTransactionNotification = @"DSAccountNewAccountFromTransactionNotification";
 NSString *const DSAccountNewAccountShouldBeAddedFromTransactionNotification = @"DSAccountNewAccountShouldBeAddedFromTransactionNotification";

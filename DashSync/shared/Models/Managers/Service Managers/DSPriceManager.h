@@ -41,6 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define FEE_PER_KB_URL 0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 
+#define PRICESBYCODE_KEY @"DS_PRICEMANAGER_PRICESBYCODE"
+#define LAST_RATES_RETRIEVAL_TIME @"DS_LAST_RATES_RETRIEVAL_TIME"
+
+FOUNDATION_EXPORT NSString *const DSExchangeRatesReportedNotification;
+FOUNDATION_EXPORT NSString *const DSExchangeRatesErrorKey;
+
 @class DSCurrencyPriceObject;
 
 @interface DSPriceManager : NSObject
@@ -59,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSDictionary<NSString *, NSString *> *currenciesByCode;
 @property (nullable, readonly, copy, nonatomic) NSArray<DSCurrencyPriceObject *> *prices;
 @property (nullable, readonly, nonatomic, copy) NSString *lastPriceSourceInfo;
+@property (nonatomic, assign) BOOL isVolatile;
 
 + (instancetype)sharedInstance;
 
