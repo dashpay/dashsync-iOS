@@ -19,6 +19,8 @@
 #import "DSChainManager.h"
 #import "DSChain+Protected.h"
 #import "DSCoinJoinManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
+#import <arpa/inet.h>
 
 uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
 
@@ -58,9 +60,81 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
     [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
 }
 
-- (BOOL)isMasternodeOrDisconnectRequested {
-    // TODO:
+- (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port {
+    BOOL found = [self forPeer:ip port:port warn:NO withPredicate:^BOOL(DSPeer *peer) {
+        return YES;
+    }];
+    
+    if (!found) {
+        for (DSPeer *mn in self.pendingClosingMasternodes) {
+            if (uint128_eq(mn.address, ip) && mn.port == port) {
+                found = true;
+            }
+        }
+    }
+    
+    return found;
+}
+
+- (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port {
+    return [self forPeer:ip port:port warn:YES withPredicate:^BOOL(DSPeer *peer) {
+        DSLog(@"[OBJ-C] CoinJoin: masternode[closing] %@", [self hostFor:ip]);
+        
+        [self.lock lock];
+        [self.pendingClosingMasternodes addObject:peer];
+        // TODO (dashj): what if this disconnects the wrong one
+        [self updateMaxConnections];
+        [self.lock unlock];
+        [peer disconnect];
+        
+        return true;
+    }];
+}
+
+- (BOOL)forPeer:(UInt128)ip port:(uint16_t)port warn:(BOOL)warn withPredicate:(BOOL (^)(DSPeer *peer))predicate {
+    NSArray<DSPeer *> *peerList = [self getConnectedPeers];
+    NSMutableString *listOfPeers = [NSMutableString string];
+    
+    for (DSPeer *peer in peerList) {
+        [listOfPeers appendFormat:@"%@, ", peer.location];
+        
+        if (uint128_eq(peer.address, ip) && peer.port == port) {
+            return predicate(peer);
+        }
+    }
+    
+    if (warn) {
+        if (![self isNodePending:ip port:port]) {
+            DSLog(@"[OBJ-C] CoinJoin: Cannot find %@ in the list of connected peers: %@", [self hostFor:ip], listOfPeers);
+            NSAssert(NO, @"Cannot find %@", [self hostFor:ip]);
+        } else {
+            DSLog(@"[OBJ-C] CoinJoin: %@ in the list of pending peers: %@", [self hostFor:ip], listOfPeers);
+        }
+    }
+    
     return NO;
+}
+
+- (BOOL)isNodePending:(UInt128)ip port:(uint16_t)port {
+    NSArray<DSPeer *> *pendingPeers = [self getConnectedPeers];
+    
+    for (DSPeer *peer in pendingPeers) {
+        if (uint128_eq(peer.address, ip) && peer.port == port) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+- (NSArray<DSPeer *> *)getConnectedPeers {
+    // TODO:
+    return @[];
+}
+
+- (NSArray<DSPeer *> *)getPendingPeers {
+    // TODO:
+    return @[];
 }
 
 - (void)triggerConnections {
@@ -70,7 +144,7 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
         }
         
         if (self.coinJoinManager.isWaitingForNewBlock) {
-            
+            // TODO
         }
     });
 }
@@ -118,6 +192,15 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
 
 - (void)checkMasternodesWithoutSessions {
     // TODO:
+}
+
+- (NSString *)hostFor:(UInt128)address {
+    char s[INET6_ADDRSTRLEN];
+
+    if (address.u64[0] == 0 && address.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+        return @(inet_ntop(AF_INET, &address.u32[3], s, sizeof(s)));
+    } else
+        return @(inet_ntop(AF_INET6, &address, s, sizeof(s)));
 }
 
 @end

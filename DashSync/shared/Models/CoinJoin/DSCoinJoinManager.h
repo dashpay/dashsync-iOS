@@ -49,8 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
 - (uint64_t)validMNCount;
 - (DSMasternodeList *)mnList;
-- (BOOL)isMasternodeOrDisconnectRequested;
-- (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
+- (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
+- (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
+- (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
 - (Balance *)getBalance;
 
 - (void)startAsync;

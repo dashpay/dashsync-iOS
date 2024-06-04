@@ -15,18 +15,32 @@
 //  limitations under the License.
 //
 
-#import "DSMessageRequest.h"
-#import <Foundation/Foundation.h>
+#import "DSCoinJoinEntryMessage.h"
+#import "DSPeer.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSCoinJoinEntryMessage
 
-@interface DSCoinJoinAcceptMessage : DSMessageRequest
++ (instancetype)requestWithData:(NSData *)data {
+    return [[DSCoinJoinEntryMessage alloc] initWithData:data];
+}
 
-@property (nonatomic, readonly) NSData *data;
++ (NSString *)type {
+    return MSG_COINJOIN_ENTRY;
+}
 
-+ (instancetype)requestWithData:(NSData *)data;
-+ (NSString *)type;
+- (instancetype)initWithData:(NSData *)data {
+    self = [super init];
+    if (self) {
+        _data = data;
+    }
+    return self;
+}
 
+- (NSString *)type {
+    return DSCoinJoinEntryMessage.type;
+}
+
+- (NSData *)toData {
+    return self.data;
+}
 @end
-
-NS_ASSUME_NONNULL_END
