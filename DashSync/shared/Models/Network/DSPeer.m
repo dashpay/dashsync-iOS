@@ -847,8 +847,6 @@
         [self acceptDarksendControlMessage:message];
     else if ([MSG_DARKSENDFINISH isEqual:type])
         [self acceptDarksendFinishMessage:message];
-    else if ([MSG_DARKSENDINITIATE isEqual:type])
-        [self acceptDarksendInitiateMessage:message];
     else if ([MSG_DARKSENDQUORUM isEqual:type])
         [self acceptDarksendQuorumMessage:message];
     else if ([MSG_DARKSENDSESSION isEqual:type])
@@ -1827,9 +1825,6 @@
 
 - (void)acceptDarksendFinishMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsf");
-}
-
-- (void)acceptDarksendInitiateMessage:(NSData *)message {
 }
 
 - (void)acceptDarksendQuorumMessage:(NSData *)message {

@@ -31,13 +31,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
 @property (nonatomic, strong) NSMutableDictionary *masternodeMap;
 @property (atomic, readonly) NSUInteger maxConnections;
+@property (nonatomic, strong) NSMutableArray<DSPeer *> *pendingClosingMasternodes;
+@property (nonatomic, strong) NSLock *lock;
 
 - (instancetype)initWithManager:(DSCoinJoinManager *)manager;
 
 - (void)startAsync;
 - (void)stopAsync;
-- (BOOL)isMasternodeOrDisconnectRequested;
+- (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
+- (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
+
 
 @end
 

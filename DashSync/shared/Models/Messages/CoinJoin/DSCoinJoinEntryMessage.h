@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSCoinJoinAcceptMessage : DSMessageRequest
+@interface DSCoinJoinEntryMessage : DSMessageRequest
 
 @property (nonatomic, readonly) NSData *data;
 

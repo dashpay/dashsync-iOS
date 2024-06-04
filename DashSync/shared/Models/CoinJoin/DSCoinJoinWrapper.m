@@ -45,34 +45,26 @@
     }
     
     if (_walletEx == NULL) {
-        DSLog(@"[OBJ-C] CoinJoin: register");
-        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, sendMessage, addPendingMasternode);
+        DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
+        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode);
     }
     
     if (_clientManager == NULL) {
+        DSLog(@"[OBJ-C] CoinJoin: register client manager");
         _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
+    }
+    
+    if (_clientQueueManager == NULL) {
+        DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
+        _clientQueueManager = register_client_queue_manager(_clientManager, _options, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, AS_RUST(self));
     }
     
     DSLog(@"[OBJ-C] CoinJoin: call");
     Balance *balance = [self.manager getBalance];
     
-    run_client_manager(_clientManager, *balance);
+    run_client_manager(_clientManager, _clientQueueManager, *balance);
 //    DSLog(@"[OBJ-C] CoinJoin: do_automatic_denominating result: %llu", self.wrapper.balance_needs_anonymized);
     free(balance);
-    
-    
-    // Might be useful:
-//    - (DSPeer *)peerForLocation:(UInt128)IPAddress port:(uint16_t)port
-    
-//    if ([self.masternodeManager hasMasternodeAtLocation:IPAddress port:port]) {
-//        return DSPeerType_MasterNode;
-//    } else {
-//        return DSPeerType_FullNode;
-//    }
-
-//    - (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry
-    
-//    - (void)sendRequest:(DSMessageRequest *)request
 }
 
 - (BOOL)isWaitingForNewBlock {
@@ -399,24 +391,35 @@ bool isBlockchainSynced(const void *context) {
 }
 
 bool isMasternodeOrDisconnectRequested(uint8_t (*ip_address)[16], uint16_t port, const void *context) {
+    UInt128 ipAddress = *((UInt128 *)ip_address);
     BOOL result = NO;
     
     @synchronized (context) {
-        // TODO: ip_address, port
-        result = AS_OBJC(context).manager.isMasternodeOrDisconnectRequested;
+        result = [AS_OBJC(context).manager isMasternodeOrDisconnectRequested:ipAddress port:port];
     }
     
     return result;
 }
 
-bool sendMessage(ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, const void *context) {
+bool disconnectMasternode(uint8_t (*ip_address)[16], uint16_t port, const void *context) {
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    BOOL result = YES; // TODO
+    BOOL result = NO;
+    
+    @synchronized (context) {
+        result = [AS_OBJC(context).manager disconnectMasternode:ipAddress port:port];
+    }
+    
+    return result;
+}
+
+bool sendMessage(char *message_type, ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, const void *context) {
+    NSString *messageType = [NSString stringWithUTF8String:message_type];
+    UInt128 ipAddress = *((UInt128 *)ip_address);
+    BOOL result = YES;
     
     @synchronized (context) {
         NSData *message = [NSData dataWithBytes:byteArray->ptr length:byteArray->len];
-        // TODO: different messages support
-        [AS_OBJC(context).manager sendAcceptMessage:message withPeerIP:ipAddress port:port];
+        result = [AS_OBJC(context).manager sendMessageOfType:messageType message:message withPeerIP:ipAddress port:port];
     }
     
     return result;

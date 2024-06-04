@@ -25,6 +25,10 @@
     return [[DSCoinJoinAcceptMessage alloc] initWithData:data];
 }
 
++ (NSString *)type {
+    return MSG_COINJOIN_ACCEPT;
+}
+
 - (instancetype)initWithData:(NSData *)data {
     self = [super init];
     if (self) {
@@ -34,7 +38,7 @@
 }
 
 - (NSString *)type {
-    return MSG_COINJOIN_ACCEPT;
+    return DSCoinJoinAcceptMessage.type;
 }
 
 - (NSData *)toData {

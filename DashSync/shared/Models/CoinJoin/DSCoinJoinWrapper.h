@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, nullable) WalletEx *walletEx;
 @property (nonatomic, assign, nullable) CoinJoinClientManager *clientManager;
+@property (nonatomic, assign, nullable) CoinJoinClientQueueManager *clientQueueManager;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
 
 - (instancetype)initWithManagers:(DSCoinJoinManager *)manager chainManager:(DSChainManager *)chainManager;

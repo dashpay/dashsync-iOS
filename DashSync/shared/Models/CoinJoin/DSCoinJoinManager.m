@@ -486,14 +486,29 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     return self.chainManager.masternodeManager.currentMasternodeList;
 }
 
-- (BOOL)isMasternodeOrDisconnectRequested {
-    return [_masternodeGroup isMasternodeOrDisconnectRequested];
+- (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port {
+    return [_masternodeGroup isMasternodeOrDisconnectRequested:ip port:port];
 }
 
-- (void)sendAcceptMessage:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
-    DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+- (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port {
+    return [_masternodeGroup disconnectMasternode:ip port:port];
+}
+
+- (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
     DSPeer *peer = [self.chainManager.peerManager connectedPeer]; // TODO: coinjoin peer management
-    [peer sendRequest:request];
+    
+    if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
+        DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+        [peer sendRequest:request];
+    } else if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
+        DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+        [peer sendRequest:request];
+    } else {
+        DSLog(@"[OBJ-C] CoinJoin: unknown message type: %@", messageType);
+        return NO;
+    }
+
+    return YES;
 }
 
 - (BOOL)isWaitingForNewBlock {
