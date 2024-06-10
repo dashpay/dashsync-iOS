@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithManagers:(DSCoinJoinManager *)manager chainManager:(DSChainManager *)chainManager;
 - (void)runCoinJoin;
 - (BOOL)isWaitingForNewBlock;
+- (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message;
 
 @end
 

@@ -46,7 +46,7 @@
     // TODO: refreshUnusedKeys()
     
     if (_coinJoinManager == NULL) {
-        _coinJoinManager = [[DSCoinJoinManager alloc] initWithChainManager:self.chainManager];
+        _coinJoinManager = [DSCoinJoinManager sharedInstanceForChain:_chainManager.chain];
     }
     
     [_coinJoinManager startAsync];

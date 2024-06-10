@@ -28,17 +28,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCoinJoinManager : NSObject
 
-@property (nonatomic, assign, nullable) DSChainManager *chainManager;
+@property (nonatomic, assign, nullable) DSChain *chain;
 @property (nonatomic, strong, nullable) DSMasternodeGroup *masternodeGroup;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
 @property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
-@property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
 @property (nonatomic, readonly) BOOL isWaitingForNewBlock;
 @property (nonatomic, readonly) BOOL isMixing;
 
-- (instancetype)initWithChainManager:(DSChainManager *)chainManager;
++ (instancetype)sharedInstanceForChain:(DSChain *)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index;
 - (NSArray<DSInputCoin *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount;
@@ -58,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stopAsync;
 - (void)runCoinJoin;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
+- (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
 
 @end
 
