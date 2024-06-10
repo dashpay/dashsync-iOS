@@ -212,10 +212,7 @@
 }
 
 - (NSString *)debugLocation {
-    DSChain *chain = self.chain;
-    NSString *host = self.host;
-    DSLog(@"%@", host);
-    return [NSString stringWithFormat:@"[%@: %@]", chain, self.location];
+    return [NSString stringWithFormat:@"[%@: %@]", self.chain.name, self.location];
 }
 
 - (NSString *)host {
