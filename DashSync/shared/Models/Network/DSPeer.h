@@ -141,10 +141,10 @@ typedef NS_ENUM(uint32_t, DSInvType)
 
 #define MSG_COINJOIN_ACCEPT @"dsa"
 #define MSG_COINJOIN_ENTRY @"dsi"
+#define MSG_COINJOIN_QUEUE @"dsq"
 
 #define MSG_DARKSENDCONTROL @"dsc"
 #define MSG_DARKSENDFINISH @"dsf"
-#define MSG_DARKSENDQUORUM @"dsq"
 #define MSG_DARKSENDSESSION @"dss"
 #define MSG_DARKSENDSESSIONUPDATE @"dssu"
 #define MSG_DARKSENDTX @"dstx"

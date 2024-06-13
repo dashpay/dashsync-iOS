@@ -63,6 +63,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionInvRequest.h"
 #import "DSVersionRequest.h"
+#import "DSCoinJoinManager.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -842,13 +843,13 @@
         [self acceptGovObjectMessage:message];
     //else if ([MSG_GOVOBJSYNC isEqual:type]) [self acceptGovObjectSyncMessage:message];
 
-    //private send
+    // CoinJoin
     if ([MSG_DARKSENDCONTROL isEqual:type])
         [self acceptDarksendControlMessage:message];
     else if ([MSG_DARKSENDFINISH isEqual:type])
         [self acceptDarksendFinishMessage:message];
-    else if ([MSG_DARKSENDQUORUM isEqual:type])
-        [self acceptDarksendQuorumMessage:message];
+    else if ([MSG_COINJOIN_QUEUE isEqual:type])
+        [self acceptCoinJoinQueueMessage:message];
     else if ([MSG_DARKSENDSESSION isEqual:type])
         [self acceptDarksendSessionMessage:message];
     else if ([MSG_DARKSENDSESSIONUPDATE isEqual:type])
@@ -1827,8 +1828,8 @@
     DSLog(@"[OBJ-C] CoinJoin: got dsf");
 }
 
-- (void)acceptDarksendQuorumMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsq");
+- (void)acceptCoinJoinQueueMessage:(NSData *)message {
+    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
 }
 
 - (void)acceptDarksendSessionMessage:(NSData *)message {

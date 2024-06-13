@@ -28,37 +28,56 @@
 #import "DSMasternodeManager.h"
 #import "DSCoinJoinAcceptMessage.h"
 #import "DSPeerManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 @implementation DSCoinJoinManager
 
-- (instancetype)initWithChainManager:(DSChainManager *)chainManager {
+static NSMutableDictionary *_managerChainDictionary = nil;
+static dispatch_once_t managerChainToken = 0;
+
++ (instancetype)sharedInstanceForChain:(DSChain *)chain {
+    NSParameterAssert(chain);
+
+    dispatch_once(&managerChainToken, ^{
+        _managerChainDictionary = [NSMutableDictionary dictionary];
+    });
+    DSCoinJoinManager *managerForChain = nil;
+    @synchronized(self) {
+        if (![_managerChainDictionary objectForKey:chain.uniqueID]) {
+            managerForChain = [[DSCoinJoinManager alloc] initWithChain:chain];
+            _managerChainDictionary[chain.uniqueID] = managerForChain;
+        } else {
+            managerForChain = [_managerChainDictionary objectForKey:chain.uniqueID];
+        }
+    }
+    return managerForChain;
+}
+
+- (instancetype)initWithChain:(DSChain *)chain {
     self = [super init];
     if (self) {
-        _chainManager = chainManager;
-        _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chainManager];
+        _chain = chain;
+        _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chain.chainManager];
         _masternodeGroup = [[DSMasternodeGroup alloc] initWithManager:self];
     }
     return self;
 }
 
-- (DSChain *)chain {
-    return self.chainManager.chain;
-}
 
 - (void)startAsync {
     if (!_masternodeGroup.isRunning) {
         DSLog(@"[OBJ-C] CoinJoin: broadcasting senddsq(true) to all peers");
-        [self.chainManager.peerManager shouldSendDsq:true];
+        [self.chain.chainManager.peerManager shouldSendDsq:true];
         [_masternodeGroup startAsync];
     }
 }
 
 - (void)stopAsync {
      if (_masternodeGroup != nil && _masternodeGroup.isRunning) {
-        [self.chainManager.peerManager shouldSendDsq:false];
+        [self.chain.chainManager.peerManager shouldSendDsq:false];
         [_masternodeGroup stopAsync];
         _masternodeGroup = nil;
     }
@@ -67,6 +86,20 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 - (void)runCoinJoin {
     [_wrapper runCoinJoin];
 }
+
+- (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
+    if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
+        [_wrapper processDSQueueFrom:peer message:message];
+    }
+//    else if ([message isKindOfClass:[CoinJoinBroadcastTx class]]) {
+//        [self processBroadcastTx:(CoinJoinBroadcastTx *)message];
+//    } else {
+//        for (CoinJoinClientManager *clientManager in coinJoinClientManagers.allValues) {
+//            [clientManager processMessageFromPeer:from message:message flag:NO];
+//        }
+//    }
+}
+
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index {
     DSTransaction *tx = [self.chain transactionForHash:txHash];
@@ -389,7 +422,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
     DSLog(@"[OBJ-C] CoinJoin: denominatedBalance: %llu", denominatedBalance);
     
     Balance *balance = malloc(sizeof(Balance));
-    balance->my_trusted = self.chainManager.chain.balance;
+    balance->my_trusted = self.chain.chainManager.chain.balance;
     balance->denominated_trusted = denominatedBalance;
     balance->anonymized = anonymizedBalance;
     
@@ -475,15 +508,15 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 }
 
 - (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash {
-    return [self.chainManager.masternodeManager.currentMasternodeList masternodeForRegistrationHash:hash];
+    return [self.chain.chainManager.masternodeManager.currentMasternodeList masternodeForRegistrationHash:uint256_reverse(hash)];
 }
 
 - (uint64_t)validMNCount {
-    return self.chainManager.masternodeManager.currentMasternodeList.validMasternodeCount;
+    return self.chain.chainManager.masternodeManager.currentMasternodeList.validMasternodeCount;
 }
 
 - (DSMasternodeList *)mnList {
-    return self.chainManager.masternodeManager.currentMasternodeList;
+    return self.chain.chainManager.masternodeManager.currentMasternodeList;
 }
 
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port {
@@ -495,7 +528,7 @@ int32_t const DEFAULT_MAX_DEPTH = 9999999;
 }
 
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
-    DSPeer *peer = [self.chainManager.peerManager connectedPeer]; // TODO: coinjoin peer management
+    DSPeer *peer = [self.chain.chainManager.peerManager connectedPeer]; // TODO: coinjoin peer management
     
     if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
         DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];

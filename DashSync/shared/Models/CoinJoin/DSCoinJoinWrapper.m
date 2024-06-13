@@ -52,19 +52,10 @@
     if (_clientManager == NULL) {
         DSLog(@"[OBJ-C] CoinJoin: register client manager");
         _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
-    }
-    
-    if (_clientQueueManager == NULL) {
+        
         DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
-        _clientQueueManager = register_client_queue_manager(_clientManager, _options, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, AS_RUST(self));
+        add_client_queue_manager(_clientManager, _options, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, AS_RUST(self));
     }
-    
-    DSLog(@"[OBJ-C] CoinJoin: call");
-    Balance *balance = [self.manager getBalance];
-    
-    run_client_manager(_clientManager, _clientQueueManager, *balance);
-//    DSLog(@"[OBJ-C] CoinJoin: do_automatic_denominating result: %llu", self.wrapper.balance_needs_anonymized);
-    free(balance);
 }
 
 - (BOOL)isWaitingForNewBlock {
@@ -84,6 +75,30 @@
     DSLog(@"[OBJ-C] CoinJoin: trusted balance: %llu", self.chainManager.chain.balance);
     
     return options;
+}
+
+- (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message {
+    @synchronized (self) {
+        ByteArray *array = malloc(sizeof(ByteArray));
+        array->len = (uintptr_t)message.length;
+        array->ptr = data_malloc(message);
+        
+        process_ds_queue(_clientManager, peer.address.u8, peer.port, array);
+        
+        if (array) {
+            if (array->ptr) {
+                free((void *)array->ptr);
+            }
+            
+            free(array);
+        }
+    
+        DSLog(@"[OBJ-C] CoinJoin: call");
+        Balance *balance = [self.manager getBalance];
+        
+        run_client_manager(_clientManager, *balance);
+        free(balance);
+    }
 }
 
 - (DSChain *)chain {

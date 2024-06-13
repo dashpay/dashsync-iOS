@@ -64,7 +64,6 @@
     }
     
     free(item);
-    DSLog(@"[OBJ-C] CoinJoin: 💀 CompactTallyItem");
 }
 
 @end

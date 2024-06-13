@@ -53,7 +53,6 @@
     }
 
     free(inputCoin);
-    DSLog(@"[OBJ-C] CoinJoin: 💀 InputCoin");
 }
 
 @end
