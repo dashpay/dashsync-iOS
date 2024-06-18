@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)runCoinJoin;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
+- (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId;
 
 @end
 

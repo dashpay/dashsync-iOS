@@ -90,14 +90,11 @@ static dispatch_once_t managerChainToken = 0;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
     if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
         [_wrapper processDSQueueFrom:peer message:message];
+    } else if ([type isEqualToString:MSG_COINJOIN_BROADCAST_TX]) {
+//        [_wrapper processBroadcastTxFrom:peer message:message];
+    } else {
+        [_wrapper processMessageFrom:peer message:message type:type];
     }
-//    else if ([message isKindOfClass:[CoinJoinBroadcastTx class]]) {
-//        [self processBroadcastTx:(CoinJoinBroadcastTx *)message];
-//    } else {
-//        for (CoinJoinClientManager *clientManager in coinJoinClientManagers.allValues) {
-//            [clientManager processMessageFromPeer:from message:message flag:NO];
-//        }
-//    }
 }
 
 
@@ -528,20 +525,20 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
-    DSPeer *peer = [self.chain.chainManager.peerManager connectedPeer]; // TODO: coinjoin peer management
-    
-    if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
-        DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
-        [peer sendRequest:request];
-    } else if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
-        DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
-        [peer sendRequest:request];
-    } else {
-        DSLog(@"[OBJ-C] CoinJoin: unknown message type: %@", messageType);
-        return NO;
-    }
+    return [self.masternodeGroup forPeer:address port:port warn:true withPredicate:^BOOL(DSPeer * _Nonnull peer) {
+        if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
+            DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+            [peer sendRequest:request];
+        } else if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
+            DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+            [peer sendRequest:request];
+        } else {
+            DSLog(@"[OBJ-C] CoinJoin: unknown message type: %@", messageType);
+            return NO;
+        }
 
-    return YES;
+        return YES;
+    }];
 }
 
 - (BOOL)isWaitingForNewBlock {
@@ -549,11 +546,15 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isMixing {
-    return false;
+    return [self.wrapper isMixing];
 }
 
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId {
     return [_masternodeGroup addPendingMasternode:proTxHash clientSessionId:sessionId];
+}
+
+- (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId {
+    return [_wrapper mixingMasternodeAddressFor:clientSessionId];
 }
 
 @end

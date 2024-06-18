@@ -844,18 +844,18 @@
     //else if ([MSG_GOVOBJSYNC isEqual:type]) [self acceptGovObjectSyncMessage:message];
 
     // CoinJoin
-    if ([MSG_DARKSENDCONTROL isEqual:type])
-        [self acceptDarksendControlMessage:message];
+    else if ([MSG_COINJOIN_COMPLETE isEqual:type])
+        [self acceptCoinJoinCompleteMessage:message];
     else if ([MSG_DARKSENDFINISH isEqual:type])
         [self acceptDarksendFinishMessage:message];
     else if ([MSG_COINJOIN_QUEUE isEqual:type])
         [self acceptCoinJoinQueueMessage:message];
     else if ([MSG_DARKSENDSESSION isEqual:type])
         [self acceptDarksendSessionMessage:message];
-    else if ([MSG_DARKSENDSESSIONUPDATE isEqual:type])
-        [self acceptDarksendSessionUpdateMessage:message];
-    else if ([MSG_DARKSENDTX isEqual:type])
-        [self acceptDarksendTransactionMessage:message];
+    else if ([MSG_COINJOIN_STATUS_UPDATE isEqual:type])
+        [self acceptCoinJoinStatusUpdateMessage:message];
+    else if ([MSG_COINJOIN_BROADCAST_TX isEqual:type])
+        [self acceptCoinJoinBroadcastTxMessage:message];
 #if DROP_MESSAGE_LOGGING
     else {
         DSLogWithLocation(self, @"dropping %@, len:%u, not implemented", type, message.length);
@@ -1820,8 +1820,9 @@
 - (void)acceptDarksendAnnounceMessage:(NSData *)message {
 }
 
-- (void)acceptDarksendControlMessage:(NSData *)message {
+- (void)acceptCoinJoinCompleteMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsc");
+    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
 }
 
 - (void)acceptDarksendFinishMessage:(NSData *)message {
@@ -1829,17 +1830,19 @@
 }
 
 - (void)acceptCoinJoinQueueMessage:(NSData *)message {
+    DSLog(@"[OBJ-C] CoinJoin: got dsq");
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
 }
 
 - (void)acceptDarksendSessionMessage:(NSData *)message {
 }
 
-- (void)acceptDarksendSessionUpdateMessage:(NSData *)message {
+- (void)acceptCoinJoinStatusUpdateMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dssu");
+    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_STATUS_UPDATE];
 }
 
-- (void)acceptDarksendTransactionMessage:(NSData *)message {
+- (void)acceptCoinJoinBroadcastTxMessage:(NSData *)message {
     //    DSTransaction *tx = [DSTransaction transactionWithMessage:message];
     //
     //    if (! tx) {

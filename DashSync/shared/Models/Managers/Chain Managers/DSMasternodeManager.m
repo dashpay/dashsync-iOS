@@ -156,12 +156,16 @@
 }
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
+    return [self masternodeAtLocation:IPAddress port:port] != nil;
+}
+
+- (DSSimplifiedMasternodeEntry *)masternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
     for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues]) {
         if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
-            return YES;
+            return simplifiedMasternodeEntry;
         }
     }
-    return NO;
+    return nil;
 }
 
 - (NSUInteger)masternodeListRetrievalQueueCount {
