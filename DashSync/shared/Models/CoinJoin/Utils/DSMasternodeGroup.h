@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSMutableSet *mutableConnectedPeers;
 @property (nonatomic, strong) NSMutableSet *mutablePendingPeers;
+@property (nonatomic, readonly) BOOL shouldSendDsq;
+@property (nullable, nonatomic, readonly) DSPeer *downloadPeer;
 
 - (instancetype)initWithManager:(DSCoinJoinManager *)manager;
 

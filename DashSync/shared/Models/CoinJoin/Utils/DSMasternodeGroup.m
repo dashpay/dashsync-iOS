@@ -22,6 +22,7 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
+#import "DSSendCoinJoinQueue.h"
 #import <arpa/inet.h>
 
 uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
@@ -37,6 +38,9 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
         _addressMap = [NSMutableDictionary dictionary];
         _mutableConnectedPeers = [NSMutableSet set];
         _mutablePendingPeers = [NSMutableSet set];
+        _downloadPeer = nil;
+        _maxConnections = 0;
+        _shouldSendDsq = true;
     }
     return self;
 }
@@ -73,11 +77,12 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
     return [self forPeer:ip port:port warn:YES withPredicate:^BOOL(DSPeer *peer) {
         DSLog(@"[OBJ-C] CoinJoin: masternode[closing] %@", [self hostFor:ip]);
         
-        [self.lock lock];
-        [self.pendingClosingMasternodes addObject:peer];
-        // TODO (dashj): what if this disconnects the wrong one
-        [self updateMaxConnections];
-        [self.lock unlock];
+        @synchronized (self.pendingClosingMasternodes) {
+            [self.pendingClosingMasternodes addObject:peer];
+            // TODO (dashj): what if this disconnects the wrong one
+            [self updateMaxConnections];
+        }
+        
         [peer disconnect];
         
         return true;
@@ -89,7 +94,7 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
     
     for (DSPeer *peer in self.connectedPeers) {
         [listOfPeers appendFormat:@"%@, ", peer.location];
-        
+            
         if (uint128_eq(peer.address, ip) && peer.port == port) {
             return predicate(peer);
         }
@@ -172,7 +177,7 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
 }
 
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId {
-    @synchronized (self) {
+    @synchronized (_pendingSessions) {
         DSLog(@"[OBJ-C] CoinJoin: adding masternode for mixing. maxConnections = %lu, protx: %@", (unsigned long)_maxConnections, uint256_hex(proTxHash));
         NSValue *sessionIdValue = [NSValue valueWithBytes:&sessionId objCType:@encode(UInt256)];
         [_pendingSessions addObject:sessionIdValue];
@@ -305,7 +310,10 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
     [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.chain.chainManager.transactionManager governanceDelegate:self.chain.chainManager.governanceSyncManager sporkDelegate:self.chain.chainManager.sporkManager masternodeDelegate:self.chain.chainManager.masternodeManager queue:self.networkingQueue];
     peer.earliestKeyTime = self.chain.earliestWalletCreationTime;;
 
-    [self.mutablePendingPeers addObject:peer];
+    @synchronized (self.mutablePendingPeers) {
+        [self.mutablePendingPeers addObject:peer];
+    }
+    
     [peer connect];
     
     return YES;
@@ -324,28 +332,49 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
 }
 
 - (BOOL)isNodePending:(DSPeer *)node {
-    for (DSPeer *peer in self.mutablePendingPeers) {
-        
-        if (uint128_eq(node.address, peer.address) && node.port == peer.port) {
-            return YES;
+    @synchronized (self) {
+        for (DSPeer *peer in self.mutablePendingPeers) {
+            if (uint128_eq(node.address, peer.address) && node.port == peer.port) {
+                return YES;
+            }
         }
     }
     
     return NO;
 }
 
-@synthesize downloadPeer;
+- (void)peerConnected:(nonnull DSPeer *)peer {
+    // TODO: exp backoff
+    
+    @synchronized (_mutableConnectedPeers) {
+        [_mutablePendingPeers removeObject:peer];
+        [_mutableConnectedPeers addObject:peer];
+    }
+    
+    if (_shouldSendDsq) {
+        [peer sendRequest:[DSSendCoinJoinQueue requestWithShouldSend:true]];
+    }
+}
 
 - (void)peer:(nonnull DSPeer *)peer disconnectedWithError:(nonnull NSError *)error { 
-    // TODO
+    // TODO: exp backoff
+    
+    @synchronized (_mutableConnectedPeers) {
+        [_mutablePendingPeers removeObject:peer];
+        [_mutableConnectedPeers removeObject:peer];
+    
+        DSLog(@"[OBJ-C] CoinJoin: Peer died: %@ (%lu connected, %lu pending, %lu max)", peer.location, (unsigned long)_mutableConnectedPeers.count, (unsigned long)_mutablePendingPeers.count, (unsigned long)_maxConnections);
+     
+        NSUInteger numPeers = _mutablePendingPeers.count + _mutableConnectedPeers.count;
+        
+        if (numPeers < _maxConnections) {
+            [self triggerConnections];
+        }
+    }
 }
 
 - (void)peer:(nonnull DSPeer *)peer relayedPeers:(nonnull NSArray *)peers { 
     // TODO ?
-}
-
-- (void)peerConnected:(nonnull DSPeer *)peer { 
-    // TODO
 }
 
 @end
