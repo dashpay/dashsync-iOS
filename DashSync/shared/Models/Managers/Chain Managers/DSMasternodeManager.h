@@ -70,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
 
+- (DSSimplifiedMasternodeEntry *)masternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
 - (DSQuorumEntry *_Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;

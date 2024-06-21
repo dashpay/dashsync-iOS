@@ -30,9 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
 @property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
 @property (nonatomic, strong) NSMutableDictionary *masternodeMap;
+@property (nonatomic, strong) NSMutableDictionary *addressMap;
 @property (atomic, readonly) NSUInteger maxConnections;
 @property (nonatomic, strong) NSMutableArray<DSPeer *> *pendingClosingMasternodes;
 @property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, strong) NSMutableSet *mutableConnectedPeers;
+@property (nonatomic, strong) NSMutableSet *mutablePendingPeers;
 
 - (instancetype)initWithManager:(DSCoinJoinManager *)manager;
 
@@ -41,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
-
+- (BOOL)forPeer:(UInt128)ip port:(uint16_t)port warn:(BOOL)warn withPredicate:(BOOL (^)(DSPeer *peer))predicate;
 
 @end
 

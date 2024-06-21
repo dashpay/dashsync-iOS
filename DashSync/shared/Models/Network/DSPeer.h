@@ -142,12 +142,12 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define MSG_COINJOIN_ACCEPT @"dsa"
 #define MSG_COINJOIN_ENTRY @"dsi"
 #define MSG_COINJOIN_QUEUE @"dsq"
+#define MSG_COINJOIN_BROADCAST_TX @"dstx"
+#define MSG_COINJOIN_STATUS_UPDATE @"dssu"
+#define MSG_COINJOIN_COMPLETE @"dsc"
 
-#define MSG_DARKSENDCONTROL @"dsc"
 #define MSG_DARKSENDFINISH @"dsf"
 #define MSG_DARKSENDSESSION @"dss"
-#define MSG_DARKSENDSESSIONUPDATE @"dssu"
-#define MSG_DARKSENDTX @"dstx"
 
 #define REJECT_INVALID 0x10     // transaction is invalid for some reason (invalid signature, output value > input, etc)
 #define REJECT_SPENT 0x12       // an input is already spent

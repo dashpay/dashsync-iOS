@@ -62,6 +62,10 @@
     return is_waiting_for_new_block(_clientManager);
 }
 
+- (BOOL)isMixing {
+    return is_mixing(_clientManager);
+}
+
 - (CoinJoinClientOptions *)createOptions {
     CoinJoinClientOptions *options = malloc(sizeof(CoinJoinClientOptions));
     options->enable_coinjoin = YES;
@@ -92,13 +96,35 @@
             
             free(array);
         }
-    
+        
         DSLog(@"[OBJ-C] CoinJoin: call");
         Balance *balance = [self.manager getBalance];
         
         run_client_manager(_clientManager, *balance);
         free(balance);
     }
+}
+
+- (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
+    @synchronized (self) {
+        ByteArray *array = malloc(sizeof(ByteArray));
+        array->len = (uintptr_t)message.length;
+        array->ptr = data_malloc(message);
+        
+        process_coinjoin_message(_clientManager, peer.address.u8, peer.port, array, [type UTF8String]);
+        
+        if (array) {
+            if (array->ptr) {
+                free((void *)array->ptr);
+            }
+            
+            free(array);
+        }
+    }
+}
+
+- (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId {
+    return mixing_masternode_address(_clientManager, (uint8_t (*)[32])(clientSessionId.u8));
 }
 
 - (DSChain *)chain {
