@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
 @property (nonatomic, readonly) BOOL isWaitingForNewBlock;
 @property (nonatomic, readonly) BOOL isMixing;
+@property (nonatomic, strong) id blocksObserver;
 
 + (instancetype)sharedInstanceForChain:(DSChain *)chain;
 - (instancetype)initWithChain:(DSChain *)chain;

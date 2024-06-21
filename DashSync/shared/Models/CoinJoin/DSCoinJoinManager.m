@@ -72,6 +72,19 @@ static dispatch_once_t managerChainToken = 0;
         DSLog(@"[OBJ-C] CoinJoin: broadcasting senddsq(true) to all peers");
         [self.chain.chainManager.peerManager shouldSendDsq:true];
         [_masternodeGroup startAsync];
+        
+        self.blocksObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification
+                                                              object:nil
+                                                               queue:nil
+                                                          usingBlock:^(NSNotification *note) {
+                                                              if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                  
+                                                                  DSLog(@"[OBJ-C] CoinJoin: new block found, restarting masternode connections job");
+                                                                  [self.masternodeGroup triggerConnections];
+                                                                  [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
+                                                              }
+                                                          }];
     }
 }
 
@@ -80,6 +93,7 @@ static dispatch_once_t managerChainToken = 0;
         [self.chain.chainManager.peerManager shouldSendDsq:false];
         [_masternodeGroup stopAsync];
         _masternodeGroup = nil;
+        [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
     }
 }
 
@@ -90,8 +104,6 @@ static dispatch_once_t managerChainToken = 0;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
     if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
         [_wrapper processDSQueueFrom:peer message:message];
-    } else if ([type isEqualToString:MSG_COINJOIN_BROADCAST_TX]) {
-//        [_wrapper processBroadcastTxFrom:peer message:message];
     } else {
         [_wrapper processMessageFrom:peer message:message type:type];
     }
