@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message;
 - (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
+- (void)notifyNewBestBlock:(DSBlock *)block;
 
 @end
 

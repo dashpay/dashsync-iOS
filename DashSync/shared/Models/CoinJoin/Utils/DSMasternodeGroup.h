@@ -17,15 +17,15 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSCoinJoinManager;
 
-@interface DSMasternodeGroup : NSObject
+@interface DSMasternodeGroup : NSObject <DSPeerDelegate>
 
 @property (atomic, readonly) BOOL isRunning;
-@property (nonatomic, strong) id blocksObserver;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
 @property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
@@ -36,11 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSMutableSet *mutableConnectedPeers;
 @property (nonatomic, strong) NSMutableSet *mutablePendingPeers;
+@property (nonatomic, readonly) BOOL shouldSendDsq;
+@property (nullable, nonatomic, readonly) DSPeer *downloadPeer;
 
 - (instancetype)initWithManager:(DSCoinJoinManager *)manager;
 
 - (void)startAsync;
 - (void)stopAsync;
+- (void)triggerConnections;
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;

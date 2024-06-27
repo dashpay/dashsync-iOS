@@ -24,6 +24,7 @@
 #import "DSAccount.h"
 #import "DSChainManager.h"
 #import "DSCoinJoinWrapper.h"
+#import "DSBlock.h"
 
 #define AS_OBJC(context) ((__bridge DSCoinJoinWrapper *)(context))
 #define AS_RUST(context) ((__bridge void *)(context))
@@ -120,6 +121,12 @@
             
             free(array);
         }
+    }
+}
+
+- (void)notifyNewBestBlock:(DSBlock *)block {
+    if (block) {
+        notify_new_best_block(_clientManager, (uint8_t (*)[32])(block.blockHash.u8), block.height);
     }
 }
 
