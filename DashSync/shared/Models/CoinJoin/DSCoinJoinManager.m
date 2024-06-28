@@ -27,6 +27,8 @@
 #import "DSTransactionManager.h"
 #import "DSMasternodeManager.h"
 #import "DSCoinJoinAcceptMessage.h"
+#import "DSCoinJoinEntryMessage.h"
+#import "DSCoinJoinSignedInputs.h"
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 
@@ -541,8 +543,11 @@ static dispatch_once_t managerChainToken = 0;
         if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
             DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
             [peer sendRequest:request];
-        } else if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
-            DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+        } else if ([messageType isEqualToString:DSCoinJoinEntryMessage.type]) {
+            DSCoinJoinEntryMessage *request = [DSCoinJoinEntryMessage requestWithData:message];
+            [peer sendRequest:request];
+        } else if ([messageType isEqualToString:DSCoinJoinSignedInputs.type]) {
+            DSCoinJoinSignedInputs *request = [DSCoinJoinSignedInputs requestWithData:message];
             [peer sendRequest:request];
         } else {
             DSLog(@"[OBJ-C] CoinJoin: unknown message type: %@", messageType);

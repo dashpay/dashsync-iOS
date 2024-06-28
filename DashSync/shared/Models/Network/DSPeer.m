@@ -846,12 +846,10 @@
     // CoinJoin
     else if ([MSG_COINJOIN_COMPLETE isEqual:type])
         [self acceptCoinJoinCompleteMessage:message];
-    else if ([MSG_DARKSENDFINISH isEqual:type])
-        [self acceptDarksendFinishMessage:message];
+    else if ([MSG_COINJOIN_FINAL_TRANSACTION isEqual:type])
+        [self acceptCoinJoinFinalTransaction:message];
     else if ([MSG_COINJOIN_QUEUE isEqual:type])
         [self acceptCoinJoinQueueMessage:message];
-    else if ([MSG_DARKSENDSESSION isEqual:type])
-        [self acceptDarksendSessionMessage:message];
     else if ([MSG_COINJOIN_STATUS_UPDATE isEqual:type])
         [self acceptCoinJoinStatusUpdateMessage:message];
     else if ([MSG_COINJOIN_BROADCAST_TX isEqual:type])
@@ -1815,26 +1813,21 @@
     DSLogWithLocation(self, @"Gov Object Sync");
 }
 
-// MARK: - Accept Dark send
-
-- (void)acceptDarksendAnnounceMessage:(NSData *)message {
-}
+// MARK: - Accept CoinJoin messages
 
 - (void)acceptCoinJoinCompleteMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsc");
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
 }
 
-- (void)acceptDarksendFinishMessage:(NSData *)message {
+- (void)acceptCoinJoinFinalTransaction:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsf");
+    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_FINAL_TRANSACTION];
 }
 
 - (void)acceptCoinJoinQueueMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsq");
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
-}
-
-- (void)acceptDarksendSessionMessage:(NSData *)message {
 }
 
 - (void)acceptCoinJoinStatusUpdateMessage:(NSData *)message {
@@ -1843,37 +1836,8 @@
 }
 
 - (void)acceptCoinJoinBroadcastTxMessage:(NSData *)message {
-    //    DSTransaction *tx = [DSTransaction transactionWithMessage:message];
-    //
-    //    if (! tx) {
-    //        [self error:@"malformed tx message: %@", message];
-    //        return;
-    //    }
-    //    else if (! self.sentFilter && ! self.sentTxAndBlockGetdata) {
-    //        [self error:@"got tx message before loading a filter"];
-    //        return;
-    //    }
-    //
-    //    DSLogPrivate(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
-    //
-    //    dispatch_async(self.delegateQueue, ^{
-    //        [self.delegate peer:self relayedTransaction:tx];
-    //    });
-    //
-    //    if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-    //        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
-    //
-    //        if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
-    //            BRMerkleBlock *block = self.currentBlock;
-    //
-    //            self.currentBlock = nil;
-    //            self.currentBlockTxHashes = nil;
-    //
-    //            dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
-    //                [self.delegate peer:self relayedBlock:block];
-    //            });
-    //        }
-    //    }
+    DSLog(@"[OBJ-C] CoinJoin: got dstx");
+    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_BROADCAST_TX];
 }
 
 // MARK: - hash
