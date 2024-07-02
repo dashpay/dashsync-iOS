@@ -27,6 +27,8 @@
 #import "DSTransactionManager.h"
 #import "DSMasternodeManager.h"
 #import "DSCoinJoinAcceptMessage.h"
+#import "DSCoinJoinEntryMessage.h"
+#import "DSCoinJoinSignedInputs.h"
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 
@@ -267,7 +269,7 @@ static dispatch_once_t managerChainToken = 0;
     return total;
 }
 
-- (NSArray<DSInputCoin *> *) availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount {
+- (NSArray<DSInputCoin *> *)availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount {
     NSMutableArray<DSInputCoin *> *vCoins = [NSMutableArray array];
     
     @synchronized(self) {
@@ -541,8 +543,11 @@ static dispatch_once_t managerChainToken = 0;
         if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
             DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
             [peer sendRequest:request];
-        } else if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
-            DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
+        } else if ([messageType isEqualToString:DSCoinJoinEntryMessage.type]) {
+            DSCoinJoinEntryMessage *request = [DSCoinJoinEntryMessage requestWithData:message];
+            [peer sendRequest:request];
+        } else if ([messageType isEqualToString:DSCoinJoinSignedInputs.type]) {
+            DSCoinJoinSignedInputs *request = [DSCoinJoinSignedInputs requestWithData:message];
             [peer sendRequest:request];
         } else {
             DSLog(@"[OBJ-C] CoinJoin: unknown message type: %@", messageType);

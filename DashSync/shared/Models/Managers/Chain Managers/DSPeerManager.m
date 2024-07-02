@@ -1088,10 +1088,6 @@
 
 // MARK: CoinJoin
 
-- (DSPeer *)connectedPeer { // TODO(coinjoin): temp
-    return self.connectedPeers.objectEnumerator.nextObject;
-}
-
 - (void)shouldSendDsq:(BOOL)shouldSendDsq {
     for (DSPeer *peer in self.connectedPeers) {
         DSSendCoinJoinQueue *request = [DSSendCoinJoinQueue requestWithShouldSend:shouldSendDsq];

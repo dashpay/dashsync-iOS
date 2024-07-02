@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2024 Dash Core Group. All rights reserved.
 //
@@ -15,27 +15,17 @@
 //  limitations under the License.
 //
 
+#import "DSMessageRequest.h"
 #import <Foundation/Foundation.h>
-#import "DSChain.h"
-#import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSCoinJoinManager;
+@interface DSCoinJoinSignedInputs : DSMessageRequest
 
-@interface DSMasternodeGroup : NSObject <DSPeerDelegate>
+@property (nonatomic, readonly) NSData *data;
 
-@property (atomic, readonly) BOOL isRunning;
-
-- (instancetype)initWithManager:(DSCoinJoinManager *)manager;
-
-- (void)startAsync;
-- (void)stopAsync;
-- (void)triggerConnections;
-- (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
-- (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
-- (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
-- (BOOL)forPeer:(UInt128)ip port:(uint16_t)port warn:(BOOL)warn withPredicate:(BOOL (^)(DSPeer *peer))predicate;
++ (instancetype)requestWithData:(NSData *)data;
++ (NSString *)type;
 
 @end
 
