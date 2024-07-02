@@ -185,9 +185,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         @synchronized (self.inactives) {
             BOOL havPeersToTry = self.inactives.count > 0 && [self.backoffMap objectForKey:self.inactives[0].location].retryTime <= now;
             doDiscovery = !havPeersToTry;
-        }
-        
-        @synchronized (self.inactives) {
             NSUInteger numPeers = self.mutablePendingPeers.count + self.connectedPeers.count;
             DSPeer *peerToTry = nil;
             NSDate *retryTime = nil;
