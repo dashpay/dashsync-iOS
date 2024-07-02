@@ -95,7 +95,6 @@ typedef NS_ENUM(uint16_t, DSDisconnectReason)
 
 // MARK: CoinJoin
 
-- (DSPeer *)connectedPeer; // TODO(coinjoin): temp
 - (void)shouldSendDsq:(BOOL)shouldSendDsq;
 
 @end

@@ -23,9 +23,35 @@
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
 #import "DSSendCoinJoinQueue.h"
+#import "DSBackoff.h"
 #import <arpa/inet.h>
 
-uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
+float_t const MIN_PEER_DISCOVERY_INTERVAL = 1; // One second
+float_t const DEFAULT_INITIAL_BACKOFF = 1; // One second
+float_t const DEFAULT_MAX_BACKOFF = 5; // Five seconds
+float_t const GROUP_BACKOFF_MULTIPLIER = 1.5;
+float_t const BACKOFF_MULTIPLIER = 1.001;
+
+@interface DSMasternodeGroup ()
+
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
+@property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
+@property (nonatomic, strong) NSMutableDictionary *masternodeMap;
+@property (nonatomic, strong) NSMutableDictionary *addressMap;
+@property (atomic, readonly) NSUInteger maxConnections;
+@property (nonatomic, strong) NSMutableArray<DSPeer *> *pendingClosingMasternodes;
+@property (nonatomic, strong) NSMutableSet *mutableConnectedPeers;
+@property (nonatomic, strong) NSMutableSet *mutablePendingPeers;
+@property (nonatomic, readonly) BOOL shouldSendDsq;
+@property (nullable, nonatomic, readwrite) DSPeer *downloadPeer;
+@property (nonatomic, readonly) NSUInteger backoff;
+@property (nonatomic, strong) DSBackoff *groupBackoff;
+@property (nonatomic, strong) NSMutableDictionary<NSString*, DSBackoff*> *backoffMap;
+@property (nonatomic, strong) NSMutableArray<DSPeer *> *inactives;
+@property (nonatomic, strong) NSLock *lock;
+
+@end
 
 @implementation DSMasternodeGroup
 
@@ -34,6 +60,7 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
     if (self) {
         _coinJoinManager = manager;
         _pendingSessions = [NSMutableSet set];
+        _pendingClosingMasternodes = [NSMutableArray array];
         _masternodeMap = [NSMutableDictionary dictionary];
         _addressMap = [NSMutableDictionary dictionary];
         _mutableConnectedPeers = [NSMutableSet set];
@@ -41,6 +68,9 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
         _downloadPeer = nil;
         _maxConnections = 0;
         _shouldSendDsq = true;
+        _groupBackoff = [[DSBackoff alloc] initInitialBackoff:DEFAULT_INITIAL_BACKOFF maxBackoff:DEFAULT_MAX_BACKOFF multiplier:GROUP_BACKOFF_MULTIPLIER];
+        _backoffMap = [NSMutableDictionary dictionary];
+        _inactives = [NSMutableArray array];
     }
     return self;
 }
@@ -135,7 +165,12 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
 }
 
 - (void)triggerConnections {
-    dispatch_async(self.networkingQueue, ^{
+    [self triggerConnectionsJobWithDelay:0];
+}
+
+- (void)triggerConnectionsJobWithDelay:(NSTimeInterval)delay {
+    dispatch_time_t delayTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC));
+    dispatch_after(delayTime, self.networkingQueue, ^{
         if (!self.isRunning) {
             return;
         }
@@ -144,7 +179,73 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
             return;
         }
         
-        // TODO
+        BOOL doDiscovery = NO;
+        NSDate *now = [NSDate date];
+        
+        @synchronized (self.inactives) {
+            BOOL havPeersToTry = self.inactives.count > 0 && [self.backoffMap objectForKey:self.inactives[0].location].retryTime <= now;
+            doDiscovery = !havPeersToTry;
+        }
+        
+        @synchronized (self.inactives) {
+            NSUInteger numPeers = self.mutablePendingPeers.count + self.connectedPeers.count;
+            DSPeer *peerToTry = nil;
+            NSDate *retryTime = nil;
+            
+            if (doDiscovery) {
+                NSArray<DSPeer *> *peers = [self getPeers];
+                
+                for (DSPeer *peer in [self getPeers]) {
+                    [self addInactive:peer];
+                }
+                
+                BOOL discoverySuccess = peers.count > 0;
+                // Require that we have enough connections, to consider this
+                // a success, or we just constantly test for new peers
+                if (discoverySuccess && numPeers >= self.maxConnections) {
+                    [self.groupBackoff trackSuccess];
+                } else {
+                    [self.groupBackoff trackFailure];
+                }
+            }
+            
+            // Inactives is sorted by backoffMap time.
+            if (self.inactives.count == 0) {
+                if (numPeers < self.maxConnections) {
+                    NSTimeInterval interval = MAX([self.groupBackoff.retryTime timeIntervalSinceDate:now], MIN_PEER_DISCOVERY_INTERVAL);
+                    
+                    DSLog(@"[OBJ-C] CoinJoin: Masternode discovery didn't provide us any more masternodes, will try again in %fl ms.", interval);
+                    
+                    [self triggerConnectionsJobWithDelay:interval];
+                } else {
+                    // We have enough peers and discovery provided no more, so just settle down. Most likely we
+                    // were given a fixed set of addresses in some test scenario.
+                }
+                return;
+            } else {
+                peerToTry = self.inactives.firstObject;
+                [self.inactives removeObjectAtIndex:0];
+                retryTime = [self.backoffMap objectForKey:peerToTry.location].retryTime;
+            }
+            
+            retryTime = [retryTime laterDate:self.groupBackoff.retryTime];
+            
+            if (retryTime > now) {
+                NSTimeInterval delay = [retryTime timeIntervalSinceDate:now];
+                DSLog(@"Waiting %fl ms before next connect attempt to masternode to %@", delay, peerToTry == NULL ? @"" : peerToTry.location);
+                [self.inactives addObject:peerToTry];
+                [self triggerConnectionsJobWithDelay:delay];
+                return;
+            }
+            
+            [self connectTo:peerToTry incrementMaxConnections:false];
+        }
+        
+        NSUInteger count = self.mutablePendingPeers.count + self.connectedPeers.count;
+        
+        if (count < self.maxConnections) {
+            [self triggerConnectionsJobWithDelay:0]; // Try next peer immediately.
+        }
     });
 }
 
@@ -207,14 +308,29 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
         return;
     }
     
-    // TODO:
     // We may now have too many or too few open connections. Add more or drop some to get to the right amount.
-//  adjustment = maxConnections - channels.getConnectedClientCount();
-//  if (adjustment > 0)
-//      triggerConnections();
-//
-//  if (adjustment < 0)
-//      channels.closeConnections(-adjustment);
+    NSUInteger adjustment = 0;
+    NSSet *connectedPeers = self.connectedPeers;
+    
+    @synchronized (self.mutablePendingPeers) {
+        NSUInteger numPeers = _mutablePendingPeers.count + connectedPeers.count;
+        adjustment = _maxConnections - numPeers;
+    }
+    
+    if (adjustment > 0) {
+        [self triggerConnections];
+    }
+
+    if (adjustment < 0) {
+        for (DSPeer *peer in connectedPeers) {
+            [peer disconnect];
+            adjustment++;
+            
+            if (adjustment >= 0) {
+                break;
+            }
+        }
+    }
 }
 
 - (void)checkMasternodesWithoutSessions {
@@ -344,9 +460,12 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
 }
 
 - (void)peerConnected:(nonnull DSPeer *)peer {
-    // TODO: exp backoff
-    
-    @synchronized (_mutableConnectedPeers) {
+    @synchronized (self) {
+        [_groupBackoff trackSuccess];
+        [[_backoffMap objectForKey:peer.location] trackSuccess];
+        
+        DSLog(@"[OBJ-C] CoinJoin: New peer %@ ({%lu connected, %lu pending, %lu max)", peer.location, _mutableConnectedPeers.count, _mutablePendingPeers.count, _maxConnections);
+        
         [_mutablePendingPeers removeObject:peer];
         [_mutableConnectedPeers addObject:peer];
     }
@@ -356,25 +475,86 @@ uint64_t const MIN_PEER_DISCOVERY_INTERVAL = 1000;
     }
 }
 
-- (void)peer:(nonnull DSPeer *)peer disconnectedWithError:(nonnull NSError *)error { 
-    // TODO: exp backoff
-    
-    @synchronized (_mutableConnectedPeers) {
+- (void)peer:(nonnull DSPeer *)peer disconnectedWithError:(nonnull NSError *)error {
+    @synchronized (self) {
         [_mutablePendingPeers removeObject:peer];
         [_mutableConnectedPeers removeObject:peer];
-    
+        
         DSLog(@"[OBJ-C] CoinJoin: Peer died: %@ (%lu connected, %lu pending, %lu max)", peer.location, (unsigned long)_mutableConnectedPeers.count, (unsigned long)_mutablePendingPeers.count, (unsigned long)_maxConnections);
-     
+        
+        [_groupBackoff trackFailure];
+        [[_backoffMap objectForKey:peer.location] trackFailure];
+        // Put back on inactive list
+        [self addInactive:peer];
         NSUInteger numPeers = _mutablePendingPeers.count + _mutableConnectedPeers.count;
         
         if (numPeers < _maxConnections) {
             [self triggerConnections];
         }
     }
+     
+    @synchronized (_pendingClosingMasternodes) {
+        DSPeer *masternode = NULL;
+        
+        for (DSPeer *mn in _pendingClosingMasternodes) {
+            if ([peer.location isEqualToString:mn.location]) {
+                masternode = mn;
+            }
+        }
+        
+        DSLog(@"[OBJ-C] CoinJoin: handling this mn peer death: %@ -> %@", peer.location, masternode != NULL ? masternode.location : @"not found in closing list");
+        
+        if (masternode) {
+            NSString *address = peer.location;
+            
+            if ([_pendingClosingMasternodes containsObject:masternode]) {
+                // if this is part of pendingClosingMasternodes, where we want to close the connection,
+                // we don't want to increase the backoff time
+                [[_backoffMap objectForKey:address] trackSuccess];
+            }
+            
+            [_pendingClosingMasternodes removeObject:masternode];
+            UInt256 sessionId = [_chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port].providerRegistrationTransactionHash;
+            NSValue *sessionIdValue = [NSValue valueWithBytes:&sessionId objCType:@encode(UInt256)];
+            [_pendingSessions removeObject:sessionIdValue];
+            [_masternodeMap removeObjectForKey:sessionIdValue];
+            [_addressMap removeObjectForKey:masternode.location];
+        }
+        
+        [self checkMasternodesWithoutSessions];
+    }
 }
 
-- (void)peer:(nonnull DSPeer *)peer relayedPeers:(nonnull NSArray *)peers { 
+- (void)peer:(nonnull DSPeer *)peer relayedPeers:(nonnull NSArray *)peers {
     // TODO ?
+}
+
+- (void)addInactive:(DSPeer *)peer {
+    @synchronized (_inactives) {
+        // Deduplicate, handle differently than PeerGroup
+        if ([self.inactives containsObject:peer]) {
+            return;
+        }
+                
+        // do not connect to another the same peer twice
+        if ([self isNodeConnected:peer]) {
+            DSLog(@"[OBJ-C] CoinJoin: attempting to connect to the same masternode again: %@", peer.location);
+            return;
+        }
+        
+        DSBackoff *backoff = [[DSBackoff alloc] initInitialBackoff:DEFAULT_INITIAL_BACKOFF maxBackoff:DEFAULT_MAX_BACKOFF multiplier:GROUP_BACKOFF_MULTIPLIER];
+        [self.backoffMap setObject:backoff forKey:peer.location];
+        [self.inactives addObject:peer];
+        [self sortInactives];
+    }
+}
+
+- (void)sortInactives {
+    [_inactives sortUsingComparator:^NSComparisonResult(DSPeer *obj1, DSPeer *obj2) {
+        DSBackoff *backoff1 = [_backoffMap objectForKey:obj1.location];
+        DSBackoff *backoff2 = [_backoffMap objectForKey:obj2.location];
+        return [backoff1.retryTime compare:backoff2.retryTime];
+    }];
 }
 
 @end

@@ -345,7 +345,7 @@ ByteArray freshCoinJoinAddress(bool internal, const void *context) {
     return script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
 }
 
-bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_denominating, const void *context) {
+bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_denominating, uint8_t (*client_session_id)[32], const void *context) {
     DSLog(@"[OBJ-C] CoinJoin: commitTransaction");
     
     NSMutableArray *amounts = [NSMutableArray array];
@@ -368,7 +368,8 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_d
                 DSLog(@"[OBJ-C] CoinJoin: commit tx error: %@", error);
             } else if (is_denominating) {
                 DSLog(@"[OBJ-C] CoinJoin: call finish_automatic_denominating");
-                bool isFinished = finish_automatic_denominating(wrapper.clientManager);
+                bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
+                processor_destroy_block_hash(client_session_id);
                 DSLog(@"[OBJ-C] CoinJoin: is automatic_denominating finished: %s", isFinished ? "YES" : "NO");
             }
         }];

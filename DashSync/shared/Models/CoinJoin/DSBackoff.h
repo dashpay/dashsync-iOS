@@ -16,27 +16,18 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSChain.h"
-#import "DSPeer.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@interface DSBackoff : NSObject
 
-@class DSCoinJoinManager;
+@property (nonatomic, strong) NSDate *retryTime;
+@property (nonatomic, assign) float_t backoff;
+@property (nonatomic, readonly) float_t maxBackoff;
+@property (nonatomic, readonly) float_t initialBackoff;
+@property (nonatomic, readonly) float_t multiplier;
 
-@interface DSMasternodeGroup : NSObject <DSPeerDelegate>
+- (instancetype)initInitialBackoff:(float_t)initial maxBackoff:(float_t)max multiplier:(float_t)multiplier;
 
-@property (atomic, readonly) BOOL isRunning;
-
-- (instancetype)initWithManager:(DSCoinJoinManager *)manager;
-
-- (void)startAsync;
-- (void)stopAsync;
-- (void)triggerConnections;
-- (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
-- (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
-- (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
-- (BOOL)forPeer:(UInt128)ip port:(uint16_t)port warn:(BOOL)warn withPredicate:(BOOL (^)(DSPeer *peer))predicate;
+- (void)trackSuccess;
+- (void)trackFailure;
 
 @end
-
-NS_ASSUME_NONNULL_END
