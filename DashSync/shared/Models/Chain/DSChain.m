@@ -34,7 +34,9 @@
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainInvitation+Protected.h"
+#import "DSBlocksCache.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Checkpoints.h"
 #import "DSChain+Protected.h"
 #import "DSChainCheckpoints.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -135,11 +137,12 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 
 @interface DSChain ()
 
-@property (nonatomic, strong) DSBlock *lastSyncBlock, *lastTerminalBlock, *lastOrphan;
-@property (nonatomic, strong) NSMutableDictionary<NSValue *, DSBlock *> *mSyncBlocks, *mTerminalBlocks, *mOrphans;
-@property (nonatomic, strong) NSMutableDictionary<NSData *, DSCheckpoint *> *checkpointsByHashDictionary;
-@property (nonatomic, strong) NSMutableDictionary<NSNumber *, DSCheckpoint *> *checkpointsByHeightDictionary;
-@property (nonatomic, strong) NSArray<DSCheckpoint *> *checkpoints;
+@property (nonatomic, strong) DSBlocksCache *blocksCache;
+//@property (nonatomic, strong) DSBlock *lastSyncBlock, *lastTerminalBlock, *lastOrphan;
+//@property (nonatomic, strong) NSMutableDictionary<NSValue *, DSBlock *> *mSyncBlocks, *mTerminalBlocks, *mOrphans;
+//@property (nonatomic, strong) NSMutableDictionary<NSData *, DSCheckpoint *> *checkpointsByHashDictionary;
+//@property (nonatomic, strong) NSMutableDictionary<NSNumber *, DSCheckpoint *> *checkpointsByHeightDictionary;
+//@property (nonatomic, strong) NSArray<DSCheckpoint *> *checkpoints;
 @property (nonatomic, copy) NSString *uniqueID;
 @property (nonatomic, copy) NSString *networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> *mWallets;
@@ -153,15 +156,15 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, assign) uint32_t cachedStandardPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiJRPCPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiGRPCPort;
-@property (nonatomic, assign) UInt256 genesisHash;
+//@property (nonatomic, assign) UInt256 genesisHash;
 @property (nonatomic, assign) UInt256 cachedDpnsContractID;
 @property (nonatomic, assign) UInt256 cachedDashpayContractID;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *transactionHashHeights;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *transactionHashTimestamps;
 @property (nonatomic, strong) NSManagedObjectContext *chainManagedObjectContext;
-@property (nonatomic, strong) DSCheckpoint *terminalHeadersOverrideUseCheckpoint;
-@property (nonatomic, strong) DSCheckpoint *syncHeadersOverrideUseCheckpoint;
-@property (nonatomic, strong) DSCheckpoint *lastCheckpoint;
+//@property (nonatomic, strong) DSCheckpoint *terminalHeadersOverrideUseCheckpoint;
+//@property (nonatomic, strong) DSCheckpoint *syncHeadersOverrideUseCheckpoint;
+//@property (nonatomic, strong) DSCheckpoint *lastCheckpoint;
 @property (nonatomic, assign) NSTimeInterval lastNotifiedBlockDidChange;
 @property (nonatomic, strong) NSTimer *lastNotifiedBlockDidChangeTimer;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
@@ -177,9 +180,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 - (instancetype)init {
     if (!(self = [super init])) return nil;
     NSAssert([NSThread isMainThread], @"Chains should only be created on main thread (for chain entity optimizations)");
-    self.mOrphans = [NSMutableDictionary dictionary];
-    self.mSyncBlocks = [NSMutableDictionary dictionary];
-    self.mTerminalBlocks = [NSMutableDictionary dictionary];
+    self.blocksCache = [[DSBlocksCache alloc] init];
     self.mWallets = [NSMutableArray array];
     self.estimatedBlockHeights = [NSMutableDictionary dictionary];
     
@@ -188,12 +189,12 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     
     self.lastNotifiedBlockDidChange = 0;
     
-    if (self.checkpoints) {
-        self.genesisHash = self.checkpoints[0].blockHash;
-        dispatch_sync(self.networkingQueue, ^{
-            self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
-        });
-    }
+//    if (self.checkpoints) {
+//        self.genesisHash = self.checkpoints[0].blockHash;
+//        dispatch_sync(self.networkingQueue, ^{
+//            self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
+//        });
+//    }
     
     self.feePerByte = DEFAULT_FEE_PER_B;
     uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
@@ -209,14 +210,10 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     self.standardPort = chain_standard_port(type);
     self.standardDapiJRPCPort = chain_standard_dapi_jrpc_port(type);
     self.headersMaxAmount = chain_headers_max_amount(type);
-    self.checkpoints = checkpoints;
-    self.genesisHash = self.checkpoints[0].blockHash;
-    _checkpointsByHashDictionary = [NSMutableDictionary dictionary];
-    _checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
+    self.checkpointsCache = [[DSCheckpointsCache alloc] initWithFirstCheckpoint:checkpoints];
     dispatch_sync(self.networkingQueue, ^{
         self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
     });
-    
     return self;
 }
 
@@ -226,19 +223,11 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     //for devnet the genesis checkpoint is really the second block
     if (!(self = [self init])) return nil;
     _chainType = chain_type_for_devnet_type(devnetType);
-    if (!checkpoints || ![checkpoints count]) {
-        DSCheckpoint *genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
-        DSCheckpoint *secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:devnetType onProtocolVersion:protocolVersion];
-        self.checkpoints = @[genesisCheckpoint, secondCheckpoint];
-        self.genesisHash = secondCheckpoint.blockHash;
-    } else {
-        self.checkpoints = checkpoints;
-        self.genesisHash = checkpoints[1].blockHash;
-    }
+    self.headersMaxAmount = chain_headers_max_amount(_chainType);
+    self.checkpointsCache = [[DSCheckpointsCache alloc] initWithDevnet:devnetType checkpoints:checkpoints onProtocolVersion:protocolVersion forChain:self];
     dispatch_sync(self.networkingQueue, ^{
         self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
     });
-    self.headersMaxAmount = chain_headers_max_amount(_chainType);
     return self;
 }
 
@@ -279,10 +268,10 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
             _mainnet.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-            _mainnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-            _mainnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-            _mainnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-            _mainnet.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
+            [_mainnet.blocksCache setLastPersistedSyncBlockHeight:chainEntity.syncBlockHeight
+                                                        blockHash:chainEntity.syncBlockHash.UInt256
+                                                        timestamp:chainEntity.syncBlockTimestamp
+                                                        chainWork:chainEntity.syncBlockChainWork.UInt256];
         }];
         [_mainnet setUp];
     }
@@ -303,10 +292,10 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
             _testnet.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-            _testnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-            _testnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-            _testnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-            _testnet.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
+            [_testnet.blocksCache setLastPersistedSyncBlockHeight:chainEntity.syncBlockHeight
+                                                        blockHash:chainEntity.syncBlockHash.UInt256
+                                                        timestamp:chainEntity.syncBlockTimestamp
+                                                        chainWork:chainEntity.syncBlockChainWork.UInt256];
         }];
         [_testnet setUp];
     }
@@ -389,10 +378,10 @@ static dispatch_once_t devnetToken = 0;
         self.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
         self.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         self.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-        self.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-        self.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-        self.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-        self.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
+        [self.blocksCache setLastPersistedSyncBlockHeight:chainEntity.syncBlockHeight
+                                                    blockHash:chainEntity.syncBlockHash.UInt256
+                                                    timestamp:chainEntity.syncBlockTimestamp
+                                                    chainWork:chainEntity.syncBlockChainWork.UInt256];
     }];
 }
 
@@ -470,7 +459,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (NSDictionary<NSValue *, DSBlock *> *)orphans {
-    return [self.mOrphans copy];
+    return [self.blocksCache orphans];
 }
 
 - (DSChainManager *)chainManager {
@@ -499,47 +488,47 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)isEqual:(id)obj {
-    return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
+    return self == obj || ([obj isKindOfClass:[DSChain class]] && [obj checkpointsCache] == _checkpointsCache);
 }
 
 - (NSUInteger)hash {
-    return self.genesisHash.u64[0];
+    return self.checkpointsCache.genesisHash.u64[0];
 }
 
 // MARK: Devnet Helpers
 
-- (UInt256)blockHashForDevNetGenesisBlockWithVersion:(uint32_t)version prevHash:(UInt256)prevHash merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce {
-    NSMutableData *d = [NSMutableData data];
-    [d appendUInt32:version];
-    [d appendBytes:&prevHash length:sizeof(prevHash)];
-    [d appendBytes:&merkleRoot length:sizeof(merkleRoot)];
-    [d appendUInt32:timestamp];
-    [d appendUInt32:target];
-    [d appendUInt32:nonce];
-    return [DSKeyManager x11:d];
-}
-
-- (DSCheckpoint *)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint *)checkpoint withIdentifier:(DevnetType)identifier onProtocolVersion:(uint32_t)protocolVersion {
-    uint32_t nTime = checkpoint.timestamp + 1;
-    uint32_t nBits = checkpoint.target;
-    UInt256 fullTarget = setCompactLE(nBits);
-    uint32_t nVersion = 4;
-    UInt256 prevHash = checkpoint.blockHash;
-    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseTxHash:identifier onProtocolVersion:protocolVersion forChain:self];
-    UInt256 chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
-    uint32_t nonce = UINT32_MAX; //+1 => 0;
-    UInt256 blockhash;
-    do {
-        nonce++; //should start at 0;
-        blockhash = [self blockHashForDevNetGenesisBlockWithVersion:nVersion prevHash:prevHash merkleRoot:merkleRoot timestamp:nTime target:nBits nonce:nonce];
-    } while (nonce < UINT32_MAX && uint256_sup(blockhash, fullTarget));
-    DSCheckpoint *block2Checkpoint = [DSCheckpoint checkpointForHeight:1 blockHash:blockhash timestamp:nTime target:nBits merkleRoot:merkleRoot chainWork:chainWork masternodeListName:nil];
-    return block2Checkpoint;
-}
+//- (UInt256)blockHashForDevNetGenesisBlockWithVersion:(uint32_t)version prevHash:(UInt256)prevHash merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce {
+//    NSMutableData *d = [NSMutableData data];
+//    [d appendUInt32:version];
+//    [d appendBytes:&prevHash length:sizeof(prevHash)];
+//    [d appendBytes:&merkleRoot length:sizeof(merkleRoot)];
+//    [d appendUInt32:timestamp];
+//    [d appendUInt32:target];
+//    [d appendUInt32:nonce];
+//    return [DSKeyManager x11:d];
+//}
+//
+//- (DSCheckpoint *)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint *)checkpoint withIdentifier:(DevnetType)identifier onProtocolVersion:(uint32_t)protocolVersion {
+//    uint32_t nTime = checkpoint.timestamp + 1;
+//    uint32_t nBits = checkpoint.target;
+//    UInt256 fullTarget = setCompactLE(nBits);
+//    uint32_t nVersion = 4;
+//    UInt256 prevHash = checkpoint.blockHash;
+//    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseTxHash:identifier onProtocolVersion:protocolVersion forChain:self];
+//    UInt256 chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
+//    uint32_t nonce = UINT32_MAX; //+1 => 0;
+//    UInt256 blockhash;
+//    do {
+//        nonce++; //should start at 0;
+//        blockhash = [self blockHashForDevNetGenesisBlockWithVersion:nVersion prevHash:prevHash merkleRoot:merkleRoot timestamp:nTime target:nBits nonce:nonce];
+//    } while (nonce < UINT32_MAX && uint256_sup(blockhash, fullTarget));
+//    DSCheckpoint *block2Checkpoint = [DSCheckpoint checkpointForHeight:1 blockHash:blockhash timestamp:nTime target:nBits merkleRoot:merkleRoot chainWork:chainWork masternodeListName:nil];
+//    return block2Checkpoint;
+//}
 
 - (dispatch_queue_t)networkingQueue {
     if (!_networkingQueue) {
-        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
+        NSAssert(uint256_is_not_zero([self.checkpointsCache genesisHash]), @"genesisHash must be set");
         _networkingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.network.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return _networkingQueue;
@@ -547,7 +536,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (dispatch_queue_t)dapiMetadataQueue {
     if (!_dapiMetadataQueue) {
-        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
+        NSAssert([self.checkpointsCache isGenesisExist], @"genesisHash must be set");
         _dapiMetadataQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapimeta.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_CONCURRENT);
     }
     return _dapiMetadataQueue;
@@ -573,7 +562,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {
-    return chain_type_is_devnet_any(self.chainType) && uint256_eq([self genesisHash], genesisHash);
+    return chain_type_is_devnet_any(self.chainType) && uint256_eq([self.checkpointsCache genesisHash], genesisHash);
 }
 
 // MARK: - Keychain Strings
@@ -596,6 +585,10 @@ static dispatch_once_t devnetToken = 0;
 
 
 // MARK: - Names and Identifiers
+
+- (UInt256)genesisHash {
+    return [self.checkpointsCache genesisHash];
+}
 
 - (NSString *)uniqueID {
     if (!_uniqueID) {
@@ -695,7 +688,7 @@ static dispatch_once_t devnetToken = 0;
     if ([self syncsBlockchain]) {
         return [self earliestWalletCreationTime];
     } else {
-        return self.checkpoints.lastObject.timestamp;
+        return [self.checkpointsCache lastCheckpointTimestamp];
     }
 }
 
@@ -1315,70 +1308,6 @@ static dispatch_once_t devnetToken = 0;
     return [self hasAStandaloneDerivationPath] || [self hasAWallet];
 }
 
-// MARK: - Checkpoints
-
-- (BOOL)blockHeightHasCheckpoint:(uint32_t)blockHeight {
-    DSCheckpoint *checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
-    return (checkpoint.height == blockHeight);
-}
-
-- (DSCheckpoint *)lastCheckpoint {
-    if (!_lastCheckpoint) {
-        _lastCheckpoint = [[self checkpoints] lastObject];
-    }
-    return _lastCheckpoint;
-}
-
-- (DSCheckpoint *)lastCheckpointOnOrBeforeHeight:(uint32_t)height {
-    NSUInteger genesisHeight = [self isDevnetAny] ? 1 : 0;
-    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-    for (long i = self.checkpoints.count - 1; i >= genesisHeight; i--) {
-        if (i == genesisHeight || ![self syncsBlockchain] || (self.checkpoints[i].height <= height)) {
-            return self.checkpoints[i];
-        }
-    }
-    return nil;
-}
-
-- (DSCheckpoint *)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
-    NSUInteger genesisHeight = [self isDevnetAny] ? 1 : 0;
-    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-    for (long i = self.checkpoints.count - 1; i >= genesisHeight; i--) {
-        if (i == genesisHeight || ![self syncsBlockchain] || (self.checkpoints[i].timestamp <= timestamp)) {
-            return self.checkpoints[i];
-        }
-    }
-    return nil;
-}
-
-- (DSCheckpoint *_Nullable)lastCheckpointHavingMasternodeList {
-    NSSet *set = [self.checkpointsByHeightDictionary keysOfEntriesPassingTest:^BOOL(id _Nonnull key, id _Nonnull obj, BOOL *_Nonnull stop) {
-        DSCheckpoint *checkpoint = (DSCheckpoint *)obj;
-        return (checkpoint.masternodeListName && ![checkpoint.masternodeListName isEqualToString:@""]);
-    }];
-    NSArray *numbers = [[set allObjects] sortedArrayUsingSelector:@selector(compare:)];
-    if (!numbers.count) return nil;
-    return self.checkpointsByHeightDictionary[numbers.lastObject];
-}
-
-- (DSCheckpoint *)checkpointForBlockHash:(UInt256)blockHash {
-    return [self.checkpointsByHashDictionary objectForKey:uint256_data(blockHash)];
-}
-
-- (DSCheckpoint *)checkpointForBlockHeight:(uint32_t)blockHeight {
-    return [self.checkpointsByHeightDictionary objectForKey:@(blockHeight)];
-}
-
-- (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight {
-    DSCheckpoint *checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
-    self.terminalHeadersOverrideUseCheckpoint = checkpoint;
-}
-
-- (void)useCheckpointBeforeOrOnHeightForSyncingChainBlocks:(uint32_t)blockHeight {
-    DSCheckpoint *checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
-    self.syncHeadersOverrideUseCheckpoint = checkpoint;
-}
-
 
 // MARK: - Wallet
 
@@ -1441,7 +1370,8 @@ static dispatch_once_t devnetToken = 0;
     
     if (firstWallet) {
         //this is the first wallet, we should reset the last block height to the most recent checkpoint.
-        _lastSyncBlock = nil; //it will lazy load later
+        //it will lazy load later
+        [self.blocksCache resetLastSyncBlock];
     }
     
     NSError *error = nil;
@@ -1473,9 +1403,6 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Blocks
 
-- (NSDictionary *)recentBlocks {
-    return [[self mSyncBlocks] copy];
-}
 
 - (DSBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
     DSBlock *b = self.lastSyncBlock;
@@ -1505,7 +1432,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (void)setLastTerminalBlockFromCheckpoints {
-    DSCheckpoint *checkpoint = self.terminalHeadersOverrideUseCheckpoint ? self.terminalHeadersOverrideUseCheckpoint : [self lastCheckpoint];
+    DSCheckpoint *checkpoint = self.checkpointsCache.terminalHeadersOverrideUseCheckpoint ? self.checkpointsCache.terminalHeadersOverrideUseCheckpoint : [self.checkpointsCache lastCheckpoint];
     if (checkpoint) {
         if (self.mTerminalBlocks[uint256_obj(checkpoint.blockHash)]) {
             _lastTerminalBlock = self.mSyncBlocks[uint256_obj(checkpoint.blockHash)];
@@ -1522,11 +1449,11 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)setLastSyncBlockFromCheckpoints {
     DSCheckpoint *checkpoint = nil;
-    if (self.syncHeadersOverrideUseCheckpoint) {
-        checkpoint = self.syncHeadersOverrideUseCheckpoint;
+    if (self.checkpointsCache.syncHeadersOverrideUseCheckpoint) {
+        checkpoint = self.checkpointsCache.syncHeadersOverrideUseCheckpoint;
     } else if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
         NSUInteger genesisHeight = [self isDevnetAny] ? 1 : 0;
-        checkpoint = self.checkpoints[genesisHeight];
+        checkpoint = self.checkpointsCache.checkpoints[genesisHeight];
     } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
         checkpoint = [self lastCheckpointOnOrBeforeHeight:[[DSOptionsManager sharedInstance] syncFromHeight]];
     } else {
@@ -1535,16 +1462,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (checkpoint) {
-        if (self.mSyncBlocks[uint256_obj(checkpoint.blockHash)]) {
-            _lastSyncBlock = self.mSyncBlocks[uint256_obj(checkpoint.blockHash)];
-        } else {
-            _lastSyncBlock = [[DSMerkleBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-            self.mSyncBlocks[uint256_obj(checkpoint.blockHash)] = _lastSyncBlock;
-        }
-    }
-    
-    if (_lastSyncBlock) {
-        DSLog(@"[%@] last sync block at height %d chosen from checkpoints (hash is %@)", self.name, _lastSyncBlock.height, self.name, [NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
+        [self.blocksCache setSyncBlockFromCheckpoint:checkpoint forChain:self];
     }
 }
 
@@ -1583,12 +1501,11 @@ static dispatch_once_t devnetToken = 0;
                 self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
             }
             
-            for (DSCheckpoint *checkpoint in self.checkpoints) { // add checkpoints to the block collection
+            for (DSCheckpoint *checkpoint in self.checkpointsCache.checkpoints) { // add checkpoints to the block collection
                 UInt256 checkpointHash = checkpoint.blockHash;
                 
                 self->_mSyncBlocks[uint256_obj(checkpointHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-                self->_checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
-                self->_checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
+                [self->_checkpointsCache addCheckpoint:checkpoint];
             }
         }];
         
@@ -1630,7 +1547,7 @@ static dispatch_once_t devnetToken = 0;
     }
     DSCheckpoint *lastCheckpoint = nil;
     //then add the last checkpoint we know about previous to this block
-    for (DSCheckpoint *checkpoint in self.checkpoints) {
+    for (DSCheckpoint *checkpoint in self.checkpointsCache.checkpoints) {
         if (checkpoint.height < lastHeight && checkpoint.timestamp < b.timestamp) {
             lastCheckpoint = checkpoint;
         } else {
@@ -1892,7 +1809,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     // verify block difficulty if block is past last checkpoint
-    DSCheckpoint *lastCheckpoint = [self lastCheckpoint];
+    DSCheckpoint *lastCheckpoint = [self.checkpointsCache lastCheckpoint];
     
     DSBlock *equivalentTerminalBlock = nil;
     
@@ -1925,7 +1842,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
-    DSCheckpoint *checkpoint = [self.checkpointsByHeightDictionary objectForKey:@(block.height)];
+    DSCheckpoint *checkpoint = [self.checkpointsCache checkpointForBlockHeight:block.height];
     
     if ((!equivalentTerminalBlock) && (checkpoint && !uint256_eq(block.blockHash, checkpoint.blockHash))) {
         // verify block chain checkpoints
@@ -2027,7 +1944,7 @@ static dispatch_once_t devnetToken = 0;
             if (h == self.lastTerminalBlockHeight) self.lastTerminalBlock = block;
         }
     } else {                                                // new block is on a fork
-        if (h <= [self lastCheckpoint].height) { // fork is older than last checkpoint
+        if (h <= [self lastCheckpointHeight]) { // fork is older than last checkpoint
             DSLog(@"%@ ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@", prefix, h, blockHash);
             return TRUE;
         }
@@ -2246,12 +2163,9 @@ static dispatch_once_t devnetToken = 0;
         }
         [self.chainManagedObjectContext performBlockAndWait:^{
             if (self->_mTerminalBlocks.count > 0) return;
-            for (DSCheckpoint *checkpoint in self.checkpoints) { // add checkpoints to the block collection
-                UInt256 checkpointHash = checkpoint.blockHash;
-                
-                self->_mTerminalBlocks[uint256_obj(checkpointHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-                self->_checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
-                self->_checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
+            for (DSCheckpoint *checkpoint in self.checkpointsCache.checkpoints) { // add checkpoints to the block collection
+                self->_mTerminalBlocks[uint256_obj(checkpoint.blockHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
+                [self.checkpointsCache addCheckpoint:checkpoint];
             }
             for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastTerminalBlocks:KEEP_RECENT_TERMINAL_BLOCKS onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]]) {
                 @autoreleasepool {
@@ -2283,7 +2197,7 @@ static dispatch_once_t devnetToken = 0;
     @synchronized (self) {
         if (!_lastTerminalBlock) {
             // if we don't have any headers yet, use the latest checkpoint
-            DSCheckpoint *lastCheckpoint = self.terminalHeadersOverrideUseCheckpoint ? self.terminalHeadersOverrideUseCheckpoint : self.lastCheckpoint;
+            DSCheckpoint *lastCheckpoint = self.checkpointsCache.terminalHeadersOverrideUseCheckpoint ? self.checkpointsCache.terminalHeadersOverrideUseCheckpoint : self.checkpointsCache.lastCheckpoint;
             uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
             
             if (lastCheckpoint.height >= lastSyncBlockHeight) {
@@ -2481,42 +2395,42 @@ static dispatch_once_t devnetToken = 0;
     if (b.height != height) return NO;
     return confirmed;
 }
-// MARK: - Heights
-
-- (NSTimeInterval)lastSyncBlockTimestamp {
-    return _lastSyncBlock ? _lastSyncBlock.timestamp : (self.lastPersistedChainSyncBlockTimestamp ? self.lastPersistedChainSyncBlockTimestamp : self.lastSyncBlock.timestamp);
-}
-
-- (uint32_t)lastSyncBlockHeight {
-    @synchronized (_lastSyncBlock) {
-        if (_lastSyncBlock) {
-            return _lastSyncBlock.height;
-        } else if (self.lastPersistedChainSyncBlockHeight) {
-            return self.lastPersistedChainSyncBlockHeight;
-        } else {
-            return self.lastSyncBlock.height;
-        }
-    }
-}
-
-- (UInt256)lastSyncBlockHash {
-    return _lastSyncBlock ? _lastSyncBlock.blockHash : (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash) ? self.lastPersistedChainSyncBlockHash : self.lastSyncBlock.blockHash);
-}
-
-- (UInt256)lastSyncBlockChainWork {
-    return _lastSyncBlock ? _lastSyncBlock.chainWork : (uint256_is_not_zero(self.lastPersistedChainSyncBlockChainWork) ? self.lastPersistedChainSyncBlockChainWork : self.lastSyncBlock.chainWork);
-}
-
-- (uint32_t)lastTerminalBlockHeight {
-    return self.lastTerminalBlock.height;
-}
+//// MARK: - Heights
+//
+//- (NSTimeInterval)lastSyncBlockTimestamp {
+//    return _lastSyncBlock ? _lastSyncBlock.timestamp : (self.lastPersistedChainSyncBlockTimestamp ? self.lastPersistedChainSyncBlockTimestamp : self.lastSyncBlock.timestamp);
+//}
+//
+//- (uint32_t)lastSyncBlockHeight {
+//    @synchronized (_lastSyncBlock) {
+//        if (_lastSyncBlock) {
+//            return _lastSyncBlock.height;
+//        } else if (self.lastPersistedChainSyncBlockHeight) {
+//            return self.lastPersistedChainSyncBlockHeight;
+//        } else {
+//            return self.lastSyncBlock.height;
+//        }
+//    }
+//}
+//
+//- (UInt256)lastSyncBlockHash {
+//    return _lastSyncBlock ? _lastSyncBlock.blockHash : (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash) ? self.lastPersistedChainSyncBlockHash : self.lastSyncBlock.blockHash);
+//}
+//
+//- (UInt256)lastSyncBlockChainWork {
+//    return _lastSyncBlock ? _lastSyncBlock.chainWork : (uint256_is_not_zero(self.lastPersistedChainSyncBlockChainWork) ? self.lastPersistedChainSyncBlockChainWork : self.lastSyncBlock.chainWork);
+//}
+//
+//- (uint32_t)lastTerminalBlockHeight {
+//    return self.lastTerminalBlock.height;
+//}
 
 - (BOOL)allowInsightBlocksForVerification {
     return !self.isMainnet;
 }
 
 - (uint32_t)quickHeightForBlockHash:(UInt256)blockhash {
-    DSCheckpoint *checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
+    DSCheckpoint *checkpoint = [self.checkpointsCache checkpointForBlockHash:blockhash];
     if (checkpoint) {
         return checkpoint.height;
     }
@@ -2543,7 +2457,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
-    DSCheckpoint *checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
+    DSCheckpoint *checkpoint = [self.checkpointsCache checkpointForBlockHash:blockhash];
     if (checkpoint) {
         return checkpoint.height;
     }
@@ -3533,7 +3447,7 @@ static dispatch_once_t devnetToken = 0;
     uint32_t endHeight = b.height;
     uint32_t startHeight = b.height;
     NSDictionary *terminalBlocks = [self.mTerminalBlocks copy];
-    while (b && (startHeight > self.lastCheckpoint.height) && (endHeight - startHeight < KEEP_RECENT_TERMINAL_BLOCKS)) {
+    while (b && (startHeight > self.checkpointsCache.lastCheckpoint.height) && (endHeight - startHeight < KEEP_RECENT_TERMINAL_BLOCKS)) {
         blocks[[NSData dataWithUInt256:b.blockHash]] = b;
         startHeight = b.height;
         b = terminalBlocks[b.prevBlockValue];

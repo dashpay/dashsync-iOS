@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "DSMasternodeManager.h"
+#import "DSChain+Checkpoints.h"
 #import "DSChain+Protected.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"

@@ -233,28 +233,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Register a standalone derivation path to the chain. Standalone derivation paths are currently an experimental feature  */
 - (void)registerStandaloneDerivationPath:(DSDerivationPath *)derivationPath;
 
-// MARK: - Checkpoints
-
-/*! @brief Returns the last checkpoint that has a masternode list attached to it.  */
-- (DSCheckpoint *_Nullable)lastCheckpointHavingMasternodeList;
-
-/*! @brief Returns the checkpoint matching the parameter block hash, if one exists.  */
-- (DSCheckpoint *_Nullable)checkpointForBlockHash:(UInt256)blockHash;
-
-/*! @brief Returns the checkpoint at a given block height, if one exists at that block height.  */
-- (DSCheckpoint *_Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
-
-/*! @brief Returns the last checkpoint on or before the given height.  */
-- (DSCheckpoint *)lastCheckpointOnOrBeforeHeight:(uint32_t)height;
-
-/*! @brief Returns the last checkpoint on or before the given timestamp.  */
-- (DSCheckpoint *)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
-
-/*! @brief When used this will change the checkpoint used for initial headers sync. This value is not persisted.  */
-- (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight;
-
-/*! @brief When used this will change the checkpoint used for main chain syncing. This value is not persisted.  */
-- (void)useCheckpointBeforeOrOnHeightForSyncingChainBlocks:(uint32_t)blockHeight;
 
 // MARK: - Blocks and Headers
 
@@ -308,14 +286,14 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 // MARK: Chain Sync
 
-/*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
-@property (nonatomic, readonly) UInt256 lastPersistedChainSyncBlockHash;
-
-/*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
-@property (nonatomic, readonly) uint32_t lastPersistedChainSyncBlockHeight;
-
-/*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
-@property (nonatomic, readonly) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+///*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
+//@property (nonatomic, readonly) UInt256 lastPersistedChainSyncBlockHash;
+//
+///*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
+//@property (nonatomic, readonly) uint32_t lastPersistedChainSyncBlockHeight;
+//
+///*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
+//@property (nonatomic, readonly) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
 
 /*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
 @property (nullable, nonatomic, readonly) NSArray *lastPersistedChainSyncLocators;
