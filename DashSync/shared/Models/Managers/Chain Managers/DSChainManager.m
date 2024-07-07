@@ -97,7 +97,7 @@
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
     self.gotSporksAtChainSyncStart = FALSE;
-    self.sessionConnectivityNonce = (long long)arc4random() << 32 | arc4random();
+    self.sessionConnectivityNonce = ((uint64_t)arc4random() << 32) | arc4random();
 
     if ([self.masternodeManager hasCurrentMasternodeListInLast30Days]) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
