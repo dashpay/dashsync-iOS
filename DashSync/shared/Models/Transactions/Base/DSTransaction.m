@@ -29,6 +29,8 @@
 #import "DSAccount.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSCreditFundingTransaction.h"

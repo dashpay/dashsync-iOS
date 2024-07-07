@@ -20,6 +20,7 @@
 #import "DPContract.h"
 #import "DPErrors.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DSDashPlatform.h"
 #import "DSHTTPJSONRPCClient.h"

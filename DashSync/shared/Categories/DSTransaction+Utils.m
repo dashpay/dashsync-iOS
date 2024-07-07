@@ -26,6 +26,7 @@
 //  THE SOFTWARE.
 
 #import "DSAccount.h"
+#import "DSChain+Blocks.h"
 #import "DSPriceManager.h"
 #import "DSTransaction+Utils.h"
 #import "DSWallet.h"

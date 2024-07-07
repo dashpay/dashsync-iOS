@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 #import "dash_shared_core.h"
+#import "DSBlocksCache+Protected.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainLockEntity+CoreDataProperties.h"
@@ -115,10 +116,10 @@
     }
 
     chain.lastChainLock = lastChainLock;
-    chain.lastPersistedChainSyncLocators = lastPersistedChainSyncLocators;
-    chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
-    chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
-    chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
+    chain.blocksCache.lastPersistedChainSyncLocators = lastPersistedChainSyncLocators;
+    chain.blocksCache.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
+    chain.blocksCache.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
+    chain.blocksCache.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
     self.cachedChain = chain;
     return chain;
 }

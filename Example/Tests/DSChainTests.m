@@ -20,6 +20,7 @@
 #import "BigIntTypes.h"
 #import "DSAccount.h"
 #import "DSBlock+Protected.h"
+#import "DSChain+Blocks.h"
 #import "DSChain+Protected.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"

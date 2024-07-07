@@ -7,6 +7,7 @@
 
 #import "DSGovernanceVote.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainsManager.h"
 #import "DSKeyManager.h"
 #import "DSMasternodeManager.h"

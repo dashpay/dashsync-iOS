@@ -28,10 +28,13 @@
 
 #import "DSAccount.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"
 #import "DSDerivationPath.h"
+#import "DSDNSResolver.h"
 #import "DSEventManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceSyncManager.h"
@@ -55,8 +58,17 @@
 #import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Bitcoin.h"
+
 #import <arpa/inet.h>
 #import <netdb.h>
+#import <resolv.h>
+#import <Network/Network.h>
+#import <string.h>
+
+#import <dns.h>
+#import <dns_sd.h>
+#import <dns_util.h>
+#import <sys/socket.h>
 
 #define PEER_LOGGING 1
 
@@ -70,7 +82,7 @@
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
 
-#define FIXED_PEERS @"FixedPeers"
+#define FIXED_PEERS @"MainnetFixedPeers"
 #define TESTNET_FIXED_PEERS @"TestnetFixedPeers"
 
 #define SYNC_COUNT_INFO @"SYNC_COUNT_INFO"
@@ -95,6 +107,7 @@
 #endif
 
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong) DSDNSResolver *dnsResolver;
 
 @end
 
@@ -110,6 +123,8 @@
     self.mutableMisbehavingPeers = [NSMutableSet set];
 
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
+    self.dnsResolver = [[DSDNSResolver alloc] initWithTimeout:3.0];
+    
 
 #if TARGET_OS_IOS
     self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
@@ -265,6 +280,216 @@
     }
 }
 
+- (void)dnsLookup3:(NSString *)dnsSeed port:(NSString *)servname {
+    NSURL *confURL = [[NSBundle mainBundle] URLForResource:@"resolv" withExtension:@"conf"];
+    dns_handle_t dns = dns_open(confURL.fileSystemRepresentation);
+    dns_set_debug(dns, 1);
+    struct sockaddr_storage fromAddr;
+    uint32_t fromAddrLen = sizeof(fromAddr);
+    uint8_t responseBuffer[4096];
+    
+    int32_t queryResult = dns_query(dns, "dnsseed.dash.org.", kDNSServiceClass_IN, kDNSServiceType_A, (char *) responseBuffer, sizeof(responseBuffer), (struct sockaddr *) &fromAddr, &fromAddrLen);
+    
+    NSData *result;
+    if (queryResult > 0) {
+        result = [NSData dataWithBytes:responseBuffer length:(NSUInteger) queryResult];
+        NSLog(@"[dnsLookup3] response %@ from %@",
+            result,
+            [NSData dataWithBytes:&fromAddr length:(NSUInteger) fromAddrLen]
+        );
+    } else {
+        result = nil;
+        NSLog(@"[dnsLookup3] error");
+    }
+
+    dns_free(dns);
+
+}
+
+- (void)dnsLookup2:(NSString *)dnsSeed port:(NSString *)servname {
+    __block nw_connection_t connection = nil;
+    __block dispatch_source_t timer = nil;
+
+    __block void (^retryConnection)(void) = ^{
+        NSLog(@"[DNS State] Retrying connection...");
+        if (connection != nil) {
+            nw_connection_cancel(connection);
+        }
+        
+        nw_endpoint_t endpoint = nw_endpoint_create_host(dnsSeed.UTF8String, servname.UTF8String);
+        nw_parameters_t parameters = nw_parameters_create();
+        connection = nw_connection_create(endpoint, parameters);
+        
+        nw_connection_set_queue(connection, dispatch_get_main_queue());
+        
+        nw_connection_set_state_changed_handler(connection, ^(nw_connection_state_t state, nw_error_t error) {
+            if (state == nw_connection_state_ready) {
+                NSLog(@"[DNS State]: Ready");
+                nw_endpoint_t resolved = nw_connection_copy_endpoint(connection);
+                if (resolved != NULL) {
+                    nw_endpoint_type_t resolved_type = nw_endpoint_get_type(resolved);
+
+                    if (resolved_type == nw_endpoint_type_address) {
+                        //char addr[NI_MAXHOST];
+                        char *addr = nw_endpoint_copy_address_string(resolved);
+                        NSLog(@"Resolved IP: %s", addr);
+                    }
+                }
+                nw_connection_cancel(connection);
+                connection = nil;
+                if (timer != nil) {
+                    dispatch_source_cancel(timer);
+                    timer = nil;
+                }
+            } else if (state == nw_connection_state_failed) {
+                NSLog(@"[DNS State]: Failed: %d", nw_error_get_error_code(error));
+                nw_connection_cancel(connection);
+                connection = nil;
+            } else if (state == nw_connection_state_invalid) {
+                NSLog(@"[DNS State]: Invalid");
+                nw_connection_cancel(connection);
+                connection = nil;
+            } else if (state == nw_connection_state_waiting) {
+                NSLog(@"[DNS State]: Waiting");
+                // Handle waiting state by retrying after a timeout
+                if (timer == nil) {
+                    timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
+                    dispatch_source_set_timer(timer, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC), DISPATCH_TIME_FOREVER, 1 * NSEC_PER_SEC);
+                    dispatch_source_set_event_handler(timer, ^{
+                        retryConnection();
+                    });
+                    dispatch_resume(timer);
+                }
+            } else if (state == nw_connection_state_cancelled) {
+                NSLog(@"[DNS State]: Cancelled");
+                connection = nil;
+            } else if (state == nw_connection_state_preparing) {
+                NSLog(@"[DNS State]: Preparing");
+            }
+        });
+        
+        nw_connection_start(connection);
+    };
+
+    retryConnection();
+}
+
+
+
+
+
+struct __res_state_ext {
+    union res_sockaddr_union nsaddrs[MAXNS];
+    struct sort_list {
+        int af;
+        union {
+            struct in_addr  ina;
+            struct in6_addr in6a;
+        } addr, mask;
+    } sort_list[MAXRESOLVSORT];
+    char nsuffix[64];
+    char bsuffix[64];
+    char nsuffix2[64];
+};
+
++ (NSString *)resolveHost:(NSString *)host usingDNSServer:(NSString *)dnsServer {
+    struct __res_state res;
+    char ip[16];
+    memset(ip, '\0', sizeof(ip));
+    setup_dns_server(&res, [dnsServer cStringUsingEncoding:NSASCIIStringEncoding]);
+    query_ip(&res, [host cStringUsingEncoding:NSUTF8StringEncoding], ip);
+    return [[NSString alloc] initWithCString:ip encoding:NSASCIIStringEncoding];
+}
+
+
+
+void query_ip(res_state res, const char *host, char ip[]) {
+    u_char answer[NS_PACKETSZ];
+    int len = res_nquery(res, host, ns_c_in, ns_t_a, answer, sizeof(answer));
+    ns_msg handle;
+    ns_initparse(answer, len, &handle);
+    if (ns_msg_count(handle, ns_s_an) > 0) {
+        ns_rr rr;
+        if (ns_parserr(&handle, ns_s_an, 0, &rr) == 0)
+            strcpy(ip, inet_ntoa(*(struct in_addr *)ns_rr_rdata(rr)));
+    }
+}
+
+void setup_dns_server(res_state res, const char *dns_server) {
+    res_ninit(res);
+    struct in_addr addr;
+    inet_aton(dns_server, &addr);
+    res->nsaddr_list[0].sin_addr = addr;
+    res->nsaddr_list[0].sin_family = AF_INET;
+    res->nsaddr_list[0].sin_port = htons(NS_DEFAULTPORT);
+    res->nscount = 1;
+}
+
+- (NSArray *)dnsLookup:(NSArray<NSString *> *)dnsSeeds {
+    NSMutableArray *peers = [NSMutableArray arrayWithObject:[NSMutableArray array]];
+    NSTimeInterval now = [NSDate timeIntervalSince1970];
+    dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
+        
+        NSString *servname = @(self.chain.standardPort).stringValue;
+        struct addrinfo hints = {
+            // If we don't allow lookups, then use the AI_NUMERICHOST flag for
+            // getaddrinfo to only decode numerical network addresses and suppress
+            // hostname lookups.
+            self.chain.isDevnetAny ? AI_NUMERICHOST : AI_ADDRCONFIG,
+//            AI_PASSIVE,
+            // We don't care which address family (IPv4 or IPv6) is returned
+            AF_UNSPEC,
+            // We want a TCP port, which is a streaming socket type
+            SOCK_STREAM,
+            IPPROTO_TCP,
+            0,
+            0,
+            NULL,
+            NULL
+        }, *servinfo, *p;
+
+        UInt128 addr = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
+
+        NSString *dnsSeed = [dnsSeeds objectAtIndex:i];
+        
+        NSLog(@"----- %@", [DSPeerManager resolveHost:dnsSeed usingDNSServer:@"8.8.8.8"]);
+
+        int attempts = 3; // Number of retry attempts
+        for (int attempt = 0; attempt < attempts; attempt++) {
+            DSLog(@"[%@] [DSPeerManager] DNS lookup attempt %d for %@:%@", self.chain.name, attempt + 1, dnsSeed, servname);
+            int err = getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo);
+            if (err == 0) {
+                for (p = servinfo; p != NULL; p = p->ai_next) {
+                    if (p->ai_family == AF_INET) {
+                        addr.u64[0] = 0;
+                        addr.u32[2] = CFSwapInt32HostToBig(0xffff);
+                        addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                    } else {
+                        continue;
+                    }
+                    uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                    NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
+                    [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr
+                                                                   port:port
+                                                                onChain:self.chain
+                                                              timestamp:(i > 0 ? now - age : now)
+                                                               services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+                }
+
+                freeaddrinfo(servinfo);
+                break;
+            } else {
+                DSLog(@"[%@] [DSPeerManager] failed getaddrinfo for %@: [%s] (attempt %d/%d)", self.chain.name, dnsSeed, gai_strerror(err), attempt + 1, attempts);
+                if (err == EAI_NONAME && attempt < attempts - 1) {
+                    sleep(1);
+                } else {
+                    DSLog(@"[%@] [DSPeerManager] all attempts to resolve %@ failed with error: %s", self.chain.name, dnsSeed, gai_strerror(err));
+                }
+            }
+        }
+    });
+    return peers;
+}
 - (NSMutableOrderedSet *)peers {
     if (_fixedPeer) return [NSMutableOrderedSet orderedSetWithObject:_fixedPeer];
     if (_peers.count >= _maxConnectCount) return _peers;
@@ -315,40 +540,7 @@
 
         if (peers.count > 0) {
             if ([dnsSeeds count]) {
-                dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
-                    NSString *servname = @(self.chain.standardPort).stringValue;
-                    struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL}, *servinfo, *p;
-                    UInt128 addr = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-
-                    DSLog(@"[%@] [DSPeerManager] DNS lookup %@", self.chain.name, [dnsSeeds objectAtIndex:i]);
-                    NSString *dnsSeed = [dnsSeeds objectAtIndex:i];
-                    if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
-                        for (p = servinfo; p != NULL; p = p->ai_next) {
-                            if (p->ai_family == AF_INET) {
-                                addr.u64[0] = 0;
-                                addr.u32[2] = CFSwapInt32HostToBig(0xffff);
-                                addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-                            }
-                            //                        else if (p->ai_family == AF_INET6) {
-                            //                            addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-                            //                        }
-                            else
-                                continue;
-
-                            uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-                            NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
-                            [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr
-                                                                           port:port
-                                                                        onChain:self.chain
-                                                                      timestamp:(i > 0 ? now - age : now)
-                                                                       services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
-                        }
-
-                        freeaddrinfo(servinfo);
-                    } else {
-                        DSLog(@"[%@] [DSPeerManager] failed getaddrinfo for %@", self.chain.name, dnsSeeds[i]);
-                    }
-                });
+                [peers addObjectsFromArray:[self dnsLookup:dnsSeeds]];
             }
 
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
@@ -398,6 +590,15 @@
         }
 
         return _peers;
+    }
+}
+uint32_t ipv4StringToUInt32(NSString *ipv4String) {
+    struct in_addr addr;
+    if (inet_pton(AF_INET, [ipv4String UTF8String], &addr) == 1) {
+        return ntohl(addr.s_addr); // Convert to host byte order
+    } else {
+        NSLog(@"Invalid IPv4 address: %@", ipv4String);
+        return 0;
     }
 }
 
@@ -459,10 +660,10 @@
             return NSOrderedSame;
         }];
     }
-    //    for (DSPeer * peer in _peers) {
-    //        DSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
-    //    }
-    DSLog(@"[%@] [DSPeerManager] peers sorted", self.chain.name);
+//        for (DSPeer * peer in _peers) {
+//            DSLog(@"[%@: %@] priority: (%d) timestamp: (%lu), mnl: (%f) gov: (%f)", self.chain.name, peer.location, peer.priority, peer.timestamp, peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
+//        }
+//    DSLog(@"[%@] [DSPeerManager] %lu peers sorted: %@", self.chain.name, _peers.count);
 }
 
 - (void)savePeers {
@@ -662,6 +863,7 @@
 // MARK: - Using Masternode List for connectivitity
 
 - (void)useMasternodeList:(DSMasternodeList *)masternodeList withConnectivityNonce:(uint64_t)connectivityNonce {
+    DSLog(@"[%@] [DSPeerManager] useMasternodeList: [%@] withConnectivityNonce: [%lu]", masternodeList, connectivityNonce);
     self.masternodeList = masternodeList;
     self.masternodeListConnectivityNonce = connectivityNonce;
 
@@ -959,7 +1161,7 @@
         if ([self.chain syncsBlockchain] &&
             ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) ||
              (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
-            [self.chainManager resetLastRelayedItemTime];
+                [self.chainManager resetLastRelayedItemTime];
                 [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
                 [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 

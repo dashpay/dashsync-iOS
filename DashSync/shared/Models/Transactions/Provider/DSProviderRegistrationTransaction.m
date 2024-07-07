@@ -7,6 +7,7 @@
 
 #import "DSProviderRegistrationTransaction.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallets.h"
 #import "DSChainManager+Protected.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"

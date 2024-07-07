@@ -23,7 +23,7 @@
         if (self.specialTransactionVersion >= COINBASE_TX_CORE_19) {
             self.merkleRootLLMQList = uint256_data(coinbaseTransaction.merkleRootLLMQList);
             if (self.specialTransactionVersion >= COINBASE_TX_CORE_20) {
-                self.bestCLHeightDiff = coinbaseTransaction.bestCLHeightDiff;
+                self.bestCLHeightDiff = (uint32_t) coinbaseTransaction.bestCLHeightDiff;
                 self.bestCLSignature = uint768_data(coinbaseTransaction.bestCLSignature);
                 self.creditPoolBalance = coinbaseTransaction.creditPoolBalance;
             }

@@ -23,6 +23,8 @@
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSBlockchainInvitation+Protected.h"
 #import "DSBlockchainInvitationEntity+CoreDataClass.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
@@ -1672,7 +1674,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     return;
                 }
                 //todo This needs to be eventually set with the blockchain returned by platform.
-                strongSelf.dashpaySyncronizationBlockHash = strongSelf.chain.lastTerminalBlock.blockHash;
+                strongSelf.dashpaySyncronizationBlockHash = strongSelf.chain.blocksCache.lastTerminalBlock.blockHash;
             }
             dispatch_async(completionQueue, ^{
                 completion(failureStep, [groupedErrors copy]);

@@ -24,6 +24,8 @@
 //  THE SOFTWARE.
 
 #import "DSSporkManager.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager+Protected.h"

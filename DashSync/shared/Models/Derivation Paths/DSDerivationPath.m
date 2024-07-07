@@ -24,6 +24,7 @@
 
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"

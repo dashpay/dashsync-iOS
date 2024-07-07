@@ -36,6 +36,7 @@
 #import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSBlockchainInvitation+Protected.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainsManager.h"
 #import "DSCreditFundingDerivationPath+Protected.h"

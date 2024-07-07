@@ -17,6 +17,7 @@
 
 #import "DSBlock.h"
 #import "DSBlockOperation.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSInsightManager.h"

@@ -15,8 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DSChain+Protected.h"
 #import "DSChain.h"
+#import "DSChain+Protected.h"
+#import "DSChain+Wallets.h"
 #import "DSChainManager+Protected.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSMasternodeManager+LocalMasternode.h"
@@ -25,13 +26,13 @@
 
 NSString const *localMasternodesDictionaryKey = @"localMasternodesDictionaryKey";
 
-@interface DSMasternodeManager (LocalMasternode)
+@interface DSMasternodeManager ()
 @property (nonatomic, strong) NSMutableDictionary<NSData *, DSLocalMasternode *> *localMasternodesDictionaryByRegistrationTransactionHash;
 @end
 
 @implementation DSMasternodeManager (LocalMasternode)
 
-@dynamic localMasternodesDictionaryByRegistrationTransactionHash;
+//@dynamic localMasternodesDictionaryByRegistrationTransactionHash;
 
 - (void)setLocalMasternodesDictionaryByRegistrationTransactionHash:(NSMutableDictionary<NSData *, DSLocalMasternode *> *)dictionary {
     objc_setAssociatedObject(self, &localMasternodesDictionaryKey, dictionary, OBJC_ASSOCIATION_RETAIN_NONATOMIC);

@@ -19,6 +19,7 @@
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSContractEntity+CoreDataClass.h"
 #import "DSContractTransition.h"
 #import "DSDashPlatform.h"

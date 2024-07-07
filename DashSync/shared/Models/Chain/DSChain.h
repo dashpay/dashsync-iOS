@@ -66,6 +66,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 @interface DSChain : NSObject
 
+//@property (nonatomic, readonly) DSBlocksCache *blocksCache;
+//@property (nonatomic, readwrite) DSChainParams *params;
+
 // MARK: - Shortcuts
 
 /*! @brief The chain manager is a container for all managers (peer, identity, governance, masternode, spork and transition). It also is used to control the sync process.  */
@@ -90,72 +93,10 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The genesis hash is the hash of the first block of the chain. For a devnet this is actually the second block as the first block is created in a special way for devnets.  */
 @property (nonatomic, readonly) UInt256 genesisHash;
 
-/*! @brief The magic number is used in message headers to indicate what network (or chain) a message is intended for.  */
-@property (nonatomic, readonly) uint32_t magicNumber;
 
-/*! @brief The base reward is the intial mining reward at genesis for the chain. This goes down by 7% every year. A SPV client does not validate that the reward amount is correct as it would not make sense for miners to enter incorrect rewards as the blocks would be rejected by full nodes.  */
-@property (nonatomic, readonly) uint64_t baseReward;
 
-/*! @brief minProtocolVersion is the minimum protocol version that peers on this chain can communicate with. This should only be changed in the case of devnets.  */
-@property (nonatomic, assign) uint32_t minProtocolVersion;
 
-/*! @brief protocolVersion is the protocol version that we currently use for this chain. This should only be changed in the case of devnets.  */
-@property (nonatomic, assign) uint32_t protocolVersion;
 
-/*! @brief headersMaxAmount is the maximum amount of headers that is expected from peers.  */
-@property (nonatomic, assign) uint64_t headersMaxAmount;
-
-/*! @brief maxProofOfWork is the lowest amount of work effort required to mine a block on the chain.  */
-@property (nonatomic, readonly) UInt256 maxProofOfWork;
-
-/*! @brief maxProofOfWorkTarget is the lowest amount of work effort required to mine a block on the chain. Here it is represented as the compact target.  */
-@property (nonatomic, readonly) uint32_t maxProofOfWorkTarget;
-
-/*! @brief allowMinDifficultyBlocks is set to TRUE on networks where mining is low enough that it can be attacked by increasing difficulty with ASICs and then no longer running ASICs. This is set to NO for Mainnet, and generally should be YES on all other networks.  */
-@property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;
-
-/*! @brief This is the minimum amount that can be entered into an amount for a output for it not to be considered dust.  */
-@property (nonatomic, readonly) uint64_t minOutputAmount;
-
-// MARK: Fees
-
-@property (nonatomic, assign) uint64_t feePerByte;
-
-/*! @brief The fee for transactions in L1 are now entirely dependent on their size.  */
-- (uint64_t)feeForTxSize:(NSUInteger)size;
-
-// MARK: Ports
-
-/*! @brief The standard port for the chain for L1 communication.  */
-@property (nonatomic, assign) uint32_t standardPort;
-
-/*! @brief The standard port for the chain for L2 communication through JRPC.  */
-@property (nonatomic, assign) uint32_t standardDapiJRPCPort;
-
-/*! @brief The standard port for the chain for L2 communication through GRPC.  */
-@property (nonatomic, assign) uint32_t standardDapiGRPCPort;
-
-// MARK: Sporks
-
-/*! @brief The spork public key as a hex string.  */
-@property (nonatomic, strong, nullable) NSString *sporkPublicKeyHexString;
-
-/*! @brief The spork private key as a base 58 string.  */
-@property (nonatomic, strong, nullable) NSString *sporkPrivateKeyBase58String;
-
-/*! @brief The spork address base 58 string (addresses are known to be base 58).  */
-@property (nonatomic, strong, nullable) NSString *sporkAddress;
-
-// MARK: - L2 Network Chain Info
-
-/*! @brief platformProtocolVersion is the protocol version that we currently use for the platform chain. This should only be changed in the case of devnets.  */
-@property (nonatomic, assign) uint32_t platformProtocolVersion;
-
-/*! @brief The dpns contract id.  */
-@property (nonatomic, assign) UInt256 dpnsContractID;
-
-/*! @brief The dashpay contract id.  */
-@property (nonatomic, assign) UInt256 dashpayContractID;
 
 // MARK: - DashSync Chain Info
 
@@ -236,26 +177,26 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 // MARK: - Blocks and Headers
 
-/*! @brief The last known chain sync block on the chain.  */
+///*! @brief The last known chain sync block on the chain.  */
 @property (nonatomic, readonly, nullable) DSBlock *lastSyncBlock;
-
-/*! @brief The last known chain sync block on the chain, don't recover from checkpoints if it is not known.  */
-@property (nonatomic, readonly, nullable) DSBlock *lastSyncBlockDontUseCheckpoints;
-
+//
+///*! @brief The last known chain sync block on the chain, don't recover from checkpoints if it is not known.  */
+//@property (nonatomic, readonly, nullable) DSBlock *lastSyncBlockDontUseCheckpoints;
+//
 /*! @brief The last known terminal block on the chain.  */
 @property (nonatomic, readonly, nullable) DSBlock *lastTerminalBlock;
-
-/*! @brief The last known block on the chain before the given timestamp.  */
-- (DSBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
-
-/*! @brief The last known block or header on the chain before the given timestamp.  */
-- (DSBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
-
+//
+///*! @brief The last known block on the chain before the given timestamp.  */
+//- (DSBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+//
+///*! @brief The last known block or header on the chain before the given timestamp.  */
+//- (DSBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+//
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
 @property (nonatomic, readonly, nullable) DSBlock *lastOrphan;
-
-/*! @brief A dictionary of the the most recent known blocks keyed by block hash.  */
-@property (nonatomic, readonly) NSDictionary<NSValue *, DSMerkleBlock *> *recentBlocks;
+//
+///*! @brief A dictionary of the the most recent known blocks keyed by block hash.  */
+//@property (nonatomic, readonly) NSDictionary<NSValue *, DSMerkleBlock *> *recentBlocks;
 
 /*! @brief A short hex string of the last block's block hash.  */
 @property (nonatomic, readonly, nullable) NSString *chainTip;
@@ -263,26 +204,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The block locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
 @property (nonatomic, readonly, nullable) NSArray<NSData *> *chainSyncBlockLocatorArray;
 
-/*! @brief This block locator array is an array of 10 block hashes in decending order before the given timestamp followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-- (NSArray<NSData *> *)blockLocatorArrayOnOrBeforeTimestamp:(NSTimeInterval)timestamp includeInitialTerminalBlocks:(BOOL)includeHeaders;
-
-/*! @brief The timestamp of a block at a given height.  */
-- (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
-
-/*! @brief The block on the main chain at a certain height. By main chain it is understood to mean not forked chain - this could be on mainnet, testnet or a devnet.  */
-- (DSMerkleBlock *_Nullable)blockAtHeight:(uint32_t)height;
-
-/*! @brief The block on the main chain at a certain height. If none exist return most recent.  */
-- (DSMerkleBlock *_Nullable)blockAtHeightOrLastTerminal:(uint32_t)height;
-
-/*! @brief Returns a known block with the given block hash. This does not have to be in the main chain. A null result could mean that the block was old and has since been discarded.  */
-- (DSMerkleBlock *_Nullable)blockForBlockHash:(UInt256)blockHash;
-
-/*! @brief Returns a known block in the main chain with the given block hash. A null result could mean that the block was old and has since been discarded.  */
-- (DSMerkleBlock *_Nullable)recentTerminalBlockForBlockHash:(UInt256)blockHash;
-
-/*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
-- (DSMerkleBlock *_Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
 // MARK: Chain Sync
 
@@ -295,8 +216,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 ///*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
 //@property (nonatomic, readonly) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
 
-/*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
-@property (nullable, nonatomic, readonly) NSArray *lastPersistedChainSyncLocators;
+///*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
+//@property (nullable, nonatomic, readonly) NSArray *lastPersistedChainSyncLocators;
 
 // MARK: Last Block Information
 
@@ -315,25 +236,11 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Returns the height of the best block.  */
 @property (nonatomic, readonly) uint32_t bestBlockHeight;
 
-/*! @brief Returns the estimated height of chain. This is reported by the current download peer but can not be verified and is not secure.  */
-@property (nonatomic, readonly) uint32_t estimatedBlockHeight;
-
-/*! @brief Returns the height of a block having the given hash. If no block is found returns UINT32_MAX  */
-- (uint32_t)heightForBlockHash:(UInt256)blockhash;
-
-/*! @brief Returns the height of a block having the given hash. This does less expensive checks than heightForBlockHash and is not garanteed to be accurate, but can be used for logging. If no block is found returns UINT32_MAX  */
-- (uint32_t)quickHeightForBlockHash:(UInt256)blockhash;
 
 // MARK: Chain Lock
 
 /*! @brief Returns the last chainLock known by the chain at the heighest height.  */
 @property (nonatomic, readonly) DSChainLock *lastChainLock;
-
-/*! @brief Adds a chainLock to the chain and applies it corresponding block. It will be applied to both terminal blocks and sync blocks.  */
-- (BOOL)addChainLock:(DSChainLock *)chainLock;
-
-/*! @brief Returns if there is a block at the following height that is confirmed.  */
-- (BOOL)blockHeightChainLocked:(uint32_t)height;
 
 // MARK: - Transactions
 
@@ -450,17 +357,18 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Retrieve a chain having the specified network name.  */
 + (DSChain *_Nullable)chainForNetworkName:(NSString *_Nullable)networkName;
 
-// MARK: - Chain Info methods
+//// MARK: - Chain Info methods
 
-- (BOOL)isMainnet;
-- (BOOL)isTestnet;
-- (BOOL)isDevnetAny;
-- (BOOL)isEvolutionEnabled;
-- (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
+//
+//- (BOOL)isMainnet;
+//- (BOOL)isTestnet;
+//- (BOOL)isDevnetAny;
+//- (BOOL)isEvolutionEnabled;
+//- (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
 - (BOOL)isCore19Active;
 - (BOOL)isCore20Active;
-- (BOOL)isCore20ActiveAtHeight:(uint32_t)height;
-- (KeyKind)activeBLSType;
+//- (BOOL)isCore20ActiveAtHeight:(uint32_t)height;
+//- (KeyKind)activeBLSType;
 
 @end
 

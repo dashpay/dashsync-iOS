@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "DSChainsManager.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"

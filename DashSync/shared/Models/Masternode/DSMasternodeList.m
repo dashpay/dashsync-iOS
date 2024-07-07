@@ -8,6 +8,7 @@
 #import "DSMasternodeList.h"
 #import "BigIntTypes.h"
 #import "DSChain.h"
+#import "DSChain+Blocks.h"
 #import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSPeer.h"

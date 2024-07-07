@@ -27,6 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSDerivationPath.h"
 #import "DSPriceManager.h"
 #import "NSData+DSHash.h"

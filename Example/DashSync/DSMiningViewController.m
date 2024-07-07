@@ -17,7 +17,7 @@
 
 #import "DSMiningViewController.h"
 #import "BigIntTypes.h"
-#import "DSChain+Protected.h"
+#import "DSChain+Blocks.h"
 #import "DSChainManager.h"
 #import "DSFullBlock.h"
 #import "NSData+DSHash.h"

@@ -15,11 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DSMasternodeProcessorContext.h"
-#import "NSData+Dash.h"
-#import "DSChain+Protected.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
+#import "DSMasternodeProcessorContext.h"
+#import "NSData+Dash.h"
 
 @implementation DSMasternodeProcessorContext
 

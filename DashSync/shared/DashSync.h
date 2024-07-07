@@ -11,7 +11,9 @@
 
 #import "DSBlockchainIdentity.h"
 #import "DSChain.h"
+#import "DSChain+Blocks.h"
 #import "DSChain+Checkpoints.h"
+#import "DSChain+Params.h"
 #import "DSCheckpoint.h"
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"

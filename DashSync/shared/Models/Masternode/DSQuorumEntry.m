@@ -7,6 +7,7 @@
 
 #import "DSQuorumEntry.h"
 #import "DSBlock.h"
+#import "DSChain+Blocks.h"
 #import "DSChainManager.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeList+Mndiff.h"

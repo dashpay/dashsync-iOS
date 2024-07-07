@@ -19,6 +19,8 @@
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListService+Protected.h"
 #import "DSMasternodeListStore+Protected.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSGetMNListDiffRequest.h"
@@ -212,7 +214,7 @@
     UInt256 masternodeListBlockHash = masternodeList.blockHash;
     NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
     BOOL hasInRetrieval = [self.retrievalQueue containsObject:masternodeListBlockHashData];
-    uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
+//    uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
     BOOL shouldNot = !hasInRetrieval && !skipPresenceInRetrieval;
     //DSLog(@"•••• shouldProcessDiffResult: %d: %@ %d", masternodeListBlockHeight, uint256_reverse_hex(masternodeListBlockHash), !shouldNot);
     if (shouldNot) {

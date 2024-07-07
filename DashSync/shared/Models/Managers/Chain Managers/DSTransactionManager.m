@@ -30,7 +30,10 @@
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallets.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
 #import "DSCreditFundingTransaction.h"
@@ -1705,7 +1708,7 @@
 
     DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_reverse_hex(chainLock.blockHash));
 
-    DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
+    DSMerkleBlock *block = [self.chain.blocksCache blockForBlockHash:chainLock.blockHash];
 
     if (block) {
         [self.chain addChainLock:chainLock];
@@ -1733,7 +1736,7 @@
         if (verified) {
             DSLog(@"[%@] Verified %@", self.chain.name, chainLock);
             [chainLock saveSignatureValid];
-            DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
+            DSMerkleBlock *block = [self.chain.blocksCache blockForBlockHash:chainLock.blockHash];
             [self.chainLocksWaitingForQuorums removeObjectForKey:chainLockHashData];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
@@ -1767,7 +1770,7 @@
     if (secondFeePerByte * 2 > MIN_FEE_PER_B && secondFeePerByte * 2 <= MAX_FEE_PER_B &&
         secondFeePerByte * 2 > self.chain.feePerByte) {
         DSLog(@"[%@] increasing feePerKb to %llu based on feefilter messages from peers", self.chain.name, secondFeePerByte * 2);
-        self.chain.feePerByte = secondFeePerByte * 2;
+        self.chain.params.feePerByte = secondFeePerByte * 2;
     }
 }
 

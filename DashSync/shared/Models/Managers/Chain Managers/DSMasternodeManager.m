@@ -24,7 +24,10 @@
 //  THE SOFTWARE.
 
 #import "DSMasternodeManager.h"
+#import "DSBlocksCache+Protected.h"
+#import "DSChain+Blocks.h"
 #import "DSChain+Checkpoints.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
@@ -479,14 +482,13 @@
 - (DSBlock *)lastBlockForBlockHash:(UInt256)blockHash fromPeer:(DSPeer *)peer {
     DSBlock *lastBlock = nil;
     if ([self.chain heightForBlockHash:blockHash]) {
-        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
-        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
-            NSData *blockHashData = uint256_data(blockHash);
-            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
+        lastBlock = [[peer.chain.blocksCache terminalBlocks] objectForKey:uint256_obj(blockHash)];
+        if (!lastBlock && ![peer.chain isMainnet]) {
+            lastBlock = [peer.chain.blocksCache insightVerifiedBlockWithHash:blockHash];
             if (!lastBlock && peer.chain.isTestnet) {
                 //We can trust insight if on testnet
                 [self.chain blockUntilGetInsightForBlockHash:blockHash];
-                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
+                lastBlock = [peer.chain.blocksCache insightVerifiedBlockWithHash:blockHash];
             }
         }
     } else {

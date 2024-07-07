@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*! @brief Timestamp of the last hardcoded checkpoint for the chain.  */
 @property (nonatomic, readonly) NSTimeInterval lastCheckpointTimestamp;
+@property (nonatomic, readonly) uint32_t lastCheckpointHeight;
 
 /*! @brief Returns the last checkpoint.  */
 @property (nonatomic, readonly, strong) DSCheckpoint *lastCheckpoint;
@@ -63,9 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSCheckpoint *_Nullable)lastCheckpointOnOrBeforeHeight:(uint32_t)height forChain:(DSChain *)chain;
 - (DSCheckpoint *_Nullable)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp forChain:(DSChain *)chain;
-
-/*! @brief Adds checkpoint to in-memory storage.  */
-- (void)addCheckpointInDictionary:(DSCheckpoint *)checkpoint;
+- (DSCheckpoint *_Nullable)lastCheckpointBeforeHeight:(uint32_t)height;
 
 /*! @brief Returns checkpoint at the block height if persist  */
 - (DSCheckpoint *_Nullable)checkpointForHeight:(uint32_t)height;

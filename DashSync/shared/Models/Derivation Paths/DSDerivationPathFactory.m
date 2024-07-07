@@ -6,6 +6,7 @@
 //
 
 #import "DSDerivationPathFactory.h"
+#import "DSChain+Params.h"
 #import "DSAuthenticationKeysDerivationPath+Protected.h"
 #import "DSCreditFundingDerivationPath+Protected.h"
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"

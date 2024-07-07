@@ -8,6 +8,7 @@
 #import "DSInsightManager.h"
 #import "DSBlock.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSMerkleBlock.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"

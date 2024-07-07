@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "DSBloomFilter.h"
+#import "DSChain+Blocks.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"
@@ -100,6 +101,7 @@
     self.sessionConnectivityNonce = (long long)arc4random() << 32 | arc4random();
 
     if ([self.masternodeManager hasCurrentMasternodeListInLast30Days]) {
+        
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     }
 
@@ -401,7 +403,7 @@
 // MARK: - Mining
 
 - (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString *)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
-    [self mineEmptyBlocks:blockCount toPaymentAddress:paymentAddress afterBlock:self.chain.lastTerminalBlock previousBlocks:self.chain.terminalBlocks withTimeout:timeout completion:completion];
+    [self mineEmptyBlocks:blockCount toPaymentAddress:paymentAddress afterBlock:self.chain.lastTerminalBlock previousBlocks:self.chain.blocksCache.terminalBlocks withTimeout:timeout completion:completion];
 }
 
 - (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString *)paymentAddress afterBlock:(DSBlock *)previousBlock previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
@@ -441,7 +443,7 @@
 }
 
 - (void)mineBlockToPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion {
-    [self mineBlockAfterBlock:self.chain.lastTerminalBlock toPaymentAddress:paymentAddress withTransactions:transactions previousBlocks:self.chain.terminalBlocks nonceOffset:0 withTimeout:timeout completion:completion];
+    [self mineBlockAfterBlock:self.chain.lastTerminalBlock toPaymentAddress:paymentAddress withTransactions:transactions previousBlocks:self.chain.blocksCache.terminalBlocks nonceOffset:0 withTimeout:timeout completion:completion];
 }
 
 - (void)mineBlockAfterBlock:(DSBlock *)block toPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *)transactions previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(nonnull BlockMiningCompletionBlock)completion {

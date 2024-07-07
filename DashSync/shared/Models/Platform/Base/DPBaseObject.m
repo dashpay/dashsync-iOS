@@ -19,6 +19,7 @@
 
 
 #import "BigIntTypes.h"
+#import "DSChain+Params.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>

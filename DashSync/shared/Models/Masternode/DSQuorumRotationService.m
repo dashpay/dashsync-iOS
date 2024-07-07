@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSGetQRInfoRequest.h"
 #import "DSQuorumRotationService.h"
 #import "DSMasternodeListService+Protected.h"

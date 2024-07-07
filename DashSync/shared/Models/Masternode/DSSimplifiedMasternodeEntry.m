@@ -7,6 +7,7 @@
 
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSBlock.h"
+#import "DSChain+Blocks.h"
 #import "DSKeyManager.h"
 #import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"

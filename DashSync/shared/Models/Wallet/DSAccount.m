@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "DSAccount.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSFundsDerivationPath.h"
 #import "DSWallet+Protected.h"

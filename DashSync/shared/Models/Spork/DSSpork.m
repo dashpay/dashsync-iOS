@@ -8,6 +8,7 @@
 
 #import "DSSpork.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSKeyManager.h"
 #import "DSPeerManager.h"

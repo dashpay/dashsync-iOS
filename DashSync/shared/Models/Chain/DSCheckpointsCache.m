@@ -16,6 +16,7 @@
 //
 
 #import "BigIntTypes.h"
+#import "DSChain+Params.h"
 #import "DSCheckpointsCache.h"
 #import "DSKeyManager.h"
 #import "NSData+Dash.h"
@@ -117,6 +118,18 @@
         }
     }
     return nil;
+}
+
+- (DSCheckpoint *_Nullable)lastCheckpointBeforeHeight:(uint32_t)height {
+    DSCheckpoint *lastCheckpoint = nil;
+    for (DSCheckpoint *checkpoint in self.checkpoints) {
+        if (checkpoint.height < height) {
+            lastCheckpoint = checkpoint;
+        } else {
+            break;
+        }
+    }
+    return lastCheckpoint;
 }
 
 - (DSCheckpoint *)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp forChain:(DSChain *)chain {

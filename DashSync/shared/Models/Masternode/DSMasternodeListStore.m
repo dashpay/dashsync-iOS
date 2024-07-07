@@ -18,6 +18,9 @@
 #import "DSMasternodeListStore.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSBlock.h"
+#import "DSBlocksCache+Protected.h"
+#import "DSChain+Blocks.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
@@ -196,7 +199,7 @@
     if (!hasBlock && self.chain.isTestnet) {
         //We can trust insight if on testnet
         [self.chain blockUntilGetInsightForBlockHash:blockHash];
-        hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
+        hasBlock = !![self.chain.blocksCache insightVerifiedBlockWithHash:blockHash];
     }
     return hasBlock;
 }
@@ -444,7 +447,7 @@
     [self notifyMasternodeListUpdate];
     dispatch_group_enter(self.savingGroup);
     //We will want to create unknown blocks if they came from insight
-    BOOL createUnknownBlocks = masternodeList.chain.allowInsightBlocksForVerification;
+    BOOL createUnknownBlocks = ![masternodeList.chain isMainnet];
     self.masternodeListCurrentlyBeingSavedCount++;
     //This will create a queue for masternodes to be saved without blocking the networking queue
     [DSMasternodeListStore saveMasternodeList:masternodeList
@@ -479,7 +482,7 @@
     NSManagedObjectContext *context = self.managedObjectContext;
     [context performBlockAndWait:^{
         @autoreleasepool {
-            BOOL createUnknownBlocks = self.chain.allowInsightBlocksForVerification;
+            BOOL createUnknownBlocks = ![self.chain isMainnet];
             DSChainEntity *chainEntity = [self.chain chainEntityInContext:context];
             DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:blockHash inContext:context];
             if (!merkleBlockEntity) {

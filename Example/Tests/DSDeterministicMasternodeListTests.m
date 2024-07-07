@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DSChain.h"
+#import "DSChain+Blocks.h"
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSCoinbaseTransaction.h"

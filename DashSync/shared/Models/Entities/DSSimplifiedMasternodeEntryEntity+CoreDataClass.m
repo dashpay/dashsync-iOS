@@ -7,6 +7,7 @@
 //
 
 #import "DSAddressEntity+CoreDataClass.h"
+#import "DSChain+Blocks.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSDictionary+Dash.h"

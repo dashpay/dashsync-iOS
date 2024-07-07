@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSBlocksCache.h"
 #import "DSChain+Checkpoints.h"
 #import "DSChain+Protected.h"
 
@@ -32,38 +33,38 @@
 }
 
 - (DSCheckpoint *)lastCheckpoint {
-    return [self.checkpointsCache lastCheckpoint];
+    return [self.blocksCache.checkpointsCache lastCheckpoint];
 }
 - (uint32_t)lastCheckpointHeight {
-    return [self.checkpointsCache lastCheckpoint].height;
+    return [self.blocksCache.checkpointsCache lastCheckpoint].height;
 }
 
 - (DSCheckpoint *)lastCheckpointOnOrBeforeHeight:(uint32_t)height {
-    return [self.checkpointsCache lastCheckpointOnOrBeforeHeight:height forChain:self];
+    return [self.blocksCache.checkpointsCache lastCheckpointOnOrBeforeHeight:height forChain:self];
 }
 
 - (DSCheckpoint *)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
-    return [self.checkpointsCache lastCheckpointOnOrBeforeTimestamp:timestamp forChain:self];
+    return [self.blocksCache.checkpointsCache lastCheckpointOnOrBeforeTimestamp:timestamp forChain:self];
 }
 
 - (DSCheckpoint *_Nullable)lastCheckpointHavingMasternodeList {
-    return [self.checkpointsCache lastCheckpointHavingMasternodeList];
+    return [self.blocksCache.checkpointsCache lastCheckpointHavingMasternodeList];
 }
 
 - (DSCheckpoint *)checkpointForBlockHash:(UInt256)blockHash {
-    return [self.checkpointsCache checkpointForBlockHash:blockHash];
+    return [self.blocksCache.checkpointsCache checkpointForBlockHash:blockHash];
 }
 
 - (DSCheckpoint *)checkpointForBlockHeight:(uint32_t)blockHeight {
-    return [self.checkpointsCache checkpointForBlockHeight:blockHeight];
+    return [self.blocksCache.checkpointsCache checkpointForBlockHeight:blockHeight];
 }
 
 - (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight {
-    [self.checkpointsCache useOverrideForTerminalHeaders:[self lastCheckpointOnOrBeforeHeight:blockHeight]];
+    [self.blocksCache.checkpointsCache useOverrideForTerminalHeaders:[self lastCheckpointOnOrBeforeHeight:blockHeight]];
 }
 
 - (void)useCheckpointBeforeOrOnHeightForSyncingChainBlocks:(uint32_t)blockHeight {
-    [self.checkpointsCache useOverrideForSyncHeaders:[self lastCheckpointOnOrBeforeHeight:blockHeight]];
+    [self.blocksCache.checkpointsCache useOverrideForSyncHeaders:[self lastCheckpointOnOrBeforeHeight:blockHeight]];
 }
 
 
