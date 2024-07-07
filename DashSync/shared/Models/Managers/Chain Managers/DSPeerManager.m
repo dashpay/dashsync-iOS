@@ -70,7 +70,7 @@
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
 
-#define FIXED_PEERS @"FixedPeers"
+#define FIXED_PEERS @"MainnetFixedPeers"
 #define TESTNET_FIXED_PEERS @"TestnetFixedPeers"
 
 #define SYNC_COUNT_INFO @"SYNC_COUNT_INFO"
