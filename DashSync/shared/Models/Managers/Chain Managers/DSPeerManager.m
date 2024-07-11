@@ -706,10 +706,6 @@
                     dispatch_async(self.networkingQueue, ^{ [self.chain saveBlockLocators]; });
                     [self chainSyncStopped];
                 }];
-                [self.backgroundManager createBlockLocatorsTask:^{
-                    dispatch_async(self.networkingQueue, ^{ [self.chain saveBlockLocators]; });
-                    [self chainSyncStopped];
-                }];
             }
 
             if (self.chainManager.syncState.chainSyncProgress < 1.0) {

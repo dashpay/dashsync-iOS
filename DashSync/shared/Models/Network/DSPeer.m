@@ -1638,11 +1638,16 @@
     DSLogWithLocation(self, @"got pong in %fs", self.pingTime);
 #endif
     if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
-        void (^handler)(BOOL) = [self.pongHandlers objectAtIndex:0];
-        [self.pongHandlers removeObjectAtIndex:0];
-        [self dispatchAsyncInDelegateQueue:^{
-            handler(YES);
-        }];
+        void (^handler)(BOOL) = nil;
+        @synchronized(self.pongHandlers) {
+            if (self.pongHandlers.count > 0) {
+                handler = [self.pongHandlers objectAtIndex:0];
+                [self.pongHandlers removeObjectAtIndex:0];
+            }
+        }
+        if (handler) {
+            [self dispatchAsyncInDelegateQueue:^{ handler(YES); }];
+        }
     }
 }
 
