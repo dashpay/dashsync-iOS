@@ -191,10 +191,9 @@
     bool changed = _currentMasternodeList != currentMasternodeList;
     _currentMasternodeList = currentMasternodeList;
     if (changed) {
-        [self.chain.chainManager notify:DSCurrentMasternodeListDidChangeNotification
-                               userInfo:@{
-            DSChainManagerNotificationChainKey: self.chain,
-            DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
+        });
     }
 }
 
