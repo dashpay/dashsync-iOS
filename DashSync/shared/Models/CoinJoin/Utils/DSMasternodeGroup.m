@@ -35,7 +35,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 @interface DSMasternodeGroup ()
 
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
+@property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager; // TODO: sync all access points
 @property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
 @property (nonatomic, strong) NSMutableDictionary *masternodeMap;
 @property (nonatomic, strong) NSMutableDictionary *addressMap;
@@ -50,6 +50,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 @property (nonatomic, strong) NSMutableDictionary<NSString*, DSBackoff*> *backoffMap;
 @property (nonatomic, strong) NSMutableArray<DSPeer *> *inactives;
 @property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, strong) id blocksObserver;
 
 @end
 
@@ -59,6 +60,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     self = [super init];
     if (self) {
         _coinJoinManager = manager;
+        _chain = manager.chain;
         _pendingSessions = [NSMutableSet set];
         _pendingClosingMasternodes = [NSMutableArray array];
         _masternodeMap = [NSMutableDictionary dictionary];
@@ -77,6 +79,18 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (void)startAsync {
     _isRunning = true;
+    
+    self.blocksObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                              
+                                                              DSLog(@"[OBJ-C] CoinJoin: new block found, restarting masternode connections job");
+                                                              [self triggerConnections];
+                                                          }
+                                                      }];
 }
 
 - (dispatch_queue_t)networkingQueue {
@@ -85,6 +99,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (void)stopAsync {
     _isRunning = false;
+    [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
 }
 
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port {
@@ -229,7 +244,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             
             if (retryTime > now) {
                 NSTimeInterval delay = [retryTime timeIntervalSinceDate:now];
-                DSLog(@"Waiting %fl ms before next connect attempt to masternode to %@", delay, peerToTry == NULL ? @"" : peerToTry.location);
+                DSLog(@"[OBJ-C] CoinJoin: Waiting %fl ms before next connect attempt to masternode to %@", delay, peerToTry == NULL ? @"" : peerToTry.location);
                 [self.inactives addObject:peerToTry];
                 [self triggerConnectionsJobWithDelay:delay];
                 return;

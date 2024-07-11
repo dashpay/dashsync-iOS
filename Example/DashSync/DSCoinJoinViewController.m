@@ -49,8 +49,15 @@
         _coinJoinManager = [DSCoinJoinManager sharedInstanceForChain:_chainManager.chain];
     }
     
-    [_coinJoinManager startAsync];
-    [_coinJoinManager runCoinJoin];
+    [_coinJoinManager start];
+//    wallet.getCoinJoin().refreshUnusedKeys(); TODO
+    [_coinJoinManager setStopOnNothingToDo:true];
+    
+    if (![_coinJoinManager startMixing]) {
+        DSLog(@"[OBJ-C] CoinJoin: Mixing has been started already.");
+    }
+    
+    [_coinJoinManager doAutomaticDenominating];
 }
 
 @end
