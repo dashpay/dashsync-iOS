@@ -46,7 +46,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "NSError+Dash.h"
 
-#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
@@ -172,31 +172,6 @@
     return [self.masternodeListDiffService retrievalQueueMaxAmount];
 }
 
-- (uint32_t)estimatedMasternodeListsToSync {
-    BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
-    if (!syncMasternodeLists) {
-        return 0;
-    }
-    double amountLeft = self.masternodeListRetrievalQueueCount;
-    double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-    if (!maxAmount || self.store.masternodeListsByBlockHash.count <= 1) { //1 because there might be a default
-        return self.store.masternodeListsToSync;
-    }
-    return amountLeft;
-}
-
-- (double)masternodeListAndQuorumsSyncProgress {
-    @synchronized (self) {
-        double amountLeft = self.masternodeListRetrievalQueueCount;
-        double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-        if (!amountLeft) {
-            return self.store.masternodeListsAndQuorumsIsSynced;
-        }
-        double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0);
-        return progress;
-    }
-}
-
 - (BOOL)currentMasternodeListIsInLast24Hours {
     if (!self.currentMasternodeList) {
         return NO;
@@ -206,7 +181,6 @@
     NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval delta = currentTimestamp - block.timestamp;
     return fabs(delta) < DAY_TIME_INTERVAL;
-
 }
 
 
@@ -765,10 +739,10 @@
             return lastBlock.merkleRoot;
         }];
         [self processMasternodeDiffWith:message context:ctx completion:^(DSMnDiffProcessingResult * _Nonnull result) {
+        #if SAVE_MASTERNODE_DIFF_TO_FILE
             UInt256 baseBlockHash = result.baseBlockHash;
             UInt256 blockHash = result.blockHash;
             DSLog(@"[%@] •••• -> processed mnlistdiff %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
-        #if SAVE_MASTERNODE_DIFF_TO_FILE
             NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
             DSLog(@"[%@] •-• File %@ saved", self.chain.name, fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
@@ -808,6 +782,7 @@
                 dispatch_group_leave(self.processingGroup);
                 return;
             }
+    #if SAVE_MASTERNODE_DIFF_TO_FILE
             UInt256 baseBlockHash = result.mnListDiffResultAtTip.baseBlockHash;
             UInt256 blockHash = result.mnListDiffResultAtTip.blockHash;
             DSLog(@"[%@] •••• -> processed qrinfo tip %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
@@ -818,7 +793,6 @@
             if (result.extraShare) {
                 DSLog(@"[%@] •••• -> processed qrinfo h-4c %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
             }
-    #if SAVE_MASTERNODE_DIFF_TO_FILE
             NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
             DSLog(@"[%@] •-• File %@ saved", self.chain.name, fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
@@ -914,4 +888,14 @@
         return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(quorum.llmqType, quorum.quorumHash.u8)].UInt256;
     }
 }
+
+- (void)notifySyncStateChanged {
+//    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = [self masternodeListRetrievalQueueCount];
+//    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = [self masternodeListRetrievalQueueMaxAmount];
+    self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = self.store.lastMasternodeListBlockHeight;
+//    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = self.store.masternodeListsByBlockHash.count;
+    [self.chain.chainManager notifySyncStateChanged];
+}
+
+
 @end

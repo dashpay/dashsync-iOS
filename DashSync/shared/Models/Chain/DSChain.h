@@ -34,12 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSString *const DSChainWalletsDidChangeNotification;
 FOUNDATION_EXPORT NSString *const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString *const DSChainStandaloneAddressesDidChangeNotification;
-FOUNDATION_EXPORT NSString *const DSChainChainSyncBlocksDidChangeNotification;
+//FOUNDATION_EXPORT NSString *const DSChainChainSyncBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString *const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString *const DSChainNotificationBlockKey;
 
 // For improved performance DSChainInitialHeadersDidChangeNotification is not garanteed to trigger on every initial headers change.
-FOUNDATION_EXPORT NSString *const DSChainTerminalBlocksDidChangeNotification;
+//FOUNDATION_EXPORT NSString *const DSChainTerminalBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString *const DSChainInitialHeadersDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString *const DSChainBlocksDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString *const DSChainNewChainTipBlockNotification;
@@ -504,6 +504,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 @required
 
+- (void)chainWillStartConnectingToPeers:(DSChain *)chain;
 - (void)chainWillStartSyncingBlockchain:(DSChain *)chain;
 - (void)chainShouldStartSyncingBlockchain:(DSChain *)chain onPeer:(DSPeer *)peer;
 - (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *_Nullable)peer onMainChain:(BOOL)onMainChain;

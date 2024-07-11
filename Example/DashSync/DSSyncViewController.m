@@ -64,7 +64,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
-@property (strong, nonatomic) id filterChangedObserver, syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, headersResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
+@property (strong, nonatomic) id filterChangedObserver, syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
 @property (strong, nonatomic) DSPasteboardAddressExtractor *pasteboardExtractor;
 
 - (IBAction)startSync:(id)sender;
@@ -164,21 +164,14 @@
                                                       }];
 
     self.blocksResetObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainChainSyncBlocksDidChangeNotification
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStateDidChangeNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
-                                                          [self updateBlockHeight];
-                                                          [self updateBalance];
-                                                      }];
-
-    self.headersResetObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainTerminalBlocksDidChangeNotification
-                                                          object:nil
-                                                           queue:nil
-                                                      usingBlock:^(NSNotification *note) {
-                                                          [self updateHeaderHeight];
-                                                      }];
+            [self updateBlockHeight];
+            [self updateHeaderHeight];
+            [self updateBalance];
+    }];
 
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification

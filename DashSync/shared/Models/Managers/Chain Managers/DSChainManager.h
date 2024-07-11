@@ -23,9 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSBackgroundManager.h"
 #import "DSChain.h"
 #import "DSKeyManager.h"
 #import "DSPeer.h"
+#import "DSSyncState.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,26 +45,22 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo)
 FOUNDATION_EXPORT NSString *const DSChainManagerNotificationChainKey;
 FOUNDATION_EXPORT NSString *const DSChainManagerNotificationWalletKey;
 FOUNDATION_EXPORT NSString *const DSChainManagerNotificationAccountKey;
+FOUNDATION_EXPORT NSString *const DSChainManagerNotificationSyncStateKey;
 
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncWillStartNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerChainSyncDidStartNotification;
-FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncParametersUpdatedNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncFailedNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncStateDidChangeNotification;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock, DSKeyManager;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBackgroundManager, DSBloomFilter, DSBlock, DSFullBlock, DSKeyManager, DSSyncState;
 
 typedef void (^BlockMiningCompletionBlock)(DSFullBlock *_Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError *_Nullable error);
 typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block, NSArray<NSNumber *> *attempts, NSTimeInterval timeUsed, NSError *_Nullable error);
 
 @interface DSChainManager : NSObject <DSChainDelegate, DSPeerChainDelegate>
 
-@property (nonatomic, readonly) double chainSyncProgress;
-@property (nonatomic, readonly) double terminalHeaderSyncProgress;
-@property (nonatomic, readonly) double combinedSyncProgress;
-@property (nonatomic, readonly) double chainSyncWeight;
-@property (nonatomic, readonly) double terminalHeaderSyncWeight;
-@property (nonatomic, readonly) double masternodeListSyncWeight;
+@property (nonatomic, readonly) DSBackgroundManager *backgroundManager;
 @property (nonatomic, readonly) DSSporkManager *sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager *masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager *governanceSyncManager;
@@ -73,29 +71,21 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 @property (nonatomic, readonly) DSKeyManager *keyManager;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
+@property (nonatomic, readonly, getter = isSynced) BOOL synced;
+@property (nonatomic, readonly) double combinedSyncProgress;
 
 /*! @brief Returns the sync phase that the chain is currently in.  */
 @property (nonatomic, readonly) DSChainSyncPhase syncPhase;
 
+/*! @brief Returns determined chain sync state.  */
+@property (nonatomic, readonly) DSSyncState *syncState;
+
 - (void)startSync;
-
 - (void)stopSync;
-
 - (void)syncBlocksRescan;
-
 - (void)masternodeListAndBlocksRescan;
-
 - (void)masternodeListRescan;
 
-// MARK: - Mining
-
-- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString *)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
-
-- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString *)paymentAddress afterBlock:(DSBlock *)block previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
-
-- (void)mineBlockToPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *_Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
-
-- (void)mineBlockAfterBlock:(DSBlock *)block toPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *_Nullable)transactions previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
 - (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash;
 

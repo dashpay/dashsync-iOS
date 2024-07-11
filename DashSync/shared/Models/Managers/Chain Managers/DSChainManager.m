@@ -26,6 +26,7 @@
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSChainManager+Mining.h"
 #import "DSChainManager+Protected.h"
 #import "DSCheckpoint.h"
 #import "DSDerivationPath.h"
@@ -53,10 +54,8 @@
 
 @interface DSChainManager ()
 
-@property (nonatomic, assign) double chainSyncWeight;
-@property (nonatomic, assign) double terminalHeaderSyncWeight;
-@property (nonatomic, assign) double masternodeListSyncWeight;
 @property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, strong) DSBackgroundManager *backgroundManager;
 @property (nonatomic, strong) DSSporkManager *sporkManager;
 @property (nonatomic, strong) DSMasternodeManager *masternodeManager;
 @property (nonatomic, strong) DSKeyManager *keyManager;
@@ -65,8 +64,6 @@
 @property (nonatomic, strong) DSDAPIClient *DAPIClient;
 @property (nonatomic, strong) DSTransactionManager *transactionManager;
 @property (nonatomic, strong) DSPeerManager *peerManager;
-@property (nonatomic, assign) uint32_t chainSyncStartHeight;
-@property (nonatomic, assign) uint32_t terminalSyncStartHeight;
 @property (nonatomic, assign) uint64_t sessionConnectivityNonce;
 @property (nonatomic, assign) BOOL gotSporksAtChainSyncStart;
 @property (nonatomic, strong) NSData *maxTransactionsInfoData;
@@ -75,7 +72,11 @@
 @property (nonatomic, assign) uint32_t maxTransactionsInfoDataLastHeight;
 @property (nonatomic, strong) NSData *chainSynchronizationFingerprint;
 @property (nonatomic, strong) NSOrderedSet *chainSynchronizationBlockZones;
-@property (nonatomic, strong) dispatch_queue_t miningQueue;
+
+@property (nonatomic, strong) DSSyncState *syncState;
+@property (nonatomic, assign) NSTimeInterval lastNotifiedBlockDidChange;
+@property (nonatomic, strong) NSTimer *lastNotifiedBlockDidChangeTimer;
+
 
 @end
 
@@ -85,9 +86,10 @@
     if (!(self = [super init])) return nil;
 
     self.chain = chain;
-    self.syncPhase = DSChainSyncPhase_Offline;
     chain.chainManager = self;
+    self.syncState = [[DSSyncState alloc] initWithSyncPhase:DSChainSyncPhase_Offline];
     self.keyManager = [[DSKeyManager alloc] initWithChain:chain];
+    self.backgroundManager = [[DSBackgroundManager alloc] initWithChain:chain];
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
     self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain]; //this must be
@@ -98,6 +100,7 @@
     self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
     self.gotSporksAtChainSyncStart = FALSE;
     self.sessionConnectivityNonce = ((uint64_t)arc4random() << 32) | arc4random();
+    self.lastNotifiedBlockDidChange = 0;
 
     if ([self.masternodeManager hasCurrentMasternodeListInLast30Days]) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
@@ -106,9 +109,16 @@
     //[self loadMaxTransactionInfo];
     //[self loadHeightTransactionZones];
 
-    _miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+    self.miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     DSLog(@"[%@] DSChainManager.initWithChain %@", chain.name, chain);
     return self;
+}
+
+- (BOOL)isSynced {
+    return self.syncState.combinedSyncProgress == 1.0;
+}
+- (double)combinedSyncProgress {
+    return self.syncState.combinedSyncProgress;
 }
 
 // MARK: - Max transaction info
@@ -264,211 +274,14 @@
 
 // MARK: - Info
 
-- (NSString *)chainSyncStartHeightKey {
-    return [NSString stringWithFormat:@"%@_%@", SYNC_STARTHEIGHT_KEY, [self.chain uniqueID]];
-}
-
-- (NSString *)terminalSyncStartHeightKey {
-    return [NSString stringWithFormat:@"%@_%@", TERMINAL_SYNC_STARTHEIGHT_KEY, [self.chain uniqueID]];
-}
-
-- (void)assignSyncWeights {
-    uint32_t chainBlocks = [self chainBlocksToSync];
-    uint32_t terminalBlocks = [self terminalHeadersToSync];
-    uint32_t masternodeListsToSync = self.masternodeManager.estimatedMasternodeListsToSync;
-    //a unit of weight is the time it would take to sync 1000 blocks;
-    //terminal headers are 4 times faster the blocks
-    //the first masternode list is worth 20000 blocks
-    //each masternode list after that is worth 2000 blocks
-    uint32_t chainWeight = chainBlocks;
-    uint32_t terminalWeight = terminalBlocks / 4;
-    uint32_t masternodeWeight = masternodeListsToSync ? (20000 + 2000 * (masternodeListsToSync - 1)) : 0;
-    uint32_t totalWeight = chainWeight + terminalWeight + masternodeWeight;
-    if (totalWeight == 0) {
-        self.terminalHeaderSyncWeight = 0;
-        self.masternodeListSyncWeight = 0;
-        self.chainSyncWeight = 1;
-    } else {
-        self.chainSyncWeight = ((float)chainWeight) / totalWeight;
-        self.terminalHeaderSyncWeight = ((float)terminalWeight) / totalWeight;
-        self.masternodeListSyncWeight = ((float)masternodeWeight) / totalWeight;
-    }
-}
-
-- (uint32_t)chainBlocksToSync {
-    if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 0;
-    return self.chain.estimatedBlockHeight - self.chain.lastSyncBlockHeight;
-}
-
-- (double)chainSyncProgress {
-    if (!self.peerManager.downloadPeer && self.chainSyncStartHeight == 0) return 0.0;
-    if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
-
-    double lastBlockHeight = self.chain.lastSyncBlockHeight;
-    double estimatedBlockHeight = self.chain.estimatedBlockHeight;
-    double syncStartHeight = self.chainSyncStartHeight;
-    double progress;
-    if (estimatedBlockHeight == 0) return 0;
-    if (syncStartHeight > lastBlockHeight) {
-        progress = lastBlockHeight / estimatedBlockHeight;
-    } else {
-        if (estimatedBlockHeight - syncStartHeight == 0) return 0;
-        progress = (lastBlockHeight - syncStartHeight) / (estimatedBlockHeight - syncStartHeight);
-    }
-    return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
-}
-
-- (uint32_t)terminalHeadersToSync {
-    if (self.chain.lastTerminalBlockHeight >= self.chain.estimatedBlockHeight) return 0;
-    return self.chain.estimatedBlockHeight - self.chain.lastTerminalBlockHeight;
-}
-
-- (double)terminalHeaderSyncProgress {
-    if (!self.peerManager.downloadPeer && self.terminalSyncStartHeight == 0) return 0.0;
-    if (self.chain.lastTerminalBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
-
-    double lastBlockHeight = self.chain.lastTerminalBlockHeight;
-    double estimatedBlockHeight = self.chain.estimatedBlockHeight;
-    double syncStartHeight = self.terminalSyncStartHeight;
-    double progress;
-    if (syncStartHeight > lastBlockHeight) {
-        progress = lastBlockHeight / estimatedBlockHeight;
-    } else {
-        progress = (lastBlockHeight - syncStartHeight) / (estimatedBlockHeight - syncStartHeight);
-    }
-    return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
-}
-
-#define LOG_COMBINED_SYNC_PROGRESS 0
-
-- (double)combinedSyncProgress {
-#if LOG_COMBINED_SYNC_PROGRESS
-    DSLog(@"[%@] combinedSyncProgress breakdown %f %f %f", self.chain.name, self.terminalHeaderSyncProgress, self.masternodeManager.masternodeListAndQuorumsSyncProgress, self.chainSyncProgress);
-#endif
-    if ((self.terminalHeaderSyncWeight + self.chainSyncWeight + self.masternodeListSyncWeight) == 0) {
-        @synchronized (self.peerManager) {
-            return self.peerManager.connected ? 1 : 0;
-        }
-    } else {
-        double progress = self.terminalHeaderSyncProgress * self.terminalHeaderSyncWeight + self.masternodeManager.masternodeListAndQuorumsSyncProgress * self.masternodeListSyncWeight + self.chainSyncProgress * self.chainSyncWeight;
-        if (progress < 0.99995) {
-            return progress;
-        } else {
-            return 1;
-        }
-    }
-}
-
-- (void)resetChainSyncStartHeight {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (self.chainSyncStartHeight == 0) self.chainSyncStartHeight = (uint32_t)[userDefaults integerForKey:self.chainSyncStartHeightKey];
-
-    if (self.chainSyncStartHeight == 0) {
-        self.chainSyncStartHeight = self.chain.lastSyncBlockHeight;
-        [[NSUserDefaults standardUserDefaults] setInteger:self.chainSyncStartHeight forKey:self.chainSyncStartHeightKey];
-    }
-}
-
-- (void)restartChainSyncStartHeight {
-    self.chainSyncStartHeight = 0;
-    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.chainSyncStartHeightKey];
-}
-
-
-- (void)resetTerminalSyncStartHeight {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (self.terminalSyncStartHeight == 0) self.terminalSyncStartHeight = (uint32_t)[userDefaults integerForKey:self.terminalSyncStartHeightKey];
-
-    if (self.terminalSyncStartHeight == 0) {
-        self.terminalSyncStartHeight = self.chain.lastTerminalBlockHeight;
-        [[NSUserDefaults standardUserDefaults] setInteger:self.terminalSyncStartHeight forKey:self.terminalSyncStartHeightKey];
-    }
-}
-
-- (void)restartTerminalSyncStartHeight {
-    self.terminalSyncStartHeight = 0;
-    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.terminalSyncStartHeightKey];
-}
-
 - (void)relayedNewItem {
     self.lastChainRelayTime = [NSDate timeIntervalSince1970];
-}
-
-- (void)resetLastRelayedItemTime {
-    self.lastChainRelayTime = 0;
-}
-
-// MARK: - Mining
-
-- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString *)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
-    [self mineEmptyBlocks:blockCount toPaymentAddress:paymentAddress afterBlock:self.chain.lastTerminalBlock previousBlocks:self.chain.terminalBlocks withTimeout:timeout completion:completion];
-}
-
-- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString *)paymentAddress afterBlock:(DSBlock *)previousBlock previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
-    dispatch_async(_miningQueue, ^{
-        NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-        NSTimeInterval end = [[[NSDate alloc] initWithTimeIntervalSinceNow:timeout] timeIntervalSince1970];
-        NSMutableArray *blocksArray = [NSMutableArray array];
-        NSMutableArray *attemptsArray = [NSMutableArray array];
-        __block uint32_t blocksRemaining = blockCount;
-        __block NSMutableDictionary<NSValue *, DSBlock *> *mPreviousBlocks = [previousBlocks mutableCopy];
-        __block DSBlock *currentBlock = previousBlock;
-        while ([[NSDate date] timeIntervalSince1970] < end && blocksRemaining > 0) {
-            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-            [self mineBlockAfterBlock:currentBlock
-                     toPaymentAddress:paymentAddress
-                     withTransactions:[NSArray array]
-                       previousBlocks:mPreviousBlocks
-                          nonceOffset:0
-                          withTimeout:timeout
-                           completion:^(DSFullBlock *_Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError *_Nullable error) {
-                               NSAssert(uint256_is_not_zero(block.blockHash), @"Block hash must not be empty");
-                               dispatch_semaphore_signal(sem);
-                               [blocksArray addObject:block];
-                               [mPreviousBlocks setObject:block forKey:uint256_obj(block.blockHash)];
-                               currentBlock = block;
-                               blocksRemaining--;
-                               [attemptsArray addObject:@(attempts)];
-                           }];
-            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-        }
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(blocksArray, attemptsArray, [[NSDate date] timeIntervalSince1970] - start, nil);
-            });
-        }
-    });
-}
-
-- (void)mineBlockToPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion {
-    [self mineBlockAfterBlock:self.chain.lastTerminalBlock toPaymentAddress:paymentAddress withTransactions:transactions previousBlocks:self.chain.terminalBlocks nonceOffset:0 withTimeout:timeout completion:completion];
-}
-
-- (void)mineBlockAfterBlock:(DSBlock *)block toPaymentAddress:(NSString *)paymentAddress withTransactions:(NSArray<DSTransaction *> *)transactions previousBlocks:(NSDictionary<NSValue *, DSBlock *> *)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(nonnull BlockMiningCompletionBlock)completion {
-    DSCoinbaseTransaction *coinbaseTransaction = [[DSCoinbaseTransaction alloc] initWithCoinbaseMessage:@"From iOS" paymentAddresses:@[paymentAddress] atHeight:block.height + 1 onChain:block.chain];
-    DSFullBlock *fullblock = [[DSFullBlock alloc] initWithCoinbaseTransaction:coinbaseTransaction transactions:[NSSet set] previousBlockHash:block.blockHash previousBlocks:previousBlocks timestamp:[[NSDate date] timeIntervalSince1970] height:block.height + 1 onChain:self.chain];
-    uint64_t attempts = 0;
-    NSDate *startTime = [NSDate date];
-    if ([fullblock mineBlockAfterBlock:block withNonceOffset:nonceOffset withTimeout:timeout rAttempts:&attempts]) {
-        if (completion) {
-            completion(fullblock, attempts, -[startTime timeIntervalSinceNow], nil);
-        }
-    } else {
-        if (completion) {
-            NSError *error = [NSError errorWithCode:500 localizedDescriptionKey:@"A block could not be mined in the selected time interval."];
-            completion(nil, attempts, -[startTime timeIntervalSinceNow], error);
-        }
-    }
 }
 
 // MARK: - Blockchain Sync
 
 - (void)startSync {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
-                                                            object:nil
-                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    });
+    [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     DSLog(@"[%@] startSync -> peerManager::connect", self.chain.name);
     [self.peerManager connect];
 }
@@ -477,7 +290,8 @@
     DSLog(@"[%@] stopSync (chain switch)", self.chain.name);
     [self.masternodeManager stopSync];
     [self.peerManager disconnect:DSDisconnectReason_ChainSwitch];
-    self.syncPhase = DSChainSyncPhase_Offline;
+    self.syncState.syncPhase = DSChainSyncPhase_Offline;
+    [self notifySyncStateChanged];
 }
 
 - (void)removeNonMainnetTrustedPeer {
@@ -493,11 +307,7 @@
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:chainContext];
 
     [self removeNonMainnetTrustedPeer];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
-                                                            object:nil
-                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    });
+    [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     DSLog(@"[%@] disconnectedMasternodeListAndBlocksRescan -> peerManager::connect", self.chain.name);
     [self.peerManager connect];
 }
@@ -507,11 +317,7 @@
     [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:chainContext];
 
     [self removeNonMainnetTrustedPeer];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
-                                                            object:nil
-                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    });
+    [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     DSLog(@"[%@] disconnectedMasternodeListRescan -> peerManager::connect", self.chain.name);
     [self.peerManager connect];
 }
@@ -521,11 +327,7 @@
     [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:self.chain inContext:chainContext];
 
     [self removeNonMainnetTrustedPeer];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
-                                                            object:nil
-                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    });
+    [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     DSLog(@"[%@] disconnectedSyncBlocksRescan -> peerManager::connect", self.chain.name);
     [self.peerManager connect];
 }
@@ -583,9 +385,14 @@
 }
 
 - (void)chainWillStartSyncingBlockchain:(DSChain *)chain {
+    self.lastChainRelayTime = 0;
     if (!self.gotSporksAtChainSyncStart) {
         [self.sporkManager getSporks]; //get the sporks early on
     }
+}
+
+- (void)chainWillStartConnectingToPeers:(DSChain *)chain {
+    
 }
 
 - (NSData *)chainSynchronizationFingerprint {
@@ -627,21 +434,19 @@
 }
 
 - (void)chainShouldStartSyncingBlockchain:(DSChain *)chain onPeer:(DSPeer *)peer {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerChainSyncDidStartNotification
-                                                            object:nil
-                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSPeerManagerNotificationPeerKey: peer ? peer : [NSNull null]}];
-    });
+    [self notify:DSChainManagerChainSyncDidStartNotification userInfo:@{
+        DSChainManagerNotificationChainKey: self.chain,
+        DSPeerManagerNotificationPeerKey: peer ? peer : [NSNull null]}];
     dispatch_async(self.chain.networkingQueue, ^{
         if ((self.syncPhase != DSChainSyncPhase_ChainSync && self.syncPhase != DSChainSyncPhase_Synced) && self.chain.needsInitialTerminalHeadersSync) {
             //masternode list should be synced first and the masternode list is old
-            self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+            self.syncState.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && ((self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8) || (self.masternodeManager.lastMasternodeListBlockHeight == UINT32_MAX))) {
-            self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+            self.syncState.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [self.masternodeManager startSync];
         } else {
-            self.syncPhase = DSChainSyncPhase_ChainSync;
+            self.syncState.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
             NSTimeInterval cutoffTime = self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME;
             if (startingDevnetSync || (self.chain.lastSyncBlockTimestamp >= cutoffTime && [self shouldRequestMerkleBlocksForZoneAfterHeight:[self.chain lastSyncBlockHeight]])) {
@@ -650,6 +455,7 @@
                 [peer sendGetheadersMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
             }
         }
+        [self notifySyncStateChanged];
     });
 }
 
@@ -666,8 +472,9 @@
 - (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) [self relayedNewItem];
     DSLog(@"[%@] finished syncing", self.chain.name);
-    self.chainSyncStartHeight = 0;
-    self.syncPhase = DSChainSyncPhase_Synced;
+    
+    self.syncState.chainSyncStartHeight = 0;
+    self.syncState.syncPhase = DSChainSyncPhase_Synced;
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
@@ -675,20 +482,31 @@
         // make sure we care about masternode lists
         [self.masternodeManager startSync];
     }
+    [self notifySyncStateChanged];
+}
+
+- (DSChainSyncPhase)syncPhase {
+    return [self.syncState syncPhase];
+}
+
+- (void)setSyncPhase:(DSChainSyncPhase)syncPhase {
+    self.syncState.syncPhase = syncPhase;
 }
 
 - (void)syncBlockchain {
     DSLog(@"[%@] syncBlockchain connected peers: %lu phase: %d", self.chain.name, self.peerManager.connectedPeerCount, self.syncPhase);
     if (self.peerManager.connectedPeerCount == 0) {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-            self.syncPhase = DSChainSyncPhase_ChainSync;
+            self.syncState.syncPhase = DSChainSyncPhase_ChainSync;
+            [self notifySyncStateChanged];
         }
         DSLog(@"[%@] syncBlockchain -> peerManager::connect", self.chain.name);
         [self.peerManager connect];
     } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     } else if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-        self.syncPhase = DSChainSyncPhase_ChainSync;
+        self.syncState.syncPhase = DSChainSyncPhase_ChainSync;
+        [self notifySyncStateChanged];
         [self chainShouldStartSyncingBlockchain:self.chain onPeer:self.peerManager.downloadPeer];
     }
 }
@@ -759,12 +577,7 @@
             break;
         }
         case DSSyncCountInfo_GovernanceObject: {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification
-                                                                    object:nil
-                                                                  userInfo:@{@(syncCountInfo): @(count),
-                                                                      DSChainManagerNotificationChainKey: self.chain}];
-            });
+            [self notify:DSGovernanceObjectCountUpdateNotification userInfo:@{@(syncCountInfo): @(count), DSChainManagerNotificationChainKey: self.chain}];
             break;
         }
         case DSSyncCountInfo_GovernanceObjectVote: {
@@ -775,12 +588,7 @@
                     peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
                 } else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification
-                                                                            object:nil
-                                                                          userInfo:@{@(syncCountInfo): @(count),
-                                                                              DSChainManagerNotificationChainKey: self.chain}];
-                    });
+                    [self notify:DSGovernanceVoteCountUpdateNotification userInfo:@{@(syncCountInfo): @(count), DSChainManagerNotificationChainKey: self.chain}];
                 }
             }
 
@@ -800,4 +608,92 @@
     return [self.transactionManager chainLockForBlockHash:blockHash];
 }
 
+- (NSString *)chainSyncStartHeightKey {
+    return [NSString stringWithFormat:@"%@_%@", SYNC_STARTHEIGHT_KEY, [self.chain uniqueID]];
+}
+
+- (NSString *)terminalSyncStartHeightKey {
+    return [NSString stringWithFormat:@"%@_%@", TERMINAL_SYNC_STARTHEIGHT_KEY, [self.chain uniqueID]];
+}
+
+
+- (void)resetChainSyncStartHeight {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    BOOL changed = NO;
+    if (self.syncState.chainSyncStartHeight == 0) {
+        self.syncState.chainSyncStartHeight = (uint32_t)[userDefaults integerForKey:self.chainSyncStartHeightKey];
+        changed = YES;
+    }
+    if (self.syncState.chainSyncStartHeight == 0) {
+        self.syncState.chainSyncStartHeight = self.chain.lastSyncBlockHeight;
+        changed = YES;
+        [[NSUserDefaults standardUserDefaults] setInteger:self.syncState.chainSyncStartHeight forKey:self.chainSyncStartHeightKey];
+    }
+    if (changed)
+        [self notifySyncStateChanged];
+}
+
+- (void)restartChainSyncStartHeight {
+    self.syncState.chainSyncStartHeight = 0;
+    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.chainSyncStartHeightKey];
+    [self notifySyncStateChanged];
+
+}
+
+
+- (void)resetTerminalSyncStartHeight {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if (self.syncState.terminalSyncStartHeight == 0)
+        self.syncState.terminalSyncStartHeight = (uint32_t)[userDefaults integerForKey:self.terminalSyncStartHeightKey];
+
+    if (self.syncState.terminalSyncStartHeight == 0) {
+        self.syncState.terminalSyncStartHeight = self.chain.lastTerminalBlockHeight;
+        [[NSUserDefaults standardUserDefaults] setInteger:self.syncState.terminalSyncStartHeight forKey:self.terminalSyncStartHeightKey];
+    }
+}
+
+- (void)restartTerminalSyncStartHeight {
+    self.syncState.terminalSyncStartHeight = 0;
+    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.terminalSyncStartHeightKey];
+}
+
+
+// MARK: Notifications
+
+- (void)setupNotificationTimer:(void (^ __nullable)(void))completion {
+    //we should avoid dispatching this message too frequently
+    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+    if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
+        self.lastNotifiedBlockDidChange = timestamp;
+        if (self.lastNotifiedBlockDidChangeTimer) {
+            [self.lastNotifiedBlockDidChangeTimer invalidate];
+            self.lastNotifiedBlockDidChangeTimer = nil;
+        }
+        completion();
+    } else if (!self.lastNotifiedBlockDidChangeTimer) {
+        self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1 repeats:NO block:^(NSTimer *_Nonnull timer) {
+            completion();
+        }];
+        [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
+    }
+}
+
+- (void)notifySyncStateChanged {
+    [self setupNotificationTimer:^{
+        @synchronized (self) {
+            [self notify:DSChainManagerSyncStateDidChangeNotification
+                userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain,
+                    DSChainManagerNotificationSyncStateKey: [self.syncState copy]
+            }];
+        }
+    }];
+
+}
+
+- (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:userInfo];
+    });
+}
 @end

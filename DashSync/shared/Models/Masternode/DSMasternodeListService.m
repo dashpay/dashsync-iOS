@@ -21,8 +21,10 @@
 #import "DSMasternodeListStore+Protected.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSGetMNListDiffRequest.h"
 #import "DSGetQRInfoRequest.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSPeerManager+Protected.h"
 #import "DSSimplifiedMasternodeEntry.h"
@@ -189,9 +191,10 @@
     bool changed = _currentMasternodeList != currentMasternodeList;
     _currentMasternodeList = currentMasternodeList;
     if (changed) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
-        });
+        [self.chain.chainManager notify:DSCurrentMasternodeListDidChangeNotification
+                               userInfo:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
     }
 }
 
@@ -212,7 +215,7 @@
     UInt256 masternodeListBlockHash = masternodeList.blockHash;
     NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
     BOOL hasInRetrieval = [self.retrievalQueue containsObject:masternodeListBlockHashData];
-    uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
+//    uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
     BOOL shouldNot = !hasInRetrieval && !skipPresenceInRetrieval;
     //DSLog(@"•••• shouldProcessDiffResult: %d: %@ %d", masternodeListBlockHeight, uint256_reverse_hex(masternodeListBlockHash), !shouldNot);
     if (shouldNot) {
@@ -251,11 +254,14 @@
         }
     }
     [self.retrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
+    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = self.retrievalQueue.count;
     [self updateMasternodeRetrievalQueue];
 }
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
     [self.retrievalQueue removeObject:masternodeBlockHashData];
+    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = self.retrievalQueue.count;
+    [self.chain.chainManager.masternodeManager notifySyncStateChanged];
 }
 
 - (void)cleanRequestsInRetrieval {
@@ -264,6 +270,8 @@
 
 - (void)cleanListsRetrievalQueue {
     [self.retrievalQueue removeAllObjects];
+    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = 0;
+    [self.chain.chainManager.masternodeManager notifySyncStateChanged];
 }
 
 - (void)cleanAllLists {
@@ -282,12 +290,12 @@
 
 - (void)updateMasternodeRetrievalQueue {
     NSUInteger currentCount = self.retrievalQueue.count;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, currentCount);
-    });
+    self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, currentCount);
     [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
         return [self.store heightForBlockHash:obj1.UInt256] < [self.store heightForBlockHash:obj2.UInt256] ? NSOrderedAscending : NSOrderedDescending;
     }];
+    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+   [self.chain.chainManager.masternodeManager notifySyncStateChanged];
 }
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
@@ -378,9 +386,7 @@
         [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self dequeueMasternodeListRequest];
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDiffValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    });
+    [self.chain.chainManager notify:DSMasternodeListDiffValidationErrorNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 }
 
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request {

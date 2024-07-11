@@ -5,22 +5,30 @@
 //  Created by Sam Westrich on 11/21/18.
 //
 
+#import "DSChain.h"
 #import "DSChainManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(uint16_t, DSChainNotificationType) {
+    DSChainNotificationType_Headers = 0,
+    DSChainNotificationType_Blocks = 1,
+    DSChainNotificationType_SyncState = 2,
+};
+
 @interface DSChainManager ()
 
 @property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
+@property (nonatomic, assign) DSChainSyncPhase syncPhase;
+@property (nonatomic, strong) dispatch_queue_t miningQueue;
 
-- (instancetype)initWithChain:(DSChain *)chain;
-- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext *)context;
 - (void)resetChainSyncStartHeight;
 - (void)restartChainSyncStartHeight;
 - (void)resetTerminalSyncStartHeight;
 - (void)restartTerminalSyncStartHeight;
+- (instancetype)initWithChain:(DSChain *)chain;
+- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext *)context;
 - (void)relayedNewItem;
-- (void)resetLastRelayedItemTime;
 - (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext *)context;
 
 - (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
@@ -28,9 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)wipeMasternodeInfo;
 
-@property (nonatomic, assign) DSChainSyncPhase syncPhase;
+- (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo;
+- (void)notifySyncStateChanged;
 
-- (void)assignSyncWeights;
 
 @end
 

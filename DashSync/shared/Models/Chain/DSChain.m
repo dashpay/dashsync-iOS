@@ -162,8 +162,6 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, strong) DSCheckpoint *terminalHeadersOverrideUseCheckpoint;
 @property (nonatomic, strong) DSCheckpoint *syncHeadersOverrideUseCheckpoint;
 @property (nonatomic, strong) DSCheckpoint *lastCheckpoint;
-@property (nonatomic, assign) NSTimeInterval lastNotifiedBlockDidChange;
-@property (nonatomic, strong) NSTimer *lastNotifiedBlockDidChangeTimer;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 @property (nonatomic, assign) BOOL cachedIsQuorumRotationPresented;
 @property (nonatomic, readonly) NSString *chainWalletsKey;
@@ -185,9 +183,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     
     self.transactionHashHeights = [NSMutableDictionary dictionary];
     self.transactionHashTimestamps = [NSMutableDictionary dictionary];
-    
-    self.lastNotifiedBlockDidChange = 0;
-    
+
     if (self.checkpoints) {
         self.genesisHash = self.checkpoints[0].blockHash;
         dispatch_sync(self.networkingQueue, ^{
@@ -1201,9 +1197,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray removeObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     [self.viewingAccount removeDerivationPath:derivationPath];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-    });
+    [self notify:DSChainStandaloneDerivationPathsDidChangeNotification userInfo:@{DSChainManagerNotificationChainKey: self}];
 }
 - (void)addStandaloneDerivationPath:(DSDerivationPath *)derivationPath {
     [self.viewingAccount addDerivationPath:derivationPath];
@@ -1218,9 +1212,7 @@ static dispatch_once_t devnetToken = 0;
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
     [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-    });
+    [self notify:DSChainStandaloneDerivationPathsDidChangeNotification userInfo:@{DSChainManagerNotificationChainKey: self}];
 }
 
 - (NSArray *)standaloneDerivationPaths {
@@ -1414,9 +1406,7 @@ static dispatch_once_t devnetToken = 0;
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
     [keyChainArray removeObject:wallet.uniqueIDString];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-    });
+    [self notify:DSChainWalletsDidChangeNotification userInfo:@{DSChainManagerNotificationChainKey: self}];
 }
 
 - (BOOL)addWallet:(DSWallet *)walletToAdd {
@@ -1450,9 +1440,7 @@ static dispatch_once_t devnetToken = 0;
     if (![keyChainArray containsObject:wallet.uniqueIDString]) {
         [keyChainArray addObject:wallet.uniqueIDString];
         setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        });
+        [self notify:DSChainWalletsDidChangeNotification userInfo:@{DSChainManagerNotificationChainKey: self}];
     }
 }
 
@@ -1544,7 +1532,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (_lastSyncBlock) {
-        DSLog(@"[%@] last sync block at height %d chosen from checkpoints (hash is %@)", self.name, _lastSyncBlock.height, self.name, [NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
+        DSLog(@"[%@] last sync block at height %d chosen from checkpoints (hash is %@)", self.name, _lastSyncBlock.height, [NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
     }
 }
 
@@ -1779,7 +1767,7 @@ static dispatch_once_t devnetToken = 0;
         }
         [self saveBlockLocators];
         [self saveTerminalBlocks];
-        
+        self.chainManager.syncState.estimatedBlockHeight = _bestEstimatedBlockHeight;
         // notify that transaction confirmations may have changed
         [self notifyBlocksChanged];
     }
@@ -1949,13 +1937,14 @@ static dispatch_once_t devnetToken = 0;
             [block setChainLockedWithEquivalentBlock:equivalentTerminalBlock];
         }
         self.lastSyncBlock = block;
-        
+        self.chainManager.syncState.lastSyncBlockHeight = block.height;
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((h % 1000) == 0 || txHashes.count > 0 || h > peer.lastBlockHeight) {
                 DSLog(@"%@ + terminal block (caught up) at: %d: %@", prefix, h, uint256_hex(block.blockHash));
             }
             self.mTerminalBlocks[blockHash] = block;
             self.lastTerminalBlock = block;
+            self.chainManager.syncState.lastTerminalBlockHeight = block.height;
         }
         @synchronized(peer) {
             if (peer) {
@@ -1977,6 +1966,9 @@ static dispatch_once_t devnetToken = 0;
         }
         self.mTerminalBlocks[blockHash] = block;
         self.lastTerminalBlock = block;
+        self.chainManager.syncState.estimatedBlockHeight = self.estimatedBlockHeight;
+        self.chainManager.syncState.lastTerminalBlockHeight = block.height;
+
         @synchronized(peer) {
             if (peer) {
                 peer.currentBlockHeight = h; //might be download peer instead
@@ -2005,7 +1997,11 @@ static dispatch_once_t devnetToken = 0;
         
         if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
             [self setBlockHeight:h andTimestamp:txTime forTransactionHashes:txHashes];
-            if (h == self.lastSyncBlockHeight) self.lastSyncBlock = block;
+            if (h == self.lastSyncBlockHeight) {
+                self.lastSyncBlock = block;
+                self.chainManager.syncState.estimatedBlockHeight = self.estimatedBlockHeight;
+                self.chainManager.syncState.lastSyncBlockHeight = block.height;
+            }
         }
     } else if (self.mTerminalBlocks[blockHash] != nil && (blockPosition & DSBlockPosition_Terminal)) { // we already have the block (or at least the header)
         if ((h % 1) == 0 || txHashes.count > 0 || h > peer.lastBlockHeight) {
@@ -2024,7 +2020,10 @@ static dispatch_once_t devnetToken = 0;
         
         if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
             [self setBlockHeight:h andTimestamp:txTime forTransactionHashes:txHashes];
-            if (h == self.lastTerminalBlockHeight) self.lastTerminalBlock = block;
+            if (h == self.lastTerminalBlockHeight) {
+                self.lastTerminalBlock = block;
+                self.chainManager.syncState.lastTerminalBlockHeight = block.height;
+            }
         }
     } else {                                                // new block is on a fork
         if (h <= [self lastCheckpoint].height) { // fork is older than last checkpoint
@@ -2059,6 +2058,7 @@ static dispatch_once_t devnetToken = 0;
             DSLog(@"%@ reorganizing terminal chain from height %d, new height is %d", prefix, b.height, h);
             
             self.lastTerminalBlock = block;
+            self.chainManager.syncState.lastTerminalBlockHeight = block.height;
             @synchronized(peer) {
                 if (peer) {
                     peer.currentBlockHeight = h; //might be download peer instead
@@ -2090,6 +2090,7 @@ static dispatch_once_t devnetToken = 0;
                 } else {
                     DSLog(@"%@ reorganizing terminal chain from height %d, new height is %d", prefix, b.height, h);
                     self.lastTerminalBlock = block;
+                    self.chainManager.syncState.lastTerminalBlockHeight = block.height;
                     @synchronized(peer) {
                         if (peer) {
                             peer.currentBlockHeight = h; //might be download peer instead
@@ -2131,6 +2132,7 @@ static dispatch_once_t devnetToken = 0;
             }
             
             self.lastSyncBlock = block;
+            self.chainManager.syncState.lastSyncBlockHeight = block.height;
             if (h == self.estimatedBlockHeight) syncDone = YES;
         }
     }
@@ -2148,9 +2150,7 @@ static dispatch_once_t devnetToken = 0;
             if (peer) {
                 [self.chainManager chainFinishedSyncingInitialHeaders:self fromPeer:peer onMainChain:onMainChain];
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            });
+            [self notify:DSChainInitialHeadersDidFinishSyncingNotification userInfo:@{DSChainManagerNotificationChainKey: self}];
         }
         if ((blockPosition & DSBlockPosition_Sync) && (phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced)) {
             //we should only save
@@ -2159,15 +2159,14 @@ static dispatch_once_t devnetToken = 0;
             if (peer) {
                 [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            });
+            [self notify:DSChainBlocksDidFinishSyncingNotification userInfo:@{DSChainManagerNotificationChainKey: self}];
         }
     }
     
     if (((blockPosition & DSBlockPosition_Terminal) && block.height > self.estimatedBlockHeight) || ((blockPosition & DSBlockPosition_Sync) && block.height >= self.lastTerminalBlockHeight)) {
         @synchronized (self) {
             _bestEstimatedBlockHeight = block.height;
+            self.chainManager.syncState.estimatedBlockHeight = _bestEstimatedBlockHeight;
         }
         if (peer && (blockPosition & DSBlockPosition_Sync) && !savedBlockLocators) {
             [self saveBlockLocators];
@@ -2178,18 +2177,8 @@ static dispatch_once_t devnetToken = 0;
         if (peer) {
             [self.chainManager chain:self wasExtendedWithBlock:block fromPeer:peer];
         }
-        
-        // notify that transaction confirmations may have changed
-        [self setupBlockChangeTimer:^{
-            [self notifyBlocksChanged];
-        }];
-    } else {
-        //we should avoid dispatching this message too frequently
-        [self setupBlockChangeTimer:^{
-            [self notifyBlocksChanged:blockPosition];
-        }];
     }
-    
+    [self.chainManager notifySyncStateChanged];
     // check if the next block was received as an orphan
     if (block == self.lastTerminalBlock && self.mOrphans[blockHash]) {
         DSBlock *b = self.mOrphans[blockHash];
@@ -2200,44 +2189,27 @@ static dispatch_once_t devnetToken = 0;
     return TRUE;
 }
 
-- (void)setupBlockChangeTimer:(void (^ __nullable)(void))completion {
-    //we should avoid dispatching this message too frequently
-    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-    if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
-        self.lastNotifiedBlockDidChange = timestamp;
-        if (self.lastNotifiedBlockDidChangeTimer) {
-            [self.lastNotifiedBlockDidChangeTimer invalidate];
-            self.lastNotifiedBlockDidChangeTimer = nil;
-        }
-        completion();
-    } else if (!self.lastNotifiedBlockDidChangeTimer) {
-        self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1 repeats:NO block:^(NSTimer *_Nonnull timer) {
-            completion();
-        }];
-        [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
-    }
+- (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:userInfo];
+    });
 }
 
 - (void)notifyBlocksChanged {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-    });
-}
-
-- (void)notifyBlocksChanged:(DSBlockPosition)blockPosition {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (blockPosition & DSBlockPosition_Terminal) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        }
-        if (blockPosition & DSBlockPosition_Sync) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        }
         
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncStateDidChangeNotification
+                                                            object:nil
+                                                          userInfo:@{
+            DSChainManagerNotificationChainKey: self,
+            DSChainManagerNotificationSyncStateKey: [self.chainManager.syncState copy]
+        }];
     });
 }
 
+//
 // MARK: Terminal Blocks
 - (NSMutableDictionary *)mTerminalBlocks {
     @synchronized (_mTerminalBlocks) {
@@ -2371,6 +2343,8 @@ static dispatch_once_t devnetToken = 0;
             DSLog(@"[%@] Reorginizing to height %d", self.name, clb.height);
             
             self.lastTerminalBlock = terminalBlock;
+            self.chainManager.syncState.lastTerminalBlockHeight = terminalBlock.height;
+            [self.chainManager notifySyncStateChanged];
             NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsTerminalBlocks] mutableCopy];
             NSMutableArray *addedBlocks = [NSMutableArray array];
             BOOL done = FALSE;
@@ -2422,7 +2396,8 @@ static dispatch_once_t devnetToken = 0;
             DSLog(@"[%@] Cancelling sync reorg because block %@ is already chain locked", self.name, sbmc);
         } else {
             self.lastSyncBlock = syncBlock;
-            
+            self.chainManager.syncState.lastSyncBlockHeight = syncBlock.height;
+            [self.chainManager notifySyncStateChanged];
             DSLog(@"[%@] Reorginizing to height %d (last sync block %@)", self.name, clb.height, self.lastSyncBlock);
             
             
@@ -2724,17 +2699,10 @@ static dispatch_once_t devnetToken = 0;
         uint32_t finalEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
         if (finalEstimatedBlockHeight > oldEstimatedBlockHeight) {
             _bestEstimatedBlockHeight = finalEstimatedBlockHeight;
-            dispatch_once(&onceToken, ^{
-                [self.chainManager assignSyncWeights];
-            });
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            });
-        } else {
-            dispatch_once(&onceToken, ^{
-                [self.chainManager assignSyncWeights];
-            });
         }
+        dispatch_once(&onceToken, ^{
+            self.chainManager.syncState.estimatedBlockHeight = finalEstimatedBlockHeight;
+        });
     }
 }
 
@@ -2750,6 +2718,7 @@ static dispatch_once_t devnetToken = 0;
         //keep best estimate if no other peers reporting on estimate
         if ([self.estimatedBlockHeights count] && ([height intValue] == _bestEstimatedBlockHeight)) {
             _bestEstimatedBlockHeight = 0;
+            self.chainManager.syncState.estimatedBlockHeight = 0;
         }
     }
 }

@@ -218,25 +218,6 @@
     return !!self.masternodeListCurrentlyBeingSavedCount;
 }
 
-- (uint32_t)masternodeListsToSync {
-    if (self.lastMasternodeListBlockHeight == UINT32_MAX) {
-        return 32;
-    } else {
-        float diff = self.chain.estimatedBlockHeight - self.lastMasternodeListBlockHeight;
-        if (diff < 0) return 32;
-        return MIN(32, (uint32_t)ceil(diff / 24.0f));
-    }
-}
-
-- (BOOL)masternodeListsAndQuorumsIsSynced {
-    if (self.lastMasternodeListBlockHeight == UINT32_MAX ||
-        self.lastMasternodeListBlockHeight < self.chain.estimatedBlockHeight - 16) {
-        return NO;
-    } else {
-        return YES;
-    }
-}
-
 - (void)loadLocalMasternodes {
     NSFetchRequest *fetchRequest = [[DSLocalMasternodeEntity fetchRequest] copy];
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"providerRegistrationTransaction.transactionHash.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]]];
