@@ -253,14 +253,18 @@
         }
     }
     [self.retrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
-    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = self.retrievalQueue.count;
     [self updateMasternodeRetrievalQueue];
 }
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
     [self.retrievalQueue removeObject:masternodeBlockHashData];
-    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = self.retrievalQueue.count;
-    [self.chain.chainManager.masternodeManager notifySyncStateChanged];
+    double count = self.retrievalQueue.count;
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = count;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        DSLog(@"[%@] Masternode list queue updated: %f/%lu", self.chain.name, count, self.retrievalQueueMaxAmount);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)cleanRequestsInRetrieval {
@@ -269,8 +273,12 @@
 
 - (void)cleanListsRetrievalQueue {
     [self.retrievalQueue removeAllObjects];
-    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = 0;
-    [self.chain.chainManager.masternodeManager notifySyncStateChanged];
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = 0;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        DSLog(@"[%@] Masternode list queue cleaned up: 0/%lu", self.chain.name, self.retrievalQueueMaxAmount);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)cleanAllLists {
@@ -293,8 +301,12 @@
     [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
         return [self.store heightForBlockHash:obj1.UInt256] < [self.store heightForBlockHash:obj2.UInt256] ? NSOrderedAscending : NSOrderedDescending;
     }];
-    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
-   [self.chain.chainManager.masternodeManager notifySyncStateChanged];
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = currentCount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        DSLog(@"[%@] Masternode list queue updated: %lu/%lu", self.chain.name, currentCount, self.retrievalQueueMaxAmount);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {

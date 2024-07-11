@@ -18,7 +18,6 @@ NSString *const DSChainManagerSyncStateDidChangeNotification = @"DSChainManagerS
 NSString *const DSTransactionManagerTransactionStatusDidChangeNotification = @"DSTransactionManagerTransactionStatusDidChangeNotification";
 NSString *const DSTransactionManagerTransactionReceivedNotification = @"DSTransactionManagerTransactionReceivedNotification";
 
-NSString *const DSChainNewChainTipBlockNotification = @"DSChainNewChainTipBlockNotification";
 NSString *const DSPeerManagerPeersDidChangeNotification = @"DSPeerManagerPeersDidChangeNotification";
 NSString *const DSPeerManagerConnectedPeersDidChangeNotification = @"DSPeerManagerConnectedPeersDidChangeNotification";
 NSString *const DSPeerManagerDownloadPeerDidChangeNotification = @"DSPeerManagerDownloadPeerDidChangeNotification";

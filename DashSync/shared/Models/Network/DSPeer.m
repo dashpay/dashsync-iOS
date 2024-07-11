@@ -34,6 +34,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
+#import "DSChainManager+Transactions.h"
 #import "DSChainManager.h"
 #import "DSFilterLoadRequest.h"
 #import "DSGetBlocksRequest.h"

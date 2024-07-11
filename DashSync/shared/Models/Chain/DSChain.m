@@ -1769,7 +1769,7 @@ static dispatch_once_t devnetToken = 0;
         [self saveTerminalBlocks];
         self.chainManager.syncState.estimatedBlockHeight = _bestEstimatedBlockHeight;
         // notify that transaction confirmations may have changed
-        [self notifyBlocksChanged];
+        [self.chainManager notifySyncStateChanged];
     }
     
     return TRUE;
@@ -2195,22 +2195,9 @@ static dispatch_once_t devnetToken = 0;
     });
 }
 
-- (void)notifyBlocksChanged {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncStateDidChangeNotification
-                                                            object:nil
-                                                          userInfo:@{
-            DSChainManagerNotificationChainKey: self,
-            DSChainManagerNotificationSyncStateKey: [self.chainManager.syncState copy]
-        }];
-    });
-}
 
-//
 // MARK: Terminal Blocks
+
 - (NSMutableDictionary *)mTerminalBlocks {
     @synchronized (_mTerminalBlocks) {
         if (_mTerminalBlocks.count > 0) {

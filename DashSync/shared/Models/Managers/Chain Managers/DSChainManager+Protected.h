@@ -31,9 +31,6 @@ typedef NS_ENUM(uint16_t, DSChainNotificationType) {
 - (void)relayedNewItem;
 - (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext *)context;
 
-- (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
-- (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
-
 - (void)wipeMasternodeInfo;
 
 - (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo;

@@ -35,6 +35,7 @@
 #import "DSMasternodeListStore+Protected.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Mndiff.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSOperationQueue.h"
@@ -140,6 +141,11 @@
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     return [self.store heightForBlockHash:blockhash];
+}
+
+- (BOOL)isMasternodeListOutdated {
+    uint32_t lastHeight = self.lastMasternodeListBlockHeight;
+    return lastHeight == UINT32_MAX || lastHeight < self.chain.lastTerminalBlockHeight - 8;
 }
 
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
@@ -303,8 +309,15 @@
 
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash {
     /// TODO: need to properly store in CoreData or wait for rust SQLite
-    DSLog(@"[%@] ••• cache mnlist -> %@: %@", self.chain.name, uint256_hex(blockHash), masternodeList);
+    //DSLog(@"[%@] ••• cache mnlist -> %@: %@", self.chain.name, uint256_hex(blockHash), masternodeList);
     [self.store.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(blockHash)];
+    uint32_t lastHeight = self.lastMasternodeListBlockHeight;
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = lastHeight;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = self.store.masternodeListsByBlockHash.count;
+        DSLog(@"[%@] [DSMasternodeManager] New List Stored: %u/%lu", self.chain.name, lastHeight, self.store.masternodeListsByBlockHash.count);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
     return YES;
 }
 
@@ -888,14 +901,5 @@
         return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(quorum.llmqType, quorum.quorumHash.u8)].UInt256;
     }
 }
-
-- (void)notifySyncStateChanged {
-//    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = [self masternodeListRetrievalQueueCount];
-//    self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = [self masternodeListRetrievalQueueMaxAmount];
-    self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = self.store.lastMasternodeListBlockHeight;
-//    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = self.store.masternodeListsByBlockHash.count;
-    [self.chain.chainManager notifySyncStateChanged];
-}
-
 
 @end

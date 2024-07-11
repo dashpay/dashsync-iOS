@@ -64,7 +64,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
-@property (strong, nonatomic) id filterChangedObserver, syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
+@property (strong, nonatomic) id filterChangedObserver, syncFinishedObserver, syncFailedObserver, balanceObserver, syncStateObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
 @property (strong, nonatomic) DSPasteboardAddressExtractor *pasteboardExtractor;
 
 - (IBAction)startSync:(id)sender;
@@ -151,26 +151,17 @@
                                                                                 }];
 
 
-    self.blocksObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification
-                                                          object:nil
-                                                           queue:nil
-                                                      usingBlock:^(NSNotification *note) {
-                                                          if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                              //DSLogPrivate(@"update blockheight");
-                                                              [self updateBlockHeight];
-                                                              [self updateHeaderHeight];
-                                                          }
-                                                      }];
 
-    self.blocksResetObserver =
+    self.syncStateObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStateDidChangeNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
-            [self updateBlockHeight];
-            [self updateHeaderHeight];
-            [self updateBalance];
+            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
+                [self updateBlockHeight];
+                [self updateHeaderHeight];
+                [self updateBalance];
+            }
     }];
 
     self.balanceObserver =

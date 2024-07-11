@@ -28,7 +28,7 @@
     return copy;
 }
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%u/%u/%u/%u",
+    return [NSString stringWithFormat:@"%f/%f/%f/%u",
             self.retrievalQueueCount,
             self.retrievalQueueMaxAmount,
             self.storedCount,
@@ -60,7 +60,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"SyncState: { phase: %u, peer: %u, connected: %u, estimated: %u, chain: [%u/%u/%f] headers: [%u/%u/%f], masternodes: [%@/%f/%u]  == %f",
+    return [NSString stringWithFormat:@"SyncState: { phase: %u, peer: %u, connected: %u, estimated: %u, chain: [%u/%u/%f] headers: [%u/%u/%f], mn: [%@/%f/%f]  == %f",
             self.syncPhase,
             self.hasDownloadPeer,
             self.peerManagerConnected,
@@ -142,12 +142,6 @@
     uint32_t estimatedBlockHeight = self.estimatedBlockHeight;
     uint32_t lastTerminalBlockHeight = self.lastTerminalBlockHeight;
     uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
-    uint32_t lastMasternodeListHeight = self.masternodeListSyncInfo.lastBlockHeight;
-
-    double amountLeft = self.masternodeListSyncInfo.retrievalQueueCount;
-    double maxAmount = self.masternodeListSyncInfo.retrievalQueueMaxAmount;
-    uint32_t storedCount = self.masternodeListSyncInfo.storedCount;
-
     double chainWeight = lastSyncBlockHeight >= estimatedBlockHeight ? 0 : estimatedBlockHeight - lastSyncBlockHeight;
     double terminalWeight = lastTerminalBlockHeight >= estimatedBlockHeight ? 0 : (estimatedBlockHeight - lastTerminalBlockHeight) / 4;
     double listsToSync = [self masternodeListsToSync];
@@ -169,9 +163,6 @@
 }
 
 - (DSSyncStateKind)kind {
-    uint32_t masternodeListsReceived = self.masternodeListSyncInfo.retrievalQueueCount;
-    uint32_t masternodeListsTotal = self.masternodeListSyncInfo.retrievalQueueMaxAmount;
-    
     if ([self atTheEndOfSyncBlocksAndSyncingMasternodeList] || [self atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList]) {
         return DSSyncStateKind_Masternodes;
     } else if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
