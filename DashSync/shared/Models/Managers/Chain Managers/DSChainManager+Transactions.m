@@ -42,11 +42,6 @@ NSString const *chainSynchronizationBlockZonesKey = @"chainSynchronizationBlockZ
 
 @implementation DSChainManager (Transactions)
 
-//@dynamic maxTransactionsInfoData;
-//@dynamic heightTransactionZones;
-//@dynamic chainSynchronizationFingerprint;
-//@dynamic chainSynchronizationBlockZones;
-
 - (void)setMaxTransactionsInfoData:(NSData *)maxTransactionsInfoData {
     objc_setAssociatedObject(self, &maxTransactionsInfoDataKey, maxTransactionsInfoData, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
