@@ -698,10 +698,6 @@
     dispatch_async(self.networkingQueue, ^{
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0;    // this attempt is a manual retry
-        
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [self.chainManager chainWillStartConnectingToPeers:self.chain];
-//        });
 
         @synchronized (self.chainManager) {
             if (self.chainManager.syncState.terminalHeaderSyncProgress < 1.0) {
