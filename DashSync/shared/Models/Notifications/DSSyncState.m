@@ -28,7 +28,7 @@
     return copy;
 }
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%f/%f/%f/%u",
+    return [NSString stringWithFormat:@"%u/%u/%u/%u",
             self.retrievalQueueCount,
             self.retrievalQueueMaxAmount,
             self.storedCount,
@@ -60,7 +60,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"SyncState: { phase: %u, peer: %u, connected: %u, estimated: %u, chain: [%u/%u/%f] headers: [%u/%u/%f], mn: [%@/%f/%f]  == %f",
+    return [NSString stringWithFormat:@"SyncState: { phase: %u, peer: %u, connected: %u, estimated: %u, chain: [%u/%u/%f] headers: [%u/%u/%f], mn: [%@/%u/%f]  == %f",
             self.syncPhase,
             self.hasDownloadPeer,
             self.peerManagerConnected,
@@ -72,24 +72,24 @@
             self.lastTerminalBlockHeight,
             self.terminalHeaderSyncProgress,
             self.masternodeListSyncInfo,
-            self.masternodeListProgress,
             self.masternodeListsToSync,
+            self.masternodeListProgress,
             self.combinedSyncProgress
     ];
 }
 
 - (double)masternodeListProgress {
-    double amountLeft = self.masternodeListSyncInfo.retrievalQueueCount;
-    double maxAmount = self.masternodeListSyncInfo.retrievalQueueMaxAmount;
-    double lastBlockHeight = self.masternodeListSyncInfo.lastBlockHeight;
-    double estimatedBlockHeight = self.estimatedBlockHeight;
+    uint32_t amountLeft = self.masternodeListSyncInfo.retrievalQueueCount;
+    uint32_t maxAmount = self.masternodeListSyncInfo.retrievalQueueMaxAmount;
+    uint32_t lastBlockHeight = self.masternodeListSyncInfo.lastBlockHeight;
+    uint32_t estimatedBlockHeight = self.estimatedBlockHeight;
     return amountLeft ? MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0) : lastBlockHeight != UINT32_MAX && estimatedBlockHeight != 0 && lastBlockHeight + 16 >= estimatedBlockHeight;
 }
 
 - (double)chainSyncProgress {
-    double chainSyncStartHeight = self.chainSyncStartHeight;
-    double lastSyncBlockHeight = self.lastSyncBlockHeight;
-    double estimatedBlockHeight = self.estimatedBlockHeight;
+    uint32_t chainSyncStartHeight = self.chainSyncStartHeight;
+    uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
+    uint32_t estimatedBlockHeight = self.estimatedBlockHeight;
     if (!self.hasDownloadPeer && chainSyncStartHeight == 0)
         return 0.0;
     else if (lastSyncBlockHeight >= estimatedBlockHeight)
@@ -103,9 +103,9 @@
 }
 
 - (double)terminalHeaderSyncProgress {
-    double terminalSyncStartHeight = self.terminalSyncStartHeight;
-    double lastTerminalBlockHeight = self.lastTerminalBlockHeight;
-    double estimatedBlockHeight = self.estimatedBlockHeight;
+    uint32_t terminalSyncStartHeight = self.terminalSyncStartHeight;
+    uint32_t lastTerminalBlockHeight = self.lastTerminalBlockHeight;
+    uint32_t estimatedBlockHeight = self.estimatedBlockHeight;
     if (!self.hasDownloadPeer && terminalSyncStartHeight == 0)
         return 0.0;
     else if (lastTerminalBlockHeight >= estimatedBlockHeight)
@@ -114,13 +114,13 @@
         return MIN(1.0, MAX(0.0, 0.1 + 0.9 * (terminalSyncStartHeight > lastTerminalBlockHeight ? lastTerminalBlockHeight / estimatedBlockHeight : (lastTerminalBlockHeight - terminalSyncStartHeight) / (estimatedBlockHeight - terminalSyncStartHeight))));
 }
 
-- (double)masternodeListsToSync {
+- (uint32_t)masternodeListsToSync {
     uint32_t estimatedBlockHeight = self.estimatedBlockHeight;
-   double amountLeft = self.masternodeListSyncInfo.retrievalQueueCount;
+    uint32_t amountLeft = self.masternodeListSyncInfo.retrievalQueueCount;
     uint32_t lastMasternodeListHeight = self.masternodeListSyncInfo.lastBlockHeight;
-    double maxAmount = self.masternodeListSyncInfo.retrievalQueueMaxAmount;
+    uint32_t maxAmount = self.masternodeListSyncInfo.retrievalQueueMaxAmount;
     uint32_t storedCount = self.masternodeListSyncInfo.storedCount;
-   uint32_t masternodeListsToSync;
+    uint32_t masternodeListsToSync;
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList))
         masternodeListsToSync = 0;
     else if (!maxAmount || storedCount <= 1) // 1 because there might be a default
@@ -144,7 +144,7 @@
     uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
     double chainWeight = lastSyncBlockHeight >= estimatedBlockHeight ? 0 : estimatedBlockHeight - lastSyncBlockHeight;
     double terminalWeight = lastTerminalBlockHeight >= estimatedBlockHeight ? 0 : (estimatedBlockHeight - lastTerminalBlockHeight) / 4;
-    double listsToSync = [self masternodeListsToSync];
+    uint32_t listsToSync = [self masternodeListsToSync];
     double masternodeWeight = listsToSync ? (20000 + 2000 * (listsToSync - 1)) : 0;
     double totalWeight = chainWeight + terminalWeight + masternodeWeight;
     if (totalWeight == 0) {

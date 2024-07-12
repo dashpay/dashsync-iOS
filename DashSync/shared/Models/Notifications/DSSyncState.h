@@ -29,8 +29,8 @@ typedef NS_ENUM(uint16_t, DSSyncStateKind) {
 
 @interface DSMasternodeListSyncState : NSObject <NSCopying>
 
-@property (nonatomic, assign) double retrievalQueueCount;
-@property (nonatomic, assign) double retrievalQueueMaxAmount;
+@property (nonatomic, assign) uint32_t retrievalQueueCount;
+@property (nonatomic, assign) uint32_t retrievalQueueMaxAmount;
 @property (nonatomic, assign) double storedCount;
 @property (nonatomic, assign) uint32_t lastBlockHeight;
 
