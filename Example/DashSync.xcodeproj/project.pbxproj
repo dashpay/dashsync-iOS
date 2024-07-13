@@ -2401,6 +2401,7 @@
 						DevelopmentTeam = 44RJ69WHFF;
 					};
 					6003F5AD195388D20070C39A = {
+						DevelopmentTeam = 44RJ69WHFF;
 						TestTargetID = 6003F589195388D20070C39A;
 					};
 					FB9C9EF925B80DB40039880E = {
@@ -3341,6 +3342,7 @@
 			baseConfigurationReference = C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
@@ -3362,6 +3364,7 @@
 			baseConfigurationReference = DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
