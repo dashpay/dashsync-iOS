@@ -1826,7 +1826,7 @@
 }
 
 - (void)acceptCoinJoinQueueMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsq");
+    DSLog(@"[OBJ-C] CoinJoin: got dsq from peer %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
 }
 

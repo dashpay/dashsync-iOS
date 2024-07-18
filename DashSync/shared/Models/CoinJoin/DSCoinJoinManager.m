@@ -31,9 +31,18 @@
 #import "DSCoinJoinSignedInputs.h"
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSChain+Protected.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
+
+@interface DSCoinJoinManager ()
+
+@property (nonatomic, strong) dispatch_group_t processingGroup;
+@property (nonatomic, strong) dispatch_queue_t processingQueue;
+@property (nonatomic, strong) dispatch_source_t coinjoinTimer;
+
+@end
 
 @implementation DSCoinJoinManager
 
@@ -64,53 +73,108 @@ static dispatch_once_t managerChainToken = 0;
         _chain = chain;
         _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chain.chainManager];
         _masternodeGroup = [[DSMasternodeGroup alloc] initWithManager:self];
+        _processingGroup = dispatch_group_create();
+        _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.coinjoin.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
 
 
 - (void)startAsync {
-    if (!_masternodeGroup.isRunning) {
-        DSLog(@"[OBJ-C] CoinJoin: broadcasting senddsq(true) to all peers");
-        [self.chain.chainManager.peerManager shouldSendDsq:true];
-        [_masternodeGroup startAsync];
-        
+    if (!self.masternodeGroup.isRunning) {
         self.blocksObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification
                                                               object:nil
                                                                queue:nil
                                                           usingBlock:^(NSNotification *note) {
                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                  
-                                                                  DSLog(@"[OBJ-C] CoinJoin: new block found, restarting masternode connections job");
-                                                                  [self.masternodeGroup triggerConnections];
                                                                   [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
                                                               }
                                                           }];
+        
+        DSLog(@"[OBJ-C] CoinJoin: broadcasting senddsq(true) to all peers");
+        [self.chain.chainManager.peerManager shouldSendDsq:true];
+        [self.masternodeGroup startAsync];
+    }
+}
+
+- (void)start {
+    DSLog(@"[OBJ-C] CoinJoinManager starting...");
+    [self cancelCoinjoinTimer];
+    uint32_t interval = 1;
+    uint32_t delay = 1;
+    
+    @synchronized (self) {
+        [self.wrapper registerCoinJoin];
+        self.coinjoinTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.processingQueue);
+        if (self.coinjoinTimer) {
+            dispatch_source_set_timer(self.coinjoinTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), interval * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
+            dispatch_source_set_event_handler(self.coinjoinTimer, ^{
+                DSLog(@"[OBJ-C] CoinJoin: trigger doMaintenance");
+                [self.wrapper doMaintenance];
+            });
+            dispatch_resume(self.coinjoinTimer);
+        }
+    }
+}
+
+- (BOOL)startMixing {
+    @synchronized (self.wrapper) {
+        return [self.wrapper startMixing];
     }
 }
 
 - (void)stopAsync {
-     if (_masternodeGroup != nil && _masternodeGroup.isRunning) {
-        [self.chain.chainManager.peerManager shouldSendDsq:false];
-        [_masternodeGroup stopAsync];
-        _masternodeGroup = nil;
-        [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
+     if (self.masternodeGroup != nil && self.masternodeGroup.isRunning) {
+         DSLog(@"[OBJ-C] CoinJoin: call stop");
+         [self.chain.chainManager.peerManager shouldSendDsq:false];
+         [self.masternodeGroup stopAsync];
+         self.masternodeGroup = nil;
+         [self cancelCoinjoinTimer];
+         [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
     }
 }
 
-- (void)runCoinJoin {
-    [_wrapper runCoinJoin];
+- (void)doAutomaticDenominating {
+    dispatch_async(self.processingQueue, ^{
+        dispatch_group_enter(self.processingGroup);
+        
+        @synchronized (self.wrapper) {
+            [self.wrapper doAutomaticDenominating];
+        }
+        
+        dispatch_group_leave(self.processingGroup);
+    });
+}
+
+- (void)cancelCoinjoinTimer {
+    @synchronized (self) {
+        if (self.coinjoinTimer) {
+            dispatch_source_cancel(self.coinjoinTimer);
+            self.coinjoinTimer = nil;
+        }
+    }
+}
+
+- (void)setStopOnNothingToDo:(BOOL)stop {
+    @synchronized (self.wrapper) {
+        [self.wrapper setStopOnNothingToDo:stop];
+    }
 }
 
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
-    if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
-        [_wrapper processDSQueueFrom:peer message:message];
-    } else {
-        [_wrapper processMessageFrom:peer message:message type:type];
-    }
+    dispatch_async(self.processingQueue, ^{
+        dispatch_group_enter(self.processingGroup);
+        
+        if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
+            [self.wrapper processDSQueueFrom:peer message:message];
+        } else {
+            [self.wrapper processMessageFrom:peer message:message type:type];
+        }
+        
+        dispatch_group_leave(self.processingGroup);
+    });
 }
-
 
 - (BOOL)isMineInput:(UInt256)txHash index:(uint32_t)index {
     DSTransaction *tx = [self.chain transactionForHash:txHash];
@@ -538,8 +602,8 @@ static dispatch_once_t managerChainToken = 0;
     return [_masternodeGroup disconnectMasternode:ip port:port];
 }
 
-- (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port {
-    return [self.masternodeGroup forPeer:address port:port warn:true withPredicate:^BOOL(DSPeer * _Nonnull peer) {
+- (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn {
+    return [self.masternodeGroup forPeer:address port:port warn:warn withPredicate:^BOOL(DSPeer * _Nonnull peer) {
         if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
             DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
             [peer sendRequest:request];

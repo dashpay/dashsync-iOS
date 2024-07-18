@@ -52,15 +52,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMasternodeList *)mnList;
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
-- (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port;
+- (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn;
 - (Balance *)getBalance;
 
 - (void)startAsync;
 - (void)stopAsync;
-- (void)runCoinJoin;
+- (void)start;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
 - (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId;
+- (void)setStopOnNothingToDo:(BOOL)stop;
+- (BOOL)startMixing;
+- (void)doAutomaticDenominating;
 
 @end
 

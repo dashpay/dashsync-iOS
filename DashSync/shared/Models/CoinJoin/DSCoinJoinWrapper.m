@@ -40,14 +40,14 @@
     return self;
 }
 
-- (void)runCoinJoin {
+- (void)registerCoinJoin {
     if (_options == NULL) {
         _options = [self createOptions];
     }
     
     if (_walletEx == NULL) {
         DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
-        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode);
+        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
     }
     
     if (_clientManager == NULL) {
@@ -76,10 +76,32 @@
     options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
     options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
     options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-    options->coinjoin_multi_session = NO;
+    options->coinjoin_multi_session = YES;
     DSLog(@"[OBJ-C] CoinJoin: trusted balance: %llu", self.chainManager.chain.balance);
     
     return options;
+}
+
+- (void)setStopOnNothingToDo:(BOOL)stop {
+    set_stop_on_nothing_to_do(self.clientManager, stop);
+}
+
+- (BOOL)startMixing {
+    return start_mixing(self.clientManager);
+}
+
+- (BOOL)doAutomaticDenominating {
+    Balance *balance = [self.manager getBalance];
+    BOOL result = do_automatic_denominating(_clientManager, *balance, false);
+    free(balance);
+    
+    return result;
+}
+
+- (void)doMaintenance {
+    Balance *balance = [self.manager getBalance];
+    do_maintenance(_clientManager, *balance);
+    free(balance);
 }
 
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message {
@@ -97,12 +119,6 @@
             
             free(array);
         }
-        
-        DSLog(@"[OBJ-C] CoinJoin: call");
-        Balance *balance = [self.manager getBalance];
-        
-        run_client_manager(_clientManager, *balance);
-        free(balance);
     }
 }
 
@@ -463,14 +479,14 @@ bool disconnectMasternode(uint8_t (*ip_address)[16], uint16_t port, const void *
     return result;
 }
 
-bool sendMessage(char *message_type, ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, const void *context) {
+bool sendMessage(char *message_type, ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, bool warn, const void *context) {
     NSString *messageType = [NSString stringWithUTF8String:message_type];
     UInt128 ipAddress = *((UInt128 *)ip_address);
     BOOL result = YES;
     
     @synchronized (context) {
         NSData *message = [NSData dataWithBytes:byteArray->ptr length:byteArray->len];
-        result = [AS_OBJC(context).manager sendMessageOfType:messageType message:message withPeerIP:ipAddress port:port];
+        result = [AS_OBJC(context).manager sendMessageOfType:messageType message:message withPeerIP:ipAddress port:port warn:warn];
     }
     
     return result;
@@ -486,6 +502,12 @@ bool addPendingMasternode(uint8_t (*pro_tx_hash)[32], uint8_t (*session_id)[32],
     }
     
     return result;
+}
+
+void startManagerAsync(const void *context) {
+    @synchronized (context) {
+        [AS_OBJC(context).manager startAsync];
+    }
 }
 
 @end
