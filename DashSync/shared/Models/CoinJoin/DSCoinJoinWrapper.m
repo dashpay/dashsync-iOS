@@ -41,30 +41,36 @@
 }
 
 - (void)registerCoinJoin {
-    if (_options == NULL) {
-        _options = [self createOptions];
-    }
-    
-    if (_walletEx == NULL) {
-        DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
-        _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
-    }
-    
-    if (_clientManager == NULL) {
-        DSLog(@"[OBJ-C] CoinJoin: register client manager");
-        _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
+    @synchronized (self) {
+        if (_options == NULL) {
+            _options = [self createOptions];
+        }
         
-        DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
-        add_client_queue_manager(_clientManager, _options, masternodeByHash, destroyMasternodeEntry, validMNCount, isBlockchainSynced, AS_RUST(self));
+        if (_walletEx == NULL) {
+            DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
+            _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
+        }
+        
+        if (_clientManager == NULL) {
+            DSLog(@"[OBJ-C] CoinJoin: register client manager");
+            _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
+            
+            DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
+            add_client_queue_manager(_clientManager, _options, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
+        }
     }
 }
 
 - (BOOL)isWaitingForNewBlock {
-    return is_waiting_for_new_block(_clientManager);
+    @synchronized (self) {
+        return is_waiting_for_new_block(_clientManager);
+    }
 }
 
 - (BOOL)isMixing {
-    return is_mixing(_clientManager);
+    @synchronized (self) {
+        return is_mixing(_clientManager);
+    }
 }
 
 - (CoinJoinClientOptions *)createOptions {
@@ -83,29 +89,39 @@
 }
 
 - (void)setStopOnNothingToDo:(BOOL)stop {
-    set_stop_on_nothing_to_do(self.clientManager, stop);
+    @synchronized (self) {
+        set_stop_on_nothing_to_do(self.clientManager, stop);
+    }
 }
 
 - (BOOL)startMixing {
-    return start_mixing(self.clientManager);
+    @synchronized (self) {
+        return start_mixing(self.clientManager);
+    }
 }
 
 - (BOOL)doAutomaticDenominating {
-    Balance *balance = [self.manager getBalance];
-    BOOL result = do_automatic_denominating(_clientManager, *balance, false);
-    free(balance);
-    
-    return result;
+    @synchronized (self) {
+        Balance *balance = [self.manager getBalance];
+        BOOL result = do_automatic_denominating(_clientManager, *balance, false);
+        free(balance);
+        
+        return result;
+    }
 }
 
 - (void)doMaintenance {
-    Balance *balance = [self.manager getBalance];
-    do_maintenance(_clientManager, *balance);
-    free(balance);
+    @synchronized (self) {
+        Balance *balance = [self.manager getBalance];
+        do_maintenance(_clientManager, *balance);
+        free(balance);
+    }
 }
 
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message {
     @synchronized (self) {
+        DSLog(@"[OBJ-C] CoinJoin: process DSQ from %@", peer.location);
+        
         ByteArray *array = malloc(sizeof(ByteArray));
         array->len = (uintptr_t)message.length;
         array->ptr = data_malloc(message);
@@ -142,12 +158,16 @@
 
 - (void)notifyNewBestBlock:(DSBlock *)block {
     if (block) {
-        notify_new_best_block(_clientManager, (uint8_t (*)[32])(block.blockHash.u8), block.height);
+        @synchronized (self) {
+            notify_new_best_block(_clientManager, (uint8_t (*)[32])(block.blockHash.u8), block.height);
+        }
     }
 }
 
 - (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId {
-    return mixing_masternode_address(_clientManager, (uint8_t (*)[32])(clientSessionId.u8));
+    @synchronized (self) {
+        return mixing_masternode_address(_clientManager, (uint8_t (*)[32])(clientSessionId.u8));
+    }
 }
 
 - (DSChain *)chain {
@@ -155,12 +175,14 @@
 }
 
 - (void)dealloc {
-    if (_options != NULL) {
-        free(_options);
+    @synchronized (self) {
+        if (_options != NULL) {
+            free(_options);
+        }
+        
+        unregister_client_manager(_clientManager);
+        unregister_wallet_ex(_walletEx); // Unregister last
     }
-    
-    unregister_client_manager(_clientManager);
-    unregister_wallet_ex(_walletEx); // Unregister last
 }
 
 ///
@@ -205,7 +227,6 @@ bool hasChainLock(Block *block, const void *context) {
 }
 
 Transaction *getTransaction(uint8_t (*tx_hash)[32], const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: getTransaction");
     UInt256 txHash = *((UInt256 *)tx_hash);
     Transaction *tx = NULL;
     
@@ -236,7 +257,6 @@ bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
 }
 
 GatheredOutputs* availableCoins(bool onlySafe, CoinControl coinControl, WalletEx *walletEx, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasCollateralInputs");
     GatheredOutputs *gatheredOutputs;
     
     @synchronized (context) {
@@ -260,7 +280,6 @@ GatheredOutputs* availableCoins(bool onlySafe, CoinControl coinControl, WalletEx
 }
 
 SelectedCoins* selectCoinsGroupedByAddresses(bool skipDenominated, bool anonymizable, bool skipUnconfirmed, int maxOupointsPerAddress, WalletEx* walletEx, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: selectCoinsGroupedByAddresses");
     SelectedCoins *vecTallyRet;
     
     @synchronized (context) {
@@ -280,8 +299,6 @@ SelectedCoins* selectCoinsGroupedByAddresses(bool skipDenominated, bool anonymiz
 }
 
 void destroyInputValue(InputValue *value) {
-    DSLog(@"[OBJ-C] CoinJoin: 💀 InputValue");
-    
     if (value) {
         free(value);
     }
@@ -298,8 +315,6 @@ void destroySelectedCoins(SelectedCoins *selectedCoins) {
         return;
     }
     
-    DSLog(@"[OBJ-C] CoinJoin: 💀 SelectedCoins");
-    
     if (selectedCoins->item_count > 0 && selectedCoins->items) {
         for (int i = 0; i < selectedCoins->item_count; i++) {
             [DSCompactTallyItem ffi_free:selectedCoins->items[i]];
@@ -315,8 +330,6 @@ void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
     if (!gatheredOutputs) {
         return;
     }
-    
-    DSLog(@"[OBJ-C] CoinJoin: 💀 GatheredOutputs");
     
     if (gatheredOutputs->item_count > 0 && gatheredOutputs->items) {
         for (int i = 0; i < gatheredOutputs->item_count; i++) {
@@ -349,12 +362,10 @@ Transaction* signTransaction(Transaction *transaction, const void *context) {
 }
 
 unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: countInputsWithAmount");
     return [AS_OBJC(context).manager countInputsWithAmount:inputAmount];
 }
 
 ByteArray freshCoinJoinAddress(bool internal, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: freshCoinJoinAddress");
     DSCoinJoinWrapper *wrapper = AS_OBJC(context);
     NSString *address = [wrapper.manager freshAddress:internal];
     
@@ -410,7 +421,6 @@ void destroyMasternodeEntry(MasternodeEntry *masternodeEntry) {
         return;
     }
     
-    DSLog(@"[OBJ-C] CoinJoin: 💀 MasternodeEntry");
     [DSSimplifiedMasternodeEntry ffi_free:masternodeEntry];
 }
 
@@ -443,18 +453,11 @@ void destroyMNList(MasternodeList *masternodeList) { // TODO: check destroyMaste
         return;
     }
     
-    DSLog(@"[OBJ-C] CoinJoin: 💀 MasternodeList");
     [DSMasternodeList ffi_free:masternodeList];
 }
 
 bool isBlockchainSynced(const void *context) {
-    BOOL result = NO;
-    
-    @synchronized (context) {
-        result = AS_OBJC(context).chainManager.combinedSyncProgress == 1.0;
-    }
-    
-    return result;
+    return AS_OBJC(context).manager.isChainSynced;
 }
 
 bool isMasternodeOrDisconnectRequested(uint8_t (*ip_address)[16], uint16_t port, const void *context) {

@@ -32,15 +32,17 @@
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSChain+Protected.h"
+#import "DSBlock.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
 
 @interface DSCoinJoinManager ()
 
-@property (nonatomic, strong) dispatch_group_t processingGroup;
+//@property (nonatomic, strong) dispatch_group_t processingGroup;
 @property (nonatomic, strong) dispatch_queue_t processingQueue;
 @property (nonatomic, strong) dispatch_source_t coinjoinTimer;
+@property (atomic) uint32_t lastSeenBlock;
 
 @end
 
@@ -56,7 +58,7 @@ static dispatch_once_t managerChainToken = 0;
         _managerChainDictionary = [NSMutableDictionary dictionary];
     });
     DSCoinJoinManager *managerForChain = nil;
-    @synchronized(self) {
+    @synchronized(_managerChainDictionary) {
         if (![_managerChainDictionary objectForKey:chain.uniqueID]) {
             managerForChain = [[DSCoinJoinManager alloc] initWithChain:chain];
             _managerChainDictionary[chain.uniqueID] = managerForChain;
@@ -73,8 +75,9 @@ static dispatch_once_t managerChainToken = 0;
         _chain = chain;
         _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chain.chainManager];
         _masternodeGroup = [[DSMasternodeGroup alloc] initWithManager:self];
-        _processingGroup = dispatch_group_create();
+//        _processingGroup = dispatch_group_create();
         _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.coinjoin.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+        _lastSeenBlock = 0;
     }
     return self;
 }
@@ -83,12 +86,16 @@ static dispatch_once_t managerChainToken = 0;
 - (void)startAsync {
     if (!self.masternodeGroup.isRunning) {
         self.blocksObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStateDidChangeNotification
                                                               object:nil
                                                                queue:nil
                                                           usingBlock:^(NSNotification *note) {
-                                                              if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                  [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
+                                                              if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.lastSeenBlock) {
+                                                                  self.isChainSynced = self.chain.chainManager.isSynced;
+                                                                  DSLog(@"[OBJ-C] CoinJoin: update isSynced: %s", self.isChainSynced ? "true" : "false");
+                                                                  dispatch_async(self.processingQueue, ^{
+                                                                      [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
+                                                                  });
                                                               }
                                                           }];
         
@@ -99,7 +106,8 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)start {
-    DSLog(@"[OBJ-C] CoinJoinManager starting...");
+    DSLog(@"[OBJ-C] CoinJoinManager starting, time: %@", [NSDate date]);
+    self.isChainSynced = self.chain.chainManager.isSynced;
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
@@ -110,7 +118,7 @@ static dispatch_once_t managerChainToken = 0;
         if (self.coinjoinTimer) {
             dispatch_source_set_timer(self.coinjoinTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), interval * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
             dispatch_source_set_event_handler(self.coinjoinTimer, ^{
-                DSLog(@"[OBJ-C] CoinJoin: trigger doMaintenance");
+                DSLog(@"[OBJ-C] CoinJoin: trigger doMaintenance, time: %@", [NSDate date]);
                 [self.wrapper doMaintenance];
             });
             dispatch_resume(self.coinjoinTimer);
@@ -119,9 +127,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)startMixing {
-    @synchronized (self.wrapper) {
-        return [self.wrapper startMixing];
-    }
+    return [self.wrapper startMixing];
 }
 
 - (void)stopAsync {
@@ -137,13 +143,10 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)doAutomaticDenominating {
     dispatch_async(self.processingQueue, ^{
-        dispatch_group_enter(self.processingGroup);
-        
-        @synchronized (self.wrapper) {
-            [self.wrapper doAutomaticDenominating];
-        }
-        
-        dispatch_group_leave(self.processingGroup);
+//        dispatch_group_enter(self.processingGroup);
+        DSLog(@"[OBJ-C] CoinJoin: doAutomaticDenominating, time: %@", [NSDate date]);
+        [self.wrapper doAutomaticDenominating];
+//        dispatch_group_leave(self.processingGroup);
     });
 }
 
@@ -157,14 +160,12 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)setStopOnNothingToDo:(BOOL)stop {
-    @synchronized (self.wrapper) {
-        [self.wrapper setStopOnNothingToDo:stop];
-    }
+    [self.wrapper setStopOnNothingToDo:stop];
 }
 
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
     dispatch_async(self.processingQueue, ^{
-        dispatch_group_enter(self.processingGroup);
+//        dispatch_group_enter(self.processingGroup);
         
         if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
             [self.wrapper processDSQueueFrom:peer message:message];
@@ -172,7 +173,7 @@ static dispatch_once_t managerChainToken = 0;
             [self.wrapper processMessageFrom:peer message:message type:type];
         }
         
-        dispatch_group_leave(self.processingGroup);
+//        dispatch_group_leave(self.processingGroup);
     });
 }
 
@@ -571,11 +572,15 @@ static dispatch_once_t managerChainToken = 0;
         [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
             if (error) {
                 DSLog(@"[OBJ-C] CoinJoin publish error: %@", error.description);
-                onPublished(error);
             } else {
                 DSLog(@"[OBJ-C] CoinJoin publish success: %@", transaction.description);
-                onPublished(nil);
             }
+            
+            dispatch_async(self.processingQueue, ^{
+//                dispatch_group_enter(self.processingGroup);
+                onPublished(error);
+//                dispatch_group_leave(self.processingGroup);
+            });
         }];
     }
     

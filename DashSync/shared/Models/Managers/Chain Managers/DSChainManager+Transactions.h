@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Vladimir Pirogov
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSChainManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSOperation;
-@class DSCurrencyPriceObject;
+@interface DSChainManager (Transactions)
 
-@protocol DSFetchPricesOperation <NSObject>
-
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *_Nullable priceSource, NSError *_Nullable error))completion;
-+ (NSString *)priceSourceInfo;
+- (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
+- (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
 
 @end
 

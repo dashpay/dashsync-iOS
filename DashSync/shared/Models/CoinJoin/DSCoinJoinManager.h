@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL isWaitingForNewBlock;
 @property (nonatomic, readonly) BOOL isMixing;
 @property (nonatomic, strong) id blocksObserver;
+@property (atomic) BOOL isChainSynced;
 
 + (instancetype)sharedInstanceForChain:(DSChain *)chain;
 - (instancetype)initWithChain:(DSChain *)chain;

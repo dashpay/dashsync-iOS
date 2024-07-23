@@ -122,7 +122,6 @@
     }
     
     free(tx);
-    DSLog(@"[OBJ-C] CoinJoin: 💀 transaction");
 }
 
 @end
