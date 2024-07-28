@@ -35,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
 @property (nonatomic, readonly) BOOL isWaitingForNewBlock;
-@property (nonatomic, readonly) BOOL isMixing;
 @property (nonatomic, strong) id blocksObserver;
+@property (atomic) BOOL isMixing;
 @property (atomic) BOOL isChainSynced;
 
 + (instancetype)sharedInstanceForChain:(DSChain *)chain;
@@ -61,10 +61,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
-- (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId;
 - (void)setStopOnNothingToDo:(BOOL)stop;
 - (BOOL)startMixing;
 - (void)doAutomaticDenominating;
+- (void)updateSuccessBlock;
+- (BOOL)isWaitingForNewBlock;
 
 @end
 

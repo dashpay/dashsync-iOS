@@ -40,52 +40,21 @@
     return self;
 }
 
-- (void)registerCoinJoin {
+- (void)registerCoinJoin:(CoinJoinClientOptions *)options {
     @synchronized (self) {
-        if (_options == NULL) {
-            _options = [self createOptions];
-        }
-        
         if (_walletEx == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
-            _walletEx = register_wallet_ex(AS_RUST(self), _options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
+            _walletEx = register_wallet_ex(AS_RUST(self), options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
         }
         
         if (_clientManager == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register client manager");
-            _clientManager = register_client_manager(AS_RUST(self), _walletEx, _options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue);
+            _clientManager = register_client_manager(AS_RUST(self), _walletEx, options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock);
             
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
-            add_client_queue_manager(_clientManager, _options, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
+            add_client_queue_manager(_clientManager, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
         }
     }
-}
-
-- (BOOL)isWaitingForNewBlock {
-    @synchronized (self) {
-        return is_waiting_for_new_block(_clientManager);
-    }
-}
-
-- (BOOL)isMixing {
-    @synchronized (self) {
-        return is_mixing(_clientManager);
-    }
-}
-
-- (CoinJoinClientOptions *)createOptions {
-    CoinJoinClientOptions *options = malloc(sizeof(CoinJoinClientOptions));
-    options->enable_coinjoin = YES;
-    options->coinjoin_rounds = 1;
-    options->coinjoin_sessions = 1;
-    options->coinjoin_amount = DUFFS / 4; // 0.25 DASH
-    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
-    options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
-    options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-    options->coinjoin_multi_session = YES;
-    DSLog(@"[OBJ-C] CoinJoin: trusted balance: %llu", self.chainManager.chain.balance);
-    
-    return options;
 }
 
 - (void)setStopOnNothingToDo:(BOOL)stop {
@@ -146,13 +115,11 @@
         
         process_coinjoin_message(_clientManager, peer.address.u8, peer.port, array, [type UTF8String]);
         
-        if (array) {
-            if (array->ptr) {
-                free((void *)array->ptr);
-            }
-            
-            free(array);
+        if (array->ptr) {
+            free((void *)array->ptr);
         }
+            
+        free(array);
     }
 }
 
@@ -164,22 +131,12 @@
     }
 }
 
-- (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId {
-    @synchronized (self) {
-        return mixing_masternode_address(_clientManager, (uint8_t (*)[32])(clientSessionId.u8));
-    }
-}
-
 - (DSChain *)chain {
     return self.chainManager.chain;
 }
 
 - (void)dealloc {
     @synchronized (self) {
-        if (_options != NULL) {
-            free(_options);
-        }
-        
         unregister_client_manager(_clientManager);
         unregister_wallet_ex(_walletEx); // Unregister last
     }
@@ -511,6 +468,22 @@ void startManagerAsync(const void *context) {
     @synchronized (context) {
         [AS_OBJC(context).manager startAsync];
     }
+}
+
+void updateSuccessBlock(const void *context) {
+    @synchronized (context) {
+        [AS_OBJC(context).manager updateSuccessBlock];
+    }
+}
+
+bool isWaitingForNewBlock(const void *context) {
+    BOOL result = NO;
+    
+    @synchronized (context) {
+        result = [AS_OBJC(context).manager isWaitingForNewBlock];
+    }
+    
+    return result;
 }
 
 @end
