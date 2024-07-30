@@ -55,6 +55,7 @@
 #import "DSPriceManager.h"
 #import "DSShapeshiftManager.h"
 #import "DSSporkManager.h"
+#import "DSSyncState.h"
 #import "DSTransactionManager.h"
 #import "DSVersionManager.h"
 #import "DSWallet.h"

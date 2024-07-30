@@ -626,7 +626,8 @@
                                                                                  isSecure:isSecure
                                                                              errorMessage:@""
                                                                             localCurrency:localCurrency];
-    if (transactionCreationCompletion(tx, suggestedPrompt, amount, fee, @[address], isSecure)) {
+    
+    if (transactionCreationCompletion(tx, suggestedPrompt, amount, fee, address ? @[address] : @[], isSecure)) {
         CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
             [self signAndPublishTransaction:tx createdFromProtocolRequest:protoReq fromAccount:account toAddress:address requiresSpendingAuthenticationPrompt:YES promptMessage:suggestedPrompt forAmount:amount keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
         });

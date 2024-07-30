@@ -31,20 +31,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, nullable) WalletEx *walletEx;
 @property (nonatomic, assign, nullable) CoinJoinClientManager *clientManager;
-@property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
 
 - (instancetype)initWithManagers:(DSCoinJoinManager *)manager chainManager:(DSChainManager *)chainManager;
-- (BOOL)isWaitingForNewBlock;
 - (BOOL)isMixing;
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message;
-- (SocketAddress *)mixingMasternodeAddressFor:(UInt256)clientSessionId;
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
 - (void)notifyNewBestBlock:(DSBlock *)block;
 - (void)setStopOnNothingToDo:(BOOL)stop;
 - (BOOL)startMixing;
 - (BOOL)doAutomaticDenominating;
 - (void)doMaintenance;
-- (void)registerCoinJoin;
+- (void)registerCoinJoin:(CoinJoinClientOptions *)options;
 
 @end
 

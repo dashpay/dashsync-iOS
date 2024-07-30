@@ -37,13 +37,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSHTTPDashCentralOperation *dashcentralOperation;
 @property (strong, nonatomic) DSHTTPVesLocalBitcoinsOperation *vesLocalBitcoinsOperation;
 
-@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource);
+@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *_Nullable priceSource, NSError *_Nullable error);
 
 @end
 
 @implementation DSFetchSecondFallbackPricesOperation
 
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource))completion {
+- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *_Nullable priceSource, NSError *_Nullable error))completion {
     self = [super initWithOperations:nil];
     if (self) {
         {
@@ -97,6 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)operationDidFinish:(NSOperation *)operation withErrors:(nullable NSArray<NSError *> *)errors {
     if (self.cancelled) {
+        self.fetchCompletion(nil, [self.class priceSourceInfo], nil);
+        
         return;
     }
 
@@ -105,16 +107,20 @@ NS_ASSUME_NONNULL_BEGIN
         [self.poloniexOperation cancel];
         [self.dashcentralOperation cancel];
         [self.vesLocalBitcoinsOperation cancel];
+        
+        self.fetchCompletion(nil, [self.class priceSourceInfo], errors.firstObject);
     }
 }
 
 - (void)finishedWithErrors:(NSArray<NSError *> *)errors {
     if (self.cancelled) {
+        self.fetchCompletion(nil, [self.class priceSourceInfo], nil);
+        
         return;
     }
 
     if (errors.count > 0) {
-        self.fetchCompletion(nil, [self.class priceSourceInfo]);
+        self.fetchCompletion(nil, [self.class priceSourceInfo], errors.firstObject);
 
         return;
     }
@@ -132,7 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
         !(poloniexPriceNumber || dashcentralPriceNumber) ||
         !vesPrice ||
         currencyCodes.count != currencyPrices.count) {
-        self.fetchCompletion(nil, [self.class priceSourceInfo]);
+        self.fetchCompletion(nil, [self.class priceSourceInfo], nil);
 
         return;
     }
@@ -151,7 +157,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (dashBtcPrice < DBL_EPSILON) {
-        self.fetchCompletion(nil, [self.class priceSourceInfo]);
+        self.fetchCompletion(nil, [self.class priceSourceInfo], nil);
 
         return;
     }
@@ -175,7 +181,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    self.fetchCompletion([prices copy], [self.class priceSourceInfo]);
+    self.fetchCompletion([prices copy], [self.class priceSourceInfo], nil);
 }
 
 + (NSString *)priceSourceInfo {

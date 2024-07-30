@@ -21,6 +21,7 @@
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSCheckpoint.h"
 #import "DSDAPIClient.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
@@ -218,25 +219,6 @@
     return !!self.masternodeListCurrentlyBeingSavedCount;
 }
 
-- (uint32_t)masternodeListsToSync {
-    if (self.lastMasternodeListBlockHeight == UINT32_MAX) {
-        return 32;
-    } else {
-        float diff = self.chain.estimatedBlockHeight - self.lastMasternodeListBlockHeight;
-        if (diff < 0) return 32;
-        return MIN(32, (uint32_t)ceil(diff / 24.0f));
-    }
-}
-
-- (BOOL)masternodeListsAndQuorumsIsSynced {
-    if (self.lastMasternodeListBlockHeight == UINT32_MAX ||
-        self.lastMasternodeListBlockHeight < self.chain.estimatedBlockHeight - 16) {
-        return NO;
-    } else {
-        return YES;
-    }
-}
-
 - (void)loadLocalMasternodes {
     NSFetchRequest *fetchRequest = [[DSLocalMasternodeEntity fetchRequest] copy];
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"providerRegistrationTransaction.transactionHash.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]]];
@@ -256,11 +238,19 @@
         masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
         if (masternodeList) {
             DSLog(@"[%@] ••• addMasternodeList (loadMasternodeListAtBlockHash) -> %@: %@", self.chain.name, blockHash.hexString, masternodeList);
+            double count;
             @synchronized (self.masternodeListsByBlockHash) {
                 [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
+                count = self.masternodeListsByBlockHash.count;
             }
-            @synchronized (self.masternodeListsByBlockHash) {
+            @synchronized (self.masternodeListsBlockHashStubs) {
                 [self.masternodeListsBlockHashStubs removeObject:blockHash];
+            }
+            @synchronized (self.chain.chainManager.syncState) {
+                self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = count;
+                self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = self.lastMasternodeListBlockHeight;
+                [self.chain.chainManager notifySyncStateChanged];
+                [self.chain.chainManager notifySyncStateChanged];
             }
             DSLog(@"[%@] Loading Masternode List at height %u for blockHash %@ with %lu entries", self.chain.name, masternodeList.height, uint256_hex(masternodeList.blockHash), (unsigned long)masternodeList.simplifiedMasternodeEntries.count);
         }
@@ -285,6 +275,13 @@
                 //we only need a few in memory as new quorums will mostly be verified against recent masternode lists
                 DSMasternodeList *masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
                 [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
+                double listCount = self.masternodeListsByBlockHash.count;
+                @synchronized (self.chain.chainManager.syncState) {
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = listCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = self.lastMasternodeListBlockHeight;
+                    [self.chain.chainManager notifySyncStateChanged];
+                }
+
                 [self.cachedBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:uint256_data(masternodeList.blockHash)];
                 [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
                 [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
@@ -347,6 +344,12 @@
         [self.masternodeListsBlockHashStubs removeAllObjects];
     }
     self.masternodeListAwaitingQuorumValidation = nil;
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = UINT32_MAX;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = 0;
+        DSLog(@"[%@] [DSMasternodeManager] All List Removed: %u/%u", self.chain.name, UINT32_MAX, 0);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)removeOldMasternodeLists:(uint32_t)lastBlockHeight {
@@ -370,6 +373,7 @@
                 }
             }
             if (removedItems) {
+                
                 //Now we should delete old quorums
                 //To do this, first get the last 24 active masternode lists
                 //Then check for quorums not referenced by them, and delete those
@@ -381,6 +385,12 @@
                     [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
                 }
                 [self.managedObjectContext ds_save];
+                
+                @synchronized (self.chain.chainManager.syncState) {
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = self.masternodeListsByBlockHash.count;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = self.lastMasternodeListBlockHeight;
+                    [self.chain.chainManager notifySyncStateChanged];
+                }
             }
         }
     }];
@@ -438,8 +448,15 @@
     }
     NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
     [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
+    double count;
     @synchronized (self.masternodeListsByBlockHash) {
         [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHashData];
+        count = self.masternodeListsByBlockHash.count;
+    }
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = count;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = self.lastMasternodeListBlockHeight;
+        [self.chain.chainManager notifySyncStateChanged];
     }
     [self notifyMasternodeListUpdate];
     dispatch_group_enter(self.savingGroup);
