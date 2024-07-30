@@ -45,7 +45,7 @@ jobs:
             ${{ runner.os }}-pods-
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '13.2.1'
+          xcode-version: '15.4'
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies

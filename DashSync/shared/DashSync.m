@@ -18,6 +18,7 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeerManager+Protected.h"
+#import "DSSyncState.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSporkManager+Protected.h"
@@ -168,12 +169,10 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity]; // this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];
         [chain reloadDerivationPaths];
-        [chain.chainManager assignSyncWeights];
+        [chain.chainManager notifySyncStateChanged];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil];
         });
     }];
 }
@@ -198,12 +197,10 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity]; // this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];
         [chain reloadDerivationPaths];
-        [chain.chainManager assignSyncWeights];
+        [chain.chainManager notifySyncStateChanged];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil];
         });
     }];
 }
@@ -222,7 +219,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         DSChainManager *chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager wipeMasternodeInfo];
         [context ds_save];
-        [chain.chainManager assignSyncWeights];
+        [chain.chainManager notifySyncStateChanged];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", chain.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: chain}];
@@ -325,7 +322,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     DSChainManager *mainnetManager = [[DSChainsManager sharedInstance] mainnetManager];
-    if (mainnetManager.chainSyncProgress >= 1.0) {
+    if (mainnetManager.syncState.chainSyncProgress >= 1.0) {
         DSLog(@"Background fetch: already synced");
 
         if (completionHandler) {
@@ -374,7 +371,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 }
 
 - (void)backgroundFetchTimedOut {
-    const double syncProgress = [[DSChainsManager sharedInstance] mainnetManager].chainSyncProgress;
+    const double syncProgress = [[DSChainsManager sharedInstance] mainnetManager].syncState.chainSyncProgress;
     DSLog(@"Background fetch timeout with progress: %f", syncProgress);
 
     const UIBackgroundFetchResult fetchResult = syncProgress > 0.1 ? UIBackgroundFetchResultNewData : UIBackgroundFetchResultFailed;

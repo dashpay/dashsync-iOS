@@ -2401,6 +2401,7 @@
 						DevelopmentTeam = 44RJ69WHFF;
 					};
 					6003F5AD195388D20070C39A = {
+						DevelopmentTeam = 44RJ69WHFF;
 						TestTargetID = 6003F589195388D20070C39A;
 					};
 					FB9C9EF925B80DB40039880E = {
@@ -2412,10 +2413,9 @@
 			};
 			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "DashSync" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 				fr,
@@ -3229,6 +3229,48 @@
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MODULE_NAME = ExampleApp;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"BoringSSL-GRPC-iOS\"",
+					"-l\"CocoaImageHashing-iOS\"",
+					"-l\"CocoaLumberjack-iOS\"",
+					"-l\"DAPI-GRPC-iOS\"",
+					"-l\"DSDynamicOptions-iOS\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync-iOS\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"Protobuf-iOS\"",
+					"-l\"SDWebImage-iOS\"",
+					"-l\"TinyCborObjc-iOS\"",
+					"-l\"abseil-iOS\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC-Core-iOS\"",
+					"-l\"gRPC-ProtoRPC-iOS\"",
+					"-l\"gRPC-RxLibrary-iOS\"",
+					"-l\"gRPC-iOS\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor-iOS\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-ld_classic",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -3247,6 +3289,48 @@
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MODULE_NAME = ExampleApp;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"BoringSSL-GRPC-iOS\"",
+					"-l\"CocoaImageHashing-iOS\"",
+					"-l\"CocoaLumberjack-iOS\"",
+					"-l\"DAPI-GRPC-iOS\"",
+					"-l\"DSDynamicOptions-iOS\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync-iOS\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"Protobuf-iOS\"",
+					"-l\"SDWebImage-iOS\"",
+					"-l\"TinyCborObjc-iOS\"",
+					"-l\"abseil-iOS\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC-Core-iOS\"",
+					"-l\"gRPC-ProtoRPC-iOS\"",
+					"-l\"gRPC-RxLibrary-iOS\"",
+					"-l\"gRPC-iOS\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor-iOS\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-ld_classic",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -3258,6 +3342,7 @@
 			baseConfigurationReference = C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
@@ -3279,6 +3364,7 @@
 			baseConfigurationReference = DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";

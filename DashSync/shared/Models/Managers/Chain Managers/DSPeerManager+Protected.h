@@ -59,6 +59,8 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState)
 - (void)clearRegisteredPeers;
 - (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
 
+- (void)startBackgroundMode:(BOOL)performDisconnects;
+
 @end
 
 NS_ASSUME_NONNULL_END

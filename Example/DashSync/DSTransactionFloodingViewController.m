@@ -35,7 +35,7 @@
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *startFloodingButton;
 
-@property (strong, nonatomic) id blocksObserver, txStatusObserver;
+@property (strong, nonatomic) id syncStateObserver, txStatusObserver;
 
 @property (strong, nonatomic) NSMutableDictionary *transactionSuccessDictionary;
 
@@ -83,8 +83,8 @@
                                                           }];
     }
 
-    self.blocksObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification
+    self.syncStateObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStateDidChangeNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
@@ -100,7 +100,7 @@
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
 }
 
 - (void)updateISCounts {

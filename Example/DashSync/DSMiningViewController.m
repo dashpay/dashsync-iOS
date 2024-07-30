@@ -19,6 +19,7 @@
 #import "BigIntTypes.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
+#import "DSChainManager+Mining.h"
 #import "DSFullBlock.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"

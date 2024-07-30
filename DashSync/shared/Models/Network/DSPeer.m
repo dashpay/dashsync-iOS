@@ -34,6 +34,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
+#import "DSChainManager+Transactions.h"
 #import "DSChainManager.h"
 #import "DSFilterLoadRequest.h"
 #import "DSGetBlocksRequest.h"
@@ -576,9 +577,9 @@
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
     [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         uint32_t knownHeight = [self.chain quickHeightForBlockHash:((NSData *)obj).UInt256];
-        [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height %@)",
+        [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height %d)",
                                  ((NSData *)obj).reverse.hexString,
-                                 knownHeight == UINT32_MAX ? @"unknown" : @"%d", knownHeight]];
+                                 knownHeight == UINT32_MAX ? 0 : knownHeight]];
     }];
 #if DEBUG
     DSLogPrivateWithLocation(self, @"%@sending getblocks with locators %@", self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"", locatorHexes);
@@ -663,7 +664,7 @@
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
     NSUInteger totalCount = txHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count + blockHashes.count + chainLockHashes.count;
     if (totalCount > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        DSLogWithLocation(self, @"couldn't send getdata, %u is too many items, max is %u", totalCount, MAX_GETDATA_HASHES);
+        DSLogWithLocation(self, @"couldn't send getdata, %lu is too many items, max is %u", totalCount, MAX_GETDATA_HASHES);
         return;
     } else if (totalCount == 0)
         return;
@@ -682,7 +683,7 @@
 
 - (void)sendGovernanceRequest:(DSGovernanceHashesRequest *)request {
     if (request.hashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        DSLogWithLocation(self, @"couldn't send governance votes getdata, %u is too many items, max is %u", request.hashes.count, MAX_GETDATA_HASHES);
+        DSLogWithLocation(self, @"couldn't send governance votes getdata, %lu is too many items, max is %u", request.hashes.count, MAX_GETDATA_HASHES);
         return;
     } else if (request.hashes.count == 0) {
         DSLogWithLocation(self, @"couldn't send governance getdata, there is no items");
@@ -722,7 +723,7 @@
 
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
-        DSLogWithLocation(self, @"re-requesting %u blocks", self.knownBlockHashes.count);
+        DSLogWithLocation(self, @"re-requesting %lu blocks", self.knownBlockHashes.count);
         [self sendGetdataMessageWithTxHashes:nil instantSendLockHashes:nil instantSendLockDHashes:nil blockHashes:self.knownBlockHashes.array chainLockHashes:nil];
     }
 }
@@ -928,14 +929,14 @@
     NSMutableArray *peers = [NSMutableArray array];
 
     if (count > 1000) {
-        DSLogWithLocation(self, @"dropping addr message, %u is too many addresses (max 1000)", count);
+        DSLogWithLocation(self, @"dropping addr message, %lu is too many addresses (max 1000)", count);
         return;
     } else if (message.length < l.unsignedIntegerValue + count * 30) {
         [self error:@"malformed addr message, length is %u, should be %u for %u addresses", (int)message.length,
               (int)(l.unsignedIntegerValue + count * 30), (int)count];
         return;
     } else
-        DSLogWithLocation(self, @"got addr with %u addresses", count);
+        DSLogWithLocation(self, @"got addr with %lu addresses", count);
 
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 30 * count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off];
@@ -964,7 +965,7 @@
 }
 
 - (void)acceptAddrV2Message:(NSData *)message {
-    DSLogWithLocation(self, @"sendaddrv2, len:%u, (not implemented)", message.length);
+    DSLogWithLocation(self, @"sendaddrv2, len:%lu, (not implemented)", message.length);
 }
 
 - (NSString *)nameOfInvMessage:(DSInvType)type {
@@ -1037,7 +1038,7 @@
               (int)(((l.unsignedIntegerValue == 0) ? 1 : l.unsignedIntegerValue) + count * 36), (int)count];
         return;
     } else if (count > MAX_GETDATA_HASHES) {
-        DSLogWithLocation(self, @"dropping inv message, %u is too many items, max is %u", count, MAX_GETDATA_HASHES);
+        DSLogWithLocation(self, @"dropping inv message, %lu is too many items, max is %u", count, MAX_GETDATA_HASHES);
         return;
     }
 #if MESSAGE_LOGGING
@@ -1409,7 +1410,7 @@
         DSLogWithLocation(self, @"got 0 headers (%@)", @"<REDACTED>");
 #endif
     } else {
-        DSLogWithLocation(self, @"got %u headers", count);
+        DSLogWithLocation(self, @"got %lu headers", count);
     }
 
 #if LOG_ALL_HEADERS_IN_ACCEPT_HEADERS
@@ -1501,11 +1502,11 @@
               (int)(((l == 0) ? 1 : l) + count * 36), (int)count];
         return;
     } else if (count > MAX_GETDATA_HASHES) {
-        DSLogWithLocation(self, @"dropping getdata message, %u is too many items, max is %u", count, MAX_GETDATA_HASHES);
+        DSLogWithLocation(self, @"dropping getdata message, %lu is too many items, max is %u", count, MAX_GETDATA_HASHES);
         return;
     }
 
-    DSLogWithLocation(self, @"%@got getdata for %u item%@", self.peerDelegate.downloadPeer == self ? @"(download peer)" : @"", count, count == 1 ? @"" : @"s");
+    DSLogWithLocation(self, @"%@got getdata for %lu item%@", self.peerDelegate.downloadPeer == self ? @"(download peer)" : @"", count, count == 1 ? @"" : @"s");
     [self dispatchAsyncInDelegateQueue:^{
         NSMutableData *notfound = [NSMutableData data];
 
@@ -1583,7 +1584,7 @@
         return;
     }
 
-    DSLogWithLocation(self, @"got notfound with %u item%@ (first item %@)", count, count == 1 ? @"" : @"s", [self nameOfInvMessage:[message UInt32AtOffset:l]]);
+    DSLogWithLocation(self, @"got notfound with %lu item%@ (first item %@)", count, count == 1 ? @"" : @"s", [self nameOfInvMessage:[message UInt32AtOffset:l]]);
 
     for (NSUInteger off = l; off < l + 36 * count; off += 36) {
         if ([message UInt32AtOffset:off] == DSInvType_Tx) {
@@ -1637,11 +1638,16 @@
     DSLogWithLocation(self, @"got pong in %fs", self.pingTime);
 #endif
     if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
-        void (^handler)(BOOL) = [self.pongHandlers objectAtIndex:0];
-        [self.pongHandlers removeObjectAtIndex:0];
-        [self dispatchAsyncInDelegateQueue:^{
-            handler(YES);
-        }];
+        void (^handler)(BOOL) = nil;
+        @synchronized(self.pongHandlers) {
+            if (self.pongHandlers.count > 0) {
+                handler = [self.pongHandlers objectAtIndex:0];
+                [self.pongHandlers removeObjectAtIndex:0];
+            }
+        }
+        if (handler) {
+            [self dispatchAsyncInDelegateQueue:^{ handler(YES); }];
+        }
     }
 }
 
@@ -2068,7 +2074,7 @@
             break;
 
         default:
-            DSLogWithLocation(self, @"unknown network stream eventCode:%u", eventCode);
+            DSLogWithLocation(self, @"unknown network stream eventCode:%lu", eventCode);
     }
 }
 
