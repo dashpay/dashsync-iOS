@@ -2875,7 +2875,7 @@
                                                                 XCTAssert(result1092940.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash1092940]);
                                                                 DSQuorumEntry *quorum1092912 = [result1092940.addedQuorums firstObject];
                                                                 // 1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off a reloaded 109
-                                                                UInt256 llmqHash1092912 = [chain.chainManager.masternodeManager buildLLMQHashFor:quorum1092912];
+                                                                UInt256 llmqHash1092912 = [DSKeyManager NSDataFrom:quorum_build_llmq_hash(quorum1092912.llmqType, quorum1092912.quorumHash.u8)].UInt256;
                                                                 NSArray *masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:llmqHash1092912 atBlockHeight:1092912];
                                                                 NSArray *masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:llmqHash1092912 atBlockHeight:1092912];
                                                                 //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];

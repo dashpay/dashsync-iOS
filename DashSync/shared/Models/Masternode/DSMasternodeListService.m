@@ -21,8 +21,10 @@
 #import "DSMasternodeListStore+Protected.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSGetMNListDiffRequest.h"
 #import "DSGetQRInfoRequest.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSPeerManager+Protected.h"
 #import "DSSimplifiedMasternodeEntry.h"
@@ -212,7 +214,7 @@
     UInt256 masternodeListBlockHash = masternodeList.blockHash;
     NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
     BOOL hasInRetrieval = [self.retrievalQueue containsObject:masternodeListBlockHashData];
-    uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
+//    uint32_t masternodeListBlockHeight = [self.store heightForBlockHash:masternodeListBlockHash];
     BOOL shouldNot = !hasInRetrieval && !skipPresenceInRetrieval;
     //DSLog(@"•••• shouldProcessDiffResult: %d: %@ %d", masternodeListBlockHeight, uint256_reverse_hex(masternodeListBlockHash), !shouldNot);
     if (shouldNot) {
@@ -256,6 +258,13 @@
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
     [self.retrievalQueue removeObject:masternodeBlockHashData];
+    double count = self.retrievalQueue.count;
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = count;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        DSLog(@"[%@] Masternode list queue updated: %f/%lu", self.chain.name, count, self.retrievalQueueMaxAmount);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)cleanRequestsInRetrieval {
@@ -264,6 +273,12 @@
 
 - (void)cleanListsRetrievalQueue {
     [self.retrievalQueue removeAllObjects];
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = 0;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        DSLog(@"[%@] Masternode list queue cleaned up: 0/%lu", self.chain.name, self.retrievalQueueMaxAmount);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)cleanAllLists {
@@ -282,12 +297,16 @@
 
 - (void)updateMasternodeRetrievalQueue {
     NSUInteger currentCount = self.retrievalQueue.count;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, currentCount);
-    });
+    self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, currentCount);
     [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
         return [self.store heightForBlockHash:obj1.UInt256] < [self.store heightForBlockHash:obj2.UInt256] ? NSOrderedAscending : NSOrderedDescending;
     }];
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = currentCount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        DSLog(@"[%@] Masternode list queue updated: %lu/%lu", self.chain.name, currentCount, self.retrievalQueueMaxAmount);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
 }
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
@@ -378,9 +397,7 @@
         [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self dequeueMasternodeListRequest];
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDiffValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    });
+    [self.chain.chainManager notify:DSMasternodeListDiffValidationErrorNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 }
 
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request {

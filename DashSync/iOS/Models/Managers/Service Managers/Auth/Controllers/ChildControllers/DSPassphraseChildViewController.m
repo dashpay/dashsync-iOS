@@ -98,7 +98,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
         oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
     }
 
-    NSData *seed = [bip39Mnemonic deriveKeyFromPhrase:[bip39Mnemonic normalizePhrase:phrase] withPassphrase:nil];
+    //NSData *seed = [bip39Mnemonic deriveKeyFromPhrase:[bip39Mnemonic normalizePhrase:phrase] withPassphrase:nil];
     DSWallet *transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:NO isTransient:YES];
     DSAccount *transientAccount = [transientWallet accountWithNumber:0];
     DSDerivationPath *transientDerivationPath = [transientAccount bip44DerivationPath];

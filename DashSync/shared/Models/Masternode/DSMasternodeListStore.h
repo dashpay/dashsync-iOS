@@ -32,7 +32,6 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 @interface DSMasternodeListStore : NSObject
 
-//@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
 @property (nonatomic, readonly) NSArray *recentMasternodeLists;
 @property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
@@ -40,8 +39,6 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) NSMutableDictionary<NSData *, DSMasternodeList *> *masternodeListsByBlockHash;
 @property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListsBlockHashStubs;
 @property (nonatomic, readonly) NSMutableOrderedSet<DSQuorumEntry *> *activeQuorums;
-@property (nonatomic, readonly) uint32_t masternodeListsToSync;
-@property (nonatomic, readonly) BOOL masternodeListsAndQuorumsIsSynced;
 
 @property (nonatomic, readonly) NSMutableDictionary<NSData *, DSQuorumSnapshot *> *cachedQuorumSnapshots;
 @property (nonatomic, readonly) NSMutableDictionary<NSData *, NSData *> *cachedCLSignatures;

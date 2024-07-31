@@ -21,6 +21,7 @@
 #import "DSAccount.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
+#import "DSChainManager+Mining.h"
 #import "DSFullBlock.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"

@@ -35,6 +35,7 @@
 #import "DSMasternodeListStore+Protected.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Mndiff.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSOperationQueue.h"
@@ -46,7 +47,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "NSError+Dash.h"
 
-#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
@@ -142,6 +143,11 @@
     return [self.store heightForBlockHash:blockhash];
 }
 
+- (BOOL)isMasternodeListOutdated {
+    uint32_t lastHeight = self.lastMasternodeListBlockHeight;
+    return lastHeight == UINT32_MAX || lastHeight < self.chain.lastTerminalBlockHeight - 8;
+}
+
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
     NSParameterAssert(providerRegistrationTransactionHash);
     return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:providerRegistrationTransactionHash];
@@ -172,31 +178,6 @@
     return [self.masternodeListDiffService retrievalQueueMaxAmount];
 }
 
-- (uint32_t)estimatedMasternodeListsToSync {
-    BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
-    if (!syncMasternodeLists) {
-        return 0;
-    }
-    double amountLeft = self.masternodeListRetrievalQueueCount;
-    double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-    if (!maxAmount || self.store.masternodeListsByBlockHash.count <= 1) { //1 because there might be a default
-        return self.store.masternodeListsToSync;
-    }
-    return amountLeft;
-}
-
-- (double)masternodeListAndQuorumsSyncProgress {
-    @synchronized (self) {
-        double amountLeft = self.masternodeListRetrievalQueueCount;
-        double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-        if (!amountLeft) {
-            return self.store.masternodeListsAndQuorumsIsSynced;
-        }
-        double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0);
-        return progress;
-    }
-}
-
 - (BOOL)currentMasternodeListIsInLast24Hours {
     if (!self.currentMasternodeList) {
         return NO;
@@ -206,7 +187,6 @@
     NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval delta = currentTimestamp - block.timestamp;
     return fabs(delta) < DAY_TIME_INTERVAL;
-
 }
 
 
@@ -329,8 +309,15 @@
 
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash {
     /// TODO: need to properly store in CoreData or wait for rust SQLite
-    DSLog(@"[%@] ••• cache mnlist -> %@: %@", self.chain.name, uint256_hex(blockHash), masternodeList);
+    //DSLog(@"[%@] ••• cache mnlist -> %@: %@", self.chain.name, uint256_hex(blockHash), masternodeList);
     [self.store.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(blockHash)];
+    uint32_t lastHeight = self.lastMasternodeListBlockHeight;
+    @synchronized (self.chain.chainManager.syncState) {
+        self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = lastHeight;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = self.store.masternodeListsByBlockHash.count;
+        DSLog(@"[%@] [DSMasternodeManager] New List Stored: %u/%lu", self.chain.name, lastHeight, self.store.masternodeListsByBlockHash.count);
+        [self.chain.chainManager notifySyncStateChanged];
+    }
     return YES;
 }
 
@@ -765,10 +752,10 @@
             return lastBlock.merkleRoot;
         }];
         [self processMasternodeDiffWith:message context:ctx completion:^(DSMnDiffProcessingResult * _Nonnull result) {
+        #if SAVE_MASTERNODE_DIFF_TO_FILE
             UInt256 baseBlockHash = result.baseBlockHash;
             UInt256 blockHash = result.blockHash;
             DSLog(@"[%@] •••• -> processed mnlistdiff %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
-        #if SAVE_MASTERNODE_DIFF_TO_FILE
             NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
             DSLog(@"[%@] •-• File %@ saved", self.chain.name, fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
@@ -808,6 +795,7 @@
                 dispatch_group_leave(self.processingGroup);
                 return;
             }
+    #if SAVE_MASTERNODE_DIFF_TO_FILE
             UInt256 baseBlockHash = result.mnListDiffResultAtTip.baseBlockHash;
             UInt256 blockHash = result.mnListDiffResultAtTip.blockHash;
             DSLog(@"[%@] •••• -> processed qrinfo tip %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
@@ -818,7 +806,6 @@
             if (result.extraShare) {
                 DSLog(@"[%@] •••• -> processed qrinfo h-4c %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
             }
-    #if SAVE_MASTERNODE_DIFF_TO_FILE
             NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
             DSLog(@"[%@] •-• File %@ saved", self.chain.name, fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
@@ -914,4 +901,5 @@
         return [DSKeyManager NSDataFrom:quorum_build_llmq_hash(quorum.llmqType, quorum.quorumHash.u8)].UInt256;
     }
 }
+
 @end

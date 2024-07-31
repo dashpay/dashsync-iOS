@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
-+ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource))completion;
++ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *_Nullable priceSource, NSError *_Nullable error))completion;
 
 @end
 

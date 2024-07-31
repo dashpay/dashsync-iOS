@@ -26,10 +26,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSPriceOperationProvider
 
-+ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource))completion {
-    void (^mainThreadCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource) = ^(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource) {
++ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *_Nullable priceSource, NSError *_Nullable error))completion {
+    void (^mainThreadCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *_Nullable priceSource, NSError *_Nullable error) = ^(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *_Nullable priceSource, NSError *_Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(prices, priceSource);
+            completion(prices, priceSource, error);
         });
     };
 

@@ -11,14 +11,13 @@
 NSString *const DSChainManagerSyncWillStartNotification = @"DSChainManagerSyncWillStartNotification";
 
 NSString *const DSChainManagerChainSyncDidStartNotification = @"DSChainManagerSyncDidStartNotification";
-NSString *const DSChainManagerSyncParametersUpdatedNotification = @"DSChainManagerSyncParametersUpdatedNotification";
 NSString *const DSChainManagerSyncFinishedNotification = @"DSChainManagerSyncFinishedNotification";
 NSString *const DSChainManagerSyncFailedNotification = @"DSChainManagerSyncFailedNotification";
+NSString *const DSChainManagerSyncStateDidChangeNotification = @"DSChainManagerSyncStateDidChangeNotification";
 
 NSString *const DSTransactionManagerTransactionStatusDidChangeNotification = @"DSTransactionManagerTransactionStatusDidChangeNotification";
 NSString *const DSTransactionManagerTransactionReceivedNotification = @"DSTransactionManagerTransactionReceivedNotification";
 
-NSString *const DSChainNewChainTipBlockNotification = @"DSChainNewChainTipBlockNotification";
 NSString *const DSPeerManagerPeersDidChangeNotification = @"DSPeerManagerPeersDidChangeNotification";
 NSString *const DSPeerManagerConnectedPeersDidChangeNotification = @"DSPeerManagerConnectedPeersDidChangeNotification";
 NSString *const DSPeerManagerDownloadPeerDidChangeNotification = @"DSPeerManagerDownloadPeerDidChangeNotification";
@@ -27,8 +26,6 @@ NSString *const DSChainWalletsDidChangeNotification = @"DSChainWalletsDidChangeN
 
 NSString *const DSChainStandaloneDerivationPathsDidChangeNotification = @"DSChainStandaloneDerivationPathsDidChangeNotification";
 NSString *const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
-NSString *const DSChainChainSyncBlocksDidChangeNotification = @"DSChainChainSyncBlocksDidChangeNotification";
-NSString *const DSChainTerminalBlocksDidChangeNotification = @"DSChainTerminalBlocksDidChangeNotification";
 NSString *const DSChainInitialHeadersDidFinishSyncingNotification = @"DSChainInitialHeadersDidFinishSyncingNotification";
 NSString *const DSChainBlocksDidFinishSyncingNotification = @"DSChainBlocksDidFinishSyncingNotification";
 NSString *const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";
@@ -37,6 +34,8 @@ NSString *const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
 NSString *const DSTransactionManagerFilterDidChangeNotification = @"DSTransactionManagerFilterDidChangeNotification";
 
 NSString *const DSWalletBalanceDidChangeNotification = @"DSWalletBalanceChangedNotification";
+NSString *const DSExchangeRatesReportedNotification = @"DSExchangeRatesReportedNotification";
+NSString *const DSExchangeRatesErrorKey = @"DSExchangeRatesErrorKey";
 
 NSString *const DSAccountNewAccountFromTransactionNotification = @"DSAccountNewAccountFromTransactionNotification";
 NSString *const DSAccountNewAccountShouldBeAddedFromTransactionNotification = @"DSAccountNewAccountShouldBeAddedFromTransactionNotification";
@@ -64,6 +63,7 @@ NSString *const DSChainManagerNotificationChainKey = @"DSChainManagerNotificatio
 NSString *const DSChainManagerNotificationWalletKey = @"DSChainManagerNotificationWalletKey";
 NSString *const DSChainManagerNotificationAccountKey = @"DSChainManagerNotificationAccountKey";
 
+NSString *const DSChainManagerNotificationSyncStateKey = @"DSChainManagerNotificationSyncStateKey";
 NSString *const DSPeerManagerNotificationPeerKey = @"DSPeerManagerNotificationPeerKey";
 
 NSString *const DSTransactionManagerNotificationTransactionKey = @"DSTransactionManagerNotificationTransactionKey";

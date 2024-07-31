@@ -1188,17 +1188,23 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(uint16_t)) return 0;
-    return CFSwapInt16LittleToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
+    uint16_t value;
+    memcpy(&value, (const uint8_t *)self.bytes + offset, sizeof(uint16_t));
+    return CFSwapInt16LittleToHost(value);
 }
 
 - (uint16_t)UInt16BigToHostAtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(uint16_t)) return 0;
-    return CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
+    uint16_t value;
+    memcpy(&value, (const uint8_t *)self.bytes + offset, sizeof(uint16_t));
+    return CFSwapInt16BigToHost(value);
 }
 
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(uint32_t)) return 0;
-    return CFSwapInt32LittleToHost(*(const uint32_t *)((const uint8_t *)self.bytes + offset));
+    uint32_t value;
+    memcpy(&value, (const uint8_t *)self.bytes + offset, sizeof(uint32_t));
+    return CFSwapInt32LittleToHost(value);
 }
 
 - (uint32_t)UInt32BigToHostAtOffset:(NSUInteger)offset {
@@ -1208,12 +1214,16 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(uint64_t)) return 0;
-    return CFSwapInt64LittleToHost(*(const uint64_t *)((const uint8_t *)self.bytes + offset));
+    uint64_t value;
+    memcpy(&value, (const uint8_t *)self.bytes + offset, sizeof(uint64_t));
+    return CFSwapInt64LittleToHost(value);
 }
 
 - (int64_t)Int64AtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(int64_t)) return 0;
-    return CFSwapInt64LittleToHost(*(const int64_t *)((const uint8_t *)self.bytes + offset));
+    uint64_t value;
+    memcpy(&value, (const uint8_t *)self.bytes + offset, sizeof(uint64_t));
+    return CFSwapInt64LittleToHost(value);
 }
 
 - (UInt128)UInt128AtOffset:(NSUInteger)offset {
