@@ -33,6 +33,7 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSChain+Protected.h"
 #import "DSBlock.h"
+#import "DashSync.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
@@ -45,6 +46,7 @@ int32_t const MIN_BLOCKS_TO_WAIT = 1;
 @property (atomic) uint32_t lastSeenBlock;
 @property (atomic) int32_t cachedLastSuccessBlock;
 @property (atomic) int32_t cachedBlockHeight; // Keep track of current block height
+@property (atomic) BOOL isSynced;
 
 @end
 
@@ -86,6 +88,14 @@ static dispatch_once_t managerChainToken = 0;
     return self;
 }
 
+- (BOOL)isChainSynced {
+    if (!_isSynced) {
+        [[DashSync sharedSyncController] startSyncForChain:self.chain];
+    }
+    
+    return _isSynced;
+}
+
 - (void)startAsync {
     if (!self.masternodeGroup.isRunning) {
         self.blocksObserver =
@@ -94,7 +104,8 @@ static dispatch_once_t managerChainToken = 0;
                                                                queue:nil
                                                           usingBlock:^(NSNotification *note) {
                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.lastSeenBlock) {
-                                                                  self.isChainSynced = self.chain.chainManager.isSynced;
+                                                                  self.lastSeenBlock = self.chain.lastSyncBlock.height;
+                                                                  self.isSynced = self.chain.chainManager.isSynced;
                                                                   dispatch_async(self.processingQueue, ^{
                                                                       [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
                                                                   });
@@ -109,7 +120,7 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)start {
     DSLog(@"[OBJ-C] CoinJoinManager starting, time: %@", [NSDate date]);
-    self.isChainSynced = self.chain.chainManager.isSynced;
+    self.isSynced = self.chain.chainManager.isSynced;
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
@@ -121,11 +132,23 @@ static dispatch_once_t managerChainToken = 0;
             dispatch_source_set_timer(self.coinjoinTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), interval * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
             dispatch_source_set_event_handler(self.coinjoinTimer, ^{
                 DSLog(@"[OBJ-C] CoinJoin: trigger doMaintenance, time: %@", [NSDate date]);
-                [self.wrapper doMaintenance];
+                [self doMaintenance];
             });
             dispatch_resume(self.coinjoinTimer);
         }
     }
+}
+
+- (void)doMaintenance {
+    // TODO:
+    // report masternode group
+//                if (masternodeGroup != null) {
+//                    tick++;
+//                    if (tick % 15 == 0) {
+//                        log.info(masternodeGroup.toString());
+//                    }
+//                }
+    [self.wrapper doMaintenance];
 }
 
 - (BOOL)startMixing {
@@ -615,10 +638,12 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn {
-    return [self.masternodeGroup forPeer:address port:port warn:warn withPredicate:^BOOL(DSPeer * _Nonnull peer) {
+    DSLog(@"[OBJ-C] CoinJoin peers: sendMessageOfType: %@ to %@", messageType, [self.masternodeGroup hostFor:address]);
+    return [self.masternodeGroup forPeer:address port:port warn:YES withPredicate:^BOOL(DSPeer * _Nonnull peer) {
         if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
             DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
             [peer sendRequest:request];
+            DSLog(@"[OBJ-C] CoinJoin dsa: sent");
         } else if ([messageType isEqualToString:DSCoinJoinEntryMessage.type]) {
             DSCoinJoinEntryMessage *request = [DSCoinJoinEntryMessage requestWithData:message];
             [peer sendRequest:request];

@@ -148,7 +148,6 @@
 
 InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t index, const void *context) {
     UInt256 txHash = *((UInt256 *)prevout_hash);
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: getInputValueByPrevoutHash");
     InputValue *inputValue = NULL;
     
     @synchronized (context) {
@@ -171,7 +170,6 @@ InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t ind
 
 
 bool hasChainLock(Block *block, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasChainLock");
     BOOL hasChainLock = NO;
     
     @synchronized (context) {
@@ -201,7 +199,6 @@ Transaction *getTransaction(uint8_t (*tx_hash)[32], const void *context) {
 }
 
 bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: isMine");
     UInt256 txHash = *((UInt256 *)tx_hash);
     BOOL result = NO;
     

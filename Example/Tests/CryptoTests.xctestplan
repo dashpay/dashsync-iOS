@@ -34,6 +34,7 @@
         "DSBloomFilterTests",
         "DSChainLockTests",
         "DSChainTests",
+        "DSCoinJoinSessionTest",
         "DSDIP13Tests",
         "DSDIP14Tests",
         "DSDataTests",

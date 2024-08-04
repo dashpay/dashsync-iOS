@@ -22,6 +22,7 @@
         "DSBloomFilterTests",
         "DSChainTests",
         "DSChainedSigningTests",
+        "DSCoinJoinSessionTest",
         "DSDIP13Tests",
         "DSDataTests",
         "DSDeterministicMasternodeListTests",
