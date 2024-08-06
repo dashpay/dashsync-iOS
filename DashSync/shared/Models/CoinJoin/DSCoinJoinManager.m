@@ -46,7 +46,6 @@ int32_t const MIN_BLOCKS_TO_WAIT = 1;
 @property (atomic) uint32_t lastSeenBlock;
 @property (atomic) int32_t cachedLastSuccessBlock;
 @property (atomic) int32_t cachedBlockHeight; // Keep track of current block height
-@property (atomic) BOOL isSynced;
 
 @end
 
@@ -89,11 +88,13 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isChainSynced {
-    if (!_isSynced) {
-        [[DashSync sharedSyncController] startSyncForChain:self.chain];
+    BOOL isSynced = self.chain.chainManager.isSynced;
+    
+    if (!isSynced) {
+        [self.chain.chainManager startSync];
     }
     
-    return _isSynced;
+    return isSynced;
 }
 
 - (void)startAsync {
@@ -105,7 +106,6 @@ static dispatch_once_t managerChainToken = 0;
                                                           usingBlock:^(NSNotification *note) {
                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.lastSeenBlock) {
                                                                   self.lastSeenBlock = self.chain.lastSyncBlock.height;
-                                                                  self.isSynced = self.chain.chainManager.isSynced;
                                                                   dispatch_async(self.processingQueue, ^{
                                                                       [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
                                                                   });
@@ -120,7 +120,6 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)start {
     DSLog(@"[OBJ-C] CoinJoinManager starting, time: %@", [NSDate date]);
-    self.isSynced = self.chain.chainManager.isSynced;
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
@@ -490,7 +489,7 @@ static dispatch_once_t managerChainToken = 0;
         return false;
     }
     
-    if (!is_fully_mixed(_wrapper.walletEx, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n)) {
+    if (!is_fully_mixed_with_manager(_wrapper.clientManager, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n)) {
         return false;
     }
     

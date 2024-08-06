@@ -42,16 +42,12 @@
 
 - (void)registerCoinJoin:(CoinJoinClientOptions *)options {
     @synchronized (self) {
-        if (_walletEx == NULL) {
-            DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
-            _walletEx = register_wallet_ex(AS_RUST(self), options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
-        }
-        
         if (_clientManager == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register client manager");
-            _clientManager = register_client_manager(AS_RUST(self), _walletEx, options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock);
-            
+            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
+
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
+            // TODO: add_wallet_ex
             add_client_queue_manager(_clientManager, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
         }
     }
@@ -138,7 +134,6 @@
 - (void)dealloc {
     @synchronized (self) {
         unregister_client_manager(_clientManager);
-        unregister_wallet_ex(_walletEx); // Unregister last
     }
 }
 

@@ -28,8 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) DSChainManager *chainManager;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, weak, nullable) DSCoinJoinManager *manager;
-
-@property (nonatomic, assign, nullable) WalletEx *walletEx;
 @property (nonatomic, assign, nullable) CoinJoinClientManager *clientManager;
 
 - (instancetype)initWithManagers:(DSCoinJoinManager *)manager chainManager:(DSChainManager *)chainManager;
