@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId;
 - (BOOL)forPeer:(UInt128)ip port:(uint16_t)port warn:(BOOL)warn withPredicate:(BOOL (^)(DSPeer *peer))predicate;
+- (NSString *)hostFor:(UInt128)address;
 
 @end
 

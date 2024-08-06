@@ -86,6 +86,16 @@ static dispatch_once_t managerChainToken = 0;
     return self;
 }
 
+- (BOOL)isChainSynced {
+    BOOL isSynced = self.chain.chainManager.isSynced;
+    
+    if (!isSynced) {
+        [self.chain.chainManager startSync];
+    }
+    
+    return isSynced;
+}
+
 - (void)startAsync {
     if (!self.masternodeGroup.isRunning) {
         self.blocksObserver =
@@ -94,7 +104,7 @@ static dispatch_once_t managerChainToken = 0;
                                                                queue:nil
                                                           usingBlock:^(NSNotification *note) {
                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.lastSeenBlock) {
-                                                                  self.isChainSynced = self.chain.chainManager.isSynced;
+                                                                  self.lastSeenBlock = self.chain.lastSyncBlock.height;
                                                                   dispatch_async(self.processingQueue, ^{
                                                                       [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
                                                                   });
@@ -109,7 +119,6 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)start {
     DSLog(@"[OBJ-C] CoinJoinManager starting, time: %@", [NSDate date]);
-    self.isChainSynced = self.chain.chainManager.isSynced;
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
@@ -121,11 +130,23 @@ static dispatch_once_t managerChainToken = 0;
             dispatch_source_set_timer(self.coinjoinTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), interval * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
             dispatch_source_set_event_handler(self.coinjoinTimer, ^{
                 DSLog(@"[OBJ-C] CoinJoin: trigger doMaintenance, time: %@", [NSDate date]);
-                [self.wrapper doMaintenance];
+                [self doMaintenance];
             });
             dispatch_resume(self.coinjoinTimer);
         }
     }
+}
+
+- (void)doMaintenance {
+    // TODO:
+    // report masternode group
+//                if (masternodeGroup != null) {
+//                    tick++;
+//                    if (tick % 15 == 0) {
+//                        log.info(masternodeGroup.toString());
+//                    }
+//                }
+    [self.wrapper doMaintenance];
 }
 
 - (BOOL)startMixing {
@@ -467,7 +488,7 @@ static dispatch_once_t managerChainToken = 0;
         return false;
     }
     
-    if (!is_fully_mixed(_wrapper.walletEx, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n)) {
+    if (!is_fully_mixed_with_manager(_wrapper.clientManager, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n)) {
         return false;
     }
     
@@ -615,10 +636,12 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn {
-    return [self.masternodeGroup forPeer:address port:port warn:warn withPredicate:^BOOL(DSPeer * _Nonnull peer) {
+    DSLog(@"[OBJ-C] CoinJoin peers: sendMessageOfType: %@ to %@", messageType, [self.masternodeGroup hostFor:address]);
+    return [self.masternodeGroup forPeer:address port:port warn:YES withPredicate:^BOOL(DSPeer * _Nonnull peer) {
         if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
             DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
             [peer sendRequest:request];
+            DSLog(@"[OBJ-C] CoinJoin dsa: sent");
         } else if ([messageType isEqualToString:DSCoinJoinEntryMessage.type]) {
             DSCoinJoinEntryMessage *request = [DSCoinJoinEntryMessage requestWithData:message];
             [peer sendRequest:request];

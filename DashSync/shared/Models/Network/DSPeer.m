@@ -1822,27 +1822,27 @@
 // MARK: - Accept CoinJoin messages
 
 - (void)acceptCoinJoinCompleteMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsc");
+    DSLog(@"[OBJ-C] CoinJoin: got dsc from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
 }
 
 - (void)acceptCoinJoinFinalTransaction:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsf");
+    DSLog(@"[OBJ-C] CoinJoin: got dsf from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_FINAL_TRANSACTION];
 }
 
 - (void)acceptCoinJoinQueueMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsq from peer %@", self.location);
+    DSLog(@"[OBJ-C] CoinJoin: got dsq from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
 }
 
 - (void)acceptCoinJoinStatusUpdateMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dssu");
+    DSLog(@"[OBJ-C] CoinJoin: got dssu from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_STATUS_UPDATE];
 }
 
 - (void)acceptCoinJoinBroadcastTxMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dstx");
+    DSLog(@"[OBJ-C] CoinJoin: got dstx from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_BROADCAST_TX];
 }
 
