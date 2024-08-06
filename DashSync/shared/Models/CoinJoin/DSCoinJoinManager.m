@@ -33,7 +33,6 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSChain+Protected.h"
 #import "DSBlock.h"
-#import "DashSync.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
