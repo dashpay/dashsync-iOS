@@ -207,6 +207,7 @@
     if (_pricesByCode[systemCurrencyCode] == nil) {
         // if we don't have currency in our plist fallback to default
         systemCurrencyCode = DEFAULT_CURRENCY_CODE;
+        [defaults setObject:systemCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
     }
     self.localCurrencyCode = (userCurrencyCode) ? userCurrencyCode : systemCurrencyCode;
 
