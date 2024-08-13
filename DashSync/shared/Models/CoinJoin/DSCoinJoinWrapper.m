@@ -292,15 +292,14 @@ void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
     free(gatheredOutputs);
 }
 
-Transaction* signTransaction(Transaction *transaction, const void *context) {
+Transaction* signTransaction(Transaction *transaction, bool anyoneCanPay, const void *context) {
     DSLog(@"[OBJ-C CALLBACK] CoinJoin: signTransaction");
     
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
         destroy_transaction(transaction);
-        
-        BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx];
+        BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx anyoneCanPay:anyoneCanPay];
         
         if (isSigned) {
             return [tx ffi_malloc:wrapper.chain.chainType];
@@ -390,7 +389,6 @@ MasternodeList* getMNList(const void *context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSMasternodeList *mnList = [wrapper.manager mnList];
         // TODO: might have 0 valid MNs, account for this
-        DSLog(@"[OBJ-C] CoinJoin: getMNList, valid count: %llu", mnList.validMasternodeCount);
         masternodes = [mnList ffi_malloc];
     }
     
