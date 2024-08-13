@@ -194,6 +194,18 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 ///
 /// - Parameters:
 ///   - transaction: Instance of `DSTransaction` you want to sign
+///   - anyoneCanPay: apply SIGHASH_ANYONECANPAY signature type
+///
+/// - Returns: boolean value indicating if the transaction was signed
+///
+/// - Note: Using this method to sign a tx doesn't present pin controller, use this method carefully from UI
+///
+- (BOOL)signTransaction:(DSTransaction *)transaction anyoneCanPay:(BOOL)anyoneCanPay;
+
+/// Sign any inputs in the given transaction that can be signed using private keys from the wallet
+///
+/// - Parameters:
+///   - transaction: Instance of `DSTransaction` you want to sign
 ///   - completion: Completion block that has type `TransactionValidityCompletionBlock`
 ///
 /// - Note: Using this method to sign a tx presents pin controller for auth purpose

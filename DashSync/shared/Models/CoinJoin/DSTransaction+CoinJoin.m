@@ -36,13 +36,16 @@
         UInt256 hashValue;
         memcpy(hashValue.u8, *input->input_hash, 32);
         NSNumber *index = @(input->index);
-        NSData *script;
+        NSData *script = [NSData data];
         
         if (input->script && input->script_length != 0) {
             script = [NSData dataWithBytes:input->script length:input->script_length];
         } else {
             DSTransaction *inputTx = [chain transactionForHash:hashValue];
-            script = [inputTx.outputs objectAtIndex:index.integerValue].outScript;
+            
+            if (inputTx) {
+                script = [inputTx.outputs objectAtIndex:index.integerValue].outScript;
+            }
         }
         
         NSNumber *sequence = @(input->sequence);

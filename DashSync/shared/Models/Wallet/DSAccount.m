@@ -1296,6 +1296,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 - (BOOL)signTransaction:(DSTransaction *)transaction {
+    return [self signTransaction:transaction anyoneCanPay:NO];
+}
+
+- (BOOL)signTransaction:(DSTransaction *)transaction anyoneCanPay:(BOOL)anyoneCanPay {
     NSParameterAssert(transaction);
 
     if (_isViewOnlyAccount) return NO;
@@ -1308,7 +1312,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (!seed) {
             return NO;
         } else {
-            return [self signTxWithDerivationPaths:usedDerivationPaths tx:transaction seed:seed];
+            return [self signTxWithDerivationPaths:usedDerivationPaths tx:transaction seed:seed anyoneCanPay:anyoneCanPay];
         }
     }
 }
@@ -1335,6 +1339,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 - (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed {
+    return [self signTxWithDerivationPaths:usedDerivationPaths tx:tx seed:seed anyoneCanPay:NO];
+}
+
+- (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed anyoneCanPay:(BOOL)anyoneCanPay {
     NSMutableArray *privkeys = [NSMutableArray array];
     for (NSDictionary *dictionary in usedDerivationPaths) {
         DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
@@ -1352,7 +1360,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
     }
 
-    return [tx signWithPrivateKeys:privkeys];
+    return [tx signWithPrivateKeys:privkeys anyoneCanPay:anyoneCanPay];
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet

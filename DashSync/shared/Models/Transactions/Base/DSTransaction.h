@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define TX_LOCKTIME 0x00000000u
 #define TXIN_SEQUENCE UINT32_MAX
 #define SIGHASH_ALL 0x00000001u
+#define SIGHASH_ANYONECANPAY 0x80u
 
 #define MAX_ECDSA_SIGNATURE_SIZE 75
 
@@ -144,6 +145,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 - (void)hasSetInputsAndOutputs;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
+- (BOOL)signWithPrivateKeys:(NSArray *)keys anyoneCanPay:(BOOL)anyoneCanPay;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;
