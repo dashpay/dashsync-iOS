@@ -42,16 +42,12 @@
 
 - (void)registerCoinJoin:(CoinJoinClientOptions *)options {
     @synchronized (self) {
-        if (_walletEx == NULL) {
-            DSLog(@"[OBJ-C] CoinJoin: register wallet ex");
-            _walletEx = register_wallet_ex(AS_RUST(self), options, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
-        }
-        
         if (_clientManager == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register client manager");
-            _clientManager = register_client_manager(AS_RUST(self), _walletEx, options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock);
-            
+            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
+
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
+            // TODO: add_wallet_ex
             add_client_queue_manager(_clientManager, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
         }
     }
@@ -138,7 +134,6 @@
 - (void)dealloc {
     @synchronized (self) {
         unregister_client_manager(_clientManager);
-        unregister_wallet_ex(_walletEx); // Unregister last
     }
 }
 
@@ -148,7 +143,6 @@
 
 InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t index, const void *context) {
     UInt256 txHash = *((UInt256 *)prevout_hash);
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: getInputValueByPrevoutHash");
     InputValue *inputValue = NULL;
     
     @synchronized (context) {
@@ -171,7 +165,6 @@ InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t ind
 
 
 bool hasChainLock(Block *block, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: hasChainLock");
     BOOL hasChainLock = NO;
     
     @synchronized (context) {
@@ -201,7 +194,6 @@ Transaction *getTransaction(uint8_t (*tx_hash)[32], const void *context) {
 }
 
 bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: isMine");
     UInt256 txHash = *((UInt256 *)tx_hash);
     BOOL result = NO;
     

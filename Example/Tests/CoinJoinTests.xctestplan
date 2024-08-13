@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "8D78AA10-A823-4F01-993F-3F91DD8C2DA3",
+      "id" : "86CE06DB-48AE-4956-B3C5-C4AF38BA2644",
       "name" : "Configuration 1",
       "options" : {
 
@@ -9,8 +9,7 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false,
-    "uiTestingScreenshotsLifetime" : "keepNever"
+    "testTimeoutsEnabled" : true
   },
   "testTargets" : [
     {
@@ -23,8 +22,6 @@
         "DSChainLockTests",
         "DSChainTests",
         "DSChainedSigningTests",
-        "DSCoinJoinSessionTest",
-        "DSDIP13Tests",
         "DSDIP14Tests",
         "DSDataTests",
         "DSDeterministicMasternodeListTests",
@@ -32,14 +29,16 @@
         "DSHashTests",
         "DSIESEncryptedDataTests",
         "DSInstantSendLockTests",
+        "DSInvitationsTests",
         "DSKeyTests",
         "DSMainnetE2ETests",
         "DSMainnetMetricSyncTests",
         "DSMainnetSyncTests",
         "DSMiningTests",
+        "DSPaymentProtocolTests",
+        "DSPaymentRequestTests",
         "DSProviderTransactionsTests",
         "DSSparseMerkleTreeTests",
-        "DSSyncTests",
         "DSTestnetE2ETests",
         "DSTestnetMetricSyncTests",
         "DSTestnetSyncTests",
