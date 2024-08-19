@@ -31,7 +31,7 @@
     options->coinjoin_rounds = 1;
     options->coinjoin_sessions = 1;
     options->coinjoin_amount = DUFFS / 4; // 0.25 DASH
-    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
+    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS; // TODO: check
     options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
     options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
     options->coinjoin_multi_session = NO;

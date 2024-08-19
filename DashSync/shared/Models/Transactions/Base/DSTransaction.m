@@ -416,6 +416,10 @@
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
+    return [self toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:NO];
+}
+
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay {
     @synchronized(self) {
         NSArray<DSTransactionInput *> *inputs = self.inputs;
         NSArray<DSTransactionOutput *> *outputs = self.outputs;
@@ -426,7 +430,7 @@
 
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
         [d appendUInt16:self.version];
-        [d appendUInt16:self.type];
+//        [d appendUInt16:self.type];
         [d appendVarInt:inputsCount];
 
         for (NSUInteger i = 0; i < inputsCount; i++) {
@@ -454,7 +458,14 @@
         }
 
         [d appendUInt32:self.lockTime];
-        if (forSigHash) [d appendUInt32:SIGHASH_ALL];
+        if (forSigHash) {
+            uint8_t sighashFlags = SIGHASH_ALL;
+            if (anyoneCanPay) {
+                sighashFlags |= SIGHASH_ANYONECANPAY;
+            }
+            
+            [d appendUInt32:sighashFlags];
+        }
         return [d copy];
     }
 }
@@ -606,7 +617,7 @@
                
                continue;
            }
-           NSData *data = [self toDataWithSubscriptIndex:i];
+           NSData *data = [self toDataWithSubscriptIndex:i anyoneCanPay:anyoneCanPay];
            NSMutableData *sig = [NSMutableData data];
            NSValue *keyValue = keys[keyIdx];
            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
@@ -616,7 +627,6 @@
            uint8_t sighashFlags = SIGHASH_ALL;
            if (anyoneCanPay) {
                sighashFlags |= SIGHASH_ANYONECANPAY;
-               DSLog(@"[OBJ-C] CoinJoin: private key data: %@", [DSKeyManager privateKeyData:key].hexString);
            }
            [s appendUInt8:sighashFlags];
            [sig appendScriptPushData:s];

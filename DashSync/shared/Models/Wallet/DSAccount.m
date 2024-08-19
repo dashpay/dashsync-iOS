@@ -1502,7 +1502,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     @synchronized (self) {
         if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
         if (self.allTx[uint256_obj(transaction.txHash)] != nil) {
-            return ![self.invalidTransactionHashes containsObject:uint256_obj(transaction.txHash)];
+            BOOL invalid = [self.invalidTransactionHashes containsObject:uint256_obj(transaction.txHash)];
+            return !invalid;
         }
         for (DSTransactionInput *input in transaction.inputs) {
             UInt256 h = input.inputHash;

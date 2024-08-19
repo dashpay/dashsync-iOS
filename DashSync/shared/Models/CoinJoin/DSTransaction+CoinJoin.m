@@ -44,7 +44,7 @@
             DSTransaction *inputTx = [chain transactionForHash:hashValue];
             
             if (inputTx) {
-                script = [inputTx.outputs objectAtIndex:index.integerValue].outScript;
+                script = inputTx.outputs[index.integerValue].outScript;
             }
         }
         

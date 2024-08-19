@@ -35,7 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
 @property (nonatomic, readonly) BOOL isWaitingForNewBlock;
-@property (nonatomic, strong) id blocksObserver;
 @property (atomic) BOOL isMixing;
 @property (readonly) BOOL isChainSynced;
 
@@ -47,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress;
 - (uint32_t)countInputsWithAmount:(uint64_t)inputAmount;
 - (NSString *)freshAddress:(BOOL)internal;
-- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(NSError * _Nullable error))onPublished;
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished;
 - (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
 - (uint64_t)validMNCount;
 - (DSMasternodeList *)mnList;
