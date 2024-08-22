@@ -114,7 +114,7 @@
         if (array->ptr) {
             free((void *)array->ptr);
         }
-            
+        
         free(array);
     }
 }

@@ -69,7 +69,10 @@
         [amounts addObject:amount];
     }
 
-    return [[DSTransaction alloc] initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain];
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain];
+    tx.version = transaction->version;
+    
+    return tx;
 }
 
 - (Transaction *)ffi_malloc:(ChainType)chainType {

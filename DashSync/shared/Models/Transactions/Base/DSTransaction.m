@@ -356,13 +356,10 @@
 
 // checks if all signatures exist, but does not verify them
 - (BOOL)isSigned {
-    return [self isSigned:NO];
-}
-- (BOOL)isSigned:(BOOL)anyoneCanPay {
     @synchronized (self) {
         BOOL isSigned = TRUE;
         for (DSTransactionInput *transactionInput in self.mInputs) {
-            BOOL inputIsSigned = anyoneCanPay || transactionInput.signature != nil;
+            BOOL inputIsSigned = transactionInput.signature != nil;
             isSigned &= inputIsSigned;
             if (!inputIsSigned) {
                 break;
@@ -433,14 +430,9 @@
         NSUInteger inputsCount = inputs.count;
         NSUInteger outputsCount = outputs.count;
         
-        if (anyoneCanPay) {
-            if (subscriptIndex < inputsCount) {
-                inputs = @[inputs[subscriptIndex]];
-                inputsCount = 1;
-            } else {
-                // Handle error: subscriptIndex out of bounds
-                NSAssert(NO, @"CoinJoin Error: subscriptIndex %lu is out of bounds for inputs array", (unsigned long)subscriptIndex);
-            }
+        if (anyoneCanPay && subscriptIndex < inputsCount) {
+            inputs = @[inputs[subscriptIndex]];
+            inputsCount = 1;
         }
         
         BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
@@ -448,9 +440,7 @@
 
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
         [d appendUInt16:self.version];
-        if (!anyoneCanPay) {
-            [d appendUInt16:self.type];
-        }
+        [d appendUInt16:self.type];
         [d appendVarInt:inputsCount];
 
         for (NSUInteger i = 0; i < inputsCount; i++) {
@@ -631,9 +621,9 @@
            NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
            if (keyIdx == NSNotFound) {
-//               if (anyoneCanPay && !transactionInput.signature) {
-//                   transactionInput.signature = [NSData data];
-//               }
+               if (anyoneCanPay && !transactionInput.signature) {
+                   transactionInput.signature = [NSData data];
+               }
                
                continue;
            }
@@ -658,7 +648,7 @@
            transactionInput.signature = sig;
         }
 
-        if (![self isSigned:anyoneCanPay]) return NO;
+        if (!self.isSigned) return NO;
         _txHash = [self toData:anyoneCanPay].SHA256_2;
         return YES;
     }
