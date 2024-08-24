@@ -312,7 +312,7 @@
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
     if (![self retrievalQueueCount]) {
         DSLog(@"[%@] No masternode lists in retrieval: %@", self.chain.name, self);
-        [self.delegate masternodeListSerivceEmptiedRetrievalQueue:self];
+        [self.delegate masternodeListServiceEmptiedRetrievalQueue:self];
         return;
     }
     if ([self.requestsInRetrieval count]) {
@@ -385,7 +385,7 @@
         //no need to remove local masternodes
         [self cleanListsRetrievalQueue];
         [self.store deleteAllOnChain];
-        [self.delegate masternodeListSerivceExceededMaxFailuresForMasternodeList:self blockHash:self.currentMasternodeList.blockHash];
+        [self.delegate masternodeListServiceExceededMaxFailuresForMasternodeList:self blockHash:self.currentMasternodeList.blockHash];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self getRecentMasternodeList];
     } else {
