@@ -44,7 +44,7 @@
     @synchronized (self) {
         if (_clientManager == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register client manager");
-            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionCompleteListener);
+            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionLifecycleListener, mixingCompleteListener);
 
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
             // TODO: add_wallet_ex
@@ -125,6 +125,28 @@
             notify_new_best_block(_clientManager, (uint8_t (*)[32])(block.blockHash.u8), block.height);
         }
     }
+}
+
+- (BOOL)isMixingFeeTx:(UInt256)txId {
+    return is_mixing_fee_tx(_clientManager, (uint8_t (*)[32])(txId.u8));
+}
+
+- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
+    DSAccount *account = [self.chain firstAccountThatCanContainTransaction:transaction];
+    NSArray *amountsSent = [account amountsSentByTransaction:transaction];
+    
+    Transaction *tx = [transaction ffi_malloc:self.chain.chainType];
+    uint64_t *inputValues = malloc(amountsSent.count * sizeof(uint64_t));
+
+    for (uintptr_t i = 0; i < amountsSent.count; i++) {
+        inputValues[i] = [amountsSent[i] unsignedLongLongValue];
+    }
+    
+    CoinJoinTransactionType type = get_coinjoin_tx_type(tx, inputValues, amountsSent.count);
+    [DSTransaction ffi_free:tx];
+    free(inputValues);
+    
+    return type;
 }
 
 - (DSChain *)chain {
@@ -333,7 +355,6 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_d
         [scripts addObject:script];
     }
     
-    // TODO: check subtract_fee_from_amount
     bool result = false;
     
     @synchronized (context) {
@@ -342,13 +363,18 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_d
             if (error) {
                 DSLog(@"[OBJ-C] CoinJoin: commit tx error: %@, tx type: %@", error, is_denominating ? @"denominations" : @"collateral");
             } else if (is_denominating) {
-                DSLog(@"[OBJ-C] CoinJoin: Denominations Created: %@", uint256_reverse_hex(txId));
+                DSLog(@"[OBJ-C] CoinJoin tx: Denominations Created: %@", uint256_reverse_hex(txId));
                 bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
+                
+                if (!isFinished) {
+                    DSLog(@"[OBJ-C] CoinJoin ERROR: auto_denom not finished");
+                }
+                
                 processor_destroy_block_hash(client_session_id);
-                DSLog(@"[OBJ-C] CoinJoin: is automatic_denominating finished: %s", isFinished ? "YES" : "NO");
+                [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_CreateDenomination];
             } else {
-                DSLog(@"[OBJ-C] CoinJoin: Collateral Created: %@", uint256_reverse_hex(txId));
-                // TODO: call listeners
+                DSLog(@"[OBJ-C] CoinJoin tx: Collateral Created: %@", uint256_reverse_hex(txId));
+                [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_MakeCollateralInputs];
             }
         }];
     }
@@ -478,7 +504,7 @@ bool isWaitingForNewBlock(const void *context) {
     return result;
 }
 
-void sessionCompleteListener(bool is_complete,
+void sessionLifecycleListener(bool is_complete,
                              int32_t base_session_id,
                              uint8_t (*client_session_id)[32],
                              uint32_t denomination,
@@ -487,7 +513,30 @@ void sessionCompleteListener(bool is_complete,
                              uint8_t (*ip_address)[16],
                              bool joined,
                              const void *context) {
-    // TODO
+    @synchronized (context) {
+        UInt256 clientSessionId = *((UInt256 *)client_session_id);
+        UInt128 ipAddress = *((UInt128 *)ip_address);
+        
+        if (is_complete) {
+            [AS_OBJC(context).manager onSessionComplete:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message ipAddress:ipAddress isJoined:joined];
+        } else {
+            [AS_OBJC(context).manager onSessionStarted:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message ipAddress:ipAddress isJoined:joined];
+        }
+    }
+}
+
+void mixingCompleteListener(const enum PoolStatus *pool_statuses,
+                            uintptr_t pool_statuses_len,
+                            const void *context) {
+    @synchronized (context) {
+        NSMutableArray *statuses = [NSMutableArray array];
+
+        for (uintptr_t i = 0; i < pool_statuses_len; i++) {
+            [statuses addObject:@(pool_statuses[i])];
+        }
+
+        [AS_OBJC(context).manager onMixingComplete:statuses];
+    }
 }
 
 @end

@@ -39,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)doAutomaticDenominating;
 - (void)doMaintenance;
 - (void)registerCoinJoin:(CoinJoinClientOptions *)options;
+- (BOOL)isMixingFeeTx:(UInt256)txId;
+- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 
 @end
 

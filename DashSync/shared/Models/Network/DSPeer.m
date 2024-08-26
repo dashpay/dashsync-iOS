@@ -1823,26 +1823,26 @@
 
 - (void)acceptCoinJoinCompleteMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsc from %@", self.location);
-    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
 }
 
 - (void)acceptCoinJoinFinalTransaction:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dsf from %@", self.location);
-    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_FINAL_TRANSACTION];
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_FINAL_TRANSACTION];
 }
 
 - (void)acceptCoinJoinQueueMessage:(NSData *)message {
-    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
 }
 
 - (void)acceptCoinJoinStatusUpdateMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dssu from %@", self.location);
-    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_STATUS_UPDATE];
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_STATUS_UPDATE];
 }
 
 - (void)acceptCoinJoinBroadcastTxMessage:(NSData *)message {
     DSLog(@"[OBJ-C] CoinJoin: got dstx from %@", self.location);
-    [[DSCoinJoinManager sharedInstanceForChain:_chain] processMessageFrom:self message:message type:MSG_COINJOIN_BROADCAST_TX];
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_BROADCAST_TX];
 }
 
 // MARK: - hash
