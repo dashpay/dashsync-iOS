@@ -84,7 +84,7 @@
 
 - (instancetype)initOnChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
-
+    
     _version = TX_VERSION;
     self.mInputs = [NSMutableArray array];
     self.mOutputs = [NSMutableArray array];
@@ -100,12 +100,12 @@
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
-
+    
     NSString *address = nil;
     NSNumber *l = 0;
     uint32_t off = 0;
     uint64_t count = 0;
-
+    
     @autoreleasepool {
         self.chain = chain;
         _version = [message UInt16AtOffset:off]; // tx version
@@ -117,7 +117,7 @@
             return nil; // at least one input is required
         }
         off += l.unsignedIntegerValue;
-
+        
         for (NSUInteger i = 0; i < count; i++) {          // inputs
             UInt256 hash = [message UInt256AtOffset:off]; // input hash
             off += sizeof(UInt256);
@@ -131,10 +131,10 @@
             DSTransactionInput *transactionInput = [DSTransactionInput transactionInputWithHash:hash index:index inScript:inScript signature:signature sequence:sequence];
             [self.mInputs addObject:transactionInput];
         }
-
+        
         count = (NSUInteger)[message varIntAtOffset:off length:&l]; // output count
         off += l.unsignedIntegerValue;
-
+        
         for (NSUInteger i = 0; i < count; i++) {            // outputs
             uint64_t amount = [message UInt64AtOffset:off]; // output amount
             off += sizeof(uint64_t);
@@ -143,7 +143,7 @@
             DSTransactionOutput *transactionOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:outScript onChain:self.chain];
             [self.mOutputs addObject:transactionOutput];
         }
-
+        
         _lockTime = [message UInt32AtOffset:off]; // tx locktime
         off += 4;
         _payloadOffset = off;
@@ -151,9 +151,9 @@
             _txHash = self.data.SHA256_2;
         }
     }
-
+    
     if ([self type] != DSTransactionType_Classic) return self; //only classic transactions are shapeshifted
-
+    
     NSString *outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
     if (!outboundShapeshiftAddress) return self;
     self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
@@ -167,9 +167,9 @@
             self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
         }
     }
-
+    
     if (self.associatedShapeshift || ![self.outputs count]) return self;
-
+    
     NSString *mainOutputAddress = nil;
     NSMutableArray *allAddresses = [NSMutableArray array];
     for (DSAddressEntity *e in [DSAddressEntity allObjectsInContext:chain.chainManagedObjectContext]) {
@@ -185,7 +185,7 @@
     if (mainOutputAddress) {
         self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits inContext:[NSManagedObjectContext chainContext]];
     }
-
+    
     return self;
 }
 
@@ -197,9 +197,9 @@
     if (hashes.count != indexes.count) return nil;
     if (scripts.count > 0 && hashes.count != scripts.count) return nil;
     if (addresses.count != amounts.count) return nil;
-
+    
     if (!(self = [super init])) return nil;
-
+    
     self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
     self.chain = chain;
     _version = chain.transactionVersion;
@@ -213,7 +213,7 @@
         NSData *inputScript = (scripts.count > 0) ? [scripts objectAtIndex:i] : nil;
         [self.mInputs addObject:[DSTransactionInput transactionInputWithHash:inputHash index:index inScript:inputScript signature:nil sequence:inputSequence]];
     }
-
+    
     self.mOutputs = [NSMutableArray array];
     for (int i = 0; i < amounts.count; i++) {
         uint64_t amount = [[amounts objectAtIndex:i] unsignedLongValue];
@@ -226,7 +226,7 @@
         }
         [self.mOutputs addObject:[DSTransactionOutput transactionOutputWithAmount:amount outScript:outScript onChain:self.chain]];
     }
-
+    
     _lockTime = TX_LOCKTIME;
     self.blockHeight = TX_UNCONFIRMED;
     return self;
@@ -313,9 +313,9 @@
 - (NSString *)longDescription {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
     return [NSString stringWithFormat:@"%@(id=%@, inputs=%@, outputs=%@)",
-                     [[self class] description], txid,
-                     self.inputs,
-                     self.outputs];
+            [[self class] description], txid,
+            self.inputs,
+            self.outputs];
 }
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
@@ -342,7 +342,7 @@
         uint32_t inputCount = (uint32_t)self.mInputs.count;
         uint32_t outputCount = (uint32_t)self.mOutputs.count;
         return 8 + [NSMutableData sizeOfVarInt:inputCount] + [NSMutableData sizeOfVarInt:outputCount] +
-               TX_INPUT_SIZE * inputCount + TX_OUTPUT_SIZE * outputCount;
+        TX_INPUT_SIZE * inputCount + TX_OUTPUT_SIZE * outputCount;
     }
 }
 
@@ -410,17 +410,31 @@
 // MARK: - Wire Serialization
 
 - (NSData *)toData {
-    return [self toDataWithSubscriptIndex:NSNotFound];
+    return [self toData:NO];
+}
+
+- (NSData *)toData:(BOOL)anyoneCanPay {
+    return [self toDataWithSubscriptIndex:NSNotFound anyoneCanPay:anyoneCanPay];
 }
 
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
+    return [self toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:NO];
+}
+
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay {
     @synchronized(self) {
         NSArray<DSTransactionInput *> *inputs = self.inputs;
         NSArray<DSTransactionOutput *> *outputs = self.outputs;
         NSUInteger inputsCount = inputs.count;
         NSUInteger outputsCount = outputs.count;
+        
+        if (anyoneCanPay && subscriptIndex < inputsCount) {
+            inputs = @[inputs[subscriptIndex]];
+            inputsCount = 1;
+        }
+        
         BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
         NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:inputsCount] + [NSMutableData sizeOfVarInt:outputsCount] + TX_INPUT_SIZE * inputsCount + TX_OUTPUT_SIZE * outputsCount + (forSigHash ? 4 : 0);
 
@@ -436,7 +450,7 @@
 
             if (subscriptIndex == NSNotFound && input.signature != nil) {
                 [d appendCountedData:input.signature];
-            } else if (subscriptIndex == i && input.inScript != nil) {
+            } else if (anyoneCanPay || (subscriptIndex == i && input.inScript != nil)) {
                 // TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
                 [d appendCountedData:input.inScript];
             } else {
@@ -454,7 +468,14 @@
         }
 
         [d appendUInt32:self.lockTime];
-        if (forSigHash) [d appendUInt32:SIGHASH_ALL];
+        if (forSigHash) {
+            uint8_t sighashFlags = SIGHASH_ALL;
+            if (anyoneCanPay) {
+                sighashFlags |= SIGHASH_ANYONECANPAY;
+            }
+            
+            [d appendUInt32:sighashFlags];
+        }
         return [d copy];
     }
 }
@@ -606,7 +627,7 @@
                
                continue;
            }
-           NSData *data = [self toDataWithSubscriptIndex:i];
+           NSData *data = [self toDataWithSubscriptIndex:i anyoneCanPay:anyoneCanPay];
            NSMutableData *sig = [NSMutableData data];
            NSValue *keyValue = keys[keyIdx];
            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
@@ -616,7 +637,6 @@
            uint8_t sighashFlags = SIGHASH_ALL;
            if (anyoneCanPay) {
                sighashFlags |= SIGHASH_ANYONECANPAY;
-               DSLog(@"[OBJ-C] CoinJoin: private key data: %@", [DSKeyManager privateKeyData:key].hexString);
            }
            [s appendUInt8:sighashFlags];
            [sig appendScriptPushData:s];
@@ -629,7 +649,7 @@
         }
 
         if (!self.isSigned) return NO;
-        _txHash = self.data.SHA256_2;
+        _txHash = [self toData:anyoneCanPay].SHA256_2;
         return YES;
     }
 }

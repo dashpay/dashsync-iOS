@@ -44,7 +44,7 @@
     @synchronized (self) {
         if (_clientManager == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register client manager");
-            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync);
+            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionCompleteListener);
 
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
             // TODO: add_wallet_ex
@@ -114,7 +114,7 @@
         if (array->ptr) {
             free((void *)array->ptr);
         }
-            
+        
         free(array);
     }
 }
@@ -338,14 +338,17 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_d
     
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
-        result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts onPublished:^(NSError * _Nullable error) {
+        result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts onPublished:^(UInt256 txId, NSError * _Nullable error) {
             if (error) {
-                DSLog(@"[OBJ-C] CoinJoin: commit tx error: %@", error);
+                DSLog(@"[OBJ-C] CoinJoin: commit tx error: %@, tx type: %@", error, is_denominating ? @"denominations" : @"collateral");
             } else if (is_denominating) {
-                DSLog(@"[OBJ-C] CoinJoin: call finish_automatic_denominating");
+                DSLog(@"[OBJ-C] CoinJoin: Denominations Created: %@", uint256_reverse_hex(txId));
                 bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
                 processor_destroy_block_hash(client_session_id);
                 DSLog(@"[OBJ-C] CoinJoin: is automatic_denominating finished: %s", isFinished ? "YES" : "NO");
+            } else {
+                DSLog(@"[OBJ-C] CoinJoin: Collateral Created: %@", uint256_reverse_hex(txId));
+                // TODO: call listeners
             }
         }];
     }
@@ -388,7 +391,6 @@ MasternodeList* getMNList(const void *context) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSMasternodeList *mnList = [wrapper.manager mnList];
-        // TODO: might have 0 valid MNs, account for this
         masternodes = [mnList ffi_malloc];
     }
     
@@ -474,6 +476,18 @@ bool isWaitingForNewBlock(const void *context) {
     }
     
     return result;
+}
+
+void sessionCompleteListener(bool is_complete,
+                             int32_t base_session_id,
+                             uint8_t (*client_session_id)[32],
+                             uint32_t denomination,
+                             enum PoolState state,
+                             enum PoolMessage message,
+                             uint8_t (*ip_address)[16],
+                             bool joined,
+                             const void *context) {
+    // TODO
 }
 
 @end
