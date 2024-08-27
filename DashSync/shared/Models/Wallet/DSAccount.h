@@ -268,6 +268,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // retuns the amount sent from the account by the trasaction (total account outputs consumed, change and fee included)
 - (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
 
+// Returns the amounts sent by the transaction
+- (NSArray *)amountsSentByTransaction:(DSTransaction *)transaction;
+
 // returns the external (receive) addresses of a transaction
 - (NSArray<NSString *> *)externalAddressesOfTransaction:(DSTransaction *)transaction;
 

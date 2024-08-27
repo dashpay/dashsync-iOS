@@ -26,11 +26,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol DSCoinJoinManagerDelegate <NSObject>
+
+- (void)sessionStartedWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)sessionCompleteWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)mixingCompleteWithStatuses:(NSArray *)statuses;
+- (void)transactionProcessedWithId:(UInt256)txId type:(CoinJoinTransactionType)type;
+
+@end
+
 @interface DSCoinJoinManager : NSObject
 
 @property (nonatomic, assign, nullable) DSChain *chain;
 @property (nonatomic, strong, nullable) DSMasternodeGroup *masternodeGroup;
 @property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+@property (nonatomic, readonly, weak) id<DSCoinJoinManagerDelegate> managerDelegate;
 @property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
@@ -65,6 +75,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)doAutomaticDenominating;
 - (void)updateSuccessBlock;
 - (BOOL)isWaitingForNewBlock;
+- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
+
+- (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)onMixingComplete:(NSArray *)statuses;
+- (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type;
 
 @end
 

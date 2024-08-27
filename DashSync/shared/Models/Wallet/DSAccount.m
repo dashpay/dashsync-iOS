@@ -1672,6 +1672,24 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return amount;
 }
 
+// Returns the amounts sent by the transaction
+- (NSArray *)amountsSentByTransaction:(DSTransaction *)transaction {
+    NSMutableArray *amounts = [NSMutableArray array];
+
+    for (DSTransactionInput *input in transaction.inputs) {
+        DSTransaction *tx = self.allTx[uint256_obj(input.inputHash)];
+        uint64_t amount = tx.outputs[input.index].amount;
+
+        if (amount > 0) {
+            [amounts addObject:@(amount)];
+        } else {
+            [amounts addObject:@(0)];
+        }
+    }
+    
+    return amounts;
+}
+
 // MARK: = Addresses
 
 - (NSArray<NSString *> *)externalAddressesOfTransaction:(DSTransaction *)transaction {

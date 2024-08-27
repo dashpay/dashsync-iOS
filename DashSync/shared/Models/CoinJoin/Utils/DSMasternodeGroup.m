@@ -37,7 +37,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 @interface DSMasternodeGroup ()
 
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager; // TODO: sync all access points
+@property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
 @property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
 @property (nonatomic, strong) NSMutableDictionary *masternodeMap;
 @property (nonatomic, strong) NSMutableDictionary *sessionMap;
@@ -199,8 +199,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         
         @synchronized (self.inactives) {
             BOOL havPeersToTry = self.inactives.count > 0 && [self.backoffMap objectForKey:self.inactives[0].location].retryTime <= now;
-            doDiscovery = !havPeersToTry;
             NSUInteger numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
+            doDiscovery = !havPeersToTry || numPeers <= 0;
             DSPeer *peerToTry = nil;
             NSDate *retryTime = nil;
             
@@ -344,7 +344,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     DSLog(@"[OBJ-C] CoinJoin peers: updateMaxConnections, pendingSessions.count: %lu", self.pendingSessions.count);
     _maxConnections = self.pendingSessions.count;
     NSUInteger connections = MIN(_maxConnections, DEFAULT_COINJOIN_SESSIONS);
-    DSLog(@"[OBJ-C] CoinJoin peers: updating max connections to min(%lu, %lu)", (unsigned long)_maxConnections,  (unsigned long)connections);
+    DSLog(@"[OBJ-C] CoinJoin peers: updating max connections to min(%lu, %lu)", (unsigned long)_maxConnections, (unsigned long)DEFAULT_COINJOIN_SESSIONS);
     
     [self updateMaxConnections:connections];
 }
@@ -527,13 +527,11 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (void)peer:(nonnull DSPeer *)peer disconnectedWithError:(nonnull NSError *)error {
-    DSLog(@"[OBJ-C] CoinJoin peers: %@ disconnectedWithError %@", peer.location, error);
-    
     @synchronized (self) {
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers removeObject:peer];
         
-        DSLog(@"[OBJ-C] CoinJoin peers: Peer died: %@ (%lu connected, %lu pending, %lu max)", peer.location, (unsigned long)self.mutableConnectedPeers.count, (unsigned long)self.mutablePendingPeers.count, (unsigned long)self.maxConnections);
+        DSLog(@"[OBJ-C] CoinJoin peers: %@ died with error %@: (%lu connected, %lu pending, %lu max)", peer.location, error, (unsigned long)self.mutableConnectedPeers.count, (unsigned long)self.mutablePendingPeers.count, (unsigned long)self.maxConnections);
         
         [self.groupBackoff trackFailure];
         [[self.backoffMap objectForKey:peer.location] trackFailure];
@@ -542,7 +540,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         NSUInteger numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
 
         if (numPeers < self.maxConnections) {
-            DSLog(@"[OBJ-C] CoinJoin peers: triggerConnections to get to maxConnections");
             [self triggerConnections];
         }
     }
