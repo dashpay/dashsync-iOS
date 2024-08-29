@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)doMaintenance;
 - (void)registerCoinJoin:(CoinJoinClientOptions *)options;
 - (BOOL)isMixingFeeTx:(UInt256)txId;
+- (void)refreshUnusedKeys;
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 
 @end

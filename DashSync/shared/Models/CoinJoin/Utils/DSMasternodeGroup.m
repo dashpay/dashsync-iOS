@@ -48,7 +48,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 @property (nonatomic, strong) NSMutableSet *mutablePendingPeers;
 @property (nonatomic, readonly) BOOL shouldSendDsq;
 @property (nullable, nonatomic, readwrite) DSPeer *downloadPeer;
-@property (nonatomic, readonly) NSUInteger backoff;
 @property (nonatomic, strong) DSBackoff *groupBackoff;
 @property (nonatomic, strong) NSMutableDictionary<NSString*, DSBackoff*> *backoffMap;
 @property (nonatomic, strong) NSMutableArray<DSPeer *> *inactives;

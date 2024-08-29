@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)sessionStartedWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
 - (void)sessionCompleteWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)mixingStartedWithStatuses:(NSArray *)statuses;
 - (void)mixingCompleteWithStatuses:(NSArray *)statuses;
 - (void)transactionProcessedWithId:(UInt256)txId type:(CoinJoinTransactionType)type;
 
@@ -56,6 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress;
 - (uint32_t)countInputsWithAmount:(uint64_t)inputAmount;
 - (NSString *)freshAddress:(BOOL)internal;
+- (NSArray<NSString *> *)getIssuedReceiveAddresses;
+- (NSArray<NSString *> *)getUsedReceiveAddresses;
 - (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished;
 - (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
 - (uint64_t)validMNCount;
@@ -74,11 +77,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)startMixing;
 - (void)doAutomaticDenominating;
 - (void)updateSuccessBlock;
-- (BOOL)isWaitingForNewBlock;
+- (void)refreshUnusedKeys;
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
 - (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)onMixingStarted:(NSArray *)statuses;
 - (void)onMixingComplete:(NSArray *)statuses;
 - (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type;
 
