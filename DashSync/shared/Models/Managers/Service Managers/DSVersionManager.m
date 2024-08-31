@@ -195,7 +195,13 @@
                                                                       authenticated = YES;
                                                                       @autoreleasepool {
                                                                           for (DSDerivationPath *derivationPath in derivationPaths) {
-                                                                              success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
+                                                                              OpaqueKey *key = [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
+                                                                              
+                                                                              if (key) {
+                                                                                  [derivationPath loadAddresses];
+                                                                              }
+                                                                              
+                                                                              success &= !!key;
                                                                           }
                                                                       }
                                                                       dispatch_semaphore_signal(sem);

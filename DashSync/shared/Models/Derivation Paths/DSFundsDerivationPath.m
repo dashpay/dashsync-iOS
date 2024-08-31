@@ -140,6 +140,11 @@
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError **)error {
+    if (![self hasExtendedPublicKey]) {
+        // Not initialized yet
+        return @[];
+    }
+    
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
