@@ -48,13 +48,14 @@
     
     [self.coinJoinManager start];
     [self.coinJoinManager refreshUnusedKeys];
+    [self.coinJoinManager initMasternodeGroup];
     [self.coinJoinManager setStopOnNothingToDo:true];
     
     if (![self.coinJoinManager startMixing]) {
         DSLog(@"[OBJ-C] CoinJoin: Mixing has been started already.");
     }
     
-    [self.coinJoinManager doAutomaticDenominating];
+    [self.coinJoinManager doAutomaticDenominatingWithDryRun:NO];
 }
 
 @end

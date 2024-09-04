@@ -47,9 +47,18 @@
             _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionLifecycleListener, mixingLifecycleListener, getCoinJoinKeys, destroyCoinJoinKeys);
 
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
-            // TODO: add_wallet_ex
             add_client_queue_manager(_clientManager, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
         }
+    }
+}
+
+- (BOOL)isRegistered {
+    return self.clientManager != NULL;
+}
+
+- (void)updateOptions:(CoinJoinClientOptions *)options {
+    @synchronized (self) {
+        change_coinjoin_options(_clientManager, options);
     }
 }
 
@@ -71,11 +80,11 @@
     }
 }
 
-- (BOOL)doAutomaticDenominating {
+- (BOOL)doAutomaticDenominatingWithDryRun:(BOOL)dryRun {
     @synchronized (self) {
-        Balance *balance = [self.manager getBalance];
-        BOOL result = do_automatic_denominating(_clientManager, *balance, false);
-        free(balance);
+        Balance *balance = [[self.manager getBalance] ffi_malloc];
+        BOOL result = do_automatic_denominating(_clientManager, *balance, dryRun);
+        [DSCoinJoinBalance ffi_free:balance];
         
         return result;
     }
@@ -83,9 +92,9 @@
 
 - (void)doMaintenance {
     @synchronized (self) {
-        Balance *balance = [self.manager getBalance];
+        Balance *balance = [[self.manager getBalance] ffi_malloc];
         do_maintenance(_clientManager, *balance);
-        free(balance);
+        [DSCoinJoinBalance ffi_free:balance];
     }
 }
 
@@ -134,7 +143,9 @@
 }
 
 - (BOOL)isMixingFeeTx:(UInt256)txId {
-    return is_mixing_fee_tx(_clientManager, (uint8_t (*)[32])(txId.u8));
+    @synchronized (self) {
+        return is_mixing_fee_tx(_clientManager, (uint8_t (*)[32])(txId.u8));
+    }
 }
 
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
@@ -153,6 +164,76 @@
     free(inputValues);
     
     return type;
+}
+
+- (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed {
+    @synchronized (self) {
+        return get_anonymizable_balance(_clientManager, skipDenominated, skipUnconfirmed);
+    }
+}
+
+- (uint64_t)getSmallestDenomination {
+    return coinjoin_get_smallest_denomination();
+}
+
+- (NSArray<NSNumber *> *)getStandardDenominations {
+    @synchronized (self) {
+        CoinJoinDenominations *denominations = get_standard_denominations();
+        NSMutableArray<NSNumber *> *result = [NSMutableArray arrayWithCapacity:denominations->length];
+        
+        for (size_t i = 0; i < denominations->length; i++) {
+            [result addObject:@(denominations->denoms[i])];
+        }
+        
+        destroy_coinjoin_denomination(denominations);
+        return result;
+    }
+}
+
+- (uint64_t)getCollateralAmount {
+    @synchronized (self) {
+        return get_collateral_amount();
+    }
+}
+
+- (uint32_t)amountToDenomination:(uint64_t)amount {
+    @synchronized (self) {
+        return amount_to_denomination(amount);
+    }
+}
+
+- (int32_t)getRealOutpointCoinJoinRounds:(DSUTXO)utxo {
+    @synchronized (self) {
+        UInt256 hash = utxo.hash;
+        return get_real_outpoint_coinjoin_rounds(_clientManager, (uint8_t (*)[32])&hash, (uint32_t)utxo.n, 0);
+    }
+}
+
+- (NSArray<NSNumber *> *)getSessionStatuses {
+    @synchronized (self) {
+        CoinJoinSessionStatuses* statuses = get_sessions_status(_clientManager);
+        
+        if (statuses) {
+            NSMutableArray<NSNumber *> *statusArray = [NSMutableArray arrayWithCapacity:statuses->length];
+            
+            for (size_t i = 0; i < statuses->length; i++) {
+                PoolStatus status = statuses->statuses[i];
+                [statusArray addObject:@(status)];
+            }
+            
+            destroy_coinjoin_session_statuses(statuses);
+            
+            return statusArray;
+        } else {
+            return @[];
+        }
+    }
+}
+
+- (void)stopAndResetClientManager {
+    @synchronized (self) {
+        stop_and_reset_coinjoin(_clientManager);
+    }
 }
 
 - (DSChain *)chain {

@@ -36,12 +36,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)notifyNewBestBlock:(DSBlock *)block;
 - (void)setStopOnNothingToDo:(BOOL)stop;
 - (BOOL)startMixing;
-- (BOOL)doAutomaticDenominating;
+- (BOOL)doAutomaticDenominatingWithDryRun:(BOOL)dryRun;
 - (void)doMaintenance;
 - (void)registerCoinJoin:(CoinJoinClientOptions *)options;
+- (BOOL)isRegistered;
 - (BOOL)isMixingFeeTx:(UInt256)txId;
 - (void)refreshUnusedKeys;
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
+- (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed;
+- (uint64_t)getSmallestDenomination;
+- (void)updateOptions:(CoinJoinClientOptions *)options;
+- (NSArray<NSNumber *> *)getStandardDenominations;
+- (uint64_t)getCollateralAmount;
+- (uint32_t)amountToDenomination:(uint64_t)amount;
+- (int32_t)getRealOutpointCoinJoinRounds:(DSUTXO)utxo;
+- (void)stopAndResetClientManager;
+- (NSArray<NSNumber *> *)getSessionStatuses;
+
 
 @end
 
