@@ -102,6 +102,12 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // returns the first unused coinjoin internal address
 @property (nullable, nonatomic, readonly) NSString *coinJoinChangeAddress;
 
+// returns all issued CoinJoin receive addresses
+@property (nullable, nonatomic, readonly) NSArray *usedCoinJoinReceiveAddresses;
+
+// returns all used CoinJoin receive addresses
+@property (nullable, nonatomic, readonly) NSArray *allCoinJoinReceiveAddresses;
+
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray<DSPotentialOneWayFriendship *> *_Nonnull contacts;
 

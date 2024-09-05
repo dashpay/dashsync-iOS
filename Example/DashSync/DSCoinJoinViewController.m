@@ -42,22 +42,19 @@
 }
 
 - (void)startCoinJoin {
-    // TODO: subscribe
-    // TODO: refreshUnusedKeys()
-    
-    if (_coinJoinManager == NULL) {
-        _coinJoinManager = [DSCoinJoinManager sharedInstanceForChain:_chainManager.chain];
+    if (self.coinJoinManager == NULL) {
+        self.coinJoinManager = [DSCoinJoinManager sharedInstanceForChain:self.chainManager.chain];
     }
     
-    [_coinJoinManager start];
-//    wallet.getCoinJoin().refreshUnusedKeys(); TODO
-    [_coinJoinManager setStopOnNothingToDo:true];
+    [self.coinJoinManager start];
+    [self.coinJoinManager refreshUnusedKeys];
+    [self.coinJoinManager setStopOnNothingToDo:true];
     
-    if (![_coinJoinManager startMixing]) {
+    if (![self.coinJoinManager startMixing]) {
         DSLog(@"[OBJ-C] CoinJoin: Mixing has been started already.");
     }
     
-    [_coinJoinManager doAutomaticDenominating];
+    [self.coinJoinManager doAutomaticDenominating];
 }
 
 @end

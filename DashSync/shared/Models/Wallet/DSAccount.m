@@ -360,6 +360,14 @@
     return address;
 }
 
+- (NSArray *)allCoinJoinReceiveAddresses {
+    return [self.coinJoinDerivationPath allReceiveAddresses];
+}
+
+- (NSArray *)usedCoinJoinReceiveAddresses {
+    return [self.coinJoinDerivationPath usedReceiveAddresses];
+}
+
 // NSData objects containing serialized UTXOs
 - (NSArray *)unspentOutputs {
     return self.utxos.array;

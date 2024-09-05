@@ -44,7 +44,7 @@
     @synchronized (self) {
         if (_clientManager == NULL) {
             DSLog(@"[OBJ-C] CoinJoin: register client manager");
-            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionLifecycleListener, mixingCompleteListener);
+            _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionLifecycleListener, mixingLifecycleListener, getCoinJoinKeys, destroyCoinJoinKeys);
 
             DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
             // TODO: add_wallet_ex
@@ -62,6 +62,12 @@
 - (BOOL)startMixing {
     @synchronized (self) {
         return start_mixing(self.clientManager);
+    }
+}
+
+- (void)refreshUnusedKeys {
+    @synchronized (self) {
+        refresh_unused_keys(self.clientManager);
     }
 }
 
@@ -332,14 +338,18 @@ Transaction* signTransaction(Transaction *transaction, bool anyoneCanPay, const 
 }
 
 unsigned int countInputsWithAmount(unsigned long long inputAmount, const void *context) {
-    return [AS_OBJC(context).manager countInputsWithAmount:inputAmount];
+    @synchronized (context) {
+        return [AS_OBJC(context).manager countInputsWithAmount:inputAmount];
+    }
 }
 
 ByteArray freshCoinJoinAddress(bool internal, const void *context) {
-    DSCoinJoinWrapper *wrapper = AS_OBJC(context);
-    NSString *address = [wrapper.manager freshAddress:internal];
-    
-    return script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
+    @synchronized (context) {
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        NSString *address = [wrapper.manager freshAddress:internal];
+        
+        return script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
+    }
 }
 
 bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_denominating, uint8_t (*client_session_id)[32], const void *context) {
@@ -367,7 +377,7 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_d
                 bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
                 
                 if (!isFinished) {
-                    DSLog(@"[OBJ-C] CoinJoin ERROR: auto_denom not finished");
+                    DSLog(@"[OBJ-C] CoinJoin: auto_denom not finished");
                 }
                 
                 processor_destroy_block_hash(client_session_id);
@@ -402,25 +412,17 @@ void destroyMasternodeEntry(MasternodeEntry *masternodeEntry) {
 }
 
 uint64_t validMNCount(const void *context) {
-    uint64_t result = 0;
-    
     @synchronized (context) {
-        result = [AS_OBJC(context).manager validMNCount];
+        return [AS_OBJC(context).manager validMNCount];
     }
-    
-    return result;
 }
 
 MasternodeList* getMNList(const void *context) {
-    MasternodeList *masternodes;
-    
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSMasternodeList *mnList = [wrapper.manager mnList];
-        masternodes = [mnList ffi_malloc];
+        return [mnList ffi_malloc];
     }
-    
-    return masternodes;
 }
 
 void destroyMNList(MasternodeList *masternodeList) { // TODO: check destroyMasternodeList
@@ -432,54 +434,44 @@ void destroyMNList(MasternodeList *masternodeList) { // TODO: check destroyMaste
 }
 
 bool isBlockchainSynced(const void *context) {
-    return AS_OBJC(context).manager.isChainSynced;
+    @synchronized (context) {
+        return AS_OBJC(context).manager.isChainSynced;
+    }
 }
 
 bool isMasternodeOrDisconnectRequested(uint8_t (*ip_address)[16], uint16_t port, const void *context) {
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    BOOL result = NO;
     
     @synchronized (context) {
-        result = [AS_OBJC(context).manager isMasternodeOrDisconnectRequested:ipAddress port:port];
+        return [AS_OBJC(context).manager isMasternodeOrDisconnectRequested:ipAddress port:port];
     }
-    
-    return result;
 }
 
 bool disconnectMasternode(uint8_t (*ip_address)[16], uint16_t port, const void *context) {
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    BOOL result = NO;
     
     @synchronized (context) {
-        result = [AS_OBJC(context).manager disconnectMasternode:ipAddress port:port];
+        return [AS_OBJC(context).manager disconnectMasternode:ipAddress port:port];
     }
-    
-    return result;
 }
 
 bool sendMessage(char *message_type, ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, bool warn, const void *context) {
     NSString *messageType = [NSString stringWithUTF8String:message_type];
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    BOOL result = YES;
     
     @synchronized (context) {
         NSData *message = [NSData dataWithBytes:byteArray->ptr length:byteArray->len];
-        result = [AS_OBJC(context).manager sendMessageOfType:messageType message:message withPeerIP:ipAddress port:port warn:warn];
+        return [AS_OBJC(context).manager sendMessageOfType:messageType message:message withPeerIP:ipAddress port:port warn:warn];
     }
-    
-    return result;
 }
 
 bool addPendingMasternode(uint8_t (*pro_tx_hash)[32], uint8_t (*session_id)[32], const void *context) {
     UInt256 sessionId = *((UInt256 *)session_id);
     UInt256 proTxHash = *((UInt256 *)pro_tx_hash);
-    BOOL result = NO;
     
     @synchronized (context) {
-        result = [AS_OBJC(context).manager addPendingMasternode:proTxHash clientSessionId:sessionId];
+        return [AS_OBJC(context).manager addPendingMasternode:proTxHash clientSessionId:sessionId];
     }
-    
-    return result;
 }
 
 void startManagerAsync(const void *context) {
@@ -495,13 +487,9 @@ void updateSuccessBlock(const void *context) {
 }
 
 bool isWaitingForNewBlock(const void *context) {
-    BOOL result = NO;
-    
     @synchronized (context) {
-        result = [AS_OBJC(context).manager isWaitingForNewBlock];
+        return [AS_OBJC(context).manager isWaitingForNewBlock];
     }
-    
-    return result;
 }
 
 void sessionLifecycleListener(bool is_complete,
@@ -525,9 +513,10 @@ void sessionLifecycleListener(bool is_complete,
     }
 }
 
-void mixingCompleteListener(const enum PoolStatus *pool_statuses,
-                            uintptr_t pool_statuses_len,
-                            const void *context) {
+void mixingLifecycleListener(bool is_complete,
+                             const enum PoolStatus *pool_statuses,
+                             uintptr_t pool_statuses_len,
+                             const void *context) {
     @synchronized (context) {
         NSMutableArray *statuses = [NSMutableArray array];
 
@@ -535,8 +524,55 @@ void mixingCompleteListener(const enum PoolStatus *pool_statuses,
             [statuses addObject:@(pool_statuses[i])];
         }
 
-        [AS_OBJC(context).manager onMixingComplete:statuses];
+        if (is_complete) {
+            [AS_OBJC(context).manager onMixingComplete:statuses];
+        } else {
+            [AS_OBJC(context).manager onMixingStarted:statuses];
+        }
     }
+}
+
+CoinJoinKeys* getCoinJoinKeys(bool used, const void *context) {
+    @synchronized (context) {
+        DSCoinJoinWrapper *wrapper = AS_OBJC(context);
+        NSArray *addresses;
+        
+        if (used) {
+            addresses = [wrapper.manager getIssuedReceiveAddresses];
+        } else {
+            addresses = [wrapper.manager getUsedReceiveAddresses];
+        }
+        
+        CoinJoinKeys *keys = malloc(sizeof(CoinJoinKeys));
+        keys->item_count = addresses.count;
+        keys->items = malloc(sizeof(ByteArray *) * keys->item_count);
+        
+        for (NSUInteger i = 0; i < addresses.count; i++) {
+            NSString *address = addresses[i];
+            ByteArray *byteArray = malloc(sizeof(ByteArray));
+            byteArray->ptr = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType).ptr;
+            byteArray->len = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType).len;
+            keys->items[i] = byteArray;
+        }
+        
+        return keys;
+    }
+}
+
+void destroyCoinJoinKeys(struct CoinJoinKeys *coinjoin_keys) {
+    if (coinjoin_keys == NULL) {
+        return;
+    }
+    
+    for (uintptr_t i = 0; i < coinjoin_keys->item_count; i++) {
+        if (coinjoin_keys->items[i] != NULL) {
+            free(coinjoin_keys->items[i]->ptr);
+            free(coinjoin_keys->items[i]);
+        }
+    }
+    
+    free(coinjoin_keys->items);
+    free(coinjoin_keys);
 }
 
 @end

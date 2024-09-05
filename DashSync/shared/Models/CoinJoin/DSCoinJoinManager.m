@@ -42,7 +42,6 @@ int32_t const MIN_BLOCKS_TO_WAIT = 1;
 
 @property (nonatomic, strong) dispatch_queue_t processingQueue;
 @property (nonatomic, strong) dispatch_source_t coinjoinTimer;
-@property (atomic) uint32_t lastSeenBlock;
 @property (atomic) int32_t cachedLastSuccessBlock;
 @property (atomic) int32_t cachedBlockHeight; // Keep track of current block height
 
@@ -78,12 +77,26 @@ static dispatch_once_t managerChainToken = 0;
         _wrapper = [[DSCoinJoinWrapper alloc] initWithManagers:self chainManager:chain.chainManager];
         _masternodeGroup = [[DSMasternodeGroup alloc] initWithManager:self];
         _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.coinjoin.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
-        _lastSeenBlock = 0;
         _cachedBlockHeight = 0;
         _cachedLastSuccessBlock = 0;
         _options = [self createOptions];
     }
     return self;
+}
+
+- (CoinJoinClientOptions *)createOptions {
+    CoinJoinClientOptions *options = malloc(sizeof(CoinJoinClientOptions));
+    options->enable_coinjoin = YES;
+    options->coinjoin_rounds = 1;
+    options->coinjoin_sessions = 1;
+    options->coinjoin_amount = DUFFS / 8; // 0.125 DASH
+    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
+    options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
+    options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
+    options->coinjoin_multi_session = NO;
+    options->denom_only = NO;
+    
+    return options;
 }
 
 - (BOOL)isChainSynced {
@@ -120,6 +133,7 @@ static dispatch_once_t managerChainToken = 0;
     uint32_t delay = 1;
     
     @synchronized (self) {
+        self.cachedBlockHeight = self.chain.lastSyncBlock.height;
         [self.wrapper registerCoinJoin:self.options];
         self.coinjoinTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.processingQueue);
         if (self.coinjoinTimer) {
@@ -181,8 +195,8 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)handleSyncStateDidChangeNotification:(NSNotification *)note {
-    if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.lastSeenBlock) {
-        self.lastSeenBlock = self.chain.lastSyncBlock.height;
+    if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.cachedBlockHeight) {
+        self.cachedBlockHeight = self.chain.lastSyncBlock.height;
         dispatch_async(self.processingQueue, ^{
             [self.wrapper notifyNewBestBlock:self.chain.lastSyncBlock];
         });
@@ -225,6 +239,10 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)setStopOnNothingToDo:(BOOL)stop {
     [self.wrapper setStopOnNothingToDo:stop];
+}
+
+- (void)refreshUnusedKeys {
+    [self.wrapper refreshUnusedKeys];
 }
 
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
@@ -612,6 +630,16 @@ static dispatch_once_t managerChainToken = 0;
     return address;
 }
 
+- (NSArray *)getIssuedReceiveAddresses {
+    DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
+    return account.allCoinJoinReceiveAddresses;
+}
+
+- (NSArray *)getUsedReceiveAddresses {
+    DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
+    return account.usedCoinJoinReceiveAddresses;
+}
+
 - (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished {
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES];
@@ -628,7 +656,7 @@ static dispatch_once_t managerChainToken = 0;
     } else {
         [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
             if (error) {
-                DSLog(@"[OBJ-C] CoinJoin publish error: %@", error.description);
+                DSLog(@"[OBJ-C] CoinJoin publish error: %@ for tx: %@", error.description, transaction.description);
             } else {
                 DSLog(@"[OBJ-C] CoinJoin publish success: %@", transaction.description);
             }
@@ -705,20 +733,6 @@ static dispatch_once_t managerChainToken = 0;
     return self.cachedBlockHeight - self.cachedLastSuccessBlock < MIN_BLOCKS_TO_WAIT;
 }
 
-- (CoinJoinClientOptions *)createOptions {
-    CoinJoinClientOptions *options = malloc(sizeof(CoinJoinClientOptions));
-    options->enable_coinjoin = YES;
-    options->coinjoin_rounds = 1;
-    options->coinjoin_sessions = 1;
-    options->coinjoin_amount = DUFFS / 8; // 0.125 DASH
-    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
-    options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
-    options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-    options->coinjoin_multi_session = YES;
-    
-    return options;
-}
-
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
     return [self.wrapper coinJoinTxTypeForTransaction:transaction];
 }
@@ -731,6 +745,11 @@ static dispatch_once_t managerChainToken = 0;
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined {
     DSLog(@"[OBJ-C] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
     [self.managerDelegate sessionCompleteWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message ipAddress:address isJoined:joined];
+}
+
+- (void)onMixingStarted:(nonnull NSArray *)statuses {
+    DSLog(@"[OBJ-C] CoinJoin: onMixingStarted: %@", statuses);
+    [self.managerDelegate mixingStartedWithStatuses:statuses];
 }
 
 - (void)onMixingComplete:(nonnull NSArray *)statuses {
