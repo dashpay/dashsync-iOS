@@ -95,6 +95,7 @@ static dispatch_once_t managerChainToken = 0;
     options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
     options->coinjoin_multi_session = NO;
     options->denom_only = NO;
+    options->chain_type = self.chain.chainType;
     
     return options;
 }
@@ -544,37 +545,30 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (Balance *)getBalance {
+    DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
     uint64_t anonymizedBalance = 0;
     uint64_t denominatedBalance = 0;
     DSUTXO outpoint;
-    NSArray *utxos = self.chain.wallets.firstObject.unspentOutputs;
+    NSArray *utxos = account.unspentOutputs;
     
     for (NSValue *value in utxos) {
         [value getValue:&outpoint];
-        
-        if ([setWalletTxesCounted containsObject:uint256_data(outpoint.hash)]) {
-            continue;
+        DSTransaction *tx = [account transactionForHash:outpoint.hash];
+        DSTransactionOutput *output = tx.outputs[outpoint.n];
+            
+        if ([self isCoinJoinOutput:output utxo:outpoint]) {
+            anonymizedBalance += output.amount;
         }
         
-        [setWalletTxesCounted addObject:uint256_data(outpoint.hash)];
-        DSTransaction *tx = [self.chain transactionForHash:outpoint.hash];
-        
-        for (int32_t i = 0; i < tx.outputs.count; i++) {
-            DSTransactionOutput *output = tx.outputs[i];
-            
-            if ([self isCoinJoinOutput:output utxo:outpoint]) {
-                anonymizedBalance += output.amount;
-            }
-            
-            if (is_denominated_amount(output.amount)) {
-                denominatedBalance += output.amount;
-            }
+        if (is_denominated_amount(output.amount)) {
+            denominatedBalance += output.amount;
+            DSLog(@"[OBJ-C] CoinJoin: sum %llu (counting denominated %lu-th utxo of tx %@ amount %llu to %@)", denominatedBalance, outpoint.n, uint256_reverse_hex(tx.txHash), output.amount, output.address);
         }
     }
     
     Balance *balance = malloc(sizeof(Balance));
-    balance->my_trusted = self.chain.chainManager.chain.balance;
+    balance->my_trusted = account.balance;
     balance->denominated_trusted = denominatedBalance;
     balance->anonymized = anonymizedBalance;
     balance->my_immature = 0;
@@ -621,10 +615,8 @@ static dispatch_once_t managerChainToken = 0;
     
     if (internal) {
         address = account.coinJoinChangeAddress;
-        DSLog(@"[OBJ-C] CoinJoin: freshChangeAddress, address: %@", address);
     } else {
         address = account.coinJoinReceiveAddress;
-        DSLog(@"[OBJ-C] CoinJoin: freshReceiveAddress, address: %@", address);
     }
     
     return address;
