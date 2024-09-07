@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)freshAddress:(BOOL)internal;
 - (NSArray<NSString *> *)getIssuedReceiveAddresses;
 - (NSArray<NSString *> *)getUsedReceiveAddresses;
-- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished;
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs coinControl:(DSCoinControl *)coinControl onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished;
 - (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
 - (uint64_t)validMNCount;
 - (DSMasternodeList *)mnList;
