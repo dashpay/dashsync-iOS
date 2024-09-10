@@ -99,6 +99,7 @@ static dispatch_once_t managerChainToken = 0;
     options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
     options->coinjoin_multi_session = NO;
     options->denom_only = NO;
+    options->chain_type = self.chain.chainType;
     
     return options;
 }
@@ -537,9 +538,9 @@ static dispatch_once_t managerChainToken = 0;
                     continue;
                 }
                 
-                NSValue *outputValue = dsutxo_obj(((DSUTXO){wtxid, i}));
+                DSUTXO utxo = ((DSUTXO){wtxid, i});
                 
-                if (coinControl != nil && coinControl.hasSelected && !coinControl.allowOtherInputs && ![coinControl isSelected:outputValue]) {
+                if (coinControl != nil && coinControl.hasSelected && !coinControl.allowOtherInputs && ![coinControl isSelected:utxo]) {
                     continue;
                 }
                 
@@ -547,7 +548,7 @@ static dispatch_once_t managerChainToken = 0;
                     continue;
                 }
                 
-                if ([account isSpent:outputValue]) {
+                if ([account isSpent:dsutxo_obj(utxo)]) {
                     continue;
                 }
                 
@@ -672,32 +673,23 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (DSCoinJoinBalance *)getBalance {
-    NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
+    DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     uint64_t anonymizedBalance = 0;
     uint64_t denominatedBalance = 0;
     DSUTXO outpoint;
-    NSArray *utxos = self.chain.wallets.firstObject.unspentOutputs;
+    NSArray *utxos = account.unspentOutputs;
     
     for (NSValue *value in utxos) {
         [value getValue:&outpoint];
-        
-        if ([setWalletTxesCounted containsObject:uint256_data(outpoint.hash)]) {
-            continue;
+        DSTransaction *tx = [account transactionForHash:outpoint.hash];
+        DSTransactionOutput *output = tx.outputs[outpoint.n];
+            
+        if ([self isCoinJoinOutput:output utxo:outpoint]) {
+            anonymizedBalance += output.amount;
         }
         
-        [setWalletTxesCounted addObject:uint256_data(outpoint.hash)];
-        DSTransaction *tx = [self.chain transactionForHash:outpoint.hash];
-        
-        for (int32_t i = 0; i < tx.outputs.count; i++) {
-            DSTransactionOutput *output = tx.outputs[i];
-            
-            if ([self isCoinJoinOutput:output utxo:outpoint]) {
-                anonymizedBalance += output.amount;
-            }
-            
-            if (is_denominated_amount(output.amount)) {
-                denominatedBalance += output.amount;
-            }
+        if (is_denominated_amount(output.amount)) {
+            denominatedBalance += output.amount;
         }
     }
 
@@ -750,10 +742,8 @@ static dispatch_once_t managerChainToken = 0;
     
     if (internal) {
         address = account.coinJoinChangeAddress;
-        DSLog(@"[OBJ-C] CoinJoin: freshChangeAddress, address: %@", address);
     } else {
         address = account.coinJoinReceiveAddress;
-        DSLog(@"[OBJ-C] CoinJoin: freshReceiveAddress, address: %@", address);
     }
     
     return address;
@@ -769,9 +759,9 @@ static dispatch_once_t managerChainToken = 0;
     return account.usedCoinJoinReceiveAddresses;
 }
 
-- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished {
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs coinControl:(DSCoinControl *)coinControl onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished {
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
-    DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES];
+    DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES coinControl:coinControl];
     
     if (!transaction) {
         return NO;

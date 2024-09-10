@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BigIntTypes.h"
 #import "dash_shared_core.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -40,11 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFFICoinControl:(CoinControl *)coinControl;
 
 - (BOOL)hasSelected;
-- (BOOL)isSelected:(NSValue *)output;
-- (void)select:(NSValue *)output;
-- (void)unSelect:(NSValue *)output;
-- (void)unSelectAll;
-- (void)useCoinJoin:(BOOL)fUseCoinJoin;
+- (BOOL)isSelected:(DSUTXO)utxo;
+- (void)useCoinJoin:(BOOL)useCoinJoin;
 - (BOOL)isUsingCoinJoin;
 
 @end

@@ -314,13 +314,13 @@ bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
     return result;
 }
 
-GatheredOutputs* availableCoins(bool onlySafe, CoinControl coinControl, WalletEx *walletEx, const void *context) {
+GatheredOutputs* availableCoins(bool onlySafe, CoinControl *coinControl, WalletEx *walletEx, const void *context) {
     GatheredOutputs *gatheredOutputs;
     
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         ChainType chainType = wrapper.chain.chainType;
-        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:&coinControl];
+        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl];
         NSArray<DSInputCoin *> *coins = [wrapper.manager availableCoins:walletEx onlySafe:onlySafe coinControl:cc minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
         
         gatheredOutputs = malloc(sizeof(GatheredOutputs));
@@ -433,7 +433,7 @@ ByteArray freshCoinJoinAddress(bool internal, const void *context) {
     }
 }
 
-bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_denominating, uint8_t (*client_session_id)[32], const void *context) {
+bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinControl *coinControl, bool is_denominating, uint8_t (*client_session_id)[32], const void *context) {
     DSLog(@"[OBJ-C] CoinJoin: commitTransaction");
     
     NSMutableArray *amounts = [NSMutableArray array];
@@ -450,7 +450,8 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, bool is_d
     
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
-        result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts onPublished:^(UInt256 txId, NSError * _Nullable error) {
+        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl];
+        result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts coinControl:cc onPublished:^(UInt256 txId, NSError * _Nullable error) {
             if (error) {
                 DSLog(@"[OBJ-C] CoinJoin: commit tx error: %@, tx type: %@", error, is_denominating ? @"denominations" : @"collateral");
             } else if (is_denominating) {

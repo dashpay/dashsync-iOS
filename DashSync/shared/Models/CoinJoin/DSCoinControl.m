@@ -26,6 +26,23 @@
     self.maxDepth = coinControl->max_depth;
     self.avoidAddressReuse = coinControl->avoid_address_reuse;
     self.allowOtherInputs = coinControl->allow_other_inputs;
+
+    if (coinControl->set_selected && coinControl->set_selected_size > 0) {
+        self.setSelected = [[NSMutableOrderedSet alloc] init];
+        
+        for (size_t i = 0; i < coinControl->set_selected_size; i++) {
+            TxOutPoint *outpoint = coinControl->set_selected[i];
+
+            if (outpoint) {
+                UInt256 hash;
+                memcpy(hash.u8, outpoint->hash, 32);
+                NSValue *value = dsutxo_obj(((DSUTXO){hash, outpoint->index}));
+                [self.setSelected addObject:value];
+            }
+        }
+    } else {
+        self.setSelected = [[NSMutableOrderedSet alloc] init];
+    }
     
     return self;
 }
@@ -50,20 +67,17 @@
     return self.setSelected.count > 0;
 }
 
-- (BOOL)isSelected:(NSValue *)output {
-    return [self.setSelected containsObject:output];
-}
-
-- (void)select:(NSValue *)output {
-    [self.setSelected addObject:output];
-}
-
-- (void)unSelect:(NSValue *)output {
-    [self.setSelected removeObject:output];
-}
-
-- (void)unSelectAll {
-    [self.setSelected removeAllObjects];
+- (BOOL)isSelected:(DSUTXO)utxo {
+    for (NSValue *selectedValue in self.setSelected) {
+        DSUTXO selectedUTXO;
+        [selectedValue getValue:&selectedUTXO];
+        
+        if (uint256_eq(utxo.hash, selectedUTXO.hash) && utxo.n == selectedUTXO.n) {
+            return YES;
+        }
+    }
+    
+    return NO;
 }
 
 - (void)useCoinJoin:(BOOL)useCoinJoin {
