@@ -98,6 +98,18 @@
     }
 }
 
+- (BOOL)isDenominatedAmount:(uint64_t)amount {
+    @synchronized (self) {
+        return is_denominated_amount(amount);
+    }
+}
+
+- (BOOL)isFullyMixed:(DSUTXO)utxo {
+    @synchronized (self) {
+        return is_fully_mixed_with_manager(_clientManager, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n);
+    }
+}
+
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message {
     @synchronized (self) {
         DSLog(@"[OBJ-C] CoinJoin: process DSQ from %@", peer.location);

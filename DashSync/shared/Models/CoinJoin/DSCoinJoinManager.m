@@ -271,6 +271,16 @@ static dispatch_once_t managerChainToken = 0;
         return false;
     }
     
+//    NSArray *issued = [self getUsedReceiveAddresses];
+//    DSLog(@"[OBJ-C] CoinJoin: keys used: %lu", (unsigned long)issued.count);
+//    
+//    NSArray *all = [self getIssuedReceiveAddresses];
+//    DSLog(@"[OBJ-C] CoinJoin: all keys count: %lu", (unsigned long)all.count);
+//    
+//    for (NSString *iss in issued) {
+//        DSLog(@"[OBJ-C] CoinJoin: %@", iss);
+//    }
+    
     if (![self.wrapper isRegistered]) {
         [self.wrapper registerCoinJoin:_options];
     }
@@ -608,12 +618,12 @@ static dispatch_once_t managerChainToken = 0;
                 DSTransactionOutput *output = tx.outputs[outpoint.n];
                 
                 __block int unmixedInputs = 0;
-                __block uint64_t outputValue = output.amount - collateralAmount;
+                __block int64_t outputValue = output.amount - collateralAmount;
                 
                 [denominations enumerateObjectsUsingBlock:^(NSNumber *coin, NSUInteger idx, BOOL *stop) {
-                    while (outputValue > coin.unsignedLongLongValue) {
+                    while (outputValue - coin.longLongValue > 0) {
                         unmixedInputs++;
-                        outputValue -= coin.unsignedLongLongValue;
+                        outputValue -= coin.longLongValue;
                     }
                 }];
                 
@@ -661,11 +671,11 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isCoinJoinOutput:(DSTransactionOutput *)output utxo:(DSUTXO)utxo {
-    if (!is_denominated_amount(output.amount)) {
+    if (![self.wrapper isDenominatedAmount:output.amount]) {
         return false;
     }
     
-    if (!is_fully_mixed_with_manager(_wrapper.clientManager, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n)) {
+    if (![self.wrapper isFullyMixed:utxo]) {
         return false;
     }
     
@@ -673,6 +683,10 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (DSCoinJoinBalance *)getBalance {
+    if (![self.wrapper isRegistered]) {
+        [self.wrapper registerCoinJoin:self.options];
+    }
+    
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
     uint64_t anonymizedBalance = 0;
     uint64_t denominatedBalance = 0;
@@ -688,7 +702,7 @@ static dispatch_once_t managerChainToken = 0;
             anonymizedBalance += output.amount;
         }
         
-        if (is_denominated_amount(output.amount)) {
+        if ([self.wrapper isDenominatedAmount:output.amount]) {
             denominatedBalance += output.amount;
         }
     }
