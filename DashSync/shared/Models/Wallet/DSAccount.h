@@ -147,6 +147,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
+// true if the coinjoin address is controlled by the wallet
+- (BOOL)containsCoinJoinAddress:(NSString *)coinJoinAddress;
+
 // true if the address is internal and is controlled by the wallet
 - (BOOL)containsInternalAddress:(NSString *)address;
 

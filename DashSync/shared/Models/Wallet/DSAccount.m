@@ -547,6 +547,19 @@
     return FALSE;
 }
 
+// true if the coinjoin address is controlled by the wallet
+- (BOOL)containsCoinJoinAddress:(NSString *)coinJoinAddress {
+    NSParameterAssert(coinJoinAddress);
+    if (![coinJoinAddress isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
+
+    if ([self.coinJoinDerivationPath containsAddress:coinJoinAddress]) return TRUE;
+    
+    return FALSE;
+}
+
 // true if the address is controlled by the wallet
 - (BOOL)containsInternalAddress:(NSString *)address {
     NSParameterAssert(address);
