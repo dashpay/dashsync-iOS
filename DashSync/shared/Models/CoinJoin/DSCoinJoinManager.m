@@ -488,9 +488,9 @@ static dispatch_once_t managerChainToken = 0;
                     continue;
                 }
                 
-                NSValue *outputValue = dsutxo_obj(((DSUTXO){wtxid, i}));
+                DSUTXO utxo = ((DSUTXO){wtxid, i});
                 
-                if (coinControl != nil && coinControl.hasSelected && !coinControl.allowOtherInputs && ![coinControl isSelected:outputValue]) {
+                if (coinControl != nil && coinControl.hasSelected && !coinControl.allowOtherInputs && ![coinControl isSelected:utxo]) {
                     continue;
                 }
                 
@@ -498,7 +498,7 @@ static dispatch_once_t managerChainToken = 0;
                     continue;
                 }
                 
-                if ([account isSpent:outputValue]) {
+                if ([account isSpent:dsutxo_obj(utxo)]) {
                     continue;
                 }
                 
@@ -563,7 +563,6 @@ static dispatch_once_t managerChainToken = 0;
         
         if (is_denominated_amount(output.amount)) {
             denominatedBalance += output.amount;
-            DSLog(@"[OBJ-C] CoinJoin: sum %llu (counting denominated %lu-th utxo of tx %@ amount %llu to %@)", denominatedBalance, outpoint.n, uint256_reverse_hex(tx.txHash), output.amount, output.address);
         }
     }
     
@@ -632,9 +631,9 @@ static dispatch_once_t managerChainToken = 0;
     return account.usedCoinJoinReceiveAddresses;
 }
 
-- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished {
+- (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs coinControl:(DSCoinControl *)coinControl onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished {
     DSAccount *account = self.chain.wallets.firstObject.accounts.firstObject;
-    DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES];
+    DSTransaction *transaction = [account transactionForAmounts:amounts toOutputScripts:outputs withFee:YES coinControl:coinControl];
     
     if (!transaction) {
         return NO;
