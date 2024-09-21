@@ -1549,6 +1549,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 - (BOOL)isSpent:(NSValue *)output {
+    if (!output) {
+        return false;
+    }
+    
     return [self.spentOutputs containsObject:output];
 }
 

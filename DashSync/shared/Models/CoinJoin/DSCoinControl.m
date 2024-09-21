@@ -72,7 +72,7 @@
         DSUTXO selectedUTXO;
         [selectedValue getValue:&selectedUTXO];
         
-        if (uint256_eq(utxo.hash, selectedUTXO.hash) && utxo.n == selectedUTXO.n) {
+        if (dsutxo_eq(utxo, selectedUTXO)) {
             return YES;
         }
     }

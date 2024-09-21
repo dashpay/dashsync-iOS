@@ -92,7 +92,7 @@ static dispatch_once_t managerChainToken = 0;
     CoinJoinClientOptions *options = malloc(sizeof(CoinJoinClientOptions));
     options->enable_coinjoin = YES;
     options->coinjoin_rounds = 1;
-    options->coinjoin_sessions = 1;
+    options->coinjoin_sessions = 6;
     options->coinjoin_amount = DUFFS / 8;
     options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
     options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
@@ -271,18 +271,8 @@ static dispatch_once_t managerChainToken = 0;
         return false;
     }
     
-//    NSArray *issued = [self getUsedReceiveAddresses];
-//    DSLog(@"[OBJ-C] CoinJoin: keys used: %lu", (unsigned long)issued.count);
-//    
-//    NSArray *all = [self getIssuedReceiveAddresses];
-//    DSLog(@"[OBJ-C] CoinJoin: all keys count: %lu", (unsigned long)all.count);
-//    
-//    for (NSString *iss in issued) {
-//        DSLog(@"[OBJ-C] CoinJoin: %@", iss);
-//    }
-    
     if (![self.wrapper isRegistered]) {
-        [self.wrapper registerCoinJoin:_options];
+        [self.wrapper registerCoinJoin:self.options];
     }
     
     DSLog(@"[OBJ-C] CoinJoin: doAutomaticDenominating, time: %@", [NSDate date]);
@@ -385,7 +375,7 @@ static dispatch_once_t managerChainToken = 0;
                     continue;
                 }
 
-                if (is_locked_coin(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
+                if ([account isSpent:dsutxo_obj(((DSUTXO){outpoint.hash, i}))] || is_locked_coin(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
                     continue;
                 }
                 
@@ -437,7 +427,7 @@ static dispatch_once_t managerChainToken = 0;
         }
 
         // Note: cache is assigned in dash-shared-core
-        
+
         return vecTallyRet;
     }
 }
@@ -824,19 +814,16 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn {
-    DSLog(@"[OBJ-C] CoinJoin peers: sendMessageOfType: %@ to %@", messageType, [self.masternodeGroup hostFor:address]);
-    return [self.masternodeGroup forPeer:address port:port warn:YES withPredicate:^BOOL(DSPeer * _Nonnull peer) {
+    return [self.masternodeGroup forPeer:address port:port warn:warn withPredicate:^BOOL(DSPeer * _Nonnull peer) {
         if ([messageType isEqualToString:DSCoinJoinAcceptMessage.type]) {
             DSCoinJoinAcceptMessage *request = [DSCoinJoinAcceptMessage requestWithData:message];
             [peer sendRequest:request];
         } else if ([messageType isEqualToString:DSCoinJoinEntryMessage.type]) {
             DSCoinJoinEntryMessage *request = [DSCoinJoinEntryMessage requestWithData:message];
             [peer sendRequest:request];
-            DSLog(@"[OBJ-C] CoinJoin dsi: sent");
         } else if ([messageType isEqualToString:DSCoinJoinSignedInputs.type]) {
             DSCoinJoinSignedInputs *request = [DSCoinJoinSignedInputs requestWithData:message];
             [peer sendRequest:request];
-            DSLog(@"[OBJ-C] CoinJoin dss: sent");
         } else {
             DSLog(@"[OBJ-C] CoinJoin: unknown message type: %@", messageType);
             return NO;
