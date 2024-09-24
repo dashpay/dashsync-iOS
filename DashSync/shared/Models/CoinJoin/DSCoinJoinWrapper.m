@@ -112,8 +112,6 @@
 
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message {
     @synchronized (self) {
-        DSLog(@"[OBJ-C] CoinJoin: process DSQ from %@", peer.location);
-        
         ByteArray *array = malloc(sizeof(ByteArray));
         array->len = (uintptr_t)message.length;
         array->ptr = data_malloc(message);
@@ -414,8 +412,6 @@ void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
 }
 
 Transaction* signTransaction(Transaction *transaction, bool anyoneCanPay, const void *context) {
-    DSLog(@"[OBJ-C CALLBACK] CoinJoin: signTransaction");
-    
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
