@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sessionStartedWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
 - (void)sessionCompleteWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
 - (void)mixingStarted;
-- (void)mixingComplete:(BOOL)withError;
+- (void)mixingComplete:(BOOL)withError isInterrupted:(BOOL)isInterrupted;
 - (void)transactionProcessedWithId:(UInt256)txId type:(CoinJoinTransactionType)type;
 
 @end
@@ -84,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)refreshUnusedKeys;
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 - (double)getMixingProgress;
+- (DSCoinControl *)selectCoinJoinUTXOs;
 
 - (uint64_t)getSmallestDenomination;
 - (uint64_t)getAnonymizableBalanceWithSkipDenominated:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed;
@@ -94,8 +95,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Events
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
 - (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;
-- (void)onMixingStarted:(NSArray *)statuses;
-- (void)onMixingComplete:(NSArray *)statuses;
+- (void)onMixingStarted:(nonnull NSArray *)statuses;
+- (void)onMixingComplete:(nonnull NSArray *)statuses isInterrupted:(BOOL)isInterrupted;
 - (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type;
 
 @end

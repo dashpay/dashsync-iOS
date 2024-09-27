@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isSelected:(DSUTXO)utxo;
 - (void)useCoinJoin:(BOOL)useCoinJoin;
 - (BOOL)isUsingCoinJoin;
+- (void)select:(DSUTXO)utxo;
 
 @end
 

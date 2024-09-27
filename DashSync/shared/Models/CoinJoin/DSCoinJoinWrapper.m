@@ -58,7 +58,7 @@
 
 - (void)updateOptions:(CoinJoinClientOptions *)options {
     @synchronized (self) {
-        change_coinjoin_options(_clientManager, options);
+        change_coinjoin_options(self.clientManager, options);
     }
 }
 
@@ -240,9 +240,15 @@
     }
 }
 
+- (BOOL)isLockedCoin:(DSUTXO)utxo {
+    @synchronized (self) {
+        return is_locked_coin_with_manager(self.clientManager, (uint8_t (*)[32])(utxo.hash.u8), (uint32_t)utxo.n);
+    }
+}
+
 - (void)stopAndResetClientManager {
     @synchronized (self) {
-        stop_and_reset_coinjoin(_clientManager);
+        stop_and_reset_coinjoin(self.clientManager);
     }
 }
 
@@ -252,7 +258,8 @@
 
 - (void)dealloc {
     @synchronized (self) {
-        unregister_client_manager(_clientManager);
+        unregister_client_manager(self.clientManager);
+        _clientManager = NULL;
     }
 }
 
@@ -604,6 +611,7 @@ void sessionLifecycleListener(bool is_complete,
 }
 
 void mixingLifecycleListener(bool is_complete,
+                             bool is_interrupted,
                              const enum PoolStatus *pool_statuses,
                              uintptr_t pool_statuses_len,
                              const void *context) {
@@ -614,8 +622,8 @@ void mixingLifecycleListener(bool is_complete,
             [statuses addObject:@(pool_statuses[i])];
         }
 
-        if (is_complete) {
-            [AS_OBJC(context).manager onMixingComplete:statuses];
+        if (is_complete || is_interrupted) {
+            [AS_OBJC(context).manager onMixingComplete:statuses isInterrupted:is_interrupted];
         } else {
             [AS_OBJC(context).manager onMixingStarted:statuses];
         }
