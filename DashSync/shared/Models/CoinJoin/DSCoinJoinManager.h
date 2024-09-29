@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
 - (void)setStopOnNothingToDo:(BOOL)stop;
 - (BOOL)startMixing;
-- (void)doAutomaticDenominating;
+- (void)doAutomaticDenominatingWithReport:(BOOL)report;
 - (BOOL)doAutomaticDenominatingWithDryRun:(BOOL)dryRun;
 - (void)updateSuccessBlock;
 - (void)refreshUnusedKeys;

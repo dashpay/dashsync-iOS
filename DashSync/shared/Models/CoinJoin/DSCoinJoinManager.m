@@ -139,13 +139,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isChainSynced {
-    BOOL isSynced = self.chain.chainManager.isSynced;
-    
-//    if (!isSynced) {
-//        [self.chain.chainManager startSync];
-//    }
-    
-    return isSynced;
+    return self.chain.chainManager.isSynced;
 }
 
 - (void)startAsync {
@@ -173,7 +167,14 @@ static dispatch_once_t managerChainToken = 0;
     
     @synchronized (self) {
         self.cachedBlockHeight = self.chain.lastSyncBlock.height;
-        [self.wrapper registerCoinJoin:self.options];
+        self.options->enable_coinjoin = YES;
+        
+        if ([self.wrapper isRegistered]) {
+            [self.wrapper updateOptions:self.options];
+        } else {
+            [self.wrapper registerCoinJoin:self.options];
+        }
+        
         self.coinjoinTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.processingQueue);
         if (self.coinjoinTimer) {
             dispatch_source_set_timer(self.coinjoinTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), interval * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
@@ -259,7 +260,7 @@ static dispatch_once_t managerChainToken = 0;
     }
 }
 
-- (void)doAutomaticDenominating {
+- (void)doAutomaticDenominatingWithReport:(BOOL)report {
      if ([self validMNCount] == 0) {
          DSLog(@"[OBJ-C] CoinJoin doAutomaticDenominating: No Masternodes detected.");
         return;
@@ -267,7 +268,11 @@ static dispatch_once_t managerChainToken = 0;
      
     dispatch_async(self.processingQueue, ^{
         DSLog(@"[OBJ-C] CoinJoin: doAutomaticDenominating, time: %@", [NSDate date]);
-        [self.wrapper doAutomaticDenominatingWithDryRun:NO];
+        BOOL result = [self.wrapper doAutomaticDenominatingWithDryRun:NO];
+        
+        if (report) {
+            DSLog(@"[OBJ-C] CoinJoin: Mixing %@", result ? @"started successfully" : @"start failed, will retry");
+        }
     });
  }
 
