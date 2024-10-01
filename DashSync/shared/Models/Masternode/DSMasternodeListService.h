@@ -39,9 +39,9 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 
 @protocol DSMasternodeListServiceDelegate <NSObject>
 
-- (DSMasternodeList *__nullable)masternodeListSerivceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-- (void)masternodeListSerivceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-- (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
+- (DSMasternodeList *__nullable)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+- (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
 
 @end
 
