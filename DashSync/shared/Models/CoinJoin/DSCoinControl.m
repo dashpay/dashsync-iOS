@@ -88,4 +88,11 @@
     return self.coinType == CoinType_OnlyFullyMixed;
 }
 
+- (void)select:(DSUTXO)utxo {
+    NSValue *utxoValue = [NSValue valueWithBytes:&utxo objCType:@encode(DSUTXO)];
+    if (![self.setSelected containsObject:utxoValue]) {
+        [self.setSelected addObject:utxoValue];
+    }
+}
+
 @end

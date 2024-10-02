@@ -43,9 +43,10 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 @property (nonatomic, strong) NSMutableDictionary *sessionMap;
 @property (nonatomic, strong) NSMutableDictionary *addressMap;
 @property (atomic, readonly) NSUInteger maxConnections;
-@property (nonatomic, strong) NSMutableArray<DSPeer *> *pendingClosingMasternodes;
+@property (nonatomic, strong) NSMutableArray<DSPeer *> *mutablePendingClosingMasternodes;
 @property (nonatomic, strong) NSMutableSet *mutableConnectedPeers;
 @property (nonatomic, strong) NSMutableSet *mutablePendingPeers;
+@property (nonatomic, strong) NSObject *peersLock;
 @property (nonatomic, readonly) BOOL shouldSendDsq;
 @property (nullable, nonatomic, readwrite) DSPeer *downloadPeer;
 @property (nonatomic, strong) DSBackoff *groupBackoff;
@@ -63,7 +64,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         _coinJoinManager = manager;
         _chain = manager.chain;
         _pendingSessions = [NSMutableSet set];
-        _pendingClosingMasternodes = [NSMutableArray array];
+        _mutablePendingClosingMasternodes = [NSMutableArray array];
         _masternodeMap = [NSMutableDictionary dictionary];
         _sessionMap = [NSMutableDictionary dictionary];
         _addressMap = [NSMutableDictionary dictionary];
@@ -117,8 +118,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     return [self forPeer:ip port:port warn:YES withPredicate:^BOOL(DSPeer *peer) {
         DSLog(@"[OBJ-C] CoinJoin: masternode[closing] %@", [self hostFor:ip]);
         
-        @synchronized (self.pendingClosingMasternodes) {
-            [self.pendingClosingMasternodes addObject:peer];
+        @synchronized (self.mutablePendingClosingMasternodes) {
+            [self.mutablePendingClosingMasternodes addObject:peer];
             // TODO (dashj): what if this disconnects the wrong one
             [self updateMaxConnections];
         }
@@ -131,7 +132,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (BOOL)forPeer:(UInt128)ip port:(uint16_t)port warn:(BOOL)warn withPredicate:(BOOL (^)(DSPeer *peer))predicate {
     NSMutableString *listOfPeers = [NSMutableString string];
-    
     NSSet *peers = self.connectedPeers;
     
     for (DSPeer *peer in peers) {
@@ -165,14 +165,20 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (NSSet *)connectedPeers {
-    @synchronized(self.mutableConnectedPeers) {
+    @synchronized(self.peersLock) {
         return [self.mutableConnectedPeers copy];
     }
 }
 
 - (NSSet *)pendingPeers {
-    @synchronized(self.mutablePendingPeers) {
+    @synchronized(self.peersLock) {
         return [self.mutablePendingPeers copy];
+    }
+}
+
+- (NSMutableArray *)pendingClosingMasternodes {
+    @synchronized(self.mutablePendingClosingMasternodes) {
+        return [self.mutablePendingClosingMasternodes copy];
     }
 }
 
@@ -245,11 +251,10 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
                 DSPeer *peer = [self peerForLocation:ipAddress port:port];
                 
                 if (peer == nil) {
-                    DSLog(@"[OBJ-C] CoinJoin: not found for %@, creating new", [self hostFor:ipAddress]);
                     peer = [DSPeer peerWithAddress:ipAddress andPort:port onChain:self.chain];
                 }
                 
-                if (![self.pendingClosingMasternodes containsObject:peer] && ![self isNodeConnected:peer] && ![self isNodePending:peer]) {
+                if (![self.mutablePendingClosingMasternodes containsObject:peer] && ![self isNodeConnected:peer] && ![self isNodePending:peer]) {
                     DSBackoff *backoff = [self.backoffMap objectForKey:peer.location];
                     
                     if (!backoff) {
@@ -323,11 +328,10 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     
     // We may now have too many or too few open connections. Add more or drop some to get to the right amount.
     NSInteger adjustment = 0;
-    NSSet *connectedPeers = self.connectedPeers;
     
-    @synchronized (self.mutablePendingPeers) {
+    @synchronized (self.peersLock) {
         NSUInteger pendingCount = self.mutablePendingPeers.count;
-        NSUInteger connectedCount = connectedPeers.count;
+        NSUInteger connectedCount = self.mutableConnectedPeers.count;
         NSUInteger numPeers = pendingCount + connectedCount;
         adjustment = self.maxConnections - numPeers;
         DSLog(@"[OBJ-C] CoinJoin: updateMaxConnections adjustment %lu, pendingCount: %lu, connectedCount: %lu", adjustment, pendingCount, connectedCount);
@@ -373,7 +377,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     for (DSPeer *peer in masternodesToDrop) {
         DSSimplifiedMasternodeEntry *mn = [_chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
         DSLog(@"[OBJ-C] CoinJoin: masternode will be disconnected: %@: %@", peer.location, uint256_hex(mn.providerRegistrationTransactionHash));
-        [self.pendingClosingMasternodes addObject:peer];
+        [self.mutablePendingClosingMasternodes addObject:peer];
         [peer disconnect];
     }
 }
@@ -430,7 +434,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.chain.chainManager.transactionManager governanceDelegate:self.chain.chainManager.governanceSyncManager sporkDelegate:self.chain.chainManager.sporkManager masternodeDelegate:self.chain.chainManager.masternodeManager queue:self.networkingQueue];
     peer.earliestKeyTime = self.chain.earliestWalletCreationTime;;
 
-    @synchronized (self.mutablePendingPeers) {
+    @synchronized (self.peersLock) {
         [self.mutablePendingPeers addObject:peer];
     }
     
@@ -440,8 +444,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (BOOL)isMasternodeSessionByPeer:(DSPeer *)peer {
-    @synchronized (_addressMap) {
-        return [_addressMap objectForKey:peer.location] != nil;
+    @synchronized (self.addressMap) {
+        return [self.addressMap objectForKey:peer.location] != nil;
     }
 }
 
@@ -452,11 +456,9 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (BOOL)isNodePending:(DSPeer *)node {
-    @synchronized (self) {
-        for (DSPeer *peer in self.mutablePendingPeers) {
-            if (uint128_eq(node.address, peer.address) && node.port == peer.port) {
-                return YES;
-            }
+    for (DSPeer *peer in self.pendingPeers) {
+        if (uint128_eq(node.address, peer.address) && node.port == peer.port) {
+            return YES;
         }
     }
     
@@ -464,7 +466,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (void)peerConnected:(nonnull DSPeer *)peer {
-    @synchronized (self) {
+    @synchronized (self.peersLock) {
         [self.groupBackoff trackSuccess];
         [[self.backoffMap objectForKey:peer.location] trackSuccess];
         
@@ -480,7 +482,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (void)peer:(nonnull DSPeer *)peer disconnectedWithError:(nonnull NSError *)error {
-    @synchronized (self) {
+    @synchronized (self.peersLock) {
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers removeObject:peer];
         
@@ -509,13 +511,13 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         if (masternode) {
             NSString *address = peer.location;
             
-            if ([self.pendingClosingMasternodes containsObject:masternode]) {
+            if ([self.mutablePendingClosingMasternodes containsObject:masternode]) {
                 // if this is part of pendingClosingMasternodes, where we want to close the connection,
                 // we don't want to increase the backoff time
                 [[self.backoffMap objectForKey:address] trackSuccess];
             }
             
-            [self.pendingClosingMasternodes removeObject:masternode];
+            [self.mutablePendingClosingMasternodes removeObject:masternode];
             UInt256 proTxHash = [self.chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port].providerRegistrationTransactionHash;
             NSValue *proTxHashKey = [NSValue valueWithBytes:&proTxHash objCType:@encode(UInt256)];
             NSValue *sessionIdObject = [self.masternodeMap objectForKey:proTxHashKey];

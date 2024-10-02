@@ -52,9 +52,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint64_t)getCollateralAmount;
 - (uint32_t)amountToDenomination:(uint64_t)amount;
 - (int32_t)getRealOutpointCoinJoinRounds:(DSUTXO)utxo;
+- (BOOL)isLockedCoin:(DSUTXO)utxo;
 - (void)stopAndResetClientManager;
 - (NSArray<NSNumber *> *)getSessionStatuses;
-
 
 @end
 

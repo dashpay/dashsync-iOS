@@ -105,18 +105,22 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)updateOptionsWithAmount:(uint64_t)amount {
-    self.options->coinjoin_amount = amount;
-    
-    if (self.wrapper.isRegistered) {
-        [self.wrapper updateOptions:self.options];
+    if (self.options->coinjoin_amount != amount) {
+        self.options->coinjoin_amount = amount;
+        
+        if (self.wrapper.isRegistered) {
+            [self.wrapper updateOptions:self.options];
+        }
     }
 }
 
 - (void)updateOptionsWithEnabled:(BOOL)isEnabled {
-    self.options->enable_coinjoin = isEnabled;
-    
-    if (self.wrapper.isRegistered) {
-        [self.wrapper updateOptions:self.options];
+    if (self.options->enable_coinjoin != isEnabled) {
+        self.options->enable_coinjoin = isEnabled;
+        
+        if (self.wrapper.isRegistered) {
+            [self.wrapper updateOptions:self.options];
+        }
     }
 }
 
@@ -135,13 +139,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isChainSynced {
-    BOOL isSynced = self.chain.chainManager.isSynced;
-    
-    if (!isSynced) {
-        [self.chain.chainManager startSync];
-    }
-    
-    return isSynced;
+    return self.chain.chainManager.isSynced;
 }
 
 - (void)startAsync {
@@ -169,7 +167,14 @@ static dispatch_once_t managerChainToken = 0;
     
     @synchronized (self) {
         self.cachedBlockHeight = self.chain.lastSyncBlock.height;
-        [self.wrapper registerCoinJoin:self.options];
+        self.options->enable_coinjoin = YES;
+        
+        if ([self.wrapper isRegistered]) {
+            [self.wrapper updateOptions:self.options];
+        } else {
+            [self.wrapper registerCoinJoin:self.options];
+        }
+        
         self.coinjoinTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.processingQueue);
         if (self.coinjoinTimer) {
             dispatch_source_set_timer(self.coinjoinTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), interval * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
@@ -200,18 +205,20 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)startMixing {
-    DSLog(@"[OBJ-C] CoinJoin: mixing progress: %f", [self getMixingProgress]);
     self.isMixing = true;
     return [self.wrapper startMixing];
 }
 
 - (void)stop {
-    DSLog(@"[OBJ-C] CoinJoinManager stopping");
-    [self cancelCoinjoinTimer];
-    self.isMixing = false;
-    self.cachedLastSuccessBlock = 0;
-    [self.wrapper stopAndResetClientManager];
-    [self stopAsync];
+    if (self.isMixing) {
+        DSLog(@"[OBJ-C] CoinJoinManager stopping");
+        self.isMixing = false;
+        [self cancelCoinjoinTimer];
+        self.cachedLastSuccessBlock = 0;
+        [self updateOptionsWithEnabled:NO];
+        [self.wrapper stopAndResetClientManager];
+        [self stopAsync];
+    }
 }
 
 - (void)stopAsync {
@@ -253,7 +260,7 @@ static dispatch_once_t managerChainToken = 0;
     }
 }
 
-- (void)doAutomaticDenominating {
+- (void)doAutomaticDenominatingWithReport:(BOOL)report {
      if ([self validMNCount] == 0) {
          DSLog(@"[OBJ-C] CoinJoin doAutomaticDenominating: No Masternodes detected.");
         return;
@@ -261,7 +268,11 @@ static dispatch_once_t managerChainToken = 0;
      
     dispatch_async(self.processingQueue, ^{
         DSLog(@"[OBJ-C] CoinJoin: doAutomaticDenominating, time: %@", [NSDate date]);
-        [self.wrapper doAutomaticDenominatingWithDryRun:NO];
+        BOOL result = [self.wrapper doAutomaticDenominatingWithDryRun:NO];
+        
+        if (report) {
+            DSLog(@"[OBJ-C] CoinJoin: Mixing %@", result ? @"started successfully" : @"start failed, will retry");
+        }
     });
  }
 
@@ -583,6 +594,10 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (double)getMixingProgress {
+    if (![self.wrapper isRegistered]) {
+        [self.wrapper registerCoinJoin:self.options];
+    }
+    
     double requiredRounds = self.options->coinjoin_rounds + 0.875; // 1 x 50% + 1 x 50%^2 + 1 x 50%^3
     __block int totalInputs = 0;
     __block int totalRounds = 0;
@@ -870,12 +885,37 @@ static dispatch_once_t managerChainToken = 0;
     NSArray<NSNumber *> *statuses = [self.wrapper getSessionStatuses];
     
     for (NSNumber *status in statuses) {
-        if (status == PoolStatus_Connecting || status == PoolStatus_Connected || status == PoolStatus_Mixing) {
+        int statusInt = [status intValue];
+        
+        if (statusInt == PoolStatus_Connecting || statusInt == PoolStatus_Connected || statusInt == PoolStatus_Mixing) {
             result += 1;
         }
     }
     
     return result;
+}
+
+- (DSCoinControl *)selectCoinJoinUTXOs {
+    DSCoinControl *coinControl = [[DSCoinControl alloc] init];
+    [coinControl useCoinJoin:YES];
+    NSArray *utxos = self.chain.wallets.firstObject.unspentOutputs;
+    
+    for (NSValue *value in utxos) {
+        DSUTXO utxo;
+        [value getValue:&utxo];
+        
+        DSTransaction *tx = [self.chain transactionForHash:utxo.hash];
+        if (!tx) continue;
+        
+        DSTransactionOutput *output = tx.outputs[utxo.n];
+        if (!output) continue;
+        
+        if ([self isCoinJoinOutput:output utxo:utxo] && ![self.wrapper isLockedCoin:utxo]) {
+            [coinControl select:utxo];
+        }
+    }
+    
+    return coinControl;
 }
 
 // Events
@@ -887,17 +927,16 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined {
     DSLog(@"[OBJ-C] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
-    DSLog(@"[OBJ-C] CoinJoin: mixing progress: %f", [self getMixingProgress]);
     [self.managerDelegate sessionCompleteWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message ipAddress:address isJoined:joined];
 }
 
 - (void)onMixingStarted:(nonnull NSArray *)statuses {
-    DSLog(@"[OBJ-C] CoinJoin: onMixingStarted: %@", statuses);
+    DSLog(@"[OBJ-C] CoinJoin: onMixingStarted, statuses: %@", statuses.count > 0 ? [NSString stringWithFormat:@"%@", statuses] : @"empty");
     [self.managerDelegate mixingStarted];
 }
 
-- (void)onMixingComplete:(nonnull NSArray *)statuses {
-    DSLog(@"[OBJ-C] CoinJoin: onMixingComplete: %@", statuses);
+- (void)onMixingComplete:(nonnull NSArray *)statuses isInterrupted:(BOOL)isInterrupted {
+    DSLog(@"[OBJ-C] CoinJoin: onMixingComplete, isInterrupted: %@, statuses: %@", isInterrupted ? @"YES" : @"NO", statuses.count > 0 ? [NSString stringWithFormat:@"%@", statuses] : @"empty");
 
     BOOL isError = NO;
     for (NSNumber *statusNumber in statuses) {
@@ -911,12 +950,11 @@ static dispatch_once_t managerChainToken = 0;
         }
     }
 
-    [self.managerDelegate mixingComplete:isError];
+    [self.managerDelegate mixingComplete:isError isInterrupted:isInterrupted];
 }
 
 - (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type {
     DSLog(@"[OBJ-C] CoinJoin: onTransactionProcessed: %@, type: %d", uint256_reverse_hex(txId), type);
-    DSLog(@"[OBJ-C] CoinJoin: mixing progress: %f", [self getMixingProgress]);
     [self.managerDelegate transactionProcessedWithId:txId type:type];
 }
 

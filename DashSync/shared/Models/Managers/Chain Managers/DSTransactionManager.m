@@ -53,6 +53,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionInput.h"
 #import "DSTransition.h"
+#import "DSCoinJoinManager.h"
 #import "DSWallet+Protected.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -582,15 +583,24 @@
         errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
+    
+    DSCoinControl *coinControl = nil;
+    DSCoinJoinManager *coinJoinManager = [DSCoinJoinManager sharedInstanceForChain:self.chain];
+    
+    if (coinJoinManager.isMixing) {
+        coinControl = [coinJoinManager selectCoinJoinUTXOs];
+    }
 
     if (requestedAmount == 0) {
         tx = [account transactionForAmounts:protoReq.details.outputAmounts
                             toOutputScripts:protoReq.details.outputScripts
-                                    withFee:YES];
+                                    withFee:YES
+                                coinControl:coinControl];
     } else if (amount <= account.balance) {
         tx = [account transactionForAmounts:@[@(requestedAmount)]
                             toOutputScripts:@[protoReq.details.outputScripts.firstObject]
-                                    withFee:YES];
+                                    withFee:YES
+                                coinControl:coinControl];
     }
 
     if (tx) {
