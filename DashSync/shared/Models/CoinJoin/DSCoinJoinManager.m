@@ -55,7 +55,7 @@ static dispatch_once_t managerChainToken = 0;
 
 + (instancetype)sharedInstanceForChain:(DSChain *)chain {
     NSParameterAssert(chain);
-
+    
     dispatch_once(&managerChainToken, ^{
         _managerChainDictionary = [NSMutableDictionary dictionary];
     });
@@ -132,14 +132,20 @@ static dispatch_once_t managerChainToken = 0;
     self.options->coinjoin_multi_session = multisession;
     self.options->coinjoin_denoms_goal = denomGoal;
     self.options->coinjoin_denoms_hardcap = denomHardCap;
-
+    
     if (self.wrapper.isRegistered) {
         [self.wrapper updateOptions:self.options];
     }
 }
 
 - (BOOL)isChainSynced {
-    return self.chain.chainManager.isSynced;
+    BOOL isSynced = self.chain.chainManager.syncPhase == DSChainSyncPhase_Synced;
+    
+    if (!isSynced) {
+        DSLog(@"[OBJ-C] CoinJoin: isSynced: %@, combinedSyncProgress: %d, syncState: %@", isSynced ? @"YES" : @"NO", self.chain.chainManager.combinedSyncProgress, self.chain.chainManager.syncState);
+    }
+    
+    return isSynced;
 }
 
 - (void)startAsync {
@@ -189,12 +195,12 @@ static dispatch_once_t managerChainToken = 0;
 - (void)doMaintenance {
     // TODO:
     // report masternode group
-//                if (masternodeGroup != null) {
-//                    tick++;
-//                    if (tick % 15 == 0) {
-//                        log.info(masternodeGroup.toString());
-//                    }
-//                }
+    //                if (masternodeGroup != null) {
+    //                    tick++;
+    //                    if (tick % 15 == 0) {
+    //                        log.info(masternodeGroup.toString());
+    //                    }
+    //                }
     
     if ([self validMNCount] == 0) {
         DSLog(@"[OBJ-C] CoinJoin doMaintenance: No Masternodes detected.");
@@ -222,11 +228,11 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)stopAsync {
-     if (self.masternodeGroup != nil && self.masternodeGroup.isRunning) {
-         DSLog(@"[OBJ-C] CoinJoinManager stopAsync");
-         [self.chain.chainManager.peerManager shouldSendDsq:false];
-         [self.masternodeGroup stopAsync];
-         self.masternodeGroup = nil;
+    if (self.masternodeGroup != nil && self.masternodeGroup.isRunning) {
+        DSLog(@"[OBJ-C] CoinJoinManager stopAsync");
+        [self.chain.chainManager.peerManager shouldSendDsq:false];
+        [self.masternodeGroup stopAsync];
+        self.masternodeGroup = nil;
     }
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -324,7 +330,7 @@ static dispatch_once_t managerChainToken = 0;
     if (index < tx.outputs.count) {
         DSTransactionOutput *output = tx.outputs[index];
         
-        if ([account containsAddress:output.address]) { // TODO: is it the same as isPubKeyMine?
+        if ([account containsAddress:output.address]) {
             return YES;
         }
     }
@@ -712,7 +718,7 @@ static dispatch_once_t managerChainToken = 0;
         }
     }
 
-    // TODO: support more balance types?
+    // TODO(DashJ): support more balance types?
     DSCoinJoinBalance *balance =
         [DSCoinJoinBalance balanceWithMyTrusted:self.chain.balance
                              denominatedTrusted:denominatedBalance
