@@ -88,6 +88,7 @@
 
     NSAssert([paymentRequest isValidAsNonDashpayPaymentRequest], @"Payment request must be valid");
 
+    // TODO: mixed only?
     [account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
                                                     usingUserBlockchainIdentity:nil
                                                                     fromAccount:account
