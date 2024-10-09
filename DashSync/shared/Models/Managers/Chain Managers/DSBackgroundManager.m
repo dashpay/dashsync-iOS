@@ -86,7 +86,11 @@
 }
 
 - (BOOL)hasValidHeadersTask {
+#if TARGET_OS_IOS
     return self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid || [UIApplication sharedApplication].applicationState != UIApplicationStateBackground;
+#else
+    return FALSE;
+#endif
 }
 
 @end
