@@ -51,7 +51,8 @@
 		2AF8A95622847ACB00F8C72D /* TextViewFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */; };
 		2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */; };
 		2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */; };
-		328A9569D5871E42CA5F9D57 /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C5041A303DA8005AF8D8C194 /* libPods-DashSync_Tests.a */; };
+		2F5E40C2D9889BA0A1050512 /* libPods-NetworkInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A472C095454625CDB8C64A6 /* libPods-NetworkInfo.a */; };
+		4C20F7670B15BB3F4F7716A2 /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 263FED967C4FB152D8B4D783 /* libPods-DashSync_Tests.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
 		6003F592195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
@@ -65,13 +66,12 @@
 		6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
-		7400A509F640A9FA1A4AFD1E /* libPods-NetworkInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E8BD218D7500924A42F48A67 /* libPods-NetworkInfo.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		93099D7228E7275400160709 /* MNLIST_1746460.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7028E7275300160709 /* MNLIST_1746460.dat */; };
 		93099D7328E7275400160709 /* MNL_1746460_1746516.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7128E7275400160709 /* MNL_1746460_1746516.dat */; };
 		937619A526E22E360023BE64 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 937619A326E22DCD0023BE64 /* BackgroundTasks.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		A826AD0C6E7D15144036CB3E /* libPods-DashSync-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8FE4F7E21F52E59ADB43E69 /* libPods-DashSync-DashSync_Example.a */; };
 		B8D9D66B2CB5A33300D289A9 /* libDashSync-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B8D9D66A2CB5A33300D289A9 /* libDashSync-macOS.a */; };
+		B9BF3E8F8236AD6E7E3A1B83 /* libPods-DashSync-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0731CDBFEC5046743137CCB5 /* libPods-DashSync-DashSync_Example.a */; };
 		FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */; };
 		FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */; };
 		FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A421049432000272E6 /* DSTransactionStatusTableViewCell.m */; };
@@ -521,6 +521,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		038B8B25F7F40A2448FAB877 /* Pods-DashSync-DashSync_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.debug.xcconfig"; path = "Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.debug.xcconfig"; sourceTree = "<group>"; };
+		0390824C4EEB495E475CAB59 /* Pods-DashSync_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.release.xcconfig"; path = "Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.release.xcconfig"; sourceTree = "<group>"; };
+		0731CDBFEC5046743137CCB5 /* libPods-DashSync-DashSync_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync-DashSync_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		263FED967C4FB152D8B4D783 /* libPods-DashSync_Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync_Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27552411E6D7D4041AC16526 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		2A1AC63A20F9012A00B3B79F /* FormSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FormSectionModel.h; sourceTree = "<group>"; };
 		2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FormSectionModel.m; sourceTree = "<group>"; };
@@ -551,6 +555,7 @@
 		2A3B3EAA20F893F4002962FB /* BaseFormCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseFormCellModel.h; sourceTree = "<group>"; };
 		2A3B3EAB20F893F4002962FB /* FormTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormTableViewController.h; sourceTree = "<group>"; };
 		2A3B3EB220F893F4002962FB /* BaseFormCellModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseFormCellModel.m; sourceTree = "<group>"; };
+		2A472C095454625CDB8C64A6 /* libPods-NetworkInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NetworkInfo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A5C601322BFC65E00C6003F /* ML_at_122088.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = ML_at_122088.dat; sourceTree = "<group>"; };
 		2A5C601522BFE0D000C6003F /* MNL_0_122064.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_122064.dat; sourceTree = "<group>"; };
 		2A5C601622BFE0D100C6003F /* MNL_122064_122088.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_122064_122088.dat; sourceTree = "<group>"; };
@@ -591,7 +596,7 @@
 		2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileViewController.m; sourceTree = "<group>"; };
 		2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactProfileAvatarView.h; sourceTree = "<group>"; };
 		2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileAvatarView.m; sourceTree = "<group>"; };
-		5797F9A5E0D453E1AE6AD191 /* Pods-NetworkInfo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkInfo.debug.xcconfig"; path = "Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo.debug.xcconfig"; sourceTree = "<group>"; };
+		465173F50F99156A403A8507 /* Pods-DashSync-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.release.xcconfig"; path = "Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -611,23 +616,18 @@
 		6003F5B9195388D20070C39A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		64A245673BBAE1DA7DAB4907 /* DashSync.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = DashSync.podspec; path = ../DashSync.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		65579A860882BE9A628B6FE7 /* Pods-DashSync-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.release.xcconfig"; path = "Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		76D24CDDC18A984CA2631A04 /* Pods-NetworkInfo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkInfo.release.xcconfig"; path = "Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo.release.xcconfig"; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		93099D7028E7275300160709 /* MNLIST_1746460.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MNLIST_1746460.dat; sourceTree = "<group>"; };
 		93099D7128E7275400160709 /* MNL_1746460_1746516.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1746460_1746516.dat; sourceTree = "<group>"; };
 		937619A326E22DCD0023BE64 /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk/System/Library/Frameworks/BackgroundTasks.framework; sourceTree = DEVELOPER_DIR; };
-		95BFAE93B5BDC98E3FF7D339 /* Pods-DashSync_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.debug.xcconfig"; path = "Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		B79C23546B08F6CBE27B009B /* Pods-DashSync_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.release.xcconfig"; path = "Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.release.xcconfig"; sourceTree = "<group>"; };
+		96A8ADA8763651727971BF11 /* Pods-NetworkInfo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkInfo.debug.xcconfig"; path = "Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo.debug.xcconfig"; sourceTree = "<group>"; };
 		B8D9D6682CB5A11B00D289A9 /* libDashSync-macOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libDashSync-macOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8D9D66A2CB5A33300D289A9 /* libDashSync-macOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libDashSync-macOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8D9D66C2CB5A36600D289A9 /* DashSharedCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DashSharedCore.xcframework; path = "../../dash-shared-core/dash-spv-apple-bindings/DashSharedCore/framework/DashSharedCore.xcframework"; sourceTree = "<group>"; };
-		C5041A303DA8005AF8D8C194 /* libPods-DashSync_Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync_Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		C8FE4F7E21F52E59ADB43E69 /* libPods-DashSync-DashSync_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync-DashSync_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CB469E015A96AA6F4E3E28CB /* Pods-NetworkInfo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkInfo.release.xcconfig"; path = "Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo.release.xcconfig"; sourceTree = "<group>"; };
-		CD6B1FC65F799AAD2D4AEC1A /* Pods-DashSync-DashSync_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.debug.xcconfig"; path = "Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.debug.xcconfig"; sourceTree = "<group>"; };
+		DE41D5AFF36EAC9F55D916DD /* Pods-DashSync_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.debug.xcconfig"; path = "Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		E47ABFD6469F1FD556CDA6C7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		E8BD218D7500924A42F48A67 /* libPods-NetworkInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NetworkInfo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB0955CA244BBDC400A93675 /* DSContactRelationshipInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactRelationshipInfoViewController.h; sourceTree = "<group>"; };
 		FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactRelationshipInfoViewController.m; sourceTree = "<group>"; };
 		FB0F15A0210490C3000272E6 /* DSTransactionDetailTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionDetailTableViewCell.h; sourceTree = "<group>"; };
@@ -1202,7 +1202,7 @@
 				6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */,
 				6003F592195388D20070C39A /* UIKit.framework in Frameworks */,
 				6003F58E195388D20070C39A /* Foundation.framework in Frameworks */,
-				A826AD0C6E7D15144036CB3E /* libPods-DashSync-DashSync_Example.a in Frameworks */,
+				B9BF3E8F8236AD6E7E3A1B83 /* libPods-DashSync-DashSync_Example.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1214,7 +1214,7 @@
 				6003F5B0195388D20070C39A /* XCTest.framework in Frameworks */,
 				6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */,
 				6003F5B1195388D20070C39A /* Foundation.framework in Frameworks */,
-				328A9569D5871E42CA5F9D57 /* libPods-DashSync_Tests.a in Frameworks */,
+				4C20F7670B15BB3F4F7716A2 /* libPods-DashSync_Tests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1223,7 +1223,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B8D9D66B2CB5A33300D289A9 /* libDashSync-macOS.a in Frameworks */,
-				7400A509F640A9FA1A4AFD1E /* libPods-NetworkInfo.a in Frameworks */,
+				2F5E40C2D9889BA0A1050512 /* libPods-NetworkInfo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1233,12 +1233,12 @@
 		15D149D9AD161D779756AC18 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				CD6B1FC65F799AAD2D4AEC1A /* Pods-DashSync-DashSync_Example.debug.xcconfig */,
-				65579A860882BE9A628B6FE7 /* Pods-DashSync-DashSync_Example.release.xcconfig */,
-				95BFAE93B5BDC98E3FF7D339 /* Pods-DashSync_Tests.debug.xcconfig */,
-				B79C23546B08F6CBE27B009B /* Pods-DashSync_Tests.release.xcconfig */,
-				5797F9A5E0D453E1AE6AD191 /* Pods-NetworkInfo.debug.xcconfig */,
-				CB469E015A96AA6F4E3E28CB /* Pods-NetworkInfo.release.xcconfig */,
+				038B8B25F7F40A2448FAB877 /* Pods-DashSync-DashSync_Example.debug.xcconfig */,
+				465173F50F99156A403A8507 /* Pods-DashSync-DashSync_Example.release.xcconfig */,
+				DE41D5AFF36EAC9F55D916DD /* Pods-DashSync_Tests.debug.xcconfig */,
+				0390824C4EEB495E475CAB59 /* Pods-DashSync_Tests.release.xcconfig */,
+				96A8ADA8763651727971BF11 /* Pods-NetworkInfo.debug.xcconfig */,
+				76D24CDDC18A984CA2631A04 /* Pods-NetworkInfo.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -1401,9 +1401,9 @@
 				6003F58F195388D20070C39A /* CoreGraphics.framework */,
 				6003F591195388D20070C39A /* UIKit.framework */,
 				6003F5AF195388D20070C39A /* XCTest.framework */,
-				C8FE4F7E21F52E59ADB43E69 /* libPods-DashSync-DashSync_Example.a */,
-				C5041A303DA8005AF8D8C194 /* libPods-DashSync_Tests.a */,
-				E8BD218D7500924A42F48A67 /* libPods-NetworkInfo.a */,
+				0731CDBFEC5046743137CCB5 /* libPods-DashSync-DashSync_Example.a */,
+				263FED967C4FB152D8B4D783 /* libPods-DashSync_Tests.a */,
+				2A472C095454625CDB8C64A6 /* libPods-NetworkInfo.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2337,12 +2337,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "DashSync_Example" */;
 			buildPhases = (
-				636CBC1607A7FD4D9970E0EA /* [CP] Check Pods Manifest.lock */,
+				06F30795E4BD00161F28E823 /* [CP] Check Pods Manifest.lock */,
 				FB5A0FA7219506140079CF42 /* ShellScript */,
 				6003F586195388D20070C39A /* Sources */,
 				6003F587195388D20070C39A /* Frameworks */,
 				6003F588195388D20070C39A /* Resources */,
-				6A93D030A59173C490ED4687 /* [CP] Copy Pods Resources */,
+				238DB649B9DCB3334DCF8BB0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2357,7 +2357,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6003F5C2195388D20070C39A /* Build configuration list for PBXNativeTarget "DashSync_Tests" */;
 			buildPhases = (
-				40F5766E7B3EC70AE9F83DBD /* [CP] Check Pods Manifest.lock */,
+				762E7136E691E8FDB4A47DCA /* [CP] Check Pods Manifest.lock */,
 				6003F5AA195388D20070C39A /* Sources */,
 				6003F5AB195388D20070C39A /* Frameworks */,
 				6003F5AC195388D20070C39A /* Resources */,
@@ -2376,11 +2376,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FB9C9EFE25B80DB40039880E /* Build configuration list for PBXNativeTarget "NetworkInfo" */;
 			buildPhases = (
-				6E2E127DC5DC7C920C279245 /* [CP] Check Pods Manifest.lock */,
+				B54592A9AB8366AE6B5E1C87 /* [CP] Check Pods Manifest.lock */,
 				FB9C9EF625B80DB40039880E /* Sources */,
 				FB9C9EF725B80DB40039880E /* Frameworks */,
 				FB9C9EF825B80DB40039880E /* CopyFiles */,
-				286FA0E8B0A7E6D3F8B6703C /* [CP] Copy Pods Resources */,
+				56E9C13DD3CDDA92D41DD66D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2764,51 +2764,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		286FA0E8B0A7E6D3F8B6703C /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-macOS/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/Protobuf-macOS/Protobuf_Privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-macOS/gRPCCertificates.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Protobuf_Privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		40F5766E7B3EC70AE9F83DBD /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DashSync_Tests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		636CBC1607A7FD4D9970E0EA /* [CP] Check Pods Manifest.lock */ = {
+		06F30795E4BD00161F28E823 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2830,7 +2786,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6A93D030A59173C490ED4687 /* [CP] Copy Pods Resources */ = {
+		238DB649B9DCB3334DCF8BB0 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2852,7 +2808,51 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6E2E127DC5DC7C920C279245 /* [CP] Check Pods Manifest.lock */ = {
+		56E9C13DD3CDDA92D41DD66D /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-macOS/DashSync.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Protobuf-macOS/Protobuf_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-macOS/gRPCCertificates.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Protobuf_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		762E7136E691E8FDB4A47DCA /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DashSync_Tests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B54592A9AB8366AE6B5E1C87 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3231,7 +3231,7 @@
 		};
 		6003F5C0195388D20070C39A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CD6B1FC65F799AAD2D4AEC1A /* Pods-DashSync-DashSync_Example.debug.xcconfig */;
+			baseConfigurationReference = 038B8B25F7F40A2448FAB877 /* Pods-DashSync-DashSync_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3291,7 +3291,7 @@
 		};
 		6003F5C1195388D20070C39A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 65579A860882BE9A628B6FE7 /* Pods-DashSync-DashSync_Example.release.xcconfig */;
+			baseConfigurationReference = 465173F50F99156A403A8507 /* Pods-DashSync-DashSync_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3351,7 +3351,7 @@
 		};
 		6003F5C3195388D20070C39A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 95BFAE93B5BDC98E3FF7D339 /* Pods-DashSync_Tests.debug.xcconfig */;
+			baseConfigurationReference = DE41D5AFF36EAC9F55D916DD /* Pods-DashSync_Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3373,7 +3373,7 @@
 		};
 		6003F5C4195388D20070C39A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B79C23546B08F6CBE27B009B /* Pods-DashSync_Tests.release.xcconfig */;
+			baseConfigurationReference = 0390824C4EEB495E475CAB59 /* Pods-DashSync_Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -3391,7 +3391,7 @@
 		};
 		FB9C9EFF25B80DB40039880E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5797F9A5E0D453E1AE6AD191 /* Pods-NetworkInfo.debug.xcconfig */;
+			baseConfigurationReference = 96A8ADA8763651727971BF11 /* Pods-NetworkInfo.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -3457,7 +3457,7 @@
 		};
 		FB9C9F0025B80DB40039880E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CB469E015A96AA6F4E3E28CB /* Pods-NetworkInfo.release.xcconfig */;
+			baseConfigurationReference = 76D24CDDC18A984CA2631A04 /* Pods-NetworkInfo.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
