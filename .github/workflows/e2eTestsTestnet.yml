@@ -48,7 +48,7 @@ jobs:
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
-      - name: Build for testing (without code signing)
+      - name: Build for testing (with ad-hoc code signing)
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'DashSync-Example' }}
@@ -58,7 +58,7 @@ jobs:
             -scheme "DashSync-Example" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES
       - name: Test Syncing Chain
         working-directory: ./dashsync/Example
         env:
@@ -69,5 +69,4 @@ jobs:
             -scheme "DashSync-Example" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
-            -testPlan TestnetE2ETests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            -testPlan TestnetE2ETests
