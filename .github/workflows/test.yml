@@ -19,36 +19,44 @@ jobs:
       - name: Install automake
         run: |
           brew install automake
+
       - name: Checkout DashSync
         uses: actions/checkout@v3
         with:
           path: dashsync
           submodules: recursive
+
       - name: Create LFS file list
         run: |
           git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
         working-directory: ./dashsync
+
       - name: Restore LFS cache
         uses: actions/cache@v3
         id: lfs-cache
         with:
           path: dashsync/.git/lfs
           key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
+
       - uses: actions/cache@v3
         with:
           path: ./dashsync/Example/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
+
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
+
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
-      - name: Build for testing (with "Sign to Run Locally" code signing)
+
+      - name: Build for testing (with manual code signing)
         working-directory: ./dashsync/Example
         env:
           scheme: 'DashSync-Example'
@@ -58,8 +66,9 @@ jobs:
             -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Crypto
         working-directory: ./dashsync/Example
         env:
@@ -71,8 +80,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan CryptoTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Derivations
         working-directory: ./dashsync/Example
         env:
@@ -84,8 +94,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan DerivationTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Libraries
         working-directory: ./dashsync/Example
         env:
@@ -97,8 +108,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan LibraryTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Governance
         working-directory: ./dashsync/Example
         env:
@@ -110,8 +122,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan GovernanceTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Payments
         working-directory: ./dashsync/Example
         env:
@@ -123,8 +136,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan PaymentTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Masternode Lists
         working-directory: ./dashsync/Example
         env:
@@ -136,8 +150,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan MasternodeListTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Wallet
         working-directory: ./dashsync/Example
         env:
@@ -149,8 +164,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan WalletTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Platform Transitions
         working-directory: ./dashsync/Example
         env:
@@ -162,8 +178,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan PlatformTransitionTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Transactions
         working-directory: ./dashsync/Example
         env:
@@ -175,8 +192,9 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan TransactionTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
+
       - name: Test Locks
         working-directory: ./dashsync/Example
         env:
@@ -188,5 +206,5 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan LockTests \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Sign to Run Locally"
