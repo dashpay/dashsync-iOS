@@ -48,80 +48,134 @@ jobs:
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
-      - name: Build
+      - name: Build for testing (without code signing)
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
+          xcodebuild build-for-testing \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Crypto
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan CryptoTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan CryptoTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Derivations
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan DerivationTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan DerivationTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Libraries
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan LibraryTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan LibraryTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Governance
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan GovernanceTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan GovernanceTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Payments
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan PaymentTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan PaymentTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Masternode Lists
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan MasternodeListTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan MasternodeListTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Wallet
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan WalletTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan WalletTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Platform Transitions
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan PlatformTransitionTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan PlatformTransitionTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Transactions
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan TransactionTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan TransactionTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
       - name: Test Locks
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan LockTests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan LockTests \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
