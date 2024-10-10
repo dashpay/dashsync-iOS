@@ -58,7 +58,7 @@ jobs:
             -scheme "DashSync-Example" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Crypto
         working-directory: ./dashsync/Example
         env:
@@ -70,7 +70,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan CryptoTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Derivations
         working-directory: ./dashsync/Example
         env:
@@ -82,7 +82,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan DerivationTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Libraries
         working-directory: ./dashsync/Example
         env:
@@ -94,7 +94,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan LibraryTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Governance
         working-directory: ./dashsync/Example
         env:
@@ -106,7 +106,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan GovernanceTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Payments
         working-directory: ./dashsync/Example
         env:
@@ -118,7 +118,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan PaymentTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Masternode Lists
         working-directory: ./dashsync/Example
         env:
@@ -130,7 +130,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan MasternodeListTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Wallet
         working-directory: ./dashsync/Example
         env:
@@ -142,7 +142,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan WalletTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Platform Transitions
         working-directory: ./dashsync/Example
         env:
@@ -154,7 +154,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan PlatformTransitionTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Transactions
         working-directory: ./dashsync/Example
         env:
@@ -166,7 +166,7 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan TransactionTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
       - name: Test Locks
         working-directory: ./dashsync/Example
         env:
@@ -178,4 +178,4 @@ jobs:
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan LockTests \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE=Automatic
