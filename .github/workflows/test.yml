@@ -48,145 +48,145 @@ jobs:
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
-      - name: Build for testing (with ad-hoc code signing)
+      - name: Build for testing (with "Sign to Run Locally" code signing)
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild build-for-testing \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Crypto
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan CryptoTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Derivations
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan DerivationTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Libraries
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan LibraryTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Governance
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan GovernanceTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Payments
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan PaymentTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Masternode Lists
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan MasternodeListTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Wallet
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan WalletTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Platform Transitions
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan PlatformTransitionTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Transactions
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan TransactionTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
       - name: Test Locks
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'DashSync-Example' }}
-          platform: ${{ 'iOS Simulator' }}
+          scheme: 'DashSync-Example'
+          platform: 'iOS Simulator'
         run: |
           xcodebuild test-without-building \
-            -scheme "DashSync-Example" \
+            -scheme "$scheme" \
             -workspace "DashSync.xcworkspace" \
             -destination "platform=$platform,name=iPhone 13" \
             -testPlan LockTests \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="-"
+            CODE_SIGN_IDENTITY="Sign to Run Locally"
