@@ -20,7 +20,7 @@ jobs:
         run: |
           brew install automake
       - name: Checkout DashSync
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: dashsync
           submodules: recursive
@@ -48,7 +48,10 @@ jobs:
           xcode-version: '15.4'
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
-      - name: Dependencies
+      - name: Clear dependencies
+        working-directory: ./dashsync/Example
+        run: rm -rf Podfile.lock Pods/ *.xcworkspace
+      - name: Build dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update --verbose
       - name: Build
