@@ -113,8 +113,18 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:YES error:nil];
-        [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:NO error:nil];
+        NSUInteger gapLimit = 0;
+        
+        if (self.shouldUseReducedGapLimit) {
+            gapLimit = SEQUENCE_UNUSED_GAP_LIMIT_INITIAL;
+        } else if (self.type == DSDerivationPathType_AnonymousFunds) {
+            gapLimit = SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN;
+        } else {
+            gapLimit = SEQUENCE_GAP_LIMIT_INITIAL;
+        }
+        
+        [self registerAddressesWithGapLimit:gapLimit internal:YES error:nil];
+        [self registerAddressesWithGapLimit:gapLimit internal:NO error:nil];
     }
 }
 

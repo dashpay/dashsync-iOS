@@ -358,7 +358,6 @@
     return [self.mAllAddresses copy];
 }
 
-
 - (NSSet *)usedAddresses {
     return [self.mUsedAddresses copy];
 }
