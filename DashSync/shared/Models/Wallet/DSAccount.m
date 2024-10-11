@@ -1032,7 +1032,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return (DSCreditFundingTransaction *)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee sortType:DSTransactionSortType_BIP69];
 }
 
-
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
     return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil coinControl:nil];
