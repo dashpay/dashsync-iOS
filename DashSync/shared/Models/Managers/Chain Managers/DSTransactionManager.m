@@ -1749,7 +1749,17 @@
             DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
             [self.chainLocksWaitingForQuorums removeObjectForKey:chainLockHashData];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
+                if (self.chain && block) {
+                    NSDictionary *userInfo = @{
+                        DSChainManagerNotificationChainKey: self.chain,
+                        DSChainNotificationBlockKey: block
+                    };
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:userInfo];
+                    });
+                } else {
+                    DSLog(@"Warning: Unable to post notification due to nil chain or block (%s : %s)", self.chain == nil ? "nil" : "valid", block == nil ? "nil" : "valid");
+                }
             });
         } else {
 #if DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS
