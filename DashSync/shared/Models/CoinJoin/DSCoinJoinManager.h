@@ -78,8 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type;
 - (void)setStopOnNothingToDo:(BOOL)stop;
 - (BOOL)startMixing;
-- (void)doAutomaticDenominatingWithReport:(BOOL)report;
-- (BOOL)doAutomaticDenominatingWithDryRun:(BOOL)dryRun;
+- (void)doAutomaticDenominatingWithDryRun:(BOOL)dryRun completion:(void (^)(BOOL success))completion;
 - (void)updateSuccessBlock;
 - (void)refreshUnusedKeys;
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
@@ -90,7 +89,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint64_t)getAnonymizableBalanceWithSkipDenominated:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed;
 - (void)updateOptionsWithAmount:(uint64_t)amount;
 - (void)updateOptionsWithEnabled:(BOOL)isEnabled;
-- (int32_t)getActiveSessionCount;
 
 // Events
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined;

@@ -467,21 +467,23 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinContr
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl];
         result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts coinControl:cc onPublished:^(UInt256 txId, NSError * _Nullable error) {
-            if (error) {
-                DSLog(@"[OBJ-C] CoinJoin: commit tx error: %@, tx type: %@", error, is_denominating ? @"denominations" : @"collateral");
-            } else if (is_denominating) {
-                DSLog(@"[OBJ-C] CoinJoin tx: Denominations Created: %@", uint256_reverse_hex(txId));
-                bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
-                
-                if (!isFinished) {
-                    DSLog(@"[OBJ-C] CoinJoin: auto_denom not finished");
+            @synchronized (context) {
+                if (error) {
+                    DSLog(@"[%@] CoinJoin: commit tx error: %@, tx type: %@", wrapper.chain.name, error, is_denominating ? @"denominations" : @"collateral");
+                } else if (is_denominating) {
+                    DSLog(@"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
+                    
+                    if (!isFinished) {
+                        DSLog(@"[%@] CoinJoin: auto_denom not finished", wrapper.chain.name);
+                    }
+                    
+                    processor_destroy_block_hash(client_session_id);
+                    [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_CreateDenomination];
+                } else {
+                    DSLog(@"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_MakeCollateralInputs];
                 }
-                
-                processor_destroy_block_hash(client_session_id);
-                [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_CreateDenomination];
-            } else {
-                DSLog(@"[OBJ-C] CoinJoin tx: Collateral Created: %@", uint256_reverse_hex(txId));
-                [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_MakeCollateralInputs];
             }
         }];
     }
