@@ -116,7 +116,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port {
     return [self forPeer:ip port:port warn:YES withPredicate:^BOOL(DSPeer *peer) {
-        DSLog(@"CoinJoin: masternode[closing] %@", [self hostFor:ip]);
+        DSLog(@"[%@] CoinJoin: masternode[closing] %@", self.chain.name, [self hostFor:ip]);
         
         @synchronized (self.mutablePendingClosingMasternodes) {
             [self.mutablePendingClosingMasternodes addObject:peer];
@@ -144,10 +144,10 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     
     if (warn) {
         if (![self isNodePending:ip port:port]) {
-            DSLog(@"CoinJoin: Cannot find %@ in the list of connected peers: %@", [self hostFor:ip], listOfPeers);
+            DSLog(@"[%@] CoinJoin: Cannot find %@ in the list of connected peers: %@", self.chain.name, [self hostFor:ip], listOfPeers);
             NSAssert(NO, @"Cannot find %@", [self hostFor:ip]);
         } else {
-            DSLog(@"CoinJoin: %@ in the list of pending peers", [self hostFor:ip]);
+            DSLog(@"[%@] CoinJoin: %@ in the list of pending peers", self.chain.name, [self hostFor:ip]);
         }
     }
     
@@ -176,7 +176,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     }
 }
 
-- (NSMutableArray *)pendingClosingMasternodes {
+- (NSArray *)pendingClosingMasternodes {
     @synchronized(self.mutablePendingClosingMasternodes) {
         return [self.mutablePendingClosingMasternodes copy];
     }
@@ -213,7 +213,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
                 NSTimeInterval delay = [retryTime timeIntervalSinceDate:now];
             
                 if (delay > 0.1) {
-                    DSLog(@"CoinJoin: Waiting %fl s before next connect attempt to masternode to %@", delay, peerToTry == NULL ? @"" : peerToTry.location);
+                    DSLog(@"[%@] CoinJoin: Waiting %fl s before next connect attempt to masternode to %@", self.chain.name, delay, peerToTry == NULL ? @"" : peerToTry.location);
                     [self triggerConnectionsJobWithDelay:delay];
                     return;
                 }
@@ -273,7 +273,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         
         if (peerWithLeastBackoff) {
             [self.addressMap setObject:sessionValueWithLeastBackoff forKey:peerWithLeastBackoff.location];
-            DSLog(@"CoinJoin: discovery: %@ -> %@", peerWithLeastBackoff.location, uint256_hex(sessionId));
+            DSLog(@"[%@] CoinJoin: discovery: %@ -> %@", self.chain.name, peerWithLeastBackoff.location, uint256_hex(sessionId));
         }
 
         return peerWithLeastBackoff;
@@ -296,7 +296,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId {
     @synchronized (self.pendingSessions) {
-        DSLog(@"CoinJoin: adding masternode for mixing. maxConnections = %lu, protx: %@, sessionId: %@", (unsigned long)_maxConnections, uint256_hex(proTxHash), uint256_hex(sessionId));
+        DSLog(@"[%@] CoinJoin: adding masternode for mixing. maxConnections = %lu, protx: %@, sessionId: %@", self.chain.name, (unsigned long)_maxConnections, uint256_hex(proTxHash), uint256_hex(sessionId));
         NSValue *sessionIdValue = [NSValue valueWithBytes:&sessionId objCType:@encode(UInt256)];
         [self.pendingSessions addObject:sessionIdValue];
         
@@ -314,7 +314,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 - (void)updateMaxConnections {
     _maxConnections = self.pendingSessions.count;
     NSUInteger connections = MIN(self.maxConnections, self.coinJoinManager.options->coinjoin_sessions);
-    DSLog(@"CoinJoin: updating max connections to min(%lu, %lu)", (unsigned long)_maxConnections, (unsigned long)self.coinJoinManager.options->coinjoin_sessions);
+    DSLog(@"[%@] CoinJoin: updating max connections to min(%lu, %lu)", self.chain.name, (unsigned long)_maxConnections, (unsigned long)self.coinJoinManager.options->coinjoin_sessions);
     
     [self updateMaxConnections:connections];
 }
@@ -362,12 +362,12 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
                 }
             } else {
                 // TODO(DashJ): we may not need this anymore
-                DSLog(@"CoinJoin: session is not connected to a masternode: %@", uint256_hex(sessionId));
+                DSLog(@"[%@] CoinJoin: session is not connected to a masternode: %@", self.chain.name, uint256_hex(sessionId));
             }
         }
         
         if (!found) {
-            DSLog(@"CoinJoin: masternode is not connected to a session: %@", peer.location);
+            DSLog(@"[%@] CoinJoin: masternode is not connected to a session: %@", self.chain.name, peer.location);
             [masternodesToDrop addObject:peer];
         }
     }
@@ -376,7 +376,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     
     for (DSPeer *peer in masternodesToDrop) {
         DSSimplifiedMasternodeEntry *mn = [_chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
-        DSLog(@"CoinJoin: masternode will be disconnected: %@: %@", peer.location, uint256_hex(mn.providerRegistrationTransactionHash));
+        DSLog(@"[%@] CoinJoin: masternode will be disconnected: %@: %@", self.chain.name, peer.location, uint256_hex(mn.providerRegistrationTransactionHash));
         [self.mutablePendingClosingMasternodes addObject:peer];
         [peer disconnect];
     }
@@ -395,12 +395,12 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     DSLogPrivate(@"CoinJoin: connectTo: %@", peer.location);
     
     if (![self isMasternodeSessionByPeer:peer]) {
-        DSLog(@"CoinJoin: %@ not a masternode session, exit", peer.location);
+        DSLog(@"[%@] CoinJoin: %@ not a masternode session, exit", self.chain.name, peer.location);
         return NO;
     }
     
     if ([self isNodeConnected:peer] || [self isNodePending:peer]) {
-        DSLog(@"CoinJoin: attempting to connect to the same masternode again: %@", peer.location);
+        DSLog(@"[%@] CoinJoin: attempting to connect to the same masternode again: %@", self.chain.name, peer.location);
         return NO; // do not connect to the same peer again
     }
     
@@ -418,18 +418,18 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     }
     
     if (uint256_is_zero(sessionId)) {
-        DSLog(@"CoinJoin: session is not connected to a masternode, proTxHashKey not found in masternodeMap");
+        DSLog(@"[%@] CoinJoin: session is not connected to a masternode, proTxHashKey not found in masternodeMap", self.chain.name);
         return NO;
     }
     
     DSSimplifiedMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
     
     if (!mixingMasternodeAddress) {
-        DSLog(@"CoinJoin: session is not connected to a masternode, sessionId: %@", uint256_hex(sessionId));
+        DSLog(@"[%@] CoinJoin: session is not connected to a masternode, sessionId: %@", self.chain.name, uint256_hex(sessionId));
         return NO;
     }
     
-    DSLog(@"CoinJoin: masternode[connecting] %@: %@; %@", peer.location, uint256_hex(mn.providerRegistrationTransactionHash), uint256_hex(sessionId));
+    DSLog(@"[%@] CoinJoin: masternode[connecting] %@: %@; %@", self.chain.name, peer.location, uint256_hex(mn.providerRegistrationTransactionHash), uint256_hex(sessionId));
     
     [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.chain.chainManager.transactionManager governanceDelegate:self.chain.chainManager.governanceSyncManager sporkDelegate:self.chain.chainManager.sporkManager masternodeDelegate:self.chain.chainManager.masternodeManager queue:self.networkingQueue];
     peer.earliestKeyTime = self.chain.earliestWalletCreationTime;;
@@ -470,7 +470,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         [self.groupBackoff trackSuccess];
         [[self.backoffMap objectForKey:peer.location] trackSuccess];
         
-        DSLog(@"CoinJoin: New peer %@ ({%lu connected, %lu pending, %lu max)", peer.location, self.mutableConnectedPeers.count, self.mutablePendingPeers.count, self.maxConnections);
+        DSLog(@"[%@] CoinJoin: New peer %@ ({%lu connected, %lu pending, %lu max)", self.chain.name, peer.location, self.mutableConnectedPeers.count, self.mutablePendingPeers.count, self.maxConnections);
         
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers addObject:peer];
@@ -486,7 +486,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers removeObject:peer];
         
-        DSLog(@"CoinJoin: %@ died with error %@: (%lu connected, %lu pending, %lu max)", peer.location, error, (unsigned long)self.mutableConnectedPeers.count, (unsigned long)self.mutablePendingPeers.count, (unsigned long)self.maxConnections);
+        DSLog(@"[%@] CoinJoin: %@ died with error %@: (%lu connected, %lu pending, %lu max)", self.chain.name, peer.location, error, (unsigned long)self.mutableConnectedPeers.count, (unsigned long)self.mutablePendingPeers.count, (unsigned long)self.maxConnections);
         
         [self.groupBackoff trackFailure];
         [[self.backoffMap objectForKey:peer.location] trackFailure];
@@ -506,7 +506,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             }
         }
         
-        DSLog(@"CoinJoin: handling this mn peer death: %@ -> %@", peer.location, masternode != NULL ? masternode.location : @"not found in closing list");
+        DSLog(@"[%@] CoinJoin: handling this mn peer death: %@ -> %@", self.chain.name, peer.location, masternode != NULL ? masternode.location : @"not found in closing list");
         
         if (masternode) {
             NSString *address = peer.location;
@@ -558,7 +558,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 - (void)handleSyncStateDidChangeNotification:(NSNotification *)note {
     if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]] && self.chain.lastSyncBlock.height > self.lastSeenBlock) {
         self.lastSeenBlock = self.chain.lastSyncBlock.height;
-        DSLogPrivate(@"CoinJoin: new block found, restarting masternode connections job");
+        DSLogPrivate(@"[%@] CoinJoin: new block found, restarting masternode connections job", self.chain.name);
         [self triggerConnections];
     }
 }
