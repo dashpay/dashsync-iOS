@@ -269,7 +269,6 @@ static dispatch_once_t managerChainToken = 0;
     }
     
     if (!dryRun && [self validMNCount] == 0) {
-        NSError *error = [NSError errorWithDomain:@"DSCoinJoinManagerErrorDomain" code:1 userInfo:@{NSLocalizedDescriptionKey: @"No valid masternodes available"}];
         completion(NO);
         return;
     }
