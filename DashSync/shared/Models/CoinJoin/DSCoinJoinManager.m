@@ -150,15 +150,6 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)startAsync {
     if (!self.masternodeGroup.isRunning) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleSyncStateDidChangeNotification:)
-                                                     name:DSChainManagerSyncStateDidChangeNotification
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleTransactionReceivedNotification)
-                                                     name:DSTransactionManagerTransactionReceivedNotification
-                                                   object:nil];
-        
         [self.chain.chainManager.peerManager shouldSendDsq:true];
         [self.masternodeGroup startAsync];
     }
@@ -169,7 +160,10 @@ static dispatch_once_t managerChainToken = 0;
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleTransactionReceivedNotification)
+                                                 name:DSTransactionManagerTransactionReceivedNotification
+                                               object:nil];
     @synchronized (self) {
         self.cachedBlockHeight = self.chain.lastSyncBlock.height;
         self.options->enable_coinjoin = YES;
@@ -192,15 +186,6 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)doMaintenance {
-    // TODO:
-    // report masternode group
-    //                if (masternodeGroup != null) {
-    //                    tick++;
-    //                    if (tick % 15 == 0) {
-    //                        log.info(masternodeGroup.toString());
-    //                    }
-    //                }
-    
     if ([self validMNCount] == 0) {
         return;
     }
@@ -210,6 +195,10 @@ static dispatch_once_t managerChainToken = 0;
 
 - (BOOL)startMixing {
     self.isMixing = true;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleSyncStateDidChangeNotification:)
+                                                 name:DSChainManagerSyncStateDidChangeNotification
+                                               object:nil];
     return [self.wrapper startMixing];
 }
 

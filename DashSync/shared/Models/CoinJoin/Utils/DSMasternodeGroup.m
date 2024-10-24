@@ -485,9 +485,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     @synchronized (self.peersLock) {
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers removeObject:peer];
-        
-        DSLog(@"[%@] CoinJoin: %@ died with error %@: (%lu connected, %lu pending, %lu max)", self.chain.name, peer.location, error, (unsigned long)self.mutableConnectedPeers.count, (unsigned long)self.mutablePendingPeers.count, (unsigned long)self.maxConnections);
-        
         [self.groupBackoff trackFailure];
         [[self.backoffMap objectForKey:peer.location] trackFailure];
         NSUInteger numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
