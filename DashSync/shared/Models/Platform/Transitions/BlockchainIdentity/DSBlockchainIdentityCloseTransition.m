@@ -87,9 +87,9 @@
 //    return data;
 //}
 //
-//- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
+//- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay
 //{
-//    NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+//    NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:anyoneCanPay] mutableCopy];
 //    NSData * payloadData = [self payloadData];
 //    [data appendVarInt:payloadData.length];
 //    [data appendData:payloadData];
