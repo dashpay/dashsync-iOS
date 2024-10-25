@@ -155,7 +155,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex;
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay;
 
 - (BOOL)hasNonDustOutputInWallet:(DSWallet *)wallet;
 

@@ -419,10 +419,6 @@
 
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    return [self toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:NO];
-}
-
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay {
     @synchronized(self) {
         NSArray<DSTransactionInput *> *inputs = self.inputs;
@@ -655,11 +651,12 @@
 }
 
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
+    // TODO: Function isn't used at all except commented out `testIdentityGrindingAttack`
     @synchronized (self) {
         for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
             NSMutableData *sig = [NSMutableData data];
-            NSData *data = [self toDataWithSubscriptIndex:i];
+            NSData *data = [self toDataWithSubscriptIndex:i anyoneCanPay:NO];
             UInt256 hash = data.SHA256_2;
             NSValue *keyValue = keys[i];
             OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
