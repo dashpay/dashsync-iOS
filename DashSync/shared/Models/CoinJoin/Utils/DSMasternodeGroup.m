@@ -51,7 +51,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 @property (nullable, nonatomic, readwrite) DSPeer *downloadPeer;
 @property (nonatomic, strong) DSBackoff *groupBackoff;
 @property (nonatomic, strong) NSMutableDictionary<NSString*, DSBackoff*> *backoffMap;
-@property (nonatomic, strong) NSLock *lock;
 @property (nonatomic) uint32_t lastSeenBlock;
 
 @end
@@ -234,50 +233,51 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (DSPeer *)getNextPendingMasternode {
-    @synchronized(self.addressMap) {
-        NSArray *pendingSessionsCopy = [self.pendingSessions copy];
-        DSPeer *peerWithLeastBackoff = nil;
-        NSValue *sessionValueWithLeastBackoff = nil;
-        UInt256 sessionId = UINT256_ZERO;
-        NSDate *leastBackoffTime = [NSDate distantFuture];
+    NSArray *pendingSessionsCopy = [self.pendingSessions copy];
+    NSArray *pendingClosingMasternodesCopy = self.pendingClosingMasternodes;
+    DSPeer *peerWithLeastBackoff = nil;
+    NSValue *sessionValueWithLeastBackoff = nil;
+    UInt256 sessionId = UINT256_ZERO;
+    NSDate *leastBackoffTime = [NSDate distantFuture];
         
-        for (NSValue *sessionValue in pendingSessionsCopy) {
-            [sessionValue getValue:&sessionId];
-            DSSimplifiedMasternodeEntry *mixingMasternodeInfo = [self mixingMasternodeAddressFor:sessionId];
+    for (NSValue *sessionValue in pendingSessionsCopy) {
+        [sessionValue getValue:&sessionId];
+        DSSimplifiedMasternodeEntry *mixingMasternodeInfo = [self mixingMasternodeAddressFor:sessionId];
             
-            if (mixingMasternodeInfo) {
-                UInt128 ipAddress = mixingMasternodeInfo.address;
-                uint16_t port = mixingMasternodeInfo.port;
-                DSPeer *peer = [self peerForLocation:ipAddress port:port];
+        if (mixingMasternodeInfo) {
+            UInt128 ipAddress = mixingMasternodeInfo.address;
+            uint16_t port = mixingMasternodeInfo.port;
+            DSPeer *peer = [self peerForLocation:ipAddress port:port];
                 
-                if (peer == nil) {
-                    peer = [DSPeer peerWithAddress:ipAddress andPort:port onChain:self.chain];
+            if (peer == nil) {
+                peer = [DSPeer peerWithAddress:ipAddress andPort:port onChain:self.chain];
+            }
+                
+            if (![pendingClosingMasternodesCopy containsObject:peer] && ![self isNodeConnected:peer] && ![self isNodePending:peer]) {
+                DSBackoff *backoff = [self.backoffMap objectForKey:peer.location];
+                    
+                if (!backoff) {
+                    backoff = [[DSBackoff alloc] initInitialBackoff:DEFAULT_INITIAL_BACKOFF maxBackoff:DEFAULT_MAX_BACKOFF multiplier:BACKOFF_MULTIPLIER];
+                    [self.backoffMap setObject:backoff forKey:peer.location];
                 }
-                
-                if (![self.mutablePendingClosingMasternodes containsObject:peer] && ![self isNodeConnected:peer] && ![self isNodePending:peer]) {
-                    DSBackoff *backoff = [self.backoffMap objectForKey:peer.location];
                     
-                    if (!backoff) {
-                        backoff = [[DSBackoff alloc] initInitialBackoff:DEFAULT_INITIAL_BACKOFF maxBackoff:DEFAULT_MAX_BACKOFF multiplier:BACKOFF_MULTIPLIER];
-                        [self.backoffMap setObject:backoff forKey:peer.location];
-                    }
-                    
-                    if ([backoff.retryTime compare:leastBackoffTime] == NSOrderedAscending) {
-                        leastBackoffTime = backoff.retryTime;
-                        peerWithLeastBackoff = peer;
-                        sessionValueWithLeastBackoff = sessionValue;
-                    }
+                if ([backoff.retryTime compare:leastBackoffTime] == NSOrderedAscending) {
+                    leastBackoffTime = backoff.retryTime;
+                    peerWithLeastBackoff = peer;
+                    sessionValueWithLeastBackoff = sessionValue;
                 }
             }
         }
+    }
         
-        if (peerWithLeastBackoff) {
+    if (peerWithLeastBackoff) {
+        @synchronized(self.addressMap) {
             [self.addressMap setObject:sessionValueWithLeastBackoff forKey:peerWithLeastBackoff.location];
             DSLog(@"[%@] CoinJoin: discovery: %@ -> %@", self.chain.name, peerWithLeastBackoff.location, uint256_hex(sessionId));
         }
-
-        return peerWithLeastBackoff;
     }
+
+    return peerWithLeastBackoff;
 }
 
 - (DSSimplifiedMasternodeEntry *)mixingMasternodeAddressFor:(UInt256)sessionId {
@@ -375,9 +375,13 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     DSLogPrivate(@"CoinJoin: need to drop %lu masternodes", (unsigned long)masternodesToDrop.count);
     
     for (DSPeer *peer in masternodesToDrop) {
-        DSSimplifiedMasternodeEntry *mn = [_chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
+        DSSimplifiedMasternodeEntry *mn = [self.chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
         DSLog(@"[%@] CoinJoin: masternode will be disconnected: %@: %@", self.chain.name, peer.location, uint256_hex(mn.providerRegistrationTransactionHash));
-        [self.mutablePendingClosingMasternodes addObject:peer];
+        
+        @synchronized (self.mutablePendingClosingMasternodes) {
+            [self.mutablePendingClosingMasternodes addObject:peer];
+        }
+        
         [peer disconnect];
     }
 }
@@ -493,32 +497,36 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             [self triggerConnections];
         }
     }
-     
-    @synchronized (self.pendingSessions) {
-        DSPeer *masternode = NULL;
+    
+    DSPeer *masternode = NULL;
+    NSArray *pendingClosingMasternodes = self.pendingClosingMasternodes;
         
-        for (DSPeer *mn in self.pendingClosingMasternodes) {
-            if ([peer.location isEqualToString:mn.location]) {
-                masternode = mn;
-            }
+    for (DSPeer *mn in pendingClosingMasternodes) {
+        if ([peer.location isEqualToString:mn.location]) {
+            masternode = mn;
         }
+    }
         
-        DSLog(@"[%@] CoinJoin: handling this mn peer death: %@ -> %@", self.chain.name, peer.location, masternode != NULL ? masternode.location : @"not found in closing list");
+    DSLog(@"[%@] CoinJoin: handling this mn peer death: %@ -> %@", self.chain.name, peer.location, masternode != NULL ? masternode.location : @"not found in closing list");
         
-        if (masternode) {
-            NSString *address = peer.location;
+    if (masternode) {
+        NSString *address = peer.location;
             
-            if ([self.mutablePendingClosingMasternodes containsObject:masternode]) {
-                // if this is part of pendingClosingMasternodes, where we want to close the connection,
-                // we don't want to increase the backoff time
-                [[self.backoffMap objectForKey:address] trackSuccess];
-            }
+        if ([pendingClosingMasternodes containsObject:masternode]) {
+            // if this is part of pendingClosingMasternodes, where we want to close the connection,
+            // we don't want to increase the backoff time
+            [[self.backoffMap objectForKey:address] trackSuccess];
+        }
             
+        @synchronized (self.mutablePendingClosingMasternodes) {
             [self.mutablePendingClosingMasternodes removeObject:masternode];
-            UInt256 proTxHash = [self.chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port].providerRegistrationTransactionHash;
-            NSValue *proTxHashKey = [NSValue valueWithBytes:&proTxHash objCType:@encode(UInt256)];
-            NSValue *sessionIdObject = [self.masternodeMap objectForKey:proTxHashKey];
+        }
             
+        UInt256 proTxHash = [self.chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port].providerRegistrationTransactionHash;
+        NSValue *proTxHashKey = [NSValue valueWithBytes:&proTxHash objCType:@encode(UInt256)];
+        NSValue *sessionIdObject = [self.masternodeMap objectForKey:proTxHashKey];
+            
+        @synchronized (self.pendingSessions) {
             if (sessionIdObject) {
                 [self.pendingSessions removeObject:sessionIdObject];
                 [self.sessionMap removeObjectForKey:sessionIdObject];
