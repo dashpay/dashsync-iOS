@@ -111,7 +111,7 @@
     
     free(tx->tx_hash);
     
-    if (tx->inputs_count > 0 && tx->inputs) {
+    if (tx->inputs) {
         for (int i = 0; i < tx->inputs_count; i++) {
             [DSTransactionInput ffi_free:tx->inputs[i]];
         }
@@ -119,7 +119,7 @@
         free(tx->inputs);
     }
     
-    if (tx->outputs_count > 0 && tx->outputs) {
+    if (tx->outputs) {
         for (int i = 0; i < tx->outputs_count; i++) {
             [DSTransactionOutput ffi_free:tx->outputs[i]];
         }

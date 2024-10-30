@@ -32,13 +32,14 @@
     transactionOutput->script = data_malloc(scriptData);
     
     char *c_string = address_with_script_pubkey(self.outScript.bytes, self.outScript.length, type);
-    
+
     if (c_string) {
         size_t addressLength = strlen(c_string);
         transactionOutput->address_length = (uintptr_t)addressLength;
         transactionOutput->address = (uint8_t *)c_string;
     } else {
         transactionOutput->address_length = 0;
+        transactionOutput->address = NULL;
     }
     
     return transactionOutput;
@@ -51,9 +52,8 @@
         free(output->script);
     }
     
-    if (output->address && output->address_length > 0) {
-        // TODO: should we use processor_destroy_string(c_string) here?
-        free(output->address);
+    if (output->address) {
+        processor_destroy_string(output->address);
     }
 
     free(output);

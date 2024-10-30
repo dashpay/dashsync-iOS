@@ -69,6 +69,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         _addressMap = [NSMutableDictionary dictionary];
         _mutableConnectedPeers = [NSMutableSet set];
         _mutablePendingPeers = [NSMutableSet set];
+        _peersLock = [[NSObject alloc] init];
         _downloadPeer = nil;
         _maxConnections = 0;
         _shouldSendDsq = true;
@@ -197,7 +198,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         }
         
         @synchronized (self.groupBackoff) {
-            NSUInteger numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
+            NSUInteger numPeers = self.pendingPeers.count + self.connectedPeers.count;
 
             if (numPeers >= self.maxConnections) {
                 return;
@@ -224,7 +225,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             }
         }
         
-        NSUInteger count = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
+        NSUInteger count = self.pendingPeers.count + self.connectedPeers.count;
         
         if (count < self.maxConnections) {
             [self triggerConnectionsJobWithDelay:0]; // Try next peer immediately.

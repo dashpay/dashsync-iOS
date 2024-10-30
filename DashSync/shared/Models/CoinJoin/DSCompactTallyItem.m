@@ -55,7 +55,7 @@
     
     free(item->tx_destination);
     
-    if (item->input_coins_size > 0 && item->input_coins) {
+    if (item->input_coins) {
         for (int i = 0; i < item->input_coins_size; i++) {
             [DSInputCoin ffi_free:item->input_coins[i]];
         }
