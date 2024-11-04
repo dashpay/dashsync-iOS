@@ -5,6 +5,8 @@
 //  Created by Sam Westrich on 3/5/19.
 //
 
+#import "DSAssetLockTransaction.h"
+#import "DSAssetUnlockTransaction.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
@@ -37,6 +39,8 @@
 @property (nonatomic, strong) NSMutableDictionary *providerUpdateRegistrarTransactions;
 @property (nonatomic, strong) NSMutableDictionary *providerUpdateRevocationTransactions;
 @property (nonatomic, strong) NSMutableDictionary *creditFundingTransactions;
+@property (nonatomic, strong) NSMutableDictionary *assetLockTransactions;
+@property (nonatomic, strong) NSMutableDictionary *assetUnlockTransactions;
 @property (nonatomic, strong) NSMutableArray<DSTransaction *> *transactionsToSave;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSArray<DSTransaction *> *> *transactionsToSaveInBlockSave;
 
@@ -154,6 +158,18 @@
             [self.creditFundingTransactions setObject:transaction forKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)];
             added = TRUE;
         }
+    } else if ([transaction isMemberOfClass:[DSAssetLockTransaction class]]) {
+        DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
+        if (![self.assetLockTransactions objectForKey:uint256_data(assetLockTransaction.creditBurnIdentityIdentifier)]) {
+            [self.assetLockTransactions setObject:transaction forKey:uint256_data(assetLockTransaction.txHash)];
+            added = TRUE;
+        }
+    } else if ([transaction isMemberOfClass:[DSAssetUnlockTransaction class]]) {
+        DSAssetUnlockTransaction *assetUnlockTransaction = (DSAssetUnlockTransaction *)transaction;
+        if (![self.assetUnlockTransactions objectForKey:uint256_data(assetUnlockTransaction.creditBurnIdentityIdentifier)]) {
+            [self.assetUnlockTransactions setObject:transaction forKey:uint256_data(assetUnlockTransaction.txHash)];
+            added = TRUE;
+        }
     } else {
         NSAssert(FALSE, @"unknown transaction type being registered");
         return NO;
@@ -198,6 +214,12 @@
             } else if ([transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
                 DSCreditFundingTransaction *creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
                 [self.creditFundingTransactions setObject:transaction forKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)];
+            } else if ([transaction isMemberOfClass:[DSAssetLockTransaction class]]) {
+                DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
+                [self.assetLockTransactions setObject:transaction forKey:uint256_data(assetLockTransaction.txHash)];
+            } else if ([transaction isMemberOfClass:[DSAssetUnlockTransaction class]]) {
+                DSAssetUnlockTransaction *assetUnlockTransaction = (DSAssetUnlockTransaction *)transaction;
+                [self.assetUnlockTransactions setObject:transaction forKey:uint256_data(assetUnlockTransaction.txHash)];
             } else { //the other ones don't have addresses in payload
                 NSAssert(FALSE, @"Unknown special transaction type");
             }

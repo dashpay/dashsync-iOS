@@ -5,6 +5,8 @@
 //  Created by Sam Westrich on 7/12/18.
 //
 
+#import "DSAssetLockTransaction.h"
+#import "DSAssetUnlockTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
@@ -56,6 +58,10 @@
             return [DSProviderUpdateRegistrarTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateRevocation:
             return [DSProviderUpdateRevocationTransaction transactionWithMessage:message onChain:chain];
+        case DSTransactionType_AssetLock:
+            return [DSAssetLockTransaction transactionWithMessage:message onChain:chain];
+        case DSTransactionType_AssetUnlock:
+            return [DSAssetUnlockTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_QuorumCommitment:
             return [DSQuorumCommitmentTransaction transactionWithMessage:message onChain:chain];
         default:
@@ -69,9 +75,9 @@
             return FALSE;
         case DSTransactionType_Coinbase:
             return FALSE;
-        case DSTransactionType_SubscriptionRegistration:
+        case DSTransactionType_AssetLock:
             return FALSE;
-        case DSTransactionType_SubscriptionTopUp:
+        case DSTransactionType_AssetUnlock:
             return FALSE;
         case DSTransactionType_SubscriptionCloseAccount:
             return FALSE;
