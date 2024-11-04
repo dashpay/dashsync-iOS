@@ -244,10 +244,18 @@ static dispatch_once_t managerChainToken = 0;
     DSTransaction *lastTransaction = wallet.accounts.firstObject.recentTransactions.firstObject;
     
     if ([self.wrapper isMixingFeeTx:lastTransaction.txHash]) {
-        DSLog(@"[%@] CoinJoin tx: Mixing Fee: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
+    #if DEBUG
+        DSLogPrivate(@"[%@] CoinJoin tx: Mixing Fee: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
+    #else
+        DSLog(@"[%@] CoinJoin tx: Mixing Fee: %@", self.chain.name, @"<REDACTED>");
+    #endif
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_MixingFee];
     } else if ([self coinJoinTxTypeForTransaction:lastTransaction] == CoinJoinTransactionType_Mixing) {
-        DSLog(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
+    #if DEBUG
+        DSLogPrivate(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
+    #else
+        DSLog(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, @"<REDACTED>");
+    #endif
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_Mixing];
     }
 }
@@ -802,10 +810,15 @@ static dispatch_once_t managerChainToken = 0;
         return NO;
     } else {
         [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
+            NSString *txDescription = @"<REDACTED>";
+            #if DEBUG
+            txDescription = transaction.description;
+            #endif
+            
             if (error) {
-                DSLog(@"[%@] CoinJoin publish error: %@ for tx: %@", self.chain.name, error.description, transaction.description);
+                DSLog(@"[%@] CoinJoin publish error: %@ for tx: %@", self.chain.name, error.description, txDescription);
             } else {
-                DSLog(@"[%@] CoinJoin publish success: %@", self.chain.name, transaction.description);
+                DSLog(@"[%@] CoinJoin publish success: %@", self.chain.name, txDescription);
             }
             
             dispatch_async(self.processingQueue, ^{
@@ -957,7 +970,11 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type {
+#if DEBUG
     DSLog(@"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, uint256_reverse_hex(txId), type);
+#else
+    DSLog(@"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, @"<REDACTED>", type);
+#endif
     [self.managerDelegate transactionProcessedWithId:txId type:type];
 }
 

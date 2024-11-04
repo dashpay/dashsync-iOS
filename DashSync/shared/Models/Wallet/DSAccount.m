@@ -350,14 +350,18 @@
 // returns the first unused coinjoin address
 - (NSString *)coinJoinReceiveAddress {
     NSString *address = self.coinJoinDerivationPath.receiveAddress;
-    [self.coinJoinDerivationPath registerTransactionAddress:address]; // TODO: recheck if needed
+    dispatch_sync(self.wallet.chain.networkingQueue, ^{
+        [self.coinJoinDerivationPath registerTransactionAddress:address];
+    });
     return address;
 }
 
 // returns the first unused coinjoin address
 - (NSString *)coinJoinChangeAddress {
     NSString *address = self.coinJoinDerivationPath.changeAddress;
-    [self.coinJoinDerivationPath registerTransactionAddress:address]; // TODO: recheck if needed
+    dispatch_sync(self.wallet.chain.networkingQueue, ^{
+        [self.coinJoinDerivationPath registerTransactionAddress:address];
+    });
     return address;
 }
 

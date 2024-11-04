@@ -283,7 +283,6 @@ InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t ind
         }
     }
     
-    processor_destroy_block_hash(prevout_hash);
     return inputValue;
 }
 
@@ -296,7 +295,6 @@ bool hasChainLock(Block *block, const void *context) {
         hasChainLock = [wrapper.chain blockHeightChainLocked:block->height];
     }
     
-    processor_destroy_block(block);
     return hasChainLock;
 }
 
@@ -313,7 +311,6 @@ Transaction *getTransaction(uint8_t (*tx_hash)[32], const void *context) {
         }
     }
     
-    processor_destroy_block_hash(tx_hash);
     return tx;
 }
 
@@ -325,7 +322,6 @@ bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
         result = [AS_OBJC(context).manager isMineInput:txHash index:index];
     }
     
-    processor_destroy_block_hash(tx_hash);
     return result;
 }
 
@@ -388,7 +384,7 @@ void destroySelectedCoins(SelectedCoins *selectedCoins) {
         return;
     }
     
-    if (selectedCoins->item_count > 0 && selectedCoins->items) {
+    if (selectedCoins->items) {
         for (int i = 0; i < selectedCoins->item_count; i++) {
             [DSCompactTallyItem ffi_free:selectedCoins->items[i]];
         }
@@ -404,10 +400,9 @@ void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
         return;
     }
     
-    if (gatheredOutputs->item_count > 0 && gatheredOutputs->items) {
+    if (gatheredOutputs->items) {
         for (int i = 0; i < gatheredOutputs->item_count; i++) {
-            [DSTransactionOutput ffi_free:gatheredOutputs->items[i]->output];
-            free(gatheredOutputs->items[i]->outpoint_hash);
+            [DSInputCoin ffi_free:gatheredOutputs->items[i]];
         }
         
         free(gatheredOutputs->items);
@@ -420,7 +415,6 @@ Transaction* signTransaction(Transaction *transaction, bool anyoneCanPay, const 
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
-        destroy_transaction(transaction);
         BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx anyoneCanPay:anyoneCanPay];
         
         if (isSigned) {
@@ -467,7 +461,11 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinContr
                 if (error) {
                     DSLog(@"[%@] CoinJoin: commit tx error: %@, tx type: %@", wrapper.chain.name, error, is_denominating ? @"denominations" : @"collateral");
                 } else if (is_denominating) {
-                    DSLog(@"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    #if DEBUG
+                        DSLog(@"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    #else
+                        DSLog(@"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, @"<REDACTED>");
+                    #endif
                     bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
                     
                     if (!isFinished) {
@@ -477,7 +475,11 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinContr
                     processor_destroy_block_hash(client_session_id);
                     [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_CreateDenomination];
                 } else {
-                    DSLog(@"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    #if DEBUG
+                        DSLog(@"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    #else
+                        DSLog(@"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, @"<REDACTED>");
+                    #endif
                     [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_MakeCollateralInputs];
                 }
             }
