@@ -1822,12 +1822,10 @@
 // MARK: - Accept CoinJoin messages
 
 - (void)acceptCoinJoinCompleteMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsc from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
 }
 
 - (void)acceptCoinJoinFinalTransaction:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dsf from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_FINAL_TRANSACTION];
 }
 
@@ -1836,12 +1834,10 @@
 }
 
 - (void)acceptCoinJoinStatusUpdateMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dssu from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_STATUS_UPDATE];
 }
 
 - (void)acceptCoinJoinBroadcastTxMessage:(NSData *)message {
-    DSLog(@"[OBJ-C] CoinJoin: got dstx from %@", self.location);
     [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_BROADCAST_TX];
 }
 

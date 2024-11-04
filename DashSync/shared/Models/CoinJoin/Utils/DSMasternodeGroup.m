@@ -334,7 +334,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         NSUInteger connectedCount = self.mutableConnectedPeers.count;
         NSUInteger numPeers = pendingCount + connectedCount;
         adjustment = self.maxConnections - numPeers;
-        DSLog(@"[OBJ-C] CoinJoin: updateMaxConnections adjustment %lu, pendingCount: %lu, connectedCount: %lu", adjustment, pendingCount, connectedCount);
+        DSLogPrivate(@"CoinJoin: updateMaxConnections adjustment %lu, pendingCount: %lu, connectedCount: %lu", adjustment, pendingCount, connectedCount);
     }
     
     if (adjustment > 0) {
@@ -372,7 +372,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         }
     }
     
-    DSLog(@"[OBJ-C] CoinJoin: need to drop %lu masternodes", (unsigned long)masternodesToDrop.count);
+    DSLogPrivate(@"CoinJoin: need to drop %lu masternodes", (unsigned long)masternodesToDrop.count);
     
     for (DSPeer *peer in masternodesToDrop) {
         DSSimplifiedMasternodeEntry *mn = [_chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
@@ -392,7 +392,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (BOOL)connectTo:(DSPeer *)peer {
-    DSLog(@"[OBJ-C] CoinJoin: connectTo: %@", peer.location);
+    DSLogPrivate(@"CoinJoin: connectTo: %@", peer.location);
     
     if (![self isMasternodeSessionByPeer:peer]) {
         DSLog(@"[%@] CoinJoin: %@ not a masternode session, exit", self.chain.name, peer.location);
@@ -485,9 +485,6 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     @synchronized (self.peersLock) {
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers removeObject:peer];
-        
-        DSLog(@"[%@] CoinJoin: %@ died with error %@: (%lu connected, %lu pending, %lu max)", self.chain.name, peer.location, error, (unsigned long)self.mutableConnectedPeers.count, (unsigned long)self.mutablePendingPeers.count, (unsigned long)self.maxConnections);
-        
         [self.groupBackoff trackFailure];
         [[self.backoffMap objectForKey:peer.location] trackFailure];
         NSUInteger numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;

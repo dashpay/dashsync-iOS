@@ -43,10 +43,8 @@
 - (void)registerCoinJoin:(CoinJoinClientOptions *)options {
     @synchronized (self) {
         if (_clientManager == NULL) {
-            DSLog(@"[OBJ-C] CoinJoin: register client manager");
             _clientManager = register_client_manager(AS_RUST(self), options, getMNList, destroyMNList, getInputValueByPrevoutHash, hasChainLock, destroyInputValue, updateSuccessBlock, isWaitingForNewBlock, getTransaction, signTransaction, destroyTransaction, isMineInput, commitTransaction, isBlockchainSynced, freshCoinJoinAddress, countInputsWithAmount, availableCoins, destroyGatheredOutputs, selectCoinsGroupedByAddresses, destroySelectedCoins, isMasternodeOrDisconnectRequested, disconnectMasternode, sendMessage, addPendingMasternode, startManagerAsync, sessionLifecycleListener, mixingLifecycleListener, getCoinJoinKeys, destroyCoinJoinKeys);
 
-            DSLog(@"[OBJ-C] CoinJoin: register client queue manager");
             add_client_queue_manager(_clientManager, masternodeByHash, destroyMasternodeEntry, validMNCount, AS_RUST(self));
         }
     }
@@ -449,8 +447,6 @@ ByteArray freshCoinJoinAddress(bool internal, const void *context) {
 }
 
 bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinControl *coinControl, bool is_denominating, uint8_t (*client_session_id)[32], const void *context) {
-    DSLog(@"[OBJ-C] CoinJoin: commitTransaction");
-    
     NSMutableArray *amounts = [NSMutableArray array];
     NSMutableArray *scripts = [NSMutableArray array];
     

@@ -55,7 +55,9 @@
         DSLog(@"[OBJ-C] CoinJoin: Mixing has been started already.");
     }
     
-    [self.coinJoinManager doAutomaticDenominatingWithDryRun:NO];
+    [self.coinJoinManager doAutomaticDenominatingWithDryRun:NO completion:^(BOOL success) {
+        
+    }];
 }
 
 @end

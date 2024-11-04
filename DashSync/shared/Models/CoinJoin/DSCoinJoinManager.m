@@ -83,7 +83,9 @@ static dispatch_once_t managerChainToken = 0;
         _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.coinjoin.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
         _cachedBlockHeight = 0;
         _cachedLastSuccessBlock = 0;
+        _lastReportedProgress = 0;
         _options = [self createOptions];
+        [self printUsedKeys];
     }
     return self;
 }
@@ -143,27 +145,11 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isChainSynced {
-    BOOL isSynced = self.chain.chainManager.syncPhase == DSChainSyncPhase_Synced;
-    
-    if (!isSynced) {
-        DSLog(@"[OBJ-C] CoinJoin: isSynced: %@, combinedSyncProgress: %d, syncState: %@", isSynced ? @"YES" : @"NO", self.chain.chainManager.combinedSyncProgress, self.chain.chainManager.syncState);
-    }
-    
-    return isSynced;
+    return self.chain.chainManager.syncPhase == DSChainSyncPhase_Synced;
 }
 
 - (void)startAsync {
     if (!self.masternodeGroup.isRunning) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleSyncStateDidChangeNotification:)
-                                                     name:DSChainManagerSyncStateDidChangeNotification
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleTransactionReceivedNotification)
-                                                     name:DSTransactionManagerTransactionReceivedNotification
-                                                   object:nil];
-        
-        DSLog(@"[OBJ-C] CoinJoin: broadcasting senddsq(true) to all peers");
         [self.chain.chainManager.peerManager shouldSendDsq:true];
         [self.masternodeGroup startAsync];
     }
@@ -174,7 +160,10 @@ static dispatch_once_t managerChainToken = 0;
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleTransactionReceivedNotification)
+                                                 name:DSTransactionManagerTransactionReceivedNotification
+                                               object:nil];
     @synchronized (self) {
         self.cachedBlockHeight = self.chain.lastSyncBlock.height;
         self.options->enable_coinjoin = YES;
@@ -197,17 +186,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)doMaintenance {
-    // TODO:
-    // report masternode group
-    //                if (masternodeGroup != null) {
-    //                    tick++;
-    //                    if (tick % 15 == 0) {
-    //                        log.info(masternodeGroup.toString());
-    //                    }
-    //                }
-    
     if ([self validMNCount] == 0) {
-        DSLog(@"[OBJ-C] CoinJoin doMaintenance: No Masternodes detected.");
         return;
     }
     
@@ -216,6 +195,10 @@ static dispatch_once_t managerChainToken = 0;
 
 - (BOOL)startMixing {
     self.isMixing = true;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleSyncStateDidChangeNotification:)
+                                                 name:DSChainManagerSyncStateDidChangeNotification
+                                               object:nil];
     return [self.wrapper startMixing];
 }
 
@@ -233,7 +216,6 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)stopAsync {
     if (self.masternodeGroup != nil && self.masternodeGroup.isRunning) {
-        DSLog(@"[OBJ-C] CoinJoinManager stopAsync");
         [self.chain.chainManager.peerManager shouldSendDsq:false];
         [self.masternodeGroup stopAsync];
         self.masternodeGroup = nil;
@@ -276,7 +258,6 @@ static dispatch_once_t managerChainToken = 0;
     }
     
     if (!dryRun && [self validMNCount] == 0) {
-        NSError *error = [NSError errorWithDomain:@"DSCoinJoinManagerErrorDomain" code:1 userInfo:@{NSLocalizedDescriptionKey: @"No valid masternodes available"}];
         completion(NO);
         return;
     }
