@@ -19,6 +19,7 @@
 #import "DSChain.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
 
 @implementation DSAssetUnlockTransaction
 
@@ -31,7 +32,7 @@
     
     if (length - off < 1) return nil;
     NSNumber *payloadLengthSize = nil;
-    __unused uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
+    uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
     off += payloadLengthSize.unsignedLongValue;
     
     if (length - off < 1) return nil;
@@ -55,10 +56,40 @@
     off += 96;
 
     self.payloadOffset = off;
+    if ([self payloadData].length != payloadLength) return nil;
     self.txHash = self.data.SHA256_2;
 
     return self;
 
+}
+- (BOOL)transactionTypeRequiresInputs {
+    return NO;
+}
+- (NSData *)payloadData {
+    return [self basePayloadData];
+}
+
+- (NSData *)basePayloadData {
+    NSMutableData *data = [NSMutableData data];
+    [data appendUInt8:self.specialTransactionVersion];
+    [data appendUInt64:self.index];
+    [data appendUInt32:self.fee];
+    [data appendUInt32:self.requestedHeight];
+    [data appendUInt256:self.quorumHash];
+    [data appendUInt768:self.quorumSignature];
+    return data;
+}
+
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
+    @synchronized(self) {
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+        [data appendCountedData:[self payloadData]];
+        if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
+        return data;
+    }
+}
+- (size_t)size {
+    return [super size] + [self payloadData].length;
 }
 
 @end

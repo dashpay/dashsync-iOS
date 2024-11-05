@@ -160,13 +160,13 @@
         }
     } else if ([transaction isMemberOfClass:[DSAssetLockTransaction class]]) {
         DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
-        if (![self.assetLockTransactions objectForKey:uint256_data(assetLockTransaction.creditBurnIdentityIdentifier)]) {
+        if (![self.assetLockTransactions objectForKey:uint256_data(assetLockTransaction.txHash)]) {
             [self.assetLockTransactions setObject:transaction forKey:uint256_data(assetLockTransaction.txHash)];
             added = TRUE;
         }
     } else if ([transaction isMemberOfClass:[DSAssetUnlockTransaction class]]) {
         DSAssetUnlockTransaction *assetUnlockTransaction = (DSAssetUnlockTransaction *)transaction;
-        if (![self.assetUnlockTransactions objectForKey:uint256_data(assetUnlockTransaction.creditBurnIdentityIdentifier)]) {
+        if (![self.assetUnlockTransactions objectForKey:uint256_data(assetUnlockTransaction.txHash)]) {
             [self.assetUnlockTransactions setObject:transaction forKey:uint256_data(assetUnlockTransaction.txHash)];
             added = TRUE;
         }
