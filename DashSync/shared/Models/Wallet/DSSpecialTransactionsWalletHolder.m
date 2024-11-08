@@ -57,6 +57,8 @@
     self.providerUpdateServiceTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateRegistrarTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateRevocationTransactions = [NSMutableDictionary dictionary];
+    self.assetLockTransactions = [NSMutableDictionary dictionary];
+    self.assetUnlockTransactions = [NSMutableDictionary dictionary];
     self.creditFundingTransactions = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObjectContext chainContext];
     self.wallet = wallet;
@@ -66,7 +68,7 @@
 }
 
 - (NSArray<NSMutableDictionary *> *)transactionDictionaries {
-    return @[self.providerRegistrationTransactions, self.providerUpdateServiceTransactions, self.providerUpdateRegistrarTransactions, self.providerUpdateRevocationTransactions, self.creditFundingTransactions];
+    return @[self.providerRegistrationTransactions, self.providerUpdateServiceTransactions, self.providerUpdateRegistrarTransactions, self.providerUpdateRevocationTransactions, self.creditFundingTransactions, self.assetLockTransactions, self.assetUnlockTransactions];
 }
 
 
