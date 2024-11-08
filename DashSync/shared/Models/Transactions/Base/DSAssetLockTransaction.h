@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSAssetLockTransaction : DSTransaction
 
 @property (nonatomic, assign) uint8_t specialTransactionVersion;
-@property (nonatomic, assign) NSMutableArray<DSTransactionOutput *> *creditOutputs;
+@property (nonatomic, strong) NSMutableArray<DSTransactionOutput *> *creditOutputs;
 
 @end
 
