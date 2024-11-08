@@ -39,8 +39,22 @@
 @property (nonatomic, strong) NSMutableDictionary *providerUpdateRegistrarTransactions;
 @property (nonatomic, strong) NSMutableDictionary *providerUpdateRevocationTransactions;
 @property (nonatomic, strong) NSMutableDictionary *creditFundingTransactions;
-@property (nonatomic, strong) NSMutableDictionary *assetLockTransactions;
-@property (nonatomic, strong) NSMutableDictionary *assetUnlockTransactions;
+ - (instancetype)initWithWallet:(DSWallet *)wallet inContext:(NSManagedObjectContext *)managedObjectContext {
+     if (!(self = [super init])) return nil;
+
+     self.providerRegistrationTransactions = [NSMutableDictionary dictionary];
+     self.providerUpdateServiceTransactions = [NSMutableDictionary dictionary];
+     self.providerUpdateRegistrarTransactions = [NSMutableDictionary dictionary];
+     self.providerUpdateRevocationTransactions = [NSMutableDictionary dictionary];
+     self.creditFundingTransactions = [NSMutableDictionary dictionary];
+     self.assetLockTransactions = [NSMutableDictionary dictionary];
+     self.assetUnlockTransactions = [NSMutableDictionary dictionary];
+     self.managedObjectContext = [NSManagedObjectContext chainContext];
+     self.wallet = wallet;
+     self.transactionsToSave = [NSMutableArray array];
+     self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
+     return self;
+ }
 @property (nonatomic, strong) NSMutableArray<DSTransaction *> *transactionsToSave;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSArray<DSTransaction *> *> *transactionsToSaveInBlockSave;
 
