@@ -71,7 +71,7 @@
 }
 
 - (Class)transactionClass {
-    return [DSAssetLockTransactionEntity class];
+    return [DSAssetLockTransaction class];
 }
 
 @end
