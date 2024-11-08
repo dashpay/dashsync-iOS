@@ -28,7 +28,7 @@
     return copy;
 }
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%u/%u/%u/%u",
+    return [NSString stringWithFormat:@"%u/%u/%f/%u",
             self.retrievalQueueCount,
             self.retrievalQueueMaxAmount,
             self.storedCount,

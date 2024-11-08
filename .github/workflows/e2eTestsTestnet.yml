@@ -20,7 +20,7 @@ jobs:
         run: |
           brew install automake
       - name: Checkout DashSync
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: dashsync
           submodules: recursive
@@ -48,17 +48,25 @@ jobs:
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
-      - name: Build
+      - name: Build for testing (with ad-hoc code signing)
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
+          xcodebuild build-for-testing \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES
       - name: Test Syncing Chain
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan TestnetE2ETests
+          xcodebuild test-without-building \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            -testPlan TestnetE2ETests
