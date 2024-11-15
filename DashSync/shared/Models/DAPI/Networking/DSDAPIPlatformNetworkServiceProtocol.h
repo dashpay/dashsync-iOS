@@ -487,30 +487,20 @@ Get a list of users after matching search criteria
                                                         failure:(void (^)(NSError *error))failure;
 
 /**
-Get a list of identities knowing only keys they possess
+Get a list of identities corresponding to the provided key hashes.
 
-@param keyHashesArray An array of hashes of keys
-@param completionQueue The queue in which to return the result on
-@param success A block object to be executed when the request operation finishes successfully
-@param failure A block object to be executed when the request operation finishes unsuccessfully
+This method makes individual requests for each key hash in the array and returns a list of identity dictionaries upon successful completion. If any request fails, the failure block is called.
+
+@param keyHashesArray An array of hashes of keys for which to fetch identities.
+@param completionQueue The queue on which to execute the success or failure block.
+@param success A block object to be executed when all requests finish successfully, providing an array of identity dictionaries.
+@param failure A block object to be executed if any request fails, providing the error encountered.
+@return Returns an object conforming to `DSDAPINetworkServiceRequest`, or `nil` if no request is made.
 */
 - (id<DSDAPINetworkServiceRequest>)fetchIdentitiesByKeyHashes:(NSArray<NSData *> *)keyHashesArray
                                               completionQueue:(dispatch_queue_t)completionQueue
                                                       success:(void (^)(NSArray<NSDictionary *> *identityDictionaries))success
                                                       failure:(void (^)(NSError *error))failure;
-
-/**
-Get a list of identity Ids knowing only keys they possess
-
-@param keyHashesArray An array of hashes of keys
-@param completionQueue The queue in which to return the result on
-@param success A block object to be executed when the request operation finishes successfully
-@param failure A block object to be executed when the request operation finishes unsuccessfully
-*/
-- (id<DSDAPINetworkServiceRequest>)fetchIdentityIdsByKeyHashes:(NSArray<NSData *> *)keyHashesArray
-                                               completionQueue:(dispatch_queue_t)completionQueue
-                                                       success:(void (^)(NSArray<NSData *> *identityIds))success
-                                                       failure:(void (^)(NSError *error))failure;
 
 @end
 
