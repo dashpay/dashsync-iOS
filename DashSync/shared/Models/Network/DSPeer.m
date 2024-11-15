@@ -883,7 +883,7 @@
     }
     _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
 
-    if (self.version < self.chain.minProtocolVersion || self.version > self.chain.protocolVersion) {
+    if (self.version < self.chain.minProtocolVersion /*|| self.version > self.chain.protocolVersion*/) {
 #if MESSAGE_LOGGING
         DSLogWithLocation(self, @"protocol version %u not supported, valid versions are: [%u, %u], useragent:\"%@\", ", self.version, self.chain.minProtocolVersion, self.chain.protocolVersion, self.useragent);
 #endif

@@ -261,7 +261,7 @@
     double count = self.retrievalQueue.count;
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = count;
-        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) self.retrievalQueueMaxAmount;
         DSLog(@"[%@] Masternode list queue updated: %f/%lu", self.chain.name, count, self.retrievalQueueMaxAmount);
         [self.chain.chainManager notifySyncStateChanged];
     }
@@ -275,7 +275,7 @@
     [self.retrievalQueue removeAllObjects];
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = 0;
-        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) self.retrievalQueueMaxAmount;
         DSLog(@"[%@] Masternode list queue cleaned up: 0/%lu", self.chain.name, self.retrievalQueueMaxAmount);
         [self.chain.chainManager notifySyncStateChanged];
     }
@@ -302,8 +302,8 @@
         return [self.store heightForBlockHash:obj1.UInt256] < [self.store heightForBlockHash:obj2.UInt256] ? NSOrderedAscending : NSOrderedDescending;
     }];
     @synchronized (self.chain.chainManager.syncState) {
-        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = currentCount;
-        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = (uint32_t) currentCount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) self.retrievalQueueMaxAmount;
         DSLog(@"[%@] Masternode list queue updated: %lu/%lu", self.chain.name, currentCount, self.retrievalQueueMaxAmount);
         [self.chain.chainManager notifySyncStateChanged];
     }

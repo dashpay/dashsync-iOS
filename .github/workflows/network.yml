@@ -17,7 +17,7 @@ jobs:
         run: |
           brew install automake
       - name: Checkout DashSync
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: dashsync
           submodules: recursive
@@ -44,7 +44,7 @@ jobs:
         run: cargo install cargo-lipo
       - name: Rustup add targets
         run: rustup target add x86_64-apple-darwin
-      - name: Dependencies
+      - name: Build Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update
       - name: Cache network info build
@@ -71,7 +71,9 @@ jobs:
         run: |
           ./NetworkInfo -outputDir ~/
       - name: Archive network ping results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4  # Updated to v4
         with:
           name: testnet-network-report
           path: ~/networkHealth.json
+          retention-days: 30
+          compression-level: 6  # Default, adjust as needed
