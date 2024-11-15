@@ -204,6 +204,18 @@
     }
 }
 
+- (uint64_t)getMaxCollateralAmount {
+    @synchronized (self) {
+        return get_max_collateral_amount();
+    }
+}
+
+- (BOOL)hasCollateralInputs:(BOOL)onlyConfirmed {
+    @synchronized (self) {
+        return has_collateral_inputs(_clientManager, onlyConfirmed);
+    }
+}
+
 - (uint32_t)amountToDenomination:(uint64_t)amount {
     @synchronized (self) {
         return amount_to_denomination(amount);
@@ -590,22 +602,23 @@ bool isWaitingForNewBlock(const void *context) {
 }
 
 void sessionLifecycleListener(bool is_complete,
-                             int32_t base_session_id,
-                             uint8_t (*client_session_id)[32],
-                             uint32_t denomination,
-                             enum PoolState state,
-                             enum PoolMessage message,
-                             uint8_t (*ip_address)[16],
-                             bool joined,
-                             const void *context) {
+                              int32_t base_session_id,
+                              uint8_t (*client_session_id)[32],
+                              uint32_t denomination,
+                              enum PoolState state,
+                              enum PoolMessage message,
+                              enum PoolStatus status,
+                              uint8_t (*ip_address)[16],
+                              bool joined,
+                              const void *context) {
     @synchronized (context) {
         UInt256 clientSessionId = *((UInt256 *)client_session_id);
         UInt128 ipAddress = *((UInt128 *)ip_address);
         
         if (is_complete) {
-            [AS_OBJC(context).manager onSessionComplete:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message ipAddress:ipAddress isJoined:joined];
+            [AS_OBJC(context).manager onSessionComplete:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message poolStatus:status ipAddress:ipAddress isJoined:joined];
         } else {
-            [AS_OBJC(context).manager onSessionStarted:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message ipAddress:ipAddress isJoined:joined];
+            [AS_OBJC(context).manager onSessionStarted:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message poolStatus:status ipAddress:ipAddress isJoined:joined];
         }
     }
 }
