@@ -30,7 +30,7 @@
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             NSUInteger pos = [list indexOfObject:blockHashData];
             UInt256 blockHash = blockHashData.UInt256;
-            DSMasternodeList *masternodeList = [self.delegate masternodeListServiceDidRequestFileFromBlockHash:self blockHash:blockHash];
+            DSMasternodeList *masternodeList = [self.delegate masternodeListSerivceDidRequestFileFromBlockHash:self blockHash:blockHash];
             if (masternodeList) {
                 [self removeFromRetrievalQueue:blockHashData];
                 [self checkWaitingForQuorums];

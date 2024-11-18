@@ -57,7 +57,7 @@
 
 + (instancetype)dpnsRequestForUserId:(NSData *)userId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"records.identity == %@", userId]; // why not path predicate and then predicate?
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@", userId];
     platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
@@ -115,7 +115,7 @@
     platformDocumentsRequest.startAtIncluded = false;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
-    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue; // why not over index?
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
@@ -131,7 +131,7 @@
     platformDocumentsRequest.startAtIncluded = false;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
-    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue; // why not over index?
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
@@ -140,7 +140,7 @@
 
 + (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId]; // why not path predicate and predicate?
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId];
     platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
