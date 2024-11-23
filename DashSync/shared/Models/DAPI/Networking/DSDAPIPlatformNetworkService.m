@@ -450,6 +450,27 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 #pragma mark Layer 2
 
+- (id<DSDAPINetworkServiceRequest>)fetchIdentityIdsByKeyHashes:(NSArray<NSData *> *)keyHashesArray
+                                               completionQueue:(dispatch_queue_t)completionQueue
+                                                       success:(void (^)(NSArray<NSData *> *identityIds))success
+                                                       failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(keyHashesArray);
+    NSParameterAssert(completionQueue);
+    DSPlatformRequestLog(@"fetchIdentityIdsByKeyHashes %@", keyHashesArray);
+    GetIdentityIdsByPublicKeyHashesRequest *getIdentityIdsByPublicKeyHashesRequest = [[GetIdentityIdsByPublicKeyHashesRequest alloc] init];
+    getIdentityIdsByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
+    getIdentityIdsByPublicKeyHashesRequest.prove = DSPROVE_PLATFORM;
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForGetIdentityIDsByPublicKeyHashesRequest:keyHashesArray withChain:self.chain requireProof:DSPROVE_PLATFORM];
+    responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.completionQueue = completionQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    GRPCUnaryProtoCall *call = [self.gRPCClient getIdentityIdsByPublicKeyHashesWithMessage:getIdentityIdsByPublicKeyHashesRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
+}
+
 - (id<DSDAPINetworkServiceRequest>)fetchIdentitiesByKeyHashes:(NSArray<NSData *> *)keyHashesArray
                                               completionQueue:(dispatch_queue_t)completionQueue
                                                       success:(void (^)(NSArray<NSDictionary *> *identityDictionaries))success
@@ -457,60 +478,18 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(keyHashesArray);
     NSParameterAssert(completionQueue);
     DSPlatformRequestLog(@"fetchIdentitiesByKeyHashes %@", keyHashesArray);
-    
-    NSMutableArray<NSDictionary *> *identityDictionaries = [NSMutableArray array];
-    __block NSUInteger remainingRequests = keyHashesArray.count;
-    __block NSError *lastError = nil;
-    
-    for (NSData *keyHash in keyHashesArray) {
-        GetIdentityByPublicKeyHashRequest *getIdentityByPublicKeyHashRequest = [[GetIdentityByPublicKeyHashRequest alloc] init];
-        getIdentityByPublicKeyHashRequest.publicKeyHash = keyHash;
-        getIdentityByPublicKeyHashRequest.prove = DSPROVE_PLATFORM;
-
-        DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForGetIdentitiesByPublicKeyHashesRequest:@[keyHash] withChain:self.chain requireProof:DSPROVE_PLATFORM];
-        responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
-        responseHandler.dispatchQueue = self.grpcDispatchQueue;
-        responseHandler.completionQueue = completionQueue;
-
-        responseHandler.successHandler = ^(NSDictionary *responseDictionary) {
-            if (responseDictionary) {
-                @synchronized(identityDictionaries) {
-                    [identityDictionaries addObject:responseDictionary];
-                }
-            }
-            @synchronized(self) {
-                remainingRequests--;
-                if (remainingRequests == 0) {
-                    if (lastError) {
-                        if (failure) {
-                            failure(lastError);
-                        }
-                    } else {
-                        if (success) {
-                            success([identityDictionaries copy]);
-                        }
-                    }
-                }
-            }
-        };
-
-        responseHandler.errorHandler = ^(NSError *error) {
-            lastError = error;
-            @synchronized(self) {
-                remainingRequests--;
-                if (remainingRequests == 0) {
-                    if (failure) {
-                        failure(error);
-                    }
-                }
-            }
-        };
-
-        GRPCUnaryProtoCall *call = [self.gRPCClient getIdentityByPublicKeyHashWithMessage:getIdentityByPublicKeyHashRequest responseHandler:responseHandler callOptions:nil];
-        [call start];
-    }
-    
-    return nil;
+    GetIdentitiesByPublicKeyHashesRequest *getIdentitiesByPublicKeyHashesRequest = [[GetIdentitiesByPublicKeyHashesRequest alloc] init];
+    getIdentitiesByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
+    getIdentitiesByPublicKeyHashesRequest.prove = DSPROVE_PLATFORM;
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForGetIdentitiesByPublicKeyHashesRequest:keyHashesArray withChain:self.chain requireProof:DSPROVE_PLATFORM];
+    responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.completionQueue = completionQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    GRPCUnaryProtoCall *call = [self.gRPCClient getIdentitiesByPublicKeyHashesWithMessage:getIdentitiesByPublicKeyHashesRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
 - (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSData *)contractId

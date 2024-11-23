@@ -104,15 +104,15 @@
 
 #pragma mark - DSMasternodeListServiceDelegate
 
-- (DSMasternodeList *__nullable)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
+- (DSMasternodeList *__nullable)masternodeListSerivceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
     return [self processRequestFromFileForBlockHash:blockHash];
 }
 
-- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
+- (void)masternodeListSerivceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
     [self removeOutdatedMasternodeListsBeforeBlockHash:blockHash];
 }
 
-- (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
+- (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
     if (![self.masternodeListDiffService retrievalQueueCount]) {
         if (![self.quorumRotationService retrievalQueueCount])
             [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
