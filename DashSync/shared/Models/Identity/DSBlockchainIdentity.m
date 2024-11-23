@@ -2197,7 +2197,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             @"normalizedLabel": [username lowercaseString],
             @"normalizedParentDomainName": domain,
             @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath],
-            @"records": @{@"identity": uint256_data(self.uniqueID)},
+            @"records": @{@"dashUniqueIdentityId": uint256_data(self.uniqueID)},
             @"subdomainRules": @{@"allowSubdomains": @NO}
         };
         DPDocument *document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyData error:error];
