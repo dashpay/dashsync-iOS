@@ -156,11 +156,11 @@
     }
 }
 
-- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
-    DSAccount *account = [self.chain firstAccountThatCanContainTransaction:transaction];
++ (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
+    DSAccount *account = [transaction.chain firstAccountThatCanContainTransaction:transaction];
     NSArray *amountsSent = [account amountsSentByTransaction:transaction];
     
-    Transaction *tx = [transaction ffi_malloc:self.chain.chainType];
+    Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
     uint64_t *inputValues = malloc(amountsSent.count * sizeof(uint64_t));
 
     for (uintptr_t i = 0; i < amountsSent.count; i++) {

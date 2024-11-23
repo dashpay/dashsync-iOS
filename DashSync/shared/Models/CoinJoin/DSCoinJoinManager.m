@@ -895,7 +895,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
-    return [self.wrapper coinJoinTxTypeForTransaction:transaction];
+    return [DSCoinJoinWrapper coinJoinTxTypeForTransaction:transaction];
 }
 
 - (void)calculateAnonymizableBalanceWithSkipDenominated:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed completion:(void (^)(uint64_t balance))completion {
