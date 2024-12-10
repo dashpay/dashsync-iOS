@@ -8,6 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
+#import "DSAssetUnlockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
@@ -90,6 +91,11 @@
     tx = [DSTransaction transactionWithMessage:d onChain:self.chain];
     XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
     processor_destroy_opaque_key(k);
+}
+- (void)testAssetUnlockTx {
+    NSData *transactionData = @"030009000001a02ffa0d000000001976a9146641c13e0ee2ce2cdf70852bb7ae9853c01f29a988ac0000000091014e00000000000000be000000273e11004130304f40d1820b5e239baecd35249263b1206a1c76e66053ec39a04501000093d3851b6bda0518da51ff8932ef3570be20e7978369dd312947326e135004915c10b5fe0e31e572c40f41cdd941bed8115e314573faf472e1065ca370bdff486db8eaa6bbcba3943e6e5ada6a3c30dee70e39811814e59e1ffc54f3c9fca04f".hexToData;
+    DSAssetUnlockTransaction *tx = [[DSAssetUnlockTransaction alloc] initWithMessage:transactionData onChain:[DSChain testnet]];
+    XCTAssert(tx, @"Bad Asset Unlock Tx");
 }
 
 - (void)testBlockchainIdentityFundingTransactionUniqueId {

@@ -1,5 +1,4 @@
 name: Continuous Integration
-
 on:
   push:
     branches:
@@ -10,7 +9,6 @@ on:
     branches:
       - master
       - develop
-
 jobs:
   build:
     name: Build
@@ -20,7 +18,7 @@ jobs:
         run: |
           brew install automake
       - name: Checkout DashSync
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: dashsync
           submodules: recursive
@@ -48,13 +46,17 @@ jobs:
           xcode-version: '15.4'
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
-      - name: Dependencies
+      - name: Build dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update --verbose
-      - name: Build
+      - name: Build for iOS Simulator (without code signing)
         working-directory: ./dashsync/Example
         env:
-          scheme: ${{ 'default' }}
+          scheme: ${{ 'DashSync-Example' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          xcodebuild build -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
+          xcodebuild build \
+            -scheme "DashSync-Example" \
+            -workspace "DashSync.xcworkspace" \
+            -destination "platform=$platform,name=iPhone 13" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED=NO

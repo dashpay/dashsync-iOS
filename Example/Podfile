@@ -1,6 +1,7 @@
 def common_pods
 #  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :branch => 'fix/core-20-test-additional'
-#  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => 'e2dc943'
+#  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => '7dda9489a1d23221032e2b050c31a317a6e95631'
+#  pod 'DashSharedCore', :path => '../../dash-shared-core/'
   pod 'DashSync', :path => '../'
   pod 'DashSharedCore', :path => '../../dash-shared-core/'
   pod 'SDWebImage', '5.14.3'
@@ -33,7 +34,7 @@ post_install do |installer|
       end
 
       # Ensure the GCC_WARN_INHIBIT_ALL_WARNINGS flag is removed for BoringSSL-GRPC and BoringSSL-GRPC-iOS
-      if ['BoringSSL-GRPC', 'BoringSSL-GRPC-iOS'].include? target.name
+      if ['BoringSSL-GRPC', 'BoringSSL-GRPC-iOS', 'BoringSSL-GRPC-macOS'].include? target.name
         target.source_build_phase.files.each do |file|
           if file.settings && file.settings['COMPILER_FLAGS']
             flags = file.settings['COMPILER_FLAGS'].split

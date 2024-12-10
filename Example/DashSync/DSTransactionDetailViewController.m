@@ -6,6 +6,8 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
+#import "DSAssetLockTransaction.h"
+#import "DSAssetUnlockTransaction.h"
 #import "DSTransactionDetailViewController.h"
 #import "BRCopyLabel.h"
 #import "DSTransactionAmountTableViewCell.h"
@@ -286,6 +288,10 @@
                         cell.statusLabel.text = @"Coinbase Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
                         cell.statusLabel.text = @"Classical Credit Funding Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSAssetLockTransaction class]]) {
+                        cell.statusLabel.text = @"Asset Lock Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSAssetUnlockTransaction class]]) {
+                        cell.statusLabel.text = @"Asset Unlock Transaction";
                     } else {
                         cell.statusLabel.text = @"Classical Transaction";
                     }

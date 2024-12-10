@@ -120,10 +120,9 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         
         @synchronized (self.mutablePendingClosingMasternodes) {
             [self.mutablePendingClosingMasternodes addObject:peer];
-            // TODO (dashj): what if this disconnects the wrong one
-            [self updateMaxConnections];
         }
         
+        [self updateMaxConnections];
         [peer disconnect];
         
         return true;
@@ -197,35 +196,40 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             return;
         }
         
-        @synchronized (self.groupBackoff) {
-            NSUInteger numPeers = self.pendingPeers.count + self.connectedPeers.count;
+        NSUInteger numPeers = self.pendingPeers.count + self.connectedPeers.count;
 
-            if (numPeers >= self.maxConnections) {
+        if (numPeers >= self.maxConnections) {
+            return;
+        }
+
+        NSDate *now = [NSDate date];
+        DSPeer *peerToTry = [self getNextPendingMasternode];
+
+        if (peerToTry) {
+            NSDate *retryTime = [self.backoffMap objectForKey:peerToTry.location].retryTime;
+            retryTime = [retryTime laterDate:self.groupBackoff.retryTime];
+            NSTimeInterval delay = [retryTime timeIntervalSinceDate:now];
+            
+            if (delay > 0.1) {
+                DSLog(@"[%@] CoinJoin: Waiting %fl s before next connect attempt to masternode to %@", self.chain.name, delay, peerToTry == NULL ? @"" : peerToTry.location);
+                [self triggerConnectionsJobWithDelay:delay];
                 return;
             }
-
-            NSDate *now = [NSDate date];
-            DSPeer *peerToTry = [self getNextPendingMasternode];
-
-            if (peerToTry) {
-                NSDate *retryTime = [self.backoffMap objectForKey:peerToTry.location].retryTime;
-                retryTime = [retryTime laterDate:self.groupBackoff.retryTime];
-                NSTimeInterval delay = [retryTime timeIntervalSinceDate:now];
-            
-                if (delay > 0.1) {
-                    DSLog(@"[%@] CoinJoin: Waiting %fl s before next connect attempt to masternode to %@", self.chain.name, delay, peerToTry == NULL ? @"" : peerToTry.location);
-                    [self triggerConnectionsJobWithDelay:delay];
-                    return;
-                }
                 
-                [self connectTo:peerToTry];
+            [self connectTo:peerToTry];
+        }
+        
+        NSUInteger count = self.maxConnections;
+        
+        @synchronized (self.peersLock) {
+            if (peerToTry) {
                 [self.groupBackoff trackSuccess];
             } else {
                 [self.groupBackoff trackFailure];
             }
+            
+            count = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
         }
-        
-        NSUInteger count = self.pendingPeers.count + self.connectedPeers.count;
         
         if (count < self.maxConnections) {
             [self triggerConnectionsJobWithDelay:0]; // Try next peer immediately.
@@ -304,10 +308,10 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         NSValue *proTxHashKey = [NSValue value:&proTxHash withObjCType:@encode(UInt256)];
         [self.masternodeMap setObject:sessionIdValue forKey:proTxHashKey];
         [self.sessionMap setObject:proTxHashKey forKey:sessionIdValue];
-        
-        [self checkMasternodesWithoutSessions];
-        [self updateMaxConnections];
     }
+    
+    [self checkMasternodesWithoutSessions];
+    [self updateMaxConnections];
     
     return true;
 }
@@ -397,7 +401,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (BOOL)connectTo:(DSPeer *)peer {
-    DSLogPrivate(@"CoinJoin: connectTo: %@", peer.location);
+    DSLogPrivate(@"[%@] CoinJoin: connectTo: %@", self.chain.name, peer.location);
     
     if (![self isMasternodeSessionByPeer:peer]) {
         DSLog(@"[%@] CoinJoin: %@ not a masternode session, exit", self.chain.name, peer.location);
@@ -487,16 +491,18 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (void)peer:(nonnull DSPeer *)peer disconnectedWithError:(nonnull NSError *)error {
+    NSUInteger numPeers = self.maxConnections;
+    
     @synchronized (self.peersLock) {
         [self.mutablePendingPeers removeObject:peer];
         [self.mutableConnectedPeers removeObject:peer];
         [self.groupBackoff trackFailure];
         [[self.backoffMap objectForKey:peer.location] trackFailure];
-        NSUInteger numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
-
-        if (numPeers < self.maxConnections) {
-            [self triggerConnections];
-        }
+        numPeers = self.mutablePendingPeers.count + self.mutableConnectedPeers.count;
+    }
+    
+    if (numPeers < self.maxConnections) {
+        [self triggerConnections];
     }
     
     DSPeer *masternode = NULL;
@@ -522,7 +528,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         @synchronized (self.mutablePendingClosingMasternodes) {
             [self.mutablePendingClosingMasternodes removeObject:masternode];
         }
-            
+        
         UInt256 proTxHash = [self.chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port].providerRegistrationTransactionHash;
         NSValue *proTxHashKey = [NSValue valueWithBytes:&proTxHash objCType:@encode(UInt256)];
         NSValue *sessionIdObject = [self.masternodeMap objectForKey:proTxHashKey];

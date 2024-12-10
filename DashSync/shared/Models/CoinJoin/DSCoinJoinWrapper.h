@@ -44,12 +44,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)refreshUnusedKeys;
 - (BOOL)isDenominatedAmount:(uint64_t)amount;
 - (BOOL)isFullyMixed:(DSUTXO)utxo;
-- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
++ (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 - (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed;
 - (uint64_t)getSmallestDenomination;
 - (void)updateOptions:(CoinJoinClientOptions *)options;
 - (NSArray<NSNumber *> *)getStandardDenominations;
 - (uint64_t)getCollateralAmount;
+- (uint64_t)getMaxCollateralAmount;
+- (BOOL)hasCollateralInputs:(BOOL)onlyConfirmed;
 - (uint32_t)amountToDenomination:(uint64_t)amount;
 - (int32_t)getRealOutpointCoinJoinRounds:(DSUTXO)utxo;
 - (BOOL)isLockedCoin:(DSUTXO)utxo;

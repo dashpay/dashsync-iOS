@@ -28,6 +28,7 @@
 
 #import "DSAccount.h"
 #import "DSAddressEntity+CoreDataClass.h"
+#import "DSAssetUnlockTransaction.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
@@ -431,7 +432,7 @@
             inputsCount = 1;
         }
         
-        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
+        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]] || [self isMemberOfClass:[DSAssetUnlockTransaction class]]) && subscriptIndex != NSNotFound;
         NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:inputsCount] + [NSMutableData sizeOfVarInt:outputsCount] + TX_INPUT_SIZE * inputsCount + TX_OUTPUT_SIZE * outputsCount + (forSigHash ? 4 : 0);
 
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];

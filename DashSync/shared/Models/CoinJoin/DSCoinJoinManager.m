@@ -244,18 +244,18 @@ static dispatch_once_t managerChainToken = 0;
     DSTransaction *lastTransaction = wallet.accounts.firstObject.recentTransactions.firstObject;
     
     if ([self.wrapper isMixingFeeTx:lastTransaction.txHash]) {
-    #if DEBUG
+#if DEBUG
         DSLogPrivate(@"[%@] CoinJoin tx: Mixing Fee: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
-    #else
+#else
         DSLog(@"[%@] CoinJoin tx: Mixing Fee: %@", self.chain.name, @"<REDACTED>");
-    #endif
+#endif
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_MixingFee];
     } else if ([self coinJoinTxTypeForTransaction:lastTransaction] == CoinJoinTransactionType_Mixing) {
-    #if DEBUG
+#if DEBUG
         DSLogPrivate(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
-    #else
+#else
         DSLog(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, @"<REDACTED>");
-    #endif
+#endif
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_Mixing];
     }
 }
@@ -394,8 +394,12 @@ static dispatch_once_t managerChainToken = 0;
                 if (maxOupointsPerAddress != -1 && tallyItem != nil && tallyItem.inputCoins.count >= maxOupointsPerAddress) {
                     continue;
                 }
-
-                if ([account isSpent:dsutxo_obj(((DSUTXO){outpoint.hash, i}))] || is_locked_coin(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
+                
+                if ([account isSpent:dsutxo_obj(((DSUTXO){outpoint.hash, i}))]) {
+                    continue;
+                }
+                
+                if (is_locked_coin(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
                     continue;
                 }
                 
@@ -432,7 +436,7 @@ static dispatch_once_t managerChainToken = 0;
                 [tallyItem.inputCoins addObject:coin];
             }
         }
-
+        
         // construct resulting vector
         // NOTE: vecTallyRet is "sorted" by txdest (i.e. address), just like mapTally
         NSMutableArray<DSCompactTallyItem *> *vecTallyRet = [NSMutableArray array];
@@ -445,7 +449,7 @@ static dispatch_once_t managerChainToken = 0;
             
             [vecTallyRet addObject:item];
         }
-
+        
         // Note: cache is assigned in dash-shared-core
 
         return vecTallyRet;
@@ -487,7 +491,7 @@ static dispatch_once_t managerChainToken = 0;
     
     @synchronized(self) {
         CoinType coinType = coinControl != nil ? coinControl.coinType : CoinType_AllCoins;
-
+        
         uint64_t total = 0;
         // Either the WALLET_FLAG_AVOID_REUSE flag is not set (in which case we always allow), or we default to avoiding, and only in the case where a coin control object is provided, and has the avoid address reuse flag set to false, do we allow already used addresses
         BOOL allowUsedAddresses = /* !IsWalletFlagSet(WALLET_FLAG_AVOID_REUSE) || */ (coinControl != nil && !coinControl.avoidAddressReuse);
@@ -843,11 +847,11 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port {
-    return [_masternodeGroup isMasternodeOrDisconnectRequested:ip port:port];
+    return [self.masternodeGroup isMasternodeOrDisconnectRequested:ip port:port];
 }
 
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port {
-    return [_masternodeGroup disconnectMasternode:ip port:port];
+    return [self.masternodeGroup disconnectMasternode:ip port:port];
 }
 
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn {
@@ -871,7 +875,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId {
-    return [_masternodeGroup addPendingMasternode:proTxHash clientSessionId:sessionId];
+    return [self.masternodeGroup addPendingMasternode:proTxHash clientSessionId:sessionId];
 }
 
 - (void)updateSuccessBlock {
@@ -891,11 +895,27 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
-    return [self.wrapper coinJoinTxTypeForTransaction:transaction];
+    return [DSCoinJoinWrapper coinJoinTxTypeForTransaction:transaction];
 }
 
-- (uint64_t)getAnonymizableBalanceWithSkipDenominated:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed {
-    return [self.wrapper getAnonymizableBalance:skipDenominated skipUnconfirmed:skipUnconfirmed];
+- (void)calculateAnonymizableBalanceWithSkipDenominated:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed completion:(void (^)(uint64_t balance))completion {
+    dispatch_async(self.processingQueue, ^{
+        uint64_t balance = [self.wrapper getAnonymizableBalance:skipDenominated skipUnconfirmed:skipUnconfirmed];
+        completion(balance);
+    });
+}
+
+- (void)minimumAnonymizableBalanceWithCompletion:(void (^)(uint64_t balance))completion {
+    dispatch_async(self.processingQueue, ^{
+        uint64_t valueMin = [self.wrapper getSmallestDenomination];
+        BOOL hasCollateralInputs = [self.wrapper hasCollateralInputs:YES];
+        
+        if (hasCollateralInputs) {
+            valueMin += [self.wrapper getMaxCollateralAmount];
+        }
+        
+        completion(valueMin);
+    });
 }
 
 - (uint64_t)getSmallestDenomination {
@@ -936,14 +956,14 @@ static dispatch_once_t managerChainToken = 0;
 
 // Events
 
-- (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined {
+- (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined {
     DSLog(@"[%@] CoinJoin: onSessionStarted: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
-    [self.managerDelegate sessionStartedWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message ipAddress:address isJoined:joined];
+    [self.managerDelegate sessionStartedWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
 }
 
-- (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message ipAddress:(UInt128)address isJoined:(BOOL)joined {
-    DSLog(@"[%@] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
-    [self.managerDelegate sessionCompleteWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message ipAddress:address isJoined:joined];
+- (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined {
+    DSLog(@"[%@] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, status: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, status, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
+    [self.managerDelegate sessionCompleteWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
 }
 
 - (void)onMixingStarted:(nonnull NSArray *)statuses {
@@ -952,21 +972,30 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)onMixingComplete:(nonnull NSArray *)statuses isInterrupted:(BOOL)isInterrupted {
-    DSLog(@"[%@] CoinJoin: onMixingComplete, isInterrupted: %@, statuses: %@", self.chain.name, isInterrupted ? @"YES" : @"NO", statuses.count > 0 ? [NSString stringWithFormat:@"%@", statuses] : @"empty");
+    uint32_t locked_coins_amount = has_locked_coins(self.wrapper.clientManager);
+    DSLog(@"[%@] CoinJoin: onMixingComplete, locked_coins_amount: %lu, isInterrupted: %@, statuses: %@", self.chain.name, locked_coins_amount, isInterrupted ? @"YES" : @"NO", statuses.count > 0 ? [NSString stringWithFormat:@"%@", statuses] : @"empty");
 
-    BOOL isError = NO;
+    PoolStatus returnStatus = PoolStatus_ErrNotEnoughFunds;
+    BOOL isError = YES;
+    
     for (NSNumber *statusNumber in statuses) {
         PoolStatus status = [statusNumber intValue];
-        if (status != PoolStatus_Finished &&
-            status != PoolStatus_ErrNotEnoughFunds &&
-            status != PoolStatus_ErrNoInputs) {
-            isError = YES;
-            DSLog(@"[%@] CoinJoin: Mixing stopped before completion. Status: %d", self.chain.name, status);
+        if (![self isError:status]) {
+            returnStatus = status;
+            isError = NO;
             break;
         }
+        
+        if (status != PoolStatus_ErrNotEnoughFunds) {
+            returnStatus = status;
+        }
+    }
+    
+    if (locked_coins_amount > 0) {
+        print_locked_coins(self.wrapper.clientManager);
     }
 
-    [self.managerDelegate mixingComplete:isError isInterrupted:isInterrupted];
+    [self.managerDelegate mixingComplete:isError errorStatus:returnStatus isInterrupted:isInterrupted];
 }
 
 - (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type {
@@ -976,6 +1005,10 @@ static dispatch_once_t managerChainToken = 0;
     DSLog(@"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, @"<REDACTED>", type);
 #endif
     [self.managerDelegate transactionProcessedWithId:txId type:type];
+}
+
+- (BOOL)isError:(PoolStatus)status {
+    return (status & 0x2000) != 0;
 }
 
 @end

@@ -53,7 +53,7 @@
     }
     
     if (output->address) {
-        processor_destroy_string(output->address);
+        processor_destroy_string((char *)output->address);
     }
 
     free(output);
