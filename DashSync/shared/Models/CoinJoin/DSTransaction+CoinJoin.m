@@ -65,7 +65,7 @@
         NSString *address = [DSKeyManager addressWithScriptPubKey:scriptPubKey forChain:chain];
         NSNumber *amount = @(output->amount);
         
-        [addresses addObject:address ?: [NSNull null]]; // Use NSNull for OP_RETURN or similar
+        [addresses addObject:address ?: [NSNull null]]; // Use NSNull turned into OP_RETURN script later
         [amounts addObject:amount];
     }
 

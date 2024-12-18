@@ -158,6 +158,10 @@
 
 + (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
     DSAccount *account = [transaction.chain firstAccountThatCanContainTransaction:transaction];
+    return [DSCoinJoinWrapper coinJoinTxTypeForTransaction:transaction account:account];
+}
+
++ (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account {
     NSArray *amountsSent = [account amountsSentByTransaction:transaction];
     
     Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];

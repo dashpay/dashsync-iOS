@@ -38,7 +38,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, weak, nullable) DSCoinJoinManager *coinJoinManager;
-@property (nonatomic, strong) NSMutableSet<NSValue *> *pendingSessions;
+@property (nonatomic, strong) NSMutableSet<NSValue *> *mutablePendingSessions;
 @property (nonatomic, strong) NSMutableDictionary *masternodeMap;
 @property (nonatomic, strong) NSMutableDictionary *sessionMap;
 @property (nonatomic, strong) NSMutableDictionary *addressMap;
@@ -62,7 +62,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     if (self) {
         _coinJoinManager = manager;
         _chain = manager.chain;
-        _pendingSessions = [NSMutableSet set];
+        _mutablePendingSessions = [NSMutableSet set];
         _mutablePendingClosingMasternodes = [NSMutableArray array];
         _masternodeMap = [NSMutableDictionary dictionary];
         _sessionMap = [NSMutableDictionary dictionary];
@@ -181,6 +181,12 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     }
 }
 
+- (NSSet *)pendingSessions {
+    @synchronized(self.mutablePendingSessions) {
+        return [self.mutablePendingSessions copy];
+    }
+}
+
 - (void)triggerConnections {
     [self triggerConnectionsJobWithDelay:0];
 }
@@ -238,14 +244,13 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (DSPeer *)getNextPendingMasternode {
-    NSArray *pendingSessionsCopy = [self.pendingSessions copy];
     NSArray *pendingClosingMasternodesCopy = self.pendingClosingMasternodes;
     DSPeer *peerWithLeastBackoff = nil;
     NSValue *sessionValueWithLeastBackoff = nil;
     UInt256 sessionId = UINT256_ZERO;
     NSDate *leastBackoffTime = [NSDate distantFuture];
         
-    for (NSValue *sessionValue in pendingSessionsCopy) {
+    for (NSValue *sessionValue in self.pendingSessions) {
         [sessionValue getValue:&sessionId];
         DSSimplifiedMasternodeEntry *mixingMasternodeInfo = [self mixingMasternodeAddressFor:sessionId];
             
@@ -300,10 +305,10 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (BOOL)addPendingMasternode:(UInt256)proTxHash clientSessionId:(UInt256)sessionId {
-    @synchronized (self.pendingSessions) {
+    @synchronized (self.mutablePendingSessions) {
         DSLog(@"[%@] CoinJoin: adding masternode for mixing. maxConnections = %lu, protx: %@, sessionId: %@", self.chain.name, (unsigned long)_maxConnections, uint256_hex(proTxHash), uint256_hex(sessionId));
         NSValue *sessionIdValue = [NSValue valueWithBytes:&sessionId objCType:@encode(UInt256)];
-        [self.pendingSessions addObject:sessionIdValue];
+        [self.mutablePendingSessions addObject:sessionIdValue];
         
         NSValue *proTxHashKey = [NSValue value:&proTxHash withObjCType:@encode(UInt256)];
         [self.masternodeMap setObject:sessionIdValue forKey:proTxHashKey];
@@ -317,7 +322,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 }
 
 - (void)updateMaxConnections {
-    _maxConnections = self.pendingSessions.count;
+    _maxConnections = self.mutablePendingSessions.count;
     NSUInteger connections = MIN(self.maxConnections, self.coinJoinManager.options->coinjoin_sessions);
     DSLog(@"[%@] CoinJoin: updating max connections to min(%lu, %lu)", self.chain.name, (unsigned long)_maxConnections, (unsigned long)self.coinJoinManager.options->coinjoin_sessions);
     
@@ -349,11 +354,12 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (void)checkMasternodesWithoutSessions {
     NSMutableArray *masternodesToDrop = [NSMutableArray array];
+    NSArray *pendingSessions = self.pendingSessions;
     
     for (DSPeer *peer in self.connectedPeers) {
         BOOL found = false;
             
-        for (NSValue *value in self.pendingSessions) {
+        for (NSValue *value in pendingSessions) {
             UInt256 sessionId;
             [value getValue:&sessionId];
             DSSimplifiedMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
@@ -533,9 +539,9 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         NSValue *proTxHashKey = [NSValue valueWithBytes:&proTxHash objCType:@encode(UInt256)];
         NSValue *sessionIdObject = [self.masternodeMap objectForKey:proTxHashKey];
             
-        @synchronized (self.pendingSessions) {
+        @synchronized (self.mutablePendingSessions) {
             if (sessionIdObject) {
-                [self.pendingSessions removeObject:sessionIdObject];
+                [self.mutablePendingSessions removeObject:sessionIdObject];
                 [self.sessionMap removeObjectForKey:sessionIdObject];
             }
             
