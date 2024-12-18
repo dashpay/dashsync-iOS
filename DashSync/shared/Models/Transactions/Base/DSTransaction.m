@@ -58,6 +58,8 @@
 @property (nonatomic, strong) NSSet<DSBlockchainIdentity *> *destinationBlockchainIdentities;
 @property (nonatomic, strong) NSMutableArray<DSTransactionInput *> *mInputs;
 @property (nonatomic, strong) NSMutableArray<DSTransactionOutput *> *mOutputs;
+@property (nonatomic, assign) DSTransactionDirection cachedDirection;
+@property (nonatomic, assign) uint64_t cachedDashAmount;
 
 @end
 
@@ -96,6 +98,8 @@
     self.blockHeight = TX_UNCONFIRMED;
     self.sourceBlockchainIdentities = [NSSet set];
     self.destinationBlockchainIdentities = [NSSet set];
+    self.cachedDirection = DSTransactionDirection_NotAccountFunds;
+    self.cachedDashAmount = UINT64_MAX;
     return self;
 }
 
@@ -319,21 +323,57 @@
             self.outputs];
 }
 
-// retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
-- (uint64_t)amountSent {
-    uint64_t amount = 0;
-    for (DSTransactionInput *input in self.inputs) {
-        UInt256 hash = input.inputHash;
-        DSTransaction *tx = [self.chain transactionForHash:hash];
-        DSAccount *account = [self.chain firstAccountThatCanContainTransaction:tx];
-        uint32_t n = input.index;
-        if (n < tx.outputs.count) {
-            DSTransactionOutput *output = tx.outputs[n];
-            if ([account containsAddress:output.address])
-                amount += output.amount;
-        }
+- (uint64_t)dashAmount {
+    if (self.cachedDashAmount != UINT64_MAX) {
+        return self.cachedDashAmount;
     }
+
+    uint64_t amount = 0;
+    const uint64_t sent = [self.chain amountSentByTransaction:self];
+    const uint64_t received = [self.chain amountReceivedFromTransaction:self];
+    uint64_t fee = self.feeUsed;
+    
+    if (fee == UINT64_MAX) {
+        fee = 0;
+    }
+
+    if (sent > 0 && (received + fee) == sent) {
+        // moved
+        amount = 0;
+        self.cachedDirection = DSTransactionDirection_Moved;
+    } else if (sent > 0) {
+        // sent
+        if (received > sent) {
+            // NOTE: During the sync we may get an incorrect amount
+            return UINT64_MAX;
+        }
+
+        self.cachedDirection = DSTransactionDirection_Sent;
+        amount = sent - received - fee;
+    } else if (received > 0) {
+        // received
+        self.cachedDirection = DSTransactionDirection_Received;
+        amount = received;
+    } else {
+        // no funds moved on this account
+        self.cachedDirection = DSTransactionDirection_NotAccountFunds;
+        amount = 0;
+    }
+
+    self.cachedDashAmount = amount;
+    
     return amount;
+}
+
+- (DSTransactionDirection)direction {
+    if (self.cachedDirection != DSTransactionDirection_NotAccountFunds) {
+        return self.cachedDirection;
+    }
+    
+    DSTransactionDirection direction = [self.chain directionOfTransaction: self];
+    self.cachedDirection = direction;
+    
+    return direction;
 }
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
@@ -919,10 +959,4 @@
     return YES;
 }
 
-@end
-
-@implementation DSTransaction (Extensions)
-- (DSTransactionDirection)direction {
-    return [_chain directionOfTransaction: self];
-}
 @end

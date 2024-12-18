@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isDenominatedAmount:(uint64_t)amount;
 - (BOOL)isFullyMixed:(DSUTXO)utxo;
 + (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
++ (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account;
 - (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed;
 - (uint64_t)getSmallestDenomination;
 - (void)updateOptions:(CoinJoinClientOptions *)options;

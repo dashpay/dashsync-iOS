@@ -90,7 +90,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, assign) uint32_t lockTime;
 @property (nonatomic, assign) uint64_t feeUsed;
 @property (nonatomic, assign) uint64_t roundedFeeCostPerByte;
-@property (nonatomic, readonly) uint64_t amountSent;
+@property (nonatomic, readonly) DSTransactionDirection direction;
+@property (nonatomic, readonly) uint64_t dashAmount;
 @property (nonatomic, readonly) NSData *payloadData;
 @property (nonatomic, readonly) NSData *payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
@@ -175,10 +176,6 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 - (int32_t)getBlocksToMaturity;
 
-@end
-
-@interface DSTransaction (Extensions)
-- (DSTransactionDirection)direction;
 @end
 
 NS_ASSUME_NONNULL_END
