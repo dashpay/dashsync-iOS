@@ -9,15 +9,19 @@
 #import "dash_shared_core.h"
 #import "DSError.h"
 
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSChain.h"
+#import "DSChain+Identity.h"
+#import "DSChain+Params.h"
+#import "DSChain+Wallet.h"
+#import "DSChain+Transaction.h"
 #import "DSCheckpoint.h"
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"
 #import "DSReachabilityManager.h"
 
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSCreditFundingDerivationPath.h"
+#import "DSAssetLockDerivationPath.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSFundsDerivationPath.h"
@@ -27,9 +31,12 @@
 
 #import "DSSparseMerkleTree.h"
 
-#import "DSBlockchainIdentity.h"
-#import "DSBlockchainInvitation.h"
-#import "DSCreditFundingTransaction.h"
+#import "DSIdentity.h"
+#import "DSIdentity+ContactRequest.h"
+#import "DSIdentity+Friendship.h"
+#import "DSIdentity+Profile.h"
+#import "DSIdentity+Username.h"
+#import "DSInvitation.h"
 
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
@@ -59,6 +66,9 @@
 #import "DSTransactionManager.h"
 #import "DSVersionManager.h"
 #import "DSWallet.h"
+#import "DSWallet+Identity.h"
+#import "DSWallet+Invitation.h"
+
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 
@@ -109,12 +119,12 @@
 #import "DSTransactionInput.h"
 #import "DSTransactionOutput.h"
 
-#import "DSBlockchainIdentityCloseTransition.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityTopupTransition.h"
-#import "DSBlockchainIdentityUpdateTransition.h"
+#import "DSIdentityCloseTransition.h"
+#import "DSIdentityRegistrationTransition.h"
+#import "DSIdentityTopupTransition.h"
+#import "DSIdentityUpdateTransition.h"
 
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
@@ -123,7 +133,6 @@
 #import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSPotentialContact.h"
 #import "DSPotentialOneWayFriendship.h"
-#import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
 
 #import "DSNetworking.h"

@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSIdentityChooserDelegate
 
-- (void)viewController:(UIViewController *)controller didChooseIdentity:(DSBlockchainIdentity *)identity;
+- (void)viewController:(UIViewController *)controller didChooseIdentity:(DSIdentity *)identity;
 
 @end
 

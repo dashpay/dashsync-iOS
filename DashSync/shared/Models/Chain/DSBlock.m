@@ -17,6 +17,7 @@
 
 #import "DSBlock+Protected.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainLock.h"
 #import "DSCheckpoint.h"
 #import "NSData+DSHash.h"

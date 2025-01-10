@@ -7,10 +7,12 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSChainEntity, DSInstantSendLockEntity, DSMasternodeListEntity, DSMerkleBlockEntity, DSQuorumCommitmentTransactionEntity, DSChain, DSQuorumEntry, DSChainLockEntity;
+@class DSChainEntity, DSInstantSendLockEntity, DSMasternodeListEntity, DSMerkleBlockEntity, DSQuorumCommitmentTransactionEntity, DSChain, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,12 +24,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt768 quorumThresholdSignature;
 @property (nonatomic, assign) UInt256 quorumVerificationVectorHash;
 @property (nonatomic, assign) UInt768 allCommitmentAggregatedSignature;
-@property (nonatomic, readonly) DSQuorumEntry *quorumEntry;
+//@property (nonatomic, readonly) DSQuorumEntry *quorumEntry;
 
-+ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context;
-+ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context;
++ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
+                                                          inContext:(NSManagedObjectContext *)context
+                                                            onChain:(DSChain *)chain;
++ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DLLMQEntry *)potentialQuorumEntry
+                                                                    inContext:(NSManagedObjectContext *)context
+                                                                      onChain:(DSChain *)chain;
 
-- (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *_Nullable)block;
+- (void)setAttributesFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
+                                      onBlock:(DSMerkleBlockEntity *_Nullable)block
+                                      onChain:(DSChain *)chain;
 
 + (void)deleteHavingQuorumHashes:(NSArray *)quorumHashes onChainEntity:(DSChainEntity *)chainEntity;
 + (DSQuorumEntryEntity *_Nullable)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity;

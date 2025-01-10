@@ -27,8 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.delegate = self;
 
     for (UIViewController *viewController in self.viewControllers) {
-        if ([viewController respondsToSelector:@selector(setBlockchainIdentity:)]) {
-            [(id)viewController setBlockchainIdentity:self.blockchainIdentity];
+        if ([viewController respondsToSelector:@selector(setIdentity:)]) {
+            [(id)viewController setIdentity:self.identity];
         }
 
         if ([viewController respondsToSelector:@selector(setChainManager:)]) {
@@ -58,13 +58,13 @@ NS_ASSUME_NONNULL_BEGIN
                                                 NSString *username = textField.text;
 
                                                 __weak typeof(self) weakSelf = self;
-                                                NSParameterAssert(self.blockchainIdentity);
-                                                DSAccount *account = [self.blockchainIdentity.wallet accountWithNumber:0];
+                                                NSParameterAssert(self.identity);
+                                                DSAccount *account = [self.identity.wallet accountWithNumber:0];
                                                 NSParameterAssert(account);
 
                                                 DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
 
-                                                [self.blockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
+                                                [self.identity sendNewFriendRequestToPotentialContact:potentialContact
                                                                                                      completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
                                                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
                                                                                                          if (!strongSelf) {

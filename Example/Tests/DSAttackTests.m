@@ -19,9 +19,8 @@
 
 #import "BigIntTypes.h"
 #import "DSAccount.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSChain.h"
-#import "DSCreditFundingTransaction.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -112,13 +111,13 @@
     //
     //    DSWallet * wallet = [[chain wallets] objectAtIndex:0];
     //
-    //    DSBlockchainIdentity * firstIdentity = [wallet defaultBlockchainIdentity];
+    //    DSIdentity * firstIdentity = [wallet defaultBlockchainIdentity];
     //
     //    //[DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     //
     //    UInt256 firstIdentityUniqueIDBlake2s = [uint256_data(firstIdentity.uniqueID) blake2s];
     //
-    //    DSBlockchainIdentity * identity = [wallet createBlockchainIdentityOfType:DSBlockchainIdentityType_User];
+    //    DSIdentity * identity = [wallet createBlockchainIdentityOfType:DSIdentityType_User];
     //
     //    NSUInteger maxDepth = 0;
     //    NSTimeInterval timeToRun = 360;

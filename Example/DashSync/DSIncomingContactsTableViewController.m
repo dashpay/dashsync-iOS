@@ -26,7 +26,7 @@ static NSString *const CellId = @"CellId";
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+    [self.identity fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -45,7 +45,7 @@ static NSString *const CellId = @"CellId";
     //own contact is homer
     //self is marge
     //validates to being a request from marge to homer
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)", [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 - (BOOL)requiredInvertedPredicate {
@@ -53,7 +53,7 @@ static NSString *const CellId = @"CellId";
 }
 
 - (NSPredicate *)invertedPredicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count > 0)", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count > 0)", [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -74,8 +74,8 @@ static NSString *const CellId = @"CellId";
 
 - (void)configureCell:(DSContactTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     DSFriendRequestEntity *friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSBlockchainIdentityEntity *sourceBlockchainIdentity = friendRequest.sourceContact.associatedBlockchainIdentity;
-    DSBlockchainIdentityUsernameEntity *username = [sourceBlockchainIdentity.usernames anyObject];
+    DSBlockchainIdentityEntity *sourceIdentityEntity = friendRequest.sourceContact.associatedBlockchainIdentity;
+    DSBlockchainIdentityUsernameEntity *username = [sourceIdentityEntity.usernames anyObject];
     cell.textLabel.text = username.stringValue;
 }
 
@@ -83,7 +83,7 @@ static NSString *const CellId = @"CellId";
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     DSFriendRequestEntity *friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity acceptFriendRequest:friendRequest
+    [self.identity acceptFriendRequest:friendRequest
                                       completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
                                           __strong typeof(weakSelf) strongSelf = weakSelf;
                                           if (!strongSelf) {

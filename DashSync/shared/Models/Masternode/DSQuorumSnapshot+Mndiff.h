@@ -15,21 +15,21 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import "DSChain.h"
-#import "DSQuorumSnapshot.h"
-#import "dash_shared_core.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSQuorumSnapshot (Mndiff)
-
-+ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash;
-
-- (LLMQSnapshot *)ffi_malloc;
-+ (void)ffi_free:(LLMQSnapshot *)entry;
-
-@end
-
-NS_ASSUME_NONNULL_END
-
+//#import <Foundation/Foundation.h>
+//#import "DSChain.h"
+//#import "DSQuorumSnapshot.h"
+//#import "dash_shared_core.h"
+//
+//NS_ASSUME_NONNULL_BEGIN
+//
+////@interface DSQuorumSnapshot (Mndiff)
+////
+////+ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash;
+////
+////- (LLMQSnapshot *)ffi_malloc;
+////+ (void)ffi_free:(LLMQSnapshot *)entry;
+////
+////@end
+//
+//NS_ASSUME_NONNULL_END
+//

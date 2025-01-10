@@ -30,13 +30,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t creditFee;
 @property (nonatomic, assign) UInt256 transitionHash;
 
-@property (nonatomic, assign) UInt256 blockchainIdentityUniqueId;
+@property (nonatomic, assign) UInt256 identityUniqueId;
 
 @property (nonatomic, assign) NSTimeInterval createdTimestamp;
 @property (nonatomic, assign) NSTimeInterval registeredTimestamp;
 
 @property (nonatomic, copy) NSData *signatureData;
-@property (nonatomic, assign) KeyKind signatureType;
+//@property (nonatomic, assign) KeyKind signatureType;
 @property (nonatomic, assign) uint32_t signaturePublicKeyId;
 
 @property (nonatomic, readonly) DSMutableStringValueDictionary *keyValueDictionary;

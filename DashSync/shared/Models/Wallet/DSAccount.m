@@ -24,14 +24,16 @@
 //  THE SOFTWARE.
 
 #import "DSAccount.h"
+#import "DSChain+Identity.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSFundsDerivationPath.h"
 #import "DSWallet+Protected.h"
 
-#import "DSBlockchainIdentityCloseTransition.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityTopupTransition.h"
-#import "DSBlockchainIdentityUpdateTransition.h"
+#import "DSIdentityCloseTransition.h"
+#import "DSIdentityRegistrationTransition.h"
+#import "DSIdentityTopupTransition.h"
+#import "DSIdentityUpdateTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
@@ -49,8 +51,8 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSCoinbaseTransaction.h"
-#import "DSCreditFundingTransaction.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSDerivationPathFactory.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSInsightManager.h"
@@ -73,6 +75,12 @@
 #define AUTH_SWEEP_KEY @"AUTH_SWEEP_KEY"
 #define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
 
+#define ERROR_CANT_CREATE_KEY [NSError errorWithCode:187 localizedDescriptionKey:@"Can't create key"]
+#define ERROR_INVALID_PRIVATE_KEY [NSError errorWithCode:187 localizedDescriptionKey:@"Not a valid private key"]
+#define ERROR_PRIVATE_KEY_ALREADY_IN_WALLET [NSError errorWithCode:187 localizedDescriptionKey:@"This private key is already in your wallet"]
+#define ERROR_EMPTY_PRIVATE_KEY [NSError errorWithCode:417 localizedDescriptionKey:@"This private key is empty"]
+#define ERROR_NO_FUNDS_FOR_FEE [NSError errorWithCode:417 localizedDescriptionKey: @"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)"]
+#define ERROR_SIGNING [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"]
 
 @class DSFundsDerivationPath, DSIncomingFundsDerivationPath, DSAccount;
 
@@ -120,11 +128,17 @@
 
 // MARK: - Initiation
 
-+ (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *_Nullable)context {
-    return [[self alloc] initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context];
++ (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber
+                    withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths
+                              inContext:(NSManagedObjectContext *_Nullable)context {
+    return [[self alloc] initWithAccountNumber:accountNumber
+                           withDerivationPaths:derivationPaths
+                                     inContext:context];
 }
 
-+ (NSArray<DSAccount *> *)standardAccountsToAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain inContext:(NSManagedObjectContext *_Nullable)context {
++ (NSArray<DSAccount *> *)standardAccountsToAccountNumber:(uint32_t)accountNumber
+                                                  onChain:(DSChain *)chain
+                                                inContext:(NSManagedObjectContext *_Nullable)context {
     NSMutableArray *accounts = [NSMutableArray array];
     for (uint32_t i = 0; i < accountNumber + 1; i++) {
         [accounts addObject:[self accountWithAccountNumber:i withDerivationPaths:[chain standardDerivationPathsForAccountNumber:i] inContext:context]];
@@ -172,7 +186,9 @@
     }
 }
 
-- (instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *)context {
+- (instancetype)initWithAccountNumber:(uint32_t)accountNumber
+                  withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths
+                            inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(derivationPaths);
 
     if (!(self = [super init])) return nil;
@@ -323,7 +339,6 @@
 - (uint32_t)blockHeight {
     static uint32_t height = 0;
     uint32_t h = self.wallet.chain.lastSyncBlockHeight;
-
     if (h > height) height = h;
     return height;
 }
@@ -380,7 +395,9 @@
     }
 }
 
-- (void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath forFriendshipIdentifier:(NSData *)friendshipIdentifier inContext:(NSManagedObjectContext *)context {
+- (void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath
+          forFriendshipIdentifier:(NSData *)friendshipIdentifier
+                        inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
     NSAssert(derivationPath.length, @"derivation path must have a length");
@@ -396,7 +413,9 @@
 - (void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath forFriendshipIdentifier:(NSData *)friendshipIdentifier inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
-    NSAssert(derivationPath.sourceIsLocal || !derivationPath.length, @"derivation path must not have a length unless it is on device");
+    
+    BOOL sourceIsLocal = !![derivationPath.chain identityForUniqueId:derivationPath.contactSourceIdentityUniqueId];
+    NSAssert(sourceIsLocal || !derivationPath.length, @"derivation path must not have a length unless it is on device");
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
     if ([derivationPath hasExtendedPublicKey]) {
@@ -446,7 +465,11 @@
     return NO;
 }
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error {
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
+                     unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit
+                           dashpayGapLimit:(NSUInteger)dashpayGapLimit
+                                  internal:(BOOL)internal
+                                     error:(NSError **)error {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
@@ -948,14 +971,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
-
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath type] & DSDerivationPathType_IsForFunds) {
             NSString *firstAddress;
             if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
                 firstAddress = [(DSFundsDerivationPath *)derivationPath addressAtIndex:0 internal:NO];
             } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                firstAddress = [(DSIncomingFundsDerivationPath *)derivationPath addressAtIndex:0];
+                NSData *pubKey = [(DSIncomingFundsDerivationPath *)derivationPath publicKeyDataAtIndex:0];
+                firstAddress = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:derivationPath.chain.chainType];
             }
             if ([transaction.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
                     return [obj.address isEqual:firstAddress];
@@ -970,54 +993,79 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Creation
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
-- (DSTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee {
+- (DSTransaction *)transactionFor:(uint64_t)amount
+                               to:(NSString *)address
+                          withFee:(BOOL)fee {
     NSParameterAssert(address);
     NSData *script = [DSKeyManager scriptPubKeyForAddress:address forChain:self.wallet.chain];
-    return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
+    return [self transactionForAmounts:@[@(amount)]
+                       toOutputScripts:@[script]
+                               withFee:fee];
 }
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
-- (DSCreditFundingTransaction *)creditFundingTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee {
+- (DSAssetLockTransaction *)assetLockTransactionFor:(uint64_t)amount
+                                                 to:(NSString *)address
+                                            withFee:(BOOL)fee {
     NSParameterAssert(address);
-
     NSMutableData *script = [NSMutableData data];
-
     [script appendCreditBurnScriptPubKeyForAddress:address forChain:self.wallet.chain];
-
-    DSCreditFundingTransaction *transaction = [[DSCreditFundingTransaction alloc] initOnChain:self.wallet.chain];
-    return (DSCreditFundingTransaction *)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee sortType:DSTransactionSortType_BIP69];
+    DSAssetLockTransaction *transaction = [[DSAssetLockTransaction alloc] initOnChain:self.wallet.chain];
+    return (DSAssetLockTransaction *)[self updateTransaction:transaction
+                                                  forAmounts:@[@(amount)]
+                                             toOutputScripts:@[script]
+                                                     withFee:fee
+                                                    sortType:DSTransactionSortType_BIP69];
 }
+
 
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
-    return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil];
+- (DSTransaction *)transactionForAmounts:(NSArray *)amounts
+                         toOutputScripts:(NSArray *)scripts
+                                 withFee:(BOOL)fee {
+    return [self transactionForAmounts:amounts
+                       toOutputScripts:scripts
+                               withFee:fee
+                   toShapeshiftAddress:nil];
 }
 
-- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee toShapeshiftAddress:(NSString *)shapeshiftAddress {
+- (DSTransaction *)transactionForAmounts:(NSArray *)amounts
+                         toOutputScripts:(NSArray *)scripts
+                                 withFee:(BOOL)fee
+                     toShapeshiftAddress:(NSString *)shapeshiftAddress {
     NSParameterAssert(amounts);
     NSParameterAssert(scripts);
     DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain];
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:shapeshiftAddress sortType:DSTransactionSortType_BIP69];
+    return [self updateTransaction:transaction
+                        forAmounts:amounts
+                   toOutputScripts:scripts
+                           withFee:fee
+               toShapeshiftAddress:shapeshiftAddress
+                          sortType:DSTransactionSortType_BIP69];
 }
 
 // MARK: == Proposal Transaction Creation
 
 - (DSTransaction *)proposalCollateralTransactionWithData:(NSData *)data {
     NSParameterAssert(data);
-
     NSMutableData *script = [NSMutableData data];
-
     [script appendProposalInfo:data];
-
     return [self transactionForAmounts:@[@(PROPOSAL_COST)] toOutputScripts:@[script] withFee:TRUE];
 }
 
 // MARK: = Update
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee sortType:DSTransactionSortType_BIP69];
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction
+                          forAmounts:(NSArray *)amounts
+                     toOutputScripts:(NSArray *)scripts
+                             withFee:(BOOL)fee {
+    return [self updateTransaction:transaction
+                        forAmounts:amounts
+                   toOutputScripts:scripts
+                           withFee:fee
+                          sortType:DSTransactionSortType_BIP69];
 }
 
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction
@@ -1025,7 +1073,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                      toOutputScripts:(NSArray *)scripts
                              withFee:(BOOL)fee
                             sortType:(DSTransactionSortType)sortType {
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil sortType:sortType];
+    return [self updateTransaction:transaction
+                        forAmounts:amounts
+                   toOutputScripts:scripts
+                           withFee:fee
+               toShapeshiftAddress:nil
+                          sortType:sortType];
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
@@ -1153,7 +1206,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
 // indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
-- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes {
+- (NSArray *)setBlockHeight:(int32_t)height
+               andTimestamp:(NSTimeInterval)timestamp
+       forTransactionHashes:(NSArray *)txHashes {
     @synchronized (self) {
         NSMutableArray *hashes = [NSMutableArray array], *updated = [NSMutableArray array];
         BOOL needsUpdate = NO;
@@ -1199,7 +1254,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Removal
 
 // removes a transaction from the wallet along with any transactions that depend on its outputs
-- (BOOL)removeTransactionWithHash:(UInt256)txHash saveImmediately:(BOOL)saveImmediately {
+- (BOOL)removeTransactionWithHash:(UInt256)txHash
+                  saveImmediately:(BOOL)saveImmediately {
     @synchronized (self) {
         DSTransaction *transaction = self.allTx[uint256_obj(txHash)];
         if (!transaction) return FALSE;
@@ -1207,7 +1263,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 }
 
-- (BOOL)removeTransaction:(DSTransaction *)baseTransaction saveImmediately:(BOOL)saveImmediately {
+- (BOOL)removeTransaction:(DSTransaction *)baseTransaction
+          saveImmediately:(BOOL)saveImmediately {
     NSParameterAssert(baseTransaction);
     @synchronized (self) {
         NSMutableSet *dependentTransactions = [NSMutableSet set];
@@ -1272,7 +1329,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return usedDerivationPaths;
 }
 
-- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion {
+- (void)signTransaction:(DSTransaction *)transaction
+             completion:(_Nonnull TransactionValidityCompletionBlock)completion {
     NSParameterAssert(transaction);
 
     if (_isViewOnlyAccount) return;
@@ -1286,24 +1344,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if (!seed) {
                 if (completion) completion(NO, YES);
             } else {
-                NSMutableArray *privkeys = [NSMutableArray array];
-                for (NSDictionary *dictionary in usedDerivationPaths) {
-                    DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
-                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
-                    *internalIndexes = dictionary[@"internalIndexes"];
-                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
-                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
-                    } else {
-                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
-                    }
-                }
-
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                NSArray *privkeys = [self collectPrivateKeys:usedDerivationPaths fromSeed:seed];
+                BOOL signedSuccessfully = [transaction signWithMaybePrivateKeys:privkeys];
                 if (completion) completion(signedSuccessfully, NO);
             }
         });
@@ -1311,7 +1353,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(TransactionValidityCompletionBlock)completion {
+- (void)signTransaction:(DSTransaction *)transaction
+             withPrompt:(NSString *_Nullable)authprompt
+             completion:(TransactionValidityCompletionBlock)completion {
     NSParameterAssert(transaction);
 
     if (_isViewOnlyAccount) return;
@@ -1324,32 +1368,70 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if (!seed) {
                 if (completion) completion(NO, YES);
             } else {
-                NSMutableArray *privkeys = [NSMutableArray array];
-                for (NSDictionary *dictionary in usedDerivationPaths) {
-                    DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
-                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
-                                        *internalIndexes = dictionary[@"internalIndexes"];
-                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
-                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
-                    } else {
-                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
-                    }
-                }
-
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                NSArray *privkeys = [self collectPrivateKeys:usedDerivationPaths fromSeed:seed];
+                BOOL signedSuccessfully = [transaction signWithMaybePrivateKeys:privkeys];
                 if (completion) completion(signedSuccessfully, NO);
             }
         });
     }
 }
 
+- (NSArray<NSValue *> *)collectPrivateKeys:(NSArray *)usedDerivationPaths
+                                  fromSeed:(NSData *)seed {
+    NSMutableArray *privkeys = [NSMutableArray array];
+    for (NSDictionary *dictionary in usedDerivationPaths) {
+        DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
+        NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+                            *internalIndexes = dictionary[@"internalIndexes"];
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            // TODO: before we migrated high-level models for derivation paths into rust
+            // TODO: in order to avoid mess while dealing with nested c-structures
+            // TODO: we wrap DMaybeOpaqueKeys into NSValue
+
+            DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+            
+            NSMutableArray *externalArray = [NSMutableArray array];
+            for (NSNumber *index in externalIndexes.array) {
+                NSUInteger indexes[] = {0, index.unsignedIntValue};
+                [externalArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+            }
+            DMaybeOpaqueKeys *external = [DSDerivationPathFactory privateKeysAtIndexPaths:externalArray
+                                                                                    fromSeed:seed
+                                                                              derivationPath:fundsDerivationPath];
+            NSMutableArray *internalArray = [NSMutableArray array];
+            for (NSNumber *index in internalIndexes.array) {
+                NSUInteger indexes[] = {1, index.unsignedIntValue};
+                [internalArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+            }
+            DMaybeOpaqueKeys *internal = [DSDerivationPathFactory privateKeysAtIndexPaths:internalArray
+                                                                                    fromSeed:seed
+                                                                              derivationPath:fundsDerivationPath];
+
+            [privkeys addObject:[NSValue valueWithPointer:external]];
+            [privkeys addObject:[NSValue valueWithPointer:internal]];
+        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+
+            NSMutableArray *mArray = [NSMutableArray array];
+            for (NSNumber *index in externalIndexes.array) {
+                NSUInteger indexes[] = {index.unsignedIntValue};
+                [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:1]];
+            }
+            DMaybeOpaqueKeys *keys = [DSDerivationPathFactory privateKeysAtIndexPaths:mArray
+                                                                                    fromSeed:seed
+                                                                              derivationPath:incomingFundsDerivationPath];
+            [privkeys addObject:[NSValue valueWithPointer:keys]];
+        } else {
+            NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
+        }
+    }
+    return privkeys;
+}
+
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (void)signTransactions:(NSArray<DSTransaction *> *)transactions withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion {
+- (void)signTransactions:(NSArray<DSTransaction *> *)transactions
+              withPrompt:(NSString *)authprompt
+              completion:(TransactionValidityCompletionBlock)completion {
     if (_isViewOnlyAccount) return;
 
     int64_t amount = 0;
@@ -1388,8 +1470,20 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                         DSFundsDerivationPath *derivationPath = dictionary[@"derivationPath"];
                         NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
                                             *internalIndexes = dictionary[@"internalIndexes"];
-                        [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                        
+                        NSMutableArray *externalArray = [NSMutableArray array];
+                        NSMutableArray *internalArray = [NSMutableArray array];
+                        for (NSNumber *index in externalIndexes) {
+                            NSUInteger indexes[] = {0, index.unsignedIntValue};
+                            [externalArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+                        }
+                        for (NSNumber *index in internalIndexes) {
+                            NSUInteger indexes[] = {1, index.unsignedIntValue};
+                            [internalArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+                        }
+                        
+                        [privkeys addObjectsFromArray:[DSDerivationPathFactory serializedPrivateKeysAtIndexPaths:externalArray fromSeed:seed derivationPath:derivationPath]];
+                        [privkeys addObjectsFromArray:[DSDerivationPathFactory serializedPrivateKeysAtIndexPaths:internalArray fromSeed:seed derivationPath:derivationPath]];
                     }
 
                     BOOL signedSuccessfully = [transaction signWithSerializedPrivateKeys:privkeys];
@@ -1403,7 +1497,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Registration
 
 // records the transaction in the account, or returns false if it isn't associated with the wallet
-- (BOOL)registerTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
+- (BOOL)registerTransaction:(DSTransaction *)transaction
+            saveImmediately:(BOOL)saveImmediately {
     NSParameterAssert(transaction);
 #if DEBUG
     DSLogPrivate(@"[%@] [DSAccount] registering transaction %@", self.wallet.chain.name, transaction);
@@ -1449,8 +1544,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 [derivationPath registerTransactionAddress:output.address]; //only will register if derivation path contains address
             }
         }
-        [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
-        [transaction loadBlockchainIdentitiesFromDerivationPaths:self.outgoingFundDerivationPaths];
+        [transaction loadIdentitiesFromDerivationPaths:self.fundDerivationPaths];
+        [transaction loadIdentitiesFromDerivationPaths:self.outgoingFundDerivationPaths];
         [self updateBalance];
         if (saveImmediately) {
             if (!self.wallet.isTransient) {
@@ -1468,7 +1563,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self.transactionsToSave removeAllObjects];
 }
 
-- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext *)context {
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber
+                                                          inContext:(NSManagedObjectContext *)context {
     for (DSTransaction *transaction in self.transactionsToSaveInBlockSave[@(blockNumber)]) {
         [transaction setInitialPersistentAttributesInContext:context];
     }
@@ -1782,18 +1878,35 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         } cancel:^{}];
         return;
     }
+    DChainType *chain_type = self.wallet.chain.chainType;
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key((char *)[privKey UTF8String], chain_type);
+    if (!result) {
+        completion(nil, 0, ERROR_CANT_CREATE_KEY);
+        return;
+    }
+    if (!result->ok) {
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+        completion(nil, 0, ERROR_CANT_CREATE_KEY);
+        return;
+    }
+    
+    char *addr = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_with_public_key_data(result->ok, self.wallet.chain.chainType);
+    NSString *address = [DSKeyManager NSStringFrom:addr];
+    BYTES *public_key_data = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(result->ok);
+    NSData *publicKeyData = [DSKeyManager NSDataFrom:public_key_data];
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
 
-    ECDSAKey *key = key_ecdsa_with_private_key([privKey UTF8String], self.wallet.chain.chainType);
-    NSString *address = [DSKeyManager NSStringFrom:address_for_ecdsa_key(key, self.wallet.chain.chainType)];
-    NSData *publicKeyData = [DSKeyManager NSDataFrom:key_ecdsa_public_key_data(key)];
-    processor_destroy_ecdsa_key(key);
+//    ECDSAKey *key = key_ecdsa_with_private_key([privKey UTF8String], chain_type);
+//    NSString *address = [DSKeyManager NSStringFrom:address_for_ecdsa_key(key, chain_type)];
+//    NSData *publicKeyData = [DSKeyManager NSDataFrom:key_ecdsa_public_key_data(key)];
+//    processor_destroy_ecdsa_key(key);
     
     if (!address) {
-        completion(nil, 0, [NSError errorWithCode:187 localizedDescriptionKey:@"Not a valid private key"]);
+        completion(nil, 0, ERROR_INVALID_PRIVATE_KEY);
         return;
     }
     if ([self.wallet containsAddress:address]) {
-        completion(nil, 0, [NSError errorWithCode:187 localizedDescriptionKey:@"This private key is already in your wallet"]);
+        completion(nil, 0, ERROR_PRIVATE_KEY_ALREADY_IN_WALLET);
         return;
     }
 
@@ -1819,7 +1932,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
 
         if (balance == 0) {
-            completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:@"This private key is empty"]);
+            completion(nil, 0, ERROR_EMPTY_PRIVATE_KEY);
             return;
         }
 
@@ -1827,16 +1940,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (publicKeyData.length - 33) * tx.inputs.count]; //input count doesn't matter for non instant transactions
 
         if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
-            completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:
-                                @"Transaction fees would cost more than the funds available on this "
-                                                   "private key (due to tiny \"dust\" deposits)"]);
+            completion(nil, 0, ERROR_NO_FUNDS_FOR_FEE);
             return;
         }
 
         [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
 
         if (![tx signWithSerializedPrivateKeys:@[privKey]]) {
-            completion(nil, 0, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"]);
+            completion(nil, 0, ERROR_SIGNING);
             return;
         }
 

@@ -24,6 +24,7 @@
 
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Transaction.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"

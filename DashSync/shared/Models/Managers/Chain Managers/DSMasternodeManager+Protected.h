@@ -25,9 +25,9 @@
 
 #import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeManager.h"
-#import "DSMnDiffProcessingResult.h"
+//#import "DSMnDiffProcessingResult.h"
 #import "DSOperationQueue.h"
-#import "DSQRInfoProcessingResult.h"
+//#import "DSQRInfoProcessingResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,15 +39,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)wipeMasternodeInfo;
 - (void)getRecentMasternodeList;
 - (void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
-- (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
+//- (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message;
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message;
 
-- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
+- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DMasternodeEntry *)simplifiedMasternodeEntry
+                                             claimedWithOwnerWallet:(DSWallet *)wallet
+                                                      ownerKeyIndex:(uint32_t)ownerKeyIndex
+                                                            onChain:(DSChain *)chain;
 
-+ (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
++ (nullable NSError *)saveMasternodeList:(DArcMasternodeList *)masternodeList
+                                 toChain:(DSChain *)chain
+               havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
+                     createUnknownBlocks:(BOOL)createUnknownBlocks
+                               inContext:(NSManagedObjectContext *)context;
 - (BOOL)isMasternodeListOutdated;
+- (BOOL)processRequestFromFileForBlockHash:(UInt256)blockHash;
 
 @end
 

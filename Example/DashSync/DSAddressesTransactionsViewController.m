@@ -9,7 +9,6 @@
 #import "DSAddressesTransactionsViewController.h"
 #import "BRBubbleView.h"
 #import "BRCopyLabel.h"
-#import "DSKeyManager.h"
 #import "DSTransactionTableViewCell.h"
 #import <DashSync/DashSync.h>
 
@@ -28,9 +27,10 @@
     [self.wallet seedWithPrompt:@""
                       forAmount:0
                      completion:^(NSData *_Nullable seed, BOOL cancelled) {
-        OpaqueKey *key = [self.wallet privateKeyForAddress:self.address fromSeed:seed];
-        if (key) {
-            self.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:key chainType:self.wallet.chain.chainType];
+        DMaybeOpaqueKey *result = [self.wallet privateKeyForAddress:self.address fromSeed:seed];
+        if (result) {
+            self.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:result->ok chainType:self.wallet.chain.chainType];
+            DMaybeOpaqueKeyDtor(result);
         }
     }];
 }

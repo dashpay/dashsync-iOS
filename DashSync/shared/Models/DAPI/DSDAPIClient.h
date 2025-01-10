@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
     DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
-@class DSChain, DSBlockchainIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSDAPICoreNetworkService, DSPeer, DSSimplifiedMasternodeEntry;
+@class DSChain, DSIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSDAPICoreNetworkService, DSPeer;
 
 @interface DSDAPIClient : NSObject
 
@@ -45,10 +45,10 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
 
 - (void)removeDAPINodeByAddress:(NSString *)host;
 
-- (void)getAllStateTransitionsForUser:(DSBlockchainIdentity *)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion;
+- (void)getAllStateTransitionsForUser:(DSIdentity *)identity completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)sendDocument:(DPDocument *)document
-         forIdentity:(DSBlockchainIdentity *)blockchainIdentity
+         forIdentity:(DSIdentity *)identity
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
@@ -61,7 +61,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure;
 
-- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion;
+//- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion;
 @end
 
 NS_ASSUME_NONNULL_END

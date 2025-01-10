@@ -15,37 +15,37 @@
 //  limitations under the License.
 //
 
-#import "DSChain.h"
-#import "DSMnDiffProcessingResult.h"
-#import "DSQuorumSnapshot+Mndiff.h"
-#import "dash_shared_core.h"
-#import <Foundation/Foundation.h>
+//#import "DSChain.h"
+//#import "DSMnDiffProcessingResult.h"
+//#import "DSQuorumSnapshot+Mndiff.h"
+//#import "dash_shared_core.h"
+//#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSQRInfoProcessingResult : NSObject
-
-@property (nonatomic) uint8_t errorStatus;
-@property (nonatomic) DSQuorumSnapshot *snapshotAtHC;
-@property (nonatomic) DSQuorumSnapshot *snapshotAtH2C;
-@property (nonatomic) DSQuorumSnapshot *snapshotAtH3C;
-@property (nonatomic) DSQuorumSnapshot *_Nullable snapshotAtH4C;
-
-@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtTip;
-@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH;
-@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtHC;
-@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH2C;
-@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH3C;
-@property (nonatomic) DSMnDiffProcessingResult *_Nullable mnListDiffResultAtH4C;
-
-@property (nonatomic) BOOL extraShare;
-
-@property (nonatomic) NSOrderedSet<DSQuorumEntry *> *lastQuorumPerIndex;
-@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
-@property (nonatomic) NSOrderedSet<DSMnDiffProcessingResult *> *mnListDiffList;
-
-+ (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain;
-
-@end
-
+//@interface DSQRInfoProcessingResult : NSObject
+//
+//@property (nonatomic) uint8_t errorStatus;
+//@property (nonatomic) DSQuorumSnapshot *snapshotAtHC;
+//@property (nonatomic) DSQuorumSnapshot *snapshotAtH2C;
+//@property (nonatomic) DSQuorumSnapshot *snapshotAtH3C;
+//@property (nonatomic) DSQuorumSnapshot *_Nullable snapshotAtH4C;
+//
+//@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtTip;
+//@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH;
+//@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtHC;
+//@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH2C;
+//@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH3C;
+//@property (nonatomic) DSMnDiffProcessingResult *_Nullable mnListDiffResultAtH4C;
+//
+//@property (nonatomic) BOOL extraShare;
+//
+////@property (nonatomic) NSOrderedSet<DSQuorumEntry *> *lastQuorumPerIndex;
+//@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
+//@property (nonatomic) NSOrderedSet<DSMnDiffProcessingResult *> *mnListDiffList;
+//
+////+ (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain;
+//
+//@end
+//
 NS_ASSUME_NONNULL_END

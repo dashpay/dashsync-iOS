@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSInvitationDetailViewController : UITableViewController <DSIdentityChooserDelegate>
 
 @property (nonatomic, strong) DSChainManager *chainManager;
-@property (nonatomic, strong) DSBlockchainInvitation *invitation;
+@property (nonatomic, strong) DSInvitation *invitation;
 
 @end
 

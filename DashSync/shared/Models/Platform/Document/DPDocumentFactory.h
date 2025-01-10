@@ -19,7 +19,7 @@
 
 #import "DPContract.h"
 #import "DPDocumentProtocol.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocumentFactory : NSObject <DPDocumentProtocol>
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)identity
+- (instancetype)initWithIdentity:(DSIdentity *)identity
                                   contract:(DPContract *)contract
                                    onChain:(DSChain *)chain;
 

@@ -16,12 +16,12 @@
 //
 
 #import "DSIdentityChooserViewController.h"
-#import "DSBlockchainIdentityChooserTableViewCell.h"
+#import "DSIdentityChooserTableViewCell.h"
 
 @interface DSIdentityChooserViewController ()
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *chooseButton;
-@property (nonatomic, strong) NSArray<NSArray *> *orderedBlockchainIdentities;
-@property (strong, nonatomic) id blockchainIdentitiesObserver;
+@property (nonatomic, strong) NSArray<NSArray *> *orderedIdentities;
+@property (strong, nonatomic) id identitiesObserver;
 - (IBAction)choose:(id)sender;
 
 @end
@@ -34,8 +34,8 @@
 
     [self loadData];
 
-    self.blockchainIdentitiesObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateNotification
+    self.identitiesObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSIdentityDidUpdateNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
@@ -48,14 +48,14 @@
 
 
 - (void)loadData {
-    NSMutableArray *mOrderedBlockchainIdentities = [NSMutableArray array];
+    NSMutableArray *mOrderedIdentities = [NSMutableArray array];
     for (DSWallet *wallet in self.chain.wallets) {
-        if ([wallet.blockchainIdentities count]) {
-            [mOrderedBlockchainIdentities addObject:[[wallet.blockchainIdentities allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.blockHeight" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.timestamp" ascending:NO]]]];
+        if ([wallet.identities count]) {
+            [mOrderedIdentities addObject:[[wallet.identities allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"registrationAssetLockTransaction.blockHeight" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"registrationAssetLockTransaction.timestamp" ascending:NO]]]];
         }
     }
 
-    self.orderedBlockchainIdentities = [mOrderedBlockchainIdentities copy];
+    self.orderedIdentities = [mOrderedIdentities copy];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -66,11 +66,11 @@
 #pragma mark - Table view data source
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.orderedBlockchainIdentities[section] count];
+    return [self.orderedIdentities[section] count];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return [self.orderedBlockchainIdentities count];
+    return [self.orderedIdentities count];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -79,23 +79,23 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSBlockchainIdentityChooserTableViewCell *cell = (DSBlockchainIdentityChooserTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IdentityCellIdentifier" forIndexPath:indexPath];
+    DSIdentityChooserTableViewCell *cell = (DSIdentityChooserTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IdentityCellIdentifier" forIndexPath:indexPath];
 
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
-- (void)configureCell:(DSBlockchainIdentityChooserTableViewCell *)blockchainIdentityCell atIndexPath:(NSIndexPath *)indexPath {
-    DSBlockchainIdentity *blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
-    blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentDashpayUsername ? blockchainIdentity.currentDashpayUsername : @"Not yet set";
-    blockchainIdentityCell.indexLabel.text = [NSString stringWithFormat:@"%u", blockchainIdentity.index];
-    blockchainIdentityCell.walletLabel.text = blockchainIdentity.wallet.uniqueIDString;
+- (void)configureCell:(DSIdentityChooserTableViewCell *)identityCell atIndexPath:(NSIndexPath *)indexPath {
+    DSIdentity *identity = self.orderedIdentities[indexPath.section][indexPath.row];
+    identityCell.usernameLabel.text = identity.currentDashpayUsername ? identity.currentDashpayUsername : @"Not yet set";
+    identityCell.indexLabel.text = [NSString stringWithFormat:@"%u", identity.index];
+    identityCell.walletLabel.text = identity.wallet.uniqueIDString;
 }
 
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSBlockchainIdentity *blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
-    if (blockchainIdentity.isRegistered) {
+    DSIdentity *identity = self.orderedIdentities[indexPath.section][indexPath.row];
+    if (identity.isRegistered) {
         self.chooseButton.enabled = TRUE;
         return indexPath;
     }
@@ -105,9 +105,9 @@
 
 - (IBAction)choose:(id)sender {
     if (self.tableView.indexPathForSelectedRow) {
-        DSBlockchainIdentity *blockchainIdentity = self.orderedBlockchainIdentities[self.tableView.indexPathForSelectedRow.section][self.tableView.indexPathForSelectedRow.row];
-        if (blockchainIdentity.isRegistered) {
-            [self.delegate viewController:self didChooseIdentity:blockchainIdentity];
+        DSIdentity *identity = self.orderedIdentities[self.tableView.indexPathForSelectedRow.section][self.tableView.indexPathForSelectedRow.row];
+        if (identity.isRegistered) {
+            [self.delegate viewController:self didChooseIdentity:identity];
             [self.navigationController popViewControllerAnimated:TRUE];
         }
     }

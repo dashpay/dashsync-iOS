@@ -16,6 +16,7 @@
 //
 
 #import "DSChain.h"
+#import "DSKeyManager.h"
 #import "DSPlatformDocumentsRequest.h"
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
@@ -23,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSQuorumEntry, DSPlatformQuery, DSTransition;
+@class DSPlatformQuery, DSTransition;
 
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
@@ -48,7 +49,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initForGetIdentityIDsByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentitiesByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 
-+ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *_Nullable)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType error:(NSError **)error;
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof
+                               withMetadata:(ResponseMetadata *)metaData
+                                      query:(DSPlatformQuery *_Nullable)query
+                             forQuorumEntry:(DLLMQEntry *)quorumEntry
+                                 quorumType:(DLLMQType *)quorumType
+                                    onChain:(DSChain *)chain
+                                      error:(NSError **)error;
 
 @end
 

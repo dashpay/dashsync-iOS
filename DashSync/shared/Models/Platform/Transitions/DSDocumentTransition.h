@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DPDocument.h"
 #import "DSTransition.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,7 +34,10 @@ typedef NS_ENUM(NSUInteger, DSDocumentTransitionType)
 @property (nonatomic, readonly) NSArray<DPDocument *> *documents;
 @property (nonatomic, readonly) DSPlatformQuery *expectedResponseQuery;
 
-- (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+- (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents
+           withTransitionVersion:(uint16_t)version
+                identityUniqueId:(UInt256)identityUniqueId
+                         onChain:(DSChain *)chain;
 
 @end
 

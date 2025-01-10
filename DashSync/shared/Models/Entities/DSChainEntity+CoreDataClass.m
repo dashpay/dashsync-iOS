@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 #import "dash_shared_core.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainLockEntity+CoreDataProperties.h"
@@ -45,7 +46,7 @@
 @synthesize cachedChain;
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
-    self.type = chain_type_index(chain.chainType);
+    self.type = dash_spv_crypto_network_chain_type_ChainType_index(chain.chainType);
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
     return self;
 }
@@ -54,7 +55,7 @@
     if (self.cachedChain) {
         return self.cachedChain;
     }
-    __block ChainType type;
+    __block dash_spv_crypto_network_chain_type_ChainType *type;
     __block NSString *devnetIdentifier;
     __block uint16_t devnetVersion;
     __block NSData *data;
@@ -68,7 +69,7 @@
 
     __block NSArray *lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
-        type = chain_type_from_index(self.type);
+        type = dash_spv_crypto_network_chain_type_chain_type_from_index(self.type);
         devnetIdentifier = self.devnetIdentifier;
         devnetVersion = self.devnetVersion;
         data = self.checkpoints;
@@ -81,17 +82,18 @@
         lastPersistedChainSyncBlockTimestamp = self.syncBlockTimestamp;
     }];
     DSChain *chain = nil;
-    if (type.tag == ChainType_MainNet) {
+    
+    if (type->tag == dash_spv_crypto_network_chain_type_ChainType_MainNet) {
         chain = [DSChain mainnet];
-    } else if (type.tag == ChainType_TestNet) {
+    } else if (type->tag == dash_spv_crypto_network_chain_type_ChainType_TestNet) {
         chain = [DSChain testnet];
-    } else if (type.tag == ChainType_DevNet) {
+    } else if (type->tag == dash_spv_crypto_network_chain_type_ChainType_DevNet) {
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
             chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSError *checkpointRetrievalError = nil;
             NSArray *checkpointArray = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:data error:&checkpointRetrievalError];
-            chain = [DSChain recoverKnownDevnetWithIdentifier:devnet_type_for_chain_type(type) withCheckpoints:checkpointRetrievalError ? @[] : checkpointArray performSetup:YES];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:dash_spv_crypto_network_chain_type_ChainType_devnet_type(type) withCheckpoints:checkpointRetrievalError ? @[] : checkpointArray performSetup:YES];
         }
     } else {
         NSAssert(FALSE, @"Unknown ChainType");
@@ -123,10 +125,12 @@
     return chain;
 }
 
-+ (DSChainEntity *)chainEntityForType:(ChainType)type checkpoints:(NSArray *)checkpoints inContext:(NSManagedObjectContext *)context {
++ (DSChainEntity *)chainEntityForType:(dash_spv_crypto_network_chain_type_ChainType *)type
+                          checkpoints:(NSArray *)checkpoints
+                            inContext:(NSManagedObjectContext *)context {
     NSString *devnetIdentifier = [DSKeyManager devnetIdentifierFor:type];
-    int16_t devnetVersion = devnet_version_for_chain_type(type);
-    NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type, ChainType_DevNet, devnetIdentifier] inContext:context];
+    int16_t *devnetVersion = dash_spv_crypto_network_chain_type_ChainType_devnet_version(type);
+    NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type->tag, dash_spv_crypto_network_chain_type_ChainType_DevNet, devnetIdentifier] inContext:context];
     if (objects.count) {
         NSAssert(objects.count == 1, @"There should only ever be 1 chain for either mainnet, testnet, or a devnet Identifier");
         if (objects.count > 1) {
@@ -135,7 +139,7 @@
                 DSChainEntity *chainEntityToRemove = objects[i];
                 [context deleteObject:chainEntityToRemove];
                 [context ds_save];
-                DSLog(@"Removing extra chain entity of type %d", type.tag);
+                DSLog(@"Removing extra chain entity of type %d", type->tag);
             }
         }
         DSChainEntity *chainEntity = [objects objectAtIndex:0];
@@ -156,9 +160,9 @@
     }
 
     DSChainEntity *chainEntity = [self managedObjectInBlockedContext:context];
-    chainEntity.type = (uint16_t) type.tag;
+    chainEntity.type = (uint16_t) type->tag;
     chainEntity.devnetIdentifier = devnetIdentifier;
-    chainEntity.devnetVersion = devnetVersion;
+    chainEntity.devnetVersion = devnetVersion ? *devnetVersion : 0;
     if (checkpoints && devnetIdentifier) {
         NSError *error = nil;
         NSData *archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];

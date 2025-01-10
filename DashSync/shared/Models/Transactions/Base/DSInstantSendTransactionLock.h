@@ -7,11 +7,12 @@
 
 #import "BigIntTypes.h"
 #import "DSChain.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSSimplifiedMasternodeEntry, DSQuorumEntry, DSMasternodeList;
+@class DSChain;
 
 @interface DSInstantSendTransactionLock : NSObject
 
@@ -22,7 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSArray *inputOutpoints;
 @property (nonatomic, readonly) UInt256 cycleHash;
 @property (nonatomic, readonly) BOOL signatureVerified; //verifies the signature and quorum together
-@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
+//@property (nonatomic, readonly) DLLMQEntry *intendedQuorum;
+@property (nonatomic, readonly, assign) u384 *intendedQuorumPublicKey;
+//@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
 @property (nonatomic, readonly) BOOL saved;
 @property (nonatomic, readonly) UInt256 requestID;
 
@@ -41,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray *)inputOutpoints signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain;
 
-- (DSQuorumEntry *_Nullable)findSigningQuorumReturnMasternodeList:(DSMasternodeList *_Nullable *_Nullable)returnMasternodeList;
+//- (DSQuorumEntry *_Nullable)findSigningQuorumReturnMasternodeList:(DSMasternodeList *_Nullable *_Nullable)returnMasternodeList;
 
 @end
 

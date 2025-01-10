@@ -16,10 +16,9 @@
 //
 
 #import "BigIntTypes.h"
-#import "DSChain.h"
-#import "DSMasternodeList.h"
-#import "DSQuorumSnapshot.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
+#import "NSManagedObject+Sugar.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,47 +28,34 @@ FOUNDATION_EXPORT NSString *const DSMasternodeManagerNotificationMasternodeListK
 FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 #define CHAINLOCK_ACTIVATION_HEIGHT 1088640
-
+@class DSChain;
 @interface DSMasternodeListStore : NSObject
 
-@property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
-@property (nonatomic, readonly) NSArray *recentMasternodeLists;
 @property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
 @property (nonatomic, readonly) uint32_t lastMasternodeListBlockHeight;
-@property (nonatomic, readonly) NSMutableDictionary<NSData *, DSMasternodeList *> *masternodeListsByBlockHash;
-@property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListsBlockHashStubs;
-@property (nonatomic, readonly) NSMutableOrderedSet<DSQuorumEntry *> *activeQuorums;
-
-@property (nonatomic, readonly) NSMutableDictionary<NSData *, DSQuorumSnapshot *> *cachedQuorumSnapshots;
-@property (nonatomic, readonly) NSMutableDictionary<NSData *, NSData *> *cachedCLSignatures;
+@property (nonatomic, readonly) dispatch_group_t savingGroup;
 
 - (instancetype)initWithChain:(DSChain *)chain;
-- (void)setUp:(void (^)(DSMasternodeList *masternodeList))completion;
+- (void)setUp;
 - (void)deleteAllOnChain;
 - (void)deleteEmptyMasternodeLists;
 - (BOOL)hasBlockForBlockHash:(NSData *)blockHashData;
-- (BOOL)hasMasternodeListAt:(NSData *)blockHashData;
-- (BOOL)hasMasternodeListCurrentlyBeingSaved;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
+
 - (void)loadLocalMasternodes;
-- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-- (DSMasternodeList *_Nullable)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-- (DSMasternodeList *_Nullable)masternodeListBeforeBlockHash:(UInt256)blockHash;
-- (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-- (void)removeAllMasternodeLists;
-- (void)removeOldMasternodeLists:(uint32_t)lastBlockHeight;
+- (DArcMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash
+                                withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (DArcMasternodeList *)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (void)removeOldMasternodeLists;
 - (void)removeOldSimplifiedMasternodeEntries;
+- (nullable NSError *)saveQuorumSnapshot:(DLLMQSnapshot *)quorumSnapshot
+                            forBlockHash:(u256 *)block_hash;
 
-- (void)saveMasternodeList:(DSMasternodeList *)masternodeList
-          addedMasternodes:(NSDictionary *)addedMasternodes
-       modifiedMasternodes:(NSDictionary *)modifiedMasternodes
-                completion:(void (^)(NSError *error))completion;
-- (void)saveQuorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot
-                completion:(void (^)(NSError *error))completion;
-
-+ (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
-
-- (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight;
++ (nullable NSError *)saveMasternodeList:(DArcMasternodeList *)masternodeList
+                                 toChain:(DSChain *)chain
+               havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
+                     createUnknownBlocks:(BOOL)createUnknownBlocks
+                               inContext:(NSManagedObjectContext *)context;
 
 @end
 

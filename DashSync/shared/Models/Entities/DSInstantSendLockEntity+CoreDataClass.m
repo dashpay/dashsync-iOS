@@ -10,7 +10,6 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
-#import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionEntity+CoreDataClass.h"
@@ -30,7 +29,9 @@
 
         NSAssert(transactionEntity, @"transaction must exist");
         entity.transaction = transactionEntity;
-        entity.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
+        
+        entity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", NSDataFromPtr(instantSendTransactionLock.intendedQuorumPublicKey)];
+//        entity.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
     }
 
     return nil;
@@ -43,7 +44,8 @@
         DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
         NSAssert(transactionEntity, @"transaction must exist");
         self.transaction = transactionEntity;
-        self.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:self.managedObjectContext]; //the quorum might not yet
+        self.quorum = [DSQuorumEntryEntity anyObjectInContext:self.managedObjectContext matching:@"quorumPublicKeyData == %@", NSDataFromPtr(instantSendTransactionLock.intendedQuorumPublicKey)];
+//        self.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:self.managedObjectContext]; //the quorum might not yet
     }];
 
     return self;

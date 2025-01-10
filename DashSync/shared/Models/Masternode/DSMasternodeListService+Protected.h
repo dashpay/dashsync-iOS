@@ -15,20 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DSMasternodeListStore.h"
-#import "DSMnDiffProcessingResult.h"
+#import "DSKeyManager.h"
+#import "DSMasternodeListService.h"
+//#import "DSMasternodeListStore.h"
+//#import "DSMnDiffProcessingResult.h"
 #import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
+@class DSMasternodeListStore;
 @interface DSMasternodeListService (Protected)
 
 @property (nonatomic, readonly) DSMasternodeListStore *store;
 
-- (void)checkWaitingForQuorums;
 - (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer;
-- (BOOL)shouldProcessDiffResult:(DSMnDiffProcessingResult *)diffResult skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
-- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
+- (BOOL)shouldProcessDiffResult:(u256 *)block_hash
+                        isValid:(BOOL)isValid
+        skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
+//- (BOOL)shouldProcessDiffResult:(DSMnDiffProcessingResult *)diffResult skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
+//- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
 
 @end
 

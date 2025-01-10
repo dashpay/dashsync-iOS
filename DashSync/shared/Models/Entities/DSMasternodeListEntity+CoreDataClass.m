@@ -6,9 +6,7 @@
 //
 //
 
-#import "BigIntTypes.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
@@ -16,33 +14,50 @@
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
+
 @implementation DSMasternodeListEntity
 
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries {
-    return [self masternodeListWithSimplifiedMasternodeEntryPool:simplifiedMasternodeEntries quorumEntryPool:quorumEntries withBlockHeightLookup:nil];
-}
-
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    
-    /// TODO: it's a BS to collect this stuff into arrays and then to recollect it into dictionaries in the next step...
-    NSMutableArray *masternodeEntriesArray = [NSMutableArray array];
-    
+- (DArcMasternodeList *)masternodeListWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    DMasternodeEntry **masternodes = malloc(self.masternodes.count * sizeof(DMasternodeEntry *));
+    DLLMQEntry **quorums = malloc(self.quorums.count * sizeof(DLLMQEntry *));
+    uintptr_t masternodes_count = 0;
     for (DSSimplifiedMasternodeEntryEntity *masternodeEntity in self.masternodes) {
-        DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];
-        if (!masternodeEntry) {
-            masternodeEntry = [masternodeEntity simplifiedMasternodeEntryWithBlockHeightLookup:blockHeightLookup];
-        }        
-        [masternodeEntriesArray addObject:masternodeEntry];
+        DMasternodeEntry *entry = [masternodeEntity simplifiedMasternodeEntryWithBlockHeightLookup:blockHeightLookup];
+        masternodes[masternodes_count] = entry;
+        masternodes_count++;
     }
-    NSMutableArray *quorumEntriesArray = [NSMutableArray array];
+    uintptr_t quorums_count = 0;
     for (DSQuorumEntryEntity *quorumEntity in self.quorums) {
-        DSQuorumEntry *quorumEntry = [[quorumEntries objectForKey:@(quorumEntity.llmqType)] objectForKey:quorumEntity.quorumHashData];
-        if (!quorumEntry) {
-            quorumEntry = quorumEntity.quorumEntry;
-        }
-        [quorumEntriesArray addObject:quorumEntry];
+        uint16_t version = quorumEntity.version;
+        int16_t llmq_type = quorumEntity.llmqType;
+        int32_t llmq_index = quorumEntity.quorumIndex;
+        BOOL verified = quorumEntity.verified;
+        u256 *llmq_hash = u256_ctor(quorumEntity.quorumHashData);
+        BYTES *signers = bytes_ctor(quorumEntity.signersBitset);
+        int32_t signers_count = quorumEntity.signersCount;
+        BYTES *valid_members = bytes_ctor(quorumEntity.validMembersBitset);
+        int32_t valid_members_count = quorumEntity.validMembersCount;
+        u384 *public_key = u384_ctor(quorumEntity.quorumPublicKeyData);
+        u256 *verification_vector_hash = u256_ctor(quorumEntity.quorumVerificationVectorHashData);
+        u768 *threshold_signature = u768_ctor(quorumEntity.quorumThresholdSignatureData);
+        u768 *all_commitment_aggregated_signature = u768_ctor(quorumEntity.allCommitmentAggregatedSignatureData);
+        // yes this is crazy but this is correct (legacy)
+        u256 *entry_hash = u256_ctor(quorumEntity.commitmentHashData);
+        DLLMQEntry *entry = dash_spv_crypto_llmq_entry_from_entity(version, llmq_type, llmq_hash, llmq_index, signers, signers_count, valid_members, valid_members_count, public_key, verification_vector_hash, threshold_signature, all_commitment_aggregated_signature, verified, entry_hash);
+        quorums[quorums_count] = entry;
+        quorums_count++;
     }
-    return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 atBlockHeight:self.block.height withMasternodeMerkleRootHash:self.masternodeListMerkleRoot.UInt256 withQuorumMerkleRootHash:self.quorumListMerkleRoot.UInt256 onChain:self.block.chain.chain];
+    uint32_t block_height = self.block.height;
+    u256 *block_hash = u256_ctor(self.block.blockHash);
+    u256 *mn_merkle_root = u256_ctor(self.masternodeListMerkleRoot);
+    u256 *llmq_merkle_root = u256_ctor(self.quorumListMerkleRoot);
+    DMasternodeEntryList *masternodes_vec = DMasternodeEntryListCtor(masternodes_count, masternodes);
+    DLLMQEntryList *quorums_vec = DLLMQEntryListCtor(quorums_count, quorums);
+//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+    DMasternodeList *list = dash_spv_masternode_processor_models_masternode_list_from_entry_pool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec);
+//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+
+    return std_sync_Arc_dash_spv_masternode_processor_models_masternode_list_MasternodeList_ctor(list);
 }
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity {

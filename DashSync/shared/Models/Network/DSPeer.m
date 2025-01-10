@@ -28,8 +28,9 @@
 
 #import "DSPeer.h"
 #import "DSAddrRequest.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLock.h"
@@ -48,7 +49,6 @@
 #import "DSInstantSendTransactionLock.h"
 #import "DSInvRequest.h"
 #import "DSKeyManager.h"
-#import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
 #import "DSNotFoundRequest.h"
 #import "DSOptionsManager.h"
@@ -56,7 +56,6 @@
 #import "DSPeerManager.h"
 #import "DSPingRequest.h"
 #import "DSReachabilityManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSSpork.h"
 #import "DSSporkManager.h"
 #import "DSTransaction.h"
@@ -143,9 +142,9 @@
     return [[self alloc] initWithHost:host onChain:chain];
 }
 
-+ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
-}
+//+ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
+//    return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
+//}
 
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
@@ -157,9 +156,9 @@
     return self;
 }
 
-- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    return [self initWithAddress:simplifiedMasternodeEntry.address andPort:simplifiedMasternodeEntry.port onChain:simplifiedMasternodeEntry.chain];
-}
+//- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
+//    return [self initWithAddress:simplifiedMasternodeEntry.address andPort:simplifiedMasternodeEntry.port onChain:simplifiedMasternodeEntry.chain];
+//}
 
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain *)chain {
     if (!chain) return nil;

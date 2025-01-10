@@ -17,7 +17,7 @@
 
 #import "DSCreditFundingTransaction.h"
 #import "DSAccount.h"
-#import "DSCreditFundingDerivationPath.h"
+#import "DSAssetLockDerivationPath.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
 #import "DSInstantSendTransactionLock.h"
@@ -57,32 +57,33 @@
 }
 
 - (uint32_t)usedDerivationPathIndexForWallet:(DSWallet *)wallet {
-    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
-    NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
-    return (uint32_t)[registrationFundingDerivationPath indexOfKnownAddress:address];
+    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
+    return (uint32_t)[registrationFundingDerivationPath indexOfKnownAddressHash:[self creditBurnPublicKeyHash]];
 }
 
-- (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index {
-    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+- (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet
+                                  isIndex:(uint32_t)index {
+    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     return [[registrationFundingDerivationPath addressAtIndex:index] isEqualToString:address];
 }
 
-- (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index {
-    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:wallet];
+- (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet
+                                            isIndex:(uint32_t)index {
+    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     return [[registrationFundingDerivationPath addressAtIndex:index] isEqualToString:address];
 }
 
 - (void)markAddressAsUsedInWallet:(DSWallet *)wallet {
-    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [registrationFundingDerivationPath registerTransactionAddress:address];
     [registrationFundingDerivationPath registerAddressesWithGapLimit:10 error:nil];
 }
 
 - (void)markInvitationAddressAsUsedInWallet:(DSWallet *)wallet {
-    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:wallet];
+    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [registrationFundingDerivationPath registerTransactionAddress:address];
     [registrationFundingDerivationPath registerAddressesWithGapLimit:10 error:nil];

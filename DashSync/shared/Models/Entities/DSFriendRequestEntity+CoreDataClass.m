@@ -89,7 +89,7 @@
     NSAssert([paymentRequest isValidAsNonDashpayPaymentRequest], @"Payment request must be valid");
 
     [account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
-                                                    usingUserBlockchainIdentity:nil
+                                                    usingUserIdentity:nil
                                                                     fromAccount:account
                                                           acceptInternalAddress:NO
                                                            acceptReusingAddress:YES

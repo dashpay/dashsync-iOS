@@ -54,7 +54,7 @@
         __block BOOL displayedSentMessage = FALSE;
 
         [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
-            usingUserBlockchainIdentity:nil
+            usingUserIdentity:nil
             fromAccount:self.account
             acceptInternalAddress:YES
             acceptReusingAddress:YES

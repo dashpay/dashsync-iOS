@@ -13,7 +13,6 @@
 #import "DSProviderUpdateRegistrarTransactionsViewController.h"
 #import "DSProviderUpdateServiceTransactionsViewController.h"
 #import "DSReclaimMasternodeViewController.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSUpdateMasternodeRegistrarViewController.h"
 #import "DSUpdateMasternodeServiceViewController.h"
 #import <arpa/inet.h>
@@ -40,16 +39,17 @@
     [super viewDidLoad];
 
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = self.simplifiedMasternodeEntry.address.u32[3];
-
-    self.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.simplifiedMasternodeEntry.port];
+    
+    uint32_t ipAddress = dash_spv_masternode_processor_common_socket_address_SocketAddress_ipv4(self.simplifiedMasternodeEntry->socket_address);
+    char *voting_address = DMasternodeEntryVotingAddress(self.simplifiedMasternodeEntry, self.chain.chainType);
+    self.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.simplifiedMasternodeEntry->socket_address->port];
     self.ownerKeyLabel.text = self.localMasternode.ownerKeysWallet ? @"SHOW" : @"NO";
     self.operatorKeyLabel.text = self.localMasternode.operatorKeysWallet ? @"SHOW" : @"NO";
-    self.operatorPublicKeyLabel.text = uint384_hex(self.simplifiedMasternodeEntry.operatorPublicKey);
-    self.votingAddressLabel.text = self.simplifiedMasternodeEntry.votingAddress;
+    self.operatorPublicKeyLabel.text = uint384_hex(u384_cast(self.simplifiedMasternodeEntry->operator_public_key->data));
+    self.votingAddressLabel.text = [DSKeyManager NSStringFrom:voting_address];
     self.votingKeyLabel.text = self.localMasternode.votingKeysWallet ? @"SHOW" : @"NO";
     self.fundsInHoldingLabel.text = self.localMasternode.holdingKeysWallet ? @"YES" : @"NO";
-    self.activeLabel.text = self.simplifiedMasternodeEntry.isValid ? @"YES" : @"NO";
+    self.activeLabel.text = self.simplifiedMasternodeEntry->is_valid ? @"YES" : @"NO";
     self.payToAddress.text = self.localMasternode.payoutAddress ? self.localMasternode.payoutAddress : @"Unknown";
     self.proRegTxLabel.text = uint256_hex(self.localMasternode.providerRegistrationTransaction.txHash);
     self.proUpRegTxLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.localMasternode.providerUpdateRegistrarTransactions.count];
@@ -89,7 +89,8 @@
                                                                    forAmount:0
                                                                   completion:^(NSData *_Nullable seed, BOOL cancelled) {
                                                                       if (seed) {
-                                                                          self.ownerKeyLabel.text = [DSKeyManager serializedPrivateKey:[self.localMasternode ownerKeyFromSeed:seed] chainType:self.chain.chainType];
+                                                                          DMaybeOpaqueKey *key = [self.localMasternode ownerKeyFromSeed:seed];
+                                                                          self.ownerKeyLabel.text = [DSKeyManager serializedPrivateKey:key->ok chainType:self.chain.chainType];
                                                                       }
                                                                   }];
                     }
@@ -139,12 +140,13 @@
 }
 
 - (void)claimSimplifiedMasternodeEntry {
-    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:[NSData dataWithUInt256:self.simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse.UInt256
-                                                                  onChain:self.simplifiedMasternodeEntry.chain
+    
+    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:uint256_reverse(u256_cast(self.simplifiedMasternodeEntry->provider_registration_transaction_hash))
+                                                                  onChain:self.chain
                                                                completion:^(DSTransaction *transaction, NSError *error) {
         if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
             DSProviderRegistrationTransaction *providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-            [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
+            [self.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
         }
     }];
 

@@ -19,6 +19,7 @@
 
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSChain+Checkpoint.h"
 #import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"

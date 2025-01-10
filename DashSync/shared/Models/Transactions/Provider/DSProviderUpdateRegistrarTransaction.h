@@ -56,11 +56,11 @@ providerUpdateRegistrarTransactionVersion:(uint16_t)version
 
 - (void)updateInputsHash;
 
-- (void)signPayloadWithKey:(OpaqueKey *_Nonnull)privateKey;
+- (void)signPayloadWithKey:(DOpaqueKey *_Nonnull)privateKey;
 
 - (BOOL)checkPayloadSignature;
 
-- (BOOL)checkPayloadSignature:(OpaqueKey *_Nonnull)publicKey;
+- (BOOL)checkPayloadSignature:(DOpaqueKey *_Nonnull)publicKey;
 
 
 @end

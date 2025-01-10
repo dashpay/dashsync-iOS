@@ -17,18 +17,17 @@
 
 #import "DSChain.h"
 #import "DSMasternodeList.h"
-#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSMasternodeList (Mndiff)
-
-+ (instancetype)masternodeListWith:(MasternodeList *)list onChain:(DSChain *)chain;
-
-- (MasternodeList *)ffi_malloc;
-+ (void)ffi_free:(MasternodeList *)list;
-
-@end
+//@interface DSMasternodeList (Mndiff)
+//
+//+ (instancetype)masternodeListWith:(MasternodeList *)list onChain:(DSChain *)chain;
+//
+//- (MasternodeList *)ffi_malloc;
+//+ (void)ffi_free:(MasternodeList *)list;
+//
+//@end
 
 NS_ASSUME_NONNULL_END

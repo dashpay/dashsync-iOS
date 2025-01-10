@@ -55,7 +55,7 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
              sporkAddress:(NSString *)sporkAddress
           sporkPrivateKey:(NSString *)sporkPrivateKey;
 
-- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(DevnetType)devnetType
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType
                                     forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations
                             withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
                                            standardPort:(uint32_t)standardPort

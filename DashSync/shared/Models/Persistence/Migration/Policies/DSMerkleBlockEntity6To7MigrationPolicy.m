@@ -130,7 +130,7 @@
     NSNumber *height = [sInstance valueForKey:@"height"];
     NSManagedObject *chainEntity = [sInstance valueForKey:@"chain"];
     NSParameterAssert(chainEntity);
-    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == ChainType_MainNet && [height intValue] > self.lastKnownSourceBlockHeight) {
+    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == dash_spv_crypto_network_chain_type_ChainType_MainNet && [height intValue] > self.lastKnownSourceBlockHeight) {
         self.lastKnownSourceBlockHeight = [height unsignedIntValue];
     }
 
@@ -144,7 +144,7 @@
         self.lastKnownSourceBlockWithCheckpoint = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:chain];
     }
     if (self.lastKnownSourceBlockWithCheckpoint) {
-        DSChainEntity *chainEntity = [self chainEntityForType:ChainType_MainNet inContext:manager.destinationContext];
+        DSChainEntity *chainEntity = [self chainEntityForType:dash_spv_crypto_network_chain_type_ChainType_MainNet inContext:manager.destinationContext];
         if (chainEntity) {
             [chainEntity setValue:uint256_data(self.lastKnownSourceBlockWithCheckpoint.blockHash) forKey:@"syncBlockHash"];
             [chainEntity setValue:@(self.lastKnownSourceBlockWithCheckpoint.height) forKey:@"syncBlockHeight"];
@@ -176,7 +176,7 @@
 }
 
 
-- (DSChainEntity *)chainEntityForType:(ChainType_Tag)type inContext:(NSManagedObjectContext *)context {
+- (DSChainEntity *)chainEntityForType:(uint16_t)type inContext:(NSManagedObjectContext *)context {
     NSFetchRequest *fetchRequest = [DSChainEntity fetchRequest];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:@"type = %d", type];
     NSError *error = nil;

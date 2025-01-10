@@ -6,7 +6,7 @@
 //
 //
 
-#import "DSBlockchainIdentity+Protected.h"
+#import "DSIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
@@ -15,15 +15,15 @@
 
 + (void)deleteBlockchainIdentitiesOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray *blockchainIdentitiesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];
-        for (DSBlockchainIdentityEntity *blockchainIdentity in blockchainIdentitiesToDelete) {
-            [chainEntity.managedObjectContext deleteObject:blockchainIdentity];
+        NSArray *identitiesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];
+        for (DSBlockchainIdentityEntity *identity in identitiesToDelete) {
+            [chainEntity.managedObjectContext deleteObject:identity];
         }
     }];
 }
 
-- (DSBlockchainIdentity *)blockchainIdentity {
-    return [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:self];
+- (DSIdentity *)identity {
+    return [[DSIdentity alloc] initWithIdentityEntity:self];
 }
 
 @end

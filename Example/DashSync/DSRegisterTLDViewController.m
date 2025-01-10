@@ -31,11 +31,11 @@
 }
 
 - (IBAction)registerTLD:(id)sender {
-    DSChain *chain = self.blockchainIdentity.wallet.chain;
+    DSChain *chain = self.identity.wallet.chain;
     DPContract *dpnsContract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
-    DSBlockchainIdentity *dpnsBlockchainIdentity = [chain blockchainIdentityThatCreatedContract:dpnsContract withContractId:chain.dpnsContractID foundInWallet:nil];
-    if (self.blockchainIdentity == dpnsBlockchainIdentity) {
-        [self.blockchainIdentity addUsername:self.topLevelDomainTextField.text inDomain:@"" save:YES];
+    DSIdentity *dpnsIdentity = [chain identityThatCreatedContract:dpnsContract withContractId:chain.dpnsContractID foundInWallet:nil];
+    if (self.identity == dpnsIdentity) {
+        [self.identity addUsername:self.topLevelDomainTextField.text inDomain:@"" save:YES];
     }
 }
 

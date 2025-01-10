@@ -62,12 +62,12 @@
 }
 
 - (IBAction)updateMasternode:(id)sender {
-    UInt160 votingHash;
+    UInt160 votingHash ;
     if (self.votingWallet) {
         DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingWallet];
         votingHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
     } else {
-        votingHash = self.simplifiedMasternodeEntry.keyIDVoting;
+        votingHash = u160_cast(self.simplifiedMasternodeEntry->key_id_voting);
     }
     NSString *payoutAddress = (self.payoutTableViewCell.valueTextField.text && ![self.payoutTableViewCell.valueTextField.text isEqualToString:@""]) ? self.payoutTableViewCell.valueTextField.text : self.localMasternode.payoutAddress;
     [self.localMasternode updateTransactionFundedByAccount:self.account

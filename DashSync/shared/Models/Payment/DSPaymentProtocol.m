@@ -27,6 +27,7 @@
 
 #import "DSPaymentProtocol.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSTransaction.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"

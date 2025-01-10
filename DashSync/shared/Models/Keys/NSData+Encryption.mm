@@ -208,7 +208,7 @@ NS_ASSUME_NONNULL_BEGIN
 //    return resultData;
 //}
 //
-- (nullable NSData *)encryptWithSecretKey:(OpaqueKey *)secretKey forPublicKey:(OpaqueKey *)peerPubKey {
+- (nullable NSData *)encryptWithSecretKey:(DOpaqueKey *)secretKey forPublicKey:(DOpaqueKey *)peerPubKey {
     return [DSKeyManager encryptData:self secretKey:secretKey publicKey:peerPubKey];
 //    if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
 //        return [self encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey];
@@ -220,7 +220,7 @@ NS_ASSUME_NONNULL_BEGIN
 //    return nil;
 }
 
-- (nullable NSData *)encryptWithSecretKey:(OpaqueKey *)secretKey forPublicKey:(OpaqueKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector {
+- (nullable NSData *)encryptWithSecretKey:(DOpaqueKey *)secretKey forPublicKey:(DOpaqueKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector {
     return [DSKeyManager encryptData:self secretKey:secretKey publicKey:peerPubKey usingIV:initializationVector];
 //    if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
 //        return [self encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey usingInitializationVector:initializationVector];
@@ -232,11 +232,11 @@ NS_ASSUME_NONNULL_BEGIN
 //    return nil;
 }
 
-- (nullable NSData *)decryptWithSecretKey:(OpaqueKey *)secretKey fromPublicKey:(OpaqueKey *)peerPubKey {
+- (nullable NSData *)decryptWithSecretKey:(DOpaqueKey *)secretKey fromPublicKey:(DOpaqueKey *)peerPubKey {
     return [DSKeyManager decryptData:self secretKey:secretKey publicKey:peerPubKey];
 }
 
-- (nullable NSData *)decryptWithSecretKey:(OpaqueKey *)secretKey fromPublicKey:(OpaqueKey *)peerPubKey usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)decryptWithSecretKey:(DOpaqueKey *)secretKey fromPublicKey:(DOpaqueKey *)peerPubKey usingIVSize:(NSUInteger)ivSize {
     return [DSKeyManager decryptData:self secretKey:secretKey publicKey:peerPubKey usingIVSize:ivSize];
 //    if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
 //        return [self decryptWithBLSSecretKey:(DSBLSKey *)secretKey fromPublicKey:(DSBLSKey *)peerPubKey usingIVSize:ivSize];
@@ -248,7 +248,7 @@ NS_ASSUME_NONNULL_BEGIN
 //    return nil;
 }
 
-- (nullable NSData *)encryptWithDHKey:(OpaqueKey *)dhKey {
+- (nullable NSData *)encryptWithDHKey:(DOpaqueKey *)dhKey {
     return [DSKeyManager encryptData:self withDHKey:dhKey];
 //    if ([dhKey isMemberOfClass:[DSBLSKey class]]) {
 //        return [self encryptWithDHBLSKey:(DSBLSKey *)dhKey];
@@ -260,7 +260,7 @@ NS_ASSUME_NONNULL_BEGIN
 //    return nil;
 }
 
-- (nullable NSData *)decryptWithDHKey:(OpaqueKey *)dhKey {
+- (nullable NSData *)decryptWithDHKey:(DOpaqueKey *)dhKey {
     return [DSKeyManager decryptData:self withDHKey:dhKey];
 //    if ([dhKey isMemberOfClass:[DSBLSKey class]]) {
 //        return [self decryptWithDHBLSKey:(DSBLSKey *)dhKey];
@@ -276,9 +276,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(keys.count > 1, @"There should be at least two key (first pair)");
     if ([keys count] < 2) return self;
 
-    OpaqueKey *firstKey = (OpaqueKey *)[keys firstObject].pointerValue;
-    OpaqueKey *secondKey = (OpaqueKey *)[keys objectAtIndex:1].pointerValue;
-    NSData *encryptedData = [self decryptWithSecretKey:secondKey fromPublicKey:firstKey usingIVSize:ivSize];
+    DMaybeOpaqueKey *firstKey = (DMaybeOpaqueKey *)[keys firstObject].pointerValue;
+    DMaybeOpaqueKey *secondKey = (DMaybeOpaqueKey *)[keys objectAtIndex:1].pointerValue;
+    NSAssert(firstKey->ok, @"First key should be ok");
+    NSAssert(secondKey->ok, @"Second key should be ok");
+    NSData *encryptedData = [self decryptWithSecretKey:secondKey->ok fromPublicKey:firstKey->ok usingIVSize:ivSize];
     if (keys.count == 2) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -289,8 +291,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<NSValue *> *)keys {
     NSAssert(keys.count > 0, @"There should be at least one key");
     if (![keys count]) return self;
-    OpaqueKey *firstKey = (OpaqueKey *) [keys firstObject].pointerValue;
-    NSData *encryptedData = [self decryptWithDHKey:firstKey];
+    DMaybeOpaqueKey *firstKey = (DMaybeOpaqueKey *) [keys firstObject].pointerValue;
+    NSAssert(firstKey->ok, @"First key should be ok");
+    NSData *encryptedData = [self decryptWithDHKey:firstKey->ok];
     if (keys.count == 1) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -301,8 +304,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys {
     NSAssert(keys.count > 0, @"There should be at least one key");
     if (![keys count]) return self;
-    OpaqueKey *firstKey = (OpaqueKey *) [keys firstObject].pointerValue;
-    NSData *encryptedData = [self encryptWithDHKey:firstKey];
+    DMaybeOpaqueKey *firstKey = (DMaybeOpaqueKey *) [keys firstObject].pointerValue;
+    NSAssert(firstKey->ok, @"First key should be ok");
+    NSData *encryptedData = [self encryptWithDHKey:firstKey->ok];
     if (keys.count == 1) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -314,10 +318,12 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(keys.count > 1, @"There should be at least two key (first pair)");
     if ([keys count] < 2) return self;
 
-    OpaqueKey *firstKey = (OpaqueKey *) [keys firstObject].pointerValue;
-    OpaqueKey *secondKey = (OpaqueKey *) [keys objectAtIndex:1].pointerValue;
-    
-    NSData *encryptedData = [self encryptWithSecretKey:firstKey forPublicKey:secondKey usingInitializationVector:initializationVector];
+    DMaybeOpaqueKey *firstKey = (DMaybeOpaqueKey *) [keys firstObject].pointerValue;
+    DMaybeOpaqueKey *secondKey = (DMaybeOpaqueKey *) [keys objectAtIndex:1].pointerValue;
+    NSAssert(firstKey->ok, @"First key should be ok");
+    NSAssert(secondKey->ok, @"Second key should be ok");
+
+    NSData *encryptedData = [self encryptWithSecretKey:firstKey->ok forPublicKey:secondKey->ok usingInitializationVector:initializationVector];
     if (keys.count == 2) { //not really necessary but easier to read
         return encryptedData;
     } else {

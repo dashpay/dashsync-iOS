@@ -26,9 +26,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    DSAccount *account = [self.blockchainIdentity.wallet accountWithNumber:0];
+    DSAccount *account = [self.identity.wallet accountWithNumber:0];
 
-    DSBlockchainIdentity *friend = self.incomingFriendRequest.sourceContact.associatedBlockchainIdentity.blockchainIdentity;
+    DSIdentity *friend = self.incomingFriendRequest.sourceContact.associatedBlockchainIdentity.identity;
 
     DSIncomingFundsDerivationPath *incomingDerivationPath = [account derivationPathForFriendshipWithIdentifier:self.incomingFriendRequest.friendshipIdentifier];
     NSAssert(incomingDerivationPath.extendedPublicKey, @"Extended public key must exist already");
@@ -48,10 +48,10 @@
 
     
     
-    self.incomingOurKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.destinationKeyIndex]].hexString;
-    self.incomingFriendKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[friend keyAtIndex:self.incomingFriendRequest.sourceKeyIndex]].hexString;
-    self.outgoingOurKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.sourceKeyIndex]].hexString;
-    self.outgoingFriendKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[friend keyAtIndex:self.incomingFriendRequest.destinationKeyIndex]].hexString;
+    self.incomingOurKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[self.identity keyAtIndex:self.incomingFriendRequest.destinationKeyIndex]->ok].hexString;
+    self.incomingFriendKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[friend keyAtIndex:self.incomingFriendRequest.sourceKeyIndex]->ok].hexString;
+    self.outgoingOurKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[self.identity keyAtIndex:self.incomingFriendRequest.sourceKeyIndex]->ok].hexString;
+    self.outgoingFriendKeyUsedForEncryptionLabel.text = [DSKeyManager publicKeyData:[friend keyAtIndex:self.incomingFriendRequest.destinationKeyIndex]->ok].hexString;
 }
 
 @end

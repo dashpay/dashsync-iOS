@@ -23,15 +23,13 @@
 //  THE SOFTWARE.
 
 #import "DSChainLock.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSChainManager.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSQuorumEntry.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSSporkManager.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -49,13 +47,18 @@
 @property (nonatomic, strong) NSArray *inputOutpoints;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
-@property (nonatomic, strong) DSQuorumEntry *intendedQuorum;
+//@property (nonatomic, strong) DSQuorumEntry *intendedQuorum;
+@property (nonatomic, assign) u384 *intendedQuorumPublicKey;
 @property (nonatomic, assign) BOOL saved;
 
 @end
 
 @implementation DSChainLock
-
+- (void)dealloc {
+    if (self.intendedQuorumPublicKey) {
+        u384_dtor(self.intendedQuorumPublicKey);
+    }
+}
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain {
     return [[self alloc] initWithMessage:message onChain:chain];
@@ -87,7 +90,11 @@
     return self;
 }
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain {
+- (instancetype)initWithBlockHash:(UInt256)blockHash
+                        signature:(UInt768)signature
+                signatureVerified:(BOOL)signatureVerified
+                   quorumVerified:(BOOL)quorumVerified
+                          onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
     self.blockHash = blockHash;
     self.signatureVerified = signatureVerified;
@@ -106,46 +113,40 @@
     return _requestID;
 }
 
-- (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
-    NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:quorum_type_for_chain_locks(self.chain.chainType)];
-    [data appendUInt256:quorumEntry.quorumHash];
-    [data appendUInt256:self.requestID];
-    [data appendUInt256:self.blockHash];
-    return [data SHA256_2];
-}
-
-- (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
-    UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    BOOL verified = key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
-#if DEBUG
-    DSLog(@"[%@] verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %u", self.chain.name, verified, quorumEntry.llmqType, quorumEntry.verified, @"<REDACTED>", uint384_hex(quorumEntry.quorumPublicKey), @"<REDACTED>", quorumEntry.useLegacyBLSScheme);
-#else
-    DSLogPrivate(@"[%@] verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %u", self.chain.name, verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(signId), uint384_hex(quorumEntry.quorumPublicKey), uint768_hex(self.signature), quorumEntry.useLegacyBLSScheme);
-#endif
+- (BOOL)verifySignatureAgainstQuorum:(DLLMQEntry *)quorumEntry {
+    u256 *request_id = u256_ctor_u(self.requestID);
+    u256 *block_hash = u256_ctor_u(self.blockHash);
+    u768 *sig = u768_ctor_u(self.signature);
+    u256 *sign_id = DLLMQEntrySignID(quorumEntry, request_id, block_hash);
+    bool verified = DLLMQEntryVerifySignature(quorumEntry, sign_id, sig);
     return verified;
 }
 
-- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
-    DSQuorumEntry *foundQuorum = nil;
-    for (DSMasternodeList *masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
-        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:quorum_type_for_chain_locks(self.chain.chainType)] allValues]) {
-            BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
-            if (signatureVerified) {
-                foundQuorum = quorumEntry;
-                if (returnMasternodeList) *returnMasternodeList = masternodeList;
-                break;
-            }
-        }
-        if (foundQuorum) break;
-    }
-    return foundQuorum;
-}
+//- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
+//    DSQuorumEntry *foundQuorum = nil;
+//    for (DSMasternodeList *masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
+//        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:quorum_type_for_chain_locks(self.chain.chainType)] allValues]) {
+//            BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
+//            if (signatureVerified) {
+//                foundQuorum = quorumEntry;
+//                if (returnMasternodeList) *returnMasternodeList = masternodeList;
+//                break;
+//            }
+//        }
+//        if (foundQuorum) break;
+//    }
+//    return foundQuorum;
+//}
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
-    if (quorumEntry && quorumEntry.verified) {
-        self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
+    DLLMQEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
+    if (quorumEntry && quorumEntry->verified) {
+        u256 *request_id = u256_ctor_u(self.requestID);
+        u256 *block_hash = u256_ctor_u(self.blockHash);
+        u768 *sig = u768_ctor_u(self.signature);
+        u256 *sign_id = DLLMQEntrySignID(quorumEntry, request_id, block_hash);
+        self.signatureVerified = DLLMQEntryVerifySignature(quorumEntry, sign_id, sig);
+
         if (!self.signatureVerified) {
             DSLog(@"[%@] unable to verify signature with offset %d", self.chain.name, offset);
         } else {
@@ -153,22 +154,23 @@
         }
 
     } else if (quorumEntry) {
-        DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, uint256_hex(quorumEntry.quorumHash));
+        DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name,
+              [NSString stringWithUTF8String:DLLMQEntryHashHex(quorumEntry)]);
     } else {
         DSLog(@"[%@] no quorum entry found", self.chain.name);
     }
     if (self.signatureVerified) {
-        self.intendedQuorum = quorumEntry;
-        self.quorumVerified = self.intendedQuorum.verified;
+        self.intendedQuorumPublicKey = quorumEntry->public_key;
+        self.quorumVerified = quorumEntry->verified;
         //We should also set the chain's last chain lock
         if (!self.chain.lastChainLock || self.chain.lastChainLock.height < self.height) {
             self.chain.lastChainLock = self;
         }
-    } else if (quorumEntry.verified && offset == 8) {
+    } else if (quorumEntry && quorumEntry->verified && offset == 8) {
         //try again a few blocks more in the past
         DSLog(@"[%@] trying with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
-    } else if (quorumEntry.verified && offset == 0) {
+    } else if (quorumEntry && quorumEntry->verified && offset == 0) {
         //try again a few blocks more in the future
         DSLog(@"[%@] trying with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];

@@ -15,51 +15,51 @@
 //  limitations under the License.
 //
 
-#import "dash_shared_core.h"
-#import "DSChain.h"
-#import "DSMasternodeProcessorContext.h"
-#import "DSMasternodeList.h"
-#import "DSMasternodeManager.h"
-#import "DSMnDiffProcessingResult.h"
-#import "DSQRInfoProcessingResult.h"
-#import "DSQuorumEntry.h"
-#import "DSSimplifiedMasternodeEntry.h"
-#import <Foundation/Foundation.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSMasternodeManager (Mndiff)
-
+//#import "dash_shared_core.h"
+//#import "DSChain.h"
+//#import "DSMasternodeProcessorContext.h"
+////#import "DSMasternodeList.h"
+//#import "DSMasternodeManager.h"
+//#import "DSMnDiffProcessingResult.h"
+//#import "DSQRInfoProcessingResult.h"
+//#import "DSQuorumEntry.h"
+//#import "DSSimplifiedMasternodeEntry.h"
+//#import <Foundation/Foundation.h>
+//
+//NS_ASSUME_NONNULL_BEGIN
+//
+//@interface DSMasternodeManager (Mndiff)
+//
 /// Rust FFI callbacks
-MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
-bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context);
-void destroyMasternodeList(MasternodeList *masternode_list);
-void destroyU8(uint8_t *block_hash);
-uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
-uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
-uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context);
-LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context);
-bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context);
-void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
-void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
-ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
+//MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
+//bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context);
+//void destroyMasternodeList(MasternodeList *masternode_list);
+//void destroyU8(uint8_t *block_hash);
+//uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
+//uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
+//uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context);
+//LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context);
+//bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context);
+//void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
+//void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
+//ProcessingError shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
+//
+//+ (struct MasternodeProcessor *)registerProcessor;
+//+ (void)unregisterProcessor:(struct MasternodeProcessor *)processor;
+//
+//+ (struct MasternodeProcessorCache *)createProcessorCache;
+//+ (void)destroyProcessorCache:(struct MasternodeProcessorCache *)processorCache;
+//
+//- (DSMnDiffProcessingResult *)processMasternodeDiffFromFile:(NSData *)message protocolVersion:(uint32_t)protocolVersion withContext:(DSMasternodeProcessorContext *)context;
+//
+//- (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
+//- (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
 
-+ (MasternodeProcessor *)registerProcessor;
-+ (void)unregisterProcessor:(MasternodeProcessor *)processor;
-
-+ (MasternodeProcessorCache *)createProcessorCache;
-+ (void)destroyProcessorCache:(MasternodeProcessorCache *)processorCache;
-
-- (DSMnDiffProcessingResult *)processMasternodeDiffFromFile:(NSData *)message protocolVersion:(uint32_t)protocolVersion withContext:(DSMasternodeProcessorContext *)context;
-
-- (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
-- (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
-
-- (void)clearProcessorCache;
-- (void)removeMasternodeListFromCacheAtBlockHash:(UInt256)blockHash;
-- (void)removeSnapshotFromCacheAtBlockHash:(UInt256)blockHash;
-
-@end
-
-
-NS_ASSUME_NONNULL_END
+//- (void)clearProcessorCache;
+//- (void)removeMasternodeListFromCacheAtBlockHash:(UInt256)blockHash;
+//- (void)removeSnapshotFromCacheAtBlockHash:(UInt256)blockHash;
+//
+//@end
+//
+//
+//NS_ASSUME_NONNULL_END

@@ -139,7 +139,13 @@
     NSIndexPath *path = [NSIndexPath indexPathWithIndexes:indexes length:2];
     cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndexPath:path].hexString;
 //    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2] fromSeed:self.seed] serializedPrivateKeyForChain:self.derivationPath.chain];
-    cell.privateKeyLabel.text = [self.derivationPath serializedExtendedPrivateKeyFromSeedAtIndexPath:self.seed indexPath:path];
+    
+    DMaybeOpaqueKey *result = [self.derivationPath privateKeyAtIndexPath:path fromSeed:self.seed];
+    if (result) {
+        if (result->ok)
+            cell.privateKeyLabel.text = [DSKeyManager NSStringFrom:dash_spv_crypto_keys_key_OpaqueKey_serialized_private_key_for_script(result->ok, dash_spv_crypto_network_chain_type_ChainType_script_priv_key(self.derivationPath.chain.chainType))];
+        DMaybeOpaqueKeyDtor(result);
+    }
 }
 
 - (IBAction)copyAddress:(id)sender {

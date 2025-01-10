@@ -6,13 +6,16 @@
 //
 
 #import "DSFundsDerivationPath.h"
+#import "DSAddressEntity+CoreDataClass.h"
 #import "DSAccount.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
+#import "DSChain+Params.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSKeyManager.h"
 #import "DSLogger.h"
 #import "NSError+Dash.h"
+#import "NSManagedObject+Sugar.h"
 
 #define DERIVATION_PATH_IS_USED_KEY @"DERIVATION_PATH_IS_USED_KEY"
 
@@ -30,16 +33,40 @@
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(accountNumber)};
     BOOL hardenedIndexes[] = {YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
+    return [self derivationPathWithIndexes:indexes
+                                  hardened:hardenedIndexes
+                                    length:1
+                                      type:DSDerivationPathType_ClearFunds
+                          signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                 reference:DSDerivationPathReference_BIP32
+                                   onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
-    UInt256 indexes[] = {uint256_from_long(44), uint256_from_long(chain_coin_type(chain.chainType)), uint256_from_long(accountNumber)};
+    UInt256 indexes[] = {uint256_from_long(44), uint256_from_long(chain.coinType), uint256_from_long(accountNumber)};
     BOOL hardenedIndexes[] = {YES, YES, YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
+    return [self derivationPathWithIndexes:indexes
+                                  hardened:hardenedIndexes
+                                    length:3
+                                      type:DSDerivationPathType_ClearFunds
+                          signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                 reference:DSDerivationPathReference_BIP44
+                                   onChain:chain];
 }
 
-- (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
-    if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+- (instancetype)initWithIndexes:(const UInt256[])indexes
+                       hardened:(const BOOL[])hardenedIndexes
+                         length:(NSUInteger)length
+                           type:(DSDerivationPathType)type
+               signingAlgorithm:(DKeyKind *)signingAlgorithm
+                      reference:(DSDerivationPathReference)reference
+                        onChain:(DSChain *)chain {
+    if (!(self = [super initWithIndexes:indexes
+                               hardened:hardenedIndexes
+                                 length:length
+                                   type:type
+                       signingAlgorithm:signingAlgorithm
+                              reference:reference
+                                onChain:chain])) return nil;
 
     UInt256 lastIndex = indexes[length - 1];
     self.isForFirstAccount = uint256_is_zero(lastIndex);
@@ -54,7 +81,7 @@
         NSError *error = nil;
         uint64_t hasKnownBalance = getKeychainInt([self hasKnownBalanceUniqueIDString], &error);
         if (!error) {
-            self.hasKnownBalanceInternal = hasKnownBalance ? TRUE : FALSE;
+            self.hasKnownBalanceInternal = hasKnownBalance;
             self.checkedInitialHasKnownBalance = TRUE;
         }
     }
@@ -82,30 +109,7 @@
 
 - (void)loadAddresses {
     if (!self.addressesLoaded) {
-        [self.managedObjectContext performBlockAndWait:^{
-            DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-            self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
-            for (DSAddressEntity *e in derivationPathEntity.addresses) {
-                @autoreleasepool {
-                    NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
-
-                    while (e.index >= a.count) [a addObject:[NSNull null]];
-                    if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
-#if DEBUG
-                        DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
-#else
-                            DSLog(@"[%@] address %@ loaded but was not valid on chain %@", self.account.wallet.chain.name, @"<REDACTED>");
-#endif /* DEBUG */
-                        continue;
-                    }
-                    a[e.index] = e.address;
-                    [self.mAllAddresses addObject:e.address];
-                    if ([e.usedInInputs count] || [e.usedInOutputs count]) {
-                        [self.mUsedAddresses addObject:e.address];
-                    }
-                }
-            }
-        }];
+        [self loadAddressesInContext:self.managedObjectContext];
         self.addressesLoaded = TRUE;
         [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:YES error:nil];
         [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:NO error:nil];
@@ -189,20 +193,7 @@
         }
 
         if (!self.account.wallet.isTransient) {
-            [self.managedObjectContext performBlock:^{ // store new address in core data
-                DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                for (NSNumber *number in addAddresses) {
-                    NSString *address = [addAddresses objectForKey:number];
-                    NSAssert([DSKeyManager isValidDashAddress:address forChain:self.chain], @"the address is being saved to the wrong derivation path");
-                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
-                    e.derivationPath = derivationPathEntity;
-                    e.address = address;
-                    e.index = [number intValue];
-                    e.internal = internal;
-                    e.standalone = NO;
-                }
-                [self.managedObjectContext ds_save];
-            }];
+            [self storeNewAddressesInContext:addAddresses internal:internal context:self.managedObjectContext];
         }
 
         return a;
@@ -289,30 +280,6 @@
     return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
 }
 
-- (NSString *)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed {
-    return seed ? [self serializedPrivateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
-}
-
-- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed {
-    NSMutableArray *mArray = [NSMutableArray array];
-    for (NSNumber *index in n) {
-        NSUInteger indexes[] = {(internal ? 1 : 0), index.unsignedIntValue};
-        [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-    }
-
-    return [self privateKeysAtIndexPaths:mArray fromSeed:seed];
-}
-
-- (NSArray *)serializedPrivateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed {
-    NSMutableArray *mArray = [NSMutableArray array];
-    for (NSNumber *index in n) {
-        NSUInteger indexes[] = {(internal ? 1 : 0), index.unsignedIntValue};
-        [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-    }
-
-    return [self serializedPrivateKeysAtIndexPaths:mArray fromSeed:seed];
-}
-
 - (NSIndexPath *)indexPathForKnownAddress:(NSString *)address {
     if ([self.allChangeAddresses containsObject:address]) {
         NSUInteger indexes[] = {1, [self.allChangeAddresses indexOfObject:address]};
@@ -322,6 +289,55 @@
         return [NSIndexPath indexPathWithIndexes:indexes length:2];
     }
     return nil;
+}
+
+
+// CoreData
+- (void)loadAddressesInContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
+        self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
+        for (DSAddressEntity *e in derivationPathEntity.addresses) {
+            @autoreleasepool {
+                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
+
+                while (e.index >= a.count) [a addObject:[NSNull null]];
+                if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
+#if DEBUG
+                    DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
+#else
+                        DSLog(@"[%@] address %@ loaded but was not valid on chain %@", self.account.wallet.chain.name, @"<REDACTED>");
+#endif /* DEBUG */
+                    continue;
+                }
+                a[e.index] = e.address;
+                [self.mAllAddresses addObject:e.address];
+                if ([e.usedInInputs count] || [e.usedInOutputs count]) {
+                    [self.mUsedAddresses addObject:e.address];
+                }
+            }
+        }
+    }];
+
+}
+- (void)storeNewAddressesInContext:(NSDictionary<NSNumber *, NSString *> *)addAddresses
+                          internal:(BOOL)internal
+                         context:(NSManagedObjectContext *)context {
+    [context performBlock:^{ // store new address in core data
+        DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
+        for (NSNumber *number in addAddresses) {
+            NSString *address = [addAddresses objectForKey:number];
+            NSAssert([DSKeyManager isValidDashAddress:address forChain:self.chain], @"the address is being saved to the wrong derivation path");
+            DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
+            e.derivationPath = derivationPathEntity;
+            e.address = address;
+            e.index = [number intValue];
+            e.internal = internal;
+            e.standalone = NO;
+        }
+        [self.managedObjectContext ds_save];
+    }];
+
 }
 
 @end

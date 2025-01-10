@@ -18,6 +18,7 @@
 #import "DSDAPICoreNetworkService.h"
 #import "DPErrors.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainLock.h"
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DSDashPlatform.h"

@@ -24,7 +24,7 @@
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+    [self.identity fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -39,7 +39,7 @@
 }
 
 - (NSPredicate *)predicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)", [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 - (BOOL)requiredInvertedPredicate {
@@ -47,7 +47,7 @@
 }
 
 - (NSPredicate *)invertedPredicate {
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count > 0)", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count > 0)", [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 
@@ -69,8 +69,8 @@
 
 - (void)configureCell:(DSContactTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     DSFriendRequestEntity *friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSBlockchainIdentityEntity *destinationBlockchainIdentity = friendRequest.destinationContact.associatedBlockchainIdentity;
-    DSBlockchainIdentityUsernameEntity *username = [destinationBlockchainIdentity.usernames anyObject];
+    DSBlockchainIdentityEntity *destinationIdentityEntity = friendRequest.destinationContact.associatedBlockchainIdentity;
+    DSBlockchainIdentityUsernameEntity *username = [destinationIdentityEntity.usernames anyObject];
     cell.textLabel.text = username.stringValue;
 }
 

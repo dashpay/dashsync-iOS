@@ -15,22 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DSChain.h"
-#import "DSQuorumEntry.h"
-#import "dash_shared_core.h"
-#import <Foundation/Foundation.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSQuorumEntry (Mndiff)
-
-+ (NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *)entriesWithMap:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
-+ (NSArray<DSQuorumEntry *> *)entriesWith:(LLMQEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
-
-- (LLMQEntry *)ffi_malloc;
-+ (void)ffi_free:(LLMQEntry *)entry;
-
-@end
-
-
-NS_ASSUME_NONNULL_END
+//#import "DSChain.h"
+//#import "DSQuorumEntry.h"
+//#import "dash_shared_core.h"
+//#import <Foundation/Foundation.h>
+//
+//NS_ASSUME_NONNULL_BEGIN
+//
+//@interface DSQuorumEntry (Mndiff)
+//
+////+ (NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *)entriesWithMap:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
+////+ (NSArray<DSQuorumEntry *> *)entriesWith:(LLMQEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
+////
+////- (LLMQEntry *)ffi_malloc;
+////+ (void)ffi_free:(LLMQEntry *)entry;
+//
+//@end
+//
+//
+//NS_ASSUME_NONNULL_END

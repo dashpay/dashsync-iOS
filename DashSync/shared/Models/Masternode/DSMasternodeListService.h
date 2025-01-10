@@ -18,8 +18,9 @@
 #import "DSChain.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeListRequest.h"
-#import "DSMasternodeListStore.h"
-#import "DSPeer.h"
+//#import "DSMasternodeListStore.h"
+//#import "DSMasternodeManager.h"
+//#import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,39 +36,41 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
     DSMasternodeListRequestMode_QRINFO = 2,
     DSMasternodeListRequestMode_MIXED = DSMasternodeListRequestMode_MNLISTDIFF | DSMasternodeListRequestMode_QRINFO
 };
-@class DSMasternodeListService;
+@class DSPeer, DSMasternodeListStore;
 
-@protocol DSMasternodeListServiceDelegate <NSObject>
-
-- (DSMasternodeList *__nullable)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-- (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
-
-@end
+//@protocol DSMasternodeListServiceDelegate <NSObject>
+//
+//- (BOOL)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+////- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+//- (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
+//
+//@end
 
 @interface DSMasternodeListService : NSObject
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
-@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
+//@property (nonatomic, assign, nullable) DMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
-@property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *retrievalQueue;
-@property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *neededQueue; // TODO: Make storing hashes for tip list separately, to avoid
+@property (nonatomic, readonly, assign) indexmap_IndexSet_u8_32 *retrievalQueue;
+//@property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *neededQueue; // TODO: Make storing hashes for tip list separately, to avoid
 @property (nonatomic, readonly) NSUInteger retrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger retrievalQueueMaxAmount;
-@property (nullable, nonatomic, weak) id<DSMasternodeListServiceDelegate> delegate;
+//@property (nullable, nonatomic, weak) id<DSMasternodeListServiceDelegate> delegate;
 
 @property (nonatomic, assign) uint16_t timedOutAttempt;
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
 
-- (instancetype)initWithChain:(DSChain *)chain store:(DSMasternodeListStore *)store delegate:(id<DSMasternodeListServiceDelegate>)delegate;
+- (instancetype)initWithChain:(DSChain *)chain
+                        store:(DSMasternodeListStore *)store;
+//                     delegate:(id<DSMasternodeListServiceDelegate>)delegate;
 
-- (void)populateRetrievalQueueWithBlockHashes:(NSOrderedSet *)blockHashes;
+//- (void)populateRetrievalQueueWithBlockHashes:(NSArray *)blockHashes processor:(MasternodeProcessor *)processor;
 - (void)getRecentMasternodeList;
 - (void)dequeueMasternodeListRequest;
 - (void)stop;
 
-- (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
-- (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;
+//- (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
+//- (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;
 - (void)cleanAllLists;
 - (void)cleanListsRetrievalQueue;
 - (void)cleanRequestsInRetrieval;
@@ -83,6 +86,9 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
 
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request;
+
+- (void)checkWaitingForQuorums;
+- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
 
 @end
 

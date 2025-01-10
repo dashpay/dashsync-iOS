@@ -24,7 +24,9 @@
 //  THE SOFTWARE.
 
 #import "DSBloomFilter.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Mining.h"
 #import "DSChainManager+Protected.h"
@@ -219,7 +221,7 @@
     [self.transactionManager chain:chain didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:txHashes updatedTransactions:updatedTransactions];
 }
 
-- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingIdentityDAPInformation:(DSIdentity *)identity {
     dispatch_async(chain.networkingQueue, ^{
         [self.peerManager resumeBlockchainSynchronizationOnPeers];
     });
@@ -321,7 +323,7 @@
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     DSLog(@"[%@] finished syncing masternode list and quorums, it should start syncing chain", self.chain.name);
     if (chain.isEvolutionEnabled) {
-        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
+        [self.identitiesManager syncIdentitiesWithCompletion:^(NSArray<DSIdentity *> *_Nullable identities) {
             [self syncBlockchain];
         }];
     } else {
@@ -482,6 +484,14 @@
             completion();
         }];
         [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
+    }
+}
+
+- (void)notifyMasternodeSyncStateChange:(uint32_t)lastBlockHeihgt storedCount:(uintptr_t)storedCount {
+    @synchronized (self.syncState) {
+        self.syncState.masternodeListSyncInfo.lastBlockHeight = lastBlockHeihgt;
+        self.syncState.masternodeListSyncInfo.storedCount = storedCount;
+        [self notifySyncStateChanged];
     }
 }
 

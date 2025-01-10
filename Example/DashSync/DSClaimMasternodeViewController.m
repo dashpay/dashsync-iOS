@@ -7,7 +7,6 @@
 //
 
 #import "DSClaimMasternodeViewController.h"
-#import "DSKeyManager.h"
 
 @interface DSClaimMasternodeViewController ()
 @property (strong, nonatomic) IBOutlet UITextView *inputTextView;
@@ -45,10 +44,8 @@
 
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
-        UInt160 publicKeyHash = [DSKeyManager ecdsaKeyPublicKeyHashFromSecret:self.inputTextView.text forChainType:self.chain.chainType];
-
-        if (uint160_eq(publicKeyHash, self.masternode.keyIDVoting)) {
-            //[self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
+//        UInt160 publicKeyHash = [DSKeyManager ecdsaKeyPublicKeyHashFromSecret:self.inputTextView.text forChainType:self.chain.chainType];
+        if (dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_key_id_matches_with_secret_key(self.masternode, (char *)[self.inputTextView.text UTF8String], self.chain.chainType)) {
             [self.navigationController popViewControllerAnimated:TRUE];
         } else {
             UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
@@ -63,6 +60,22 @@
 
                              }];
         }
+//        if (uint160_eq(publicKeyHash, self.masternode.keyIDVoting)) {
+//            //[self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
+//            [self.navigationController popViewControllerAnimated:TRUE];
+//        } else {
+//            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
+//            [alertController addAction:[UIAlertAction actionWithTitle:@"Ok"
+//                                                                style:UIAlertActionStyleCancel
+//                                                              handler:^(UIAlertAction *_Nonnull action){
+//
+//                                                              }]];
+//            [self presentViewController:alertController
+//                               animated:TRUE
+//                             completion:^{
+//
+//                             }];
+//        }
     }
 }
 

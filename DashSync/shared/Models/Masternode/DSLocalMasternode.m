@@ -9,7 +9,9 @@
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSAuthenticationManager.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
@@ -56,7 +58,7 @@
 @property (nonatomic, strong) NSMutableArray<DSProviderUpdateServiceTransaction *> *providerUpdateServiceTransactions;
 @property (nonatomic, strong) NSMutableArray<DSProviderUpdateRevocationTransaction *> *providerUpdateRevocationTransactions;
 
-@property (nonatomic, assign, readonly) OpaqueKey *ownerPrivateKey;
+@property (nonatomic, assign, readonly) DOpaqueKey *ownerPrivateKey;
 
 @end
 
@@ -179,27 +181,27 @@
     [self.platformNodeKeysWallet registerPlatformNode:self];
 }
 
-- (BOOL)forceOperatorPublicKey:(OpaqueKey *)operatorPublicKey {
+- (BOOL)forceOperatorPublicKey:(dash_spv_crypto_keys_key_OpaqueKey *)operatorPublicKey {
     if (self.operatorWalletIndex != UINT32_MAX) return NO;
     [self.ownerKeysWallet registerMasternodeOperator:self withOperatorPublicKey:operatorPublicKey];
     return YES;
 }
 
-- (BOOL)forceOwnerPrivateKey:(OpaqueKey *)ownerPrivateKey {
+- (BOOL)forceOwnerPrivateKey:(dash_spv_crypto_keys_key_OpaqueKey *)ownerPrivateKey {
     if (self.ownerWalletIndex != UINT32_MAX) return NO;
-    if (!key_ecdsa_has_private_key(ownerPrivateKey->ecdsa)) return NO;
+    if (!dash_spv_crypto_keys_key_OpaqueKey_has_private_key(ownerPrivateKey)) return NO;
     [self.ownerKeysWallet registerMasternodeOwner:self withOwnerPrivateKey:ownerPrivateKey];
     return YES;
 }
 
 //the voting key can either be private or public key
-- (BOOL)forceVotingKey:(OpaqueKey *)votingKey {
+- (BOOL)forceVotingKey:(dash_spv_crypto_keys_key_OpaqueKey *)votingKey {
     if (self.votingWalletIndex != UINT32_MAX) return NO;
     [self.ownerKeysWallet registerMasternodeVoter:self withVotingKey:votingKey];
     return YES;
 }
 
-- (BOOL)forcePlatformNodeKey:(OpaqueKey *)platformNodeKey {
+- (BOOL)forcePlatformNodeKey:(dash_spv_crypto_keys_key_OpaqueKey *)platformNodeKey {
     if (self.platformNodeWalletIndex != UINT32_MAX) return NO;
     [self.platformNodeKeysWallet registerPlatformNode:self withKey:platformNodeKey];
     return YES;
@@ -293,12 +295,12 @@
 
 // MARK: - Getting key from seed
 
-- (OpaqueKey *)operatorKeyFromSeed:(NSData *)seed {
+- (DMaybeOpaqueKey *)operatorKeyFromSeed:(NSData *)seed {
     DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
     return [providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
 }
 
-- (OpaqueKey *)ownerKeyFromSeed:(NSData *)seed {
+- (DMaybeOpaqueKey *)ownerKeyFromSeed:(NSData *)seed {
     if (!self.ownerKeysWallet || !seed) {
         return nil;
     }
@@ -306,7 +308,7 @@
     return [providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
 }
 
-- (OpaqueKey *)votingKeyFromSeed:(NSData *)seed {
+- (DMaybeOpaqueKey *)votingKeyFromSeed:(NSData *)seed {
     if (!self.votingKeysWallet || !seed) {
         return nil;
     }
@@ -314,7 +316,7 @@
     return [providerVotingKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.votingKeyHash fromSeed:seed];
 }
 
-- (OpaqueKey *)platformNodeKeyFromSeed:(NSData *)seed {
+- (DMaybeOpaqueKey *)platformNodeKeyFromSeed:(NSData *)seed {
     if (!self.platformNodeKeysWallet || !seed) {
         return nil;
     }
@@ -325,27 +327,31 @@
 // MARK: - Getting key string from seed
 
 - (NSString *)operatorKeyStringFromSeed:(NSData *)seed {
-    OpaqueKey *key = [self operatorKeyFromSeed:seed];
-    return [DSKeyManager secretKeyHexString:key];
+    DMaybeOpaqueKey *key = [self operatorKeyFromSeed:seed];
+    if (!key || !key->ok) return nil;
+    // TODO: free memory
+    return [DSKeyManager secretKeyHexString:key->ok];
 }
 
 - (NSString *)ownerKeyStringFromSeed:(NSData *)seed {
-    OpaqueKey *key = [self ownerKeyFromSeed:seed];
-    if (!key) return nil;
-    return [DSKeyManager secretKeyHexString:key];
+    DMaybeOpaqueKey *key = [self ownerKeyFromSeed:seed];
+    if (!key || !key->ok) return nil;
+    // TODO: free memory
+    return [DSKeyManager secretKeyHexString:key->ok];
 }
 
 - (NSString *)votingKeyStringFromSeed:(NSData *)seed {
-    OpaqueKey *key = [self votingKeyFromSeed:seed];
-    if (!key) return nil;
-    return [DSKeyManager secretKeyHexString:key];
+    DMaybeOpaqueKey *key = [self votingKeyFromSeed:seed];
+    if (!key || !key->ok) return nil;
+    // TODO: free memory
+    return [DSKeyManager secretKeyHexString:key->ok];
 }
 
 - (NSString *)platformNodeKeyStringFromSeed:(NSData *)seed {
-    OpaqueKey *key = [self platformNodeKeyFromSeed:seed];
-    if (!key) return nil;
-    // TODO: cleanup
-    return [DSKeyManager secretKeyHexString:key];
+    DMaybeOpaqueKey *key = [self platformNodeKeyFromSeed:seed];
+    if (!key || !key->ok) return nil;
+    // TODO: free memory
+    return [DSKeyManager secretKeyHexString:key->ok];
 }
 
 // MARK: - Getting public key data
@@ -447,7 +453,7 @@
         }
         // TODO: how do we know which version we should use: (self.version == 2 /*BLS Basic*/ && self.providerType == 1)
         // based on protocol_version?
-        OpaqueKey *platformNodeKey;
+        DMaybeOpaqueKey *platformNodeKey;
         if (self.platformNodeWalletIndex == UINT32_MAX) {
             self.platformNodeWalletIndex = (uint32_t)[platformNodeKeysDerivationPath firstUnusedIndex];
             platformNodeKey = [platformNodeKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
@@ -455,10 +461,10 @@
             platformNodeKey = [platformNodeKeysDerivationPath privateKeyAtIndex:self.platformNodeWalletIndex fromSeed:seed];
         }
         
-        UInt256 platformNodeHash = [DSKeyManager publicKeyData:platformNodeKey].SHA256;
+        UInt256 platformNodeHash = [DSKeyManager publicKeyData:platformNodeKey->ok].SHA256;
         UInt160 platformNodeID = *(UInt160 *)&platformNodeHash;
 
-        OpaqueKey *ownerKey;
+        DMaybeOpaqueKey *ownerKey;
         if (self.ownerWalletIndex == UINT32_MAX) {
             self.ownerWalletIndex = (uint32_t)[providerOwnerKeysDerivationPath firstUnusedIndex];
             ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
@@ -468,7 +474,7 @@
 
         UInt160 votingKeyHash;
 
-        UInt160 ownerKeyHash = [DSKeyManager publicKeyData:ownerKey].hash160;
+        UInt160 ownerKeyHash = [DSKeyManager publicKeyData:ownerKey->ok].hash160;
 
         if ([fundingAccount.wallet.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
             DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
@@ -493,10 +499,10 @@
         } else {
             operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:self.operatorWalletIndex].UInt384;
         }
-        uint16_t operatorKeyVersion = providerOperatorKeysDerivationPath.signingAlgorithm == KeyKind_BLS ? 1 : 2;
+        uint16_t operatorKeyVersion = dash_spv_crypto_keys_key_KeyKind_index(providerOperatorKeysDerivationPath.signingAlgorithm) == dash_spv_crypto_keys_key_KeyKind_BLS ? 1 : 2;
         DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:2 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash platformNodeID:platformNodeID operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
         if (dsutxo_is_zero(collateral)) {
-            NSString *holdingAddress = [providerFundsDerivationPath receiveAddress];
+            NSString *holdingAddress = [providerFundsDerivationPath registerAddressesWithGapLimit:1 error:nil].lastObject;
             NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
             [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[scriptPayout] withFee:YES];
 
@@ -536,11 +542,12 @@
         DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
         NSAssert(self.providerRegistrationTransaction, @"There must be a providerRegistrationTransaction linked here");
 
-        OpaqueKey *operatorKey = [providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
+        DMaybeOpaqueKey *operatorKey = [providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
 
         DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithProviderUpdateServiceTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash ipAddress:ipAddress port:port scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
         [fundingAccount updateTransaction:providerUpdateServiceTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES];
-        [providerUpdateServiceTransaction signPayloadWithKey:operatorKey];
+        [providerUpdateServiceTransaction signPayloadWithKey:operatorKey->ok];
+        DMaybeOpaqueKeyDtor(operatorKey);
         // TODO: what about platformNodeKey?
         //there is no need to sign the payload here.
         completion(providerUpdateServiceTransaction);
@@ -562,13 +569,14 @@
         NSData *scriptPayout = payoutAddress == nil ? [NSData data] : [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
         DSAuthenticationKeysDerivationPath *providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
         NSAssert(self.providerRegistrationTransaction, @"There must be a providerRegistrationTransaction linked here");
-        OpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
+        DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
         DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithProviderUpdateRegistrarTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash mode:0 operatorKey:operatorKey votingKeyHash:votingKeyHash scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
 
 
         [fundingAccount updateTransaction:providerUpdateRegistrarTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES];
 
-        [providerUpdateRegistrarTransaction signPayloadWithKey:ownerKey];
+        [providerUpdateRegistrarTransaction signPayloadWithKey:ownerKey->ok];
+        DMaybeOpaqueKeyDtor(ownerKey);
 
         //there is no need to sign the payload here.
 

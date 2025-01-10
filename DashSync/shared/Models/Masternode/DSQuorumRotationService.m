@@ -15,16 +15,13 @@
 //  limitations under the License.
 //
 
+#import "DSChain+Params.h"
 #import "DSGetQRInfoRequest.h"
 #import "DSQuorumRotationService.h"
 #import "DSMasternodeListService+Protected.h"
 #import "DSMasternodeListStore+Protected.h"
 
 @implementation DSQuorumRotationService
-
-- (DSMasternodeList *)currentMasternodeList {
-    return self.masternodeListAtTip;
-}
 
 - (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
     NSData *blockHashData = [list lastObject];
@@ -34,68 +31,42 @@
     if ([self.store hasBlockForBlockHash:blockHashData]) {
         UInt256 blockHash = blockHashData.UInt256;
         UInt256 previousBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
-        NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+//        NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
         [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
     } else {
         DSLog(@"[%@] Missing block (%@)", self.chain.name, blockHashData.hexString);
-        [self removeFromRetrievalQueue:blockHashData];
+        dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(self.chain.shareCore.processor->obj, u256_ctor(blockHashData));
     }
-    /*
-    NSMutableDictionary<NSData *, NSData *> *hashes = [NSMutableDictionary dictionary];
-    for (NSData *blockHashData in list) {
-        // we should check the associated block still exists
-        if ([self.store hasBlockForBlockHash:blockHashData]) {
-            //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
-            NSUInteger pos = [list indexOfObject:blockHashData];
-            UInt256 blockHash = blockHashData.UInt256;
-            // No checkpoints for qrinfo at this moment
-            UInt256 prevKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
-            UInt256 prevInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
-            UInt256 previousBlockHash = pos
-                ? ([self.store heightForBlockHash:prevKnownBlockHash] > [self.store heightForBlockHash:prevInQueueBlockHash]
-                   ? prevKnownBlockHash
-                   : prevInQueueBlockHash)
-                : prevKnownBlockHash;
-            [hashes setObject:uint256_data(blockHash) forKey:uint256_data(previousBlockHash)];
-            NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-            [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
-        } else {
-            DSLog(@"Missing block (%@)", blockHashData.hexString);
-            [self removeFromRetrievalQueue:blockHashData];
-        }
-    }*/
+}
+- (indexmap_IndexSet_u8_32 *)retrievalQueue {
+    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue(self.chain.shareCore.cache->obj);
 }
 
-
+- (NSUInteger)retrievalQueueCount {
+    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_count(self.chain.shareCore.cache->obj);
+}
+- (NSUInteger)retrievalQueueMaxAmount {
+    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_get_max_amount(self.chain.shareCore.cache->obj);
+}
+- (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
+    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_latest_block_in_qr_info_retrieval_queue_with_hash(self.chain.shareCore.cache->obj, u256_ctor_u(blockHash));
+}
+- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(self.chain.shareCore.processor->obj, u256_ctor(masternodeBlockHashData));
+}
+- (void)cleanListsRetrievalQueue {
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_qr_info_retrieval_queue(self.chain.shareCore.processor->obj);
+}
 - (void)getRecentMasternodeList {
-    @synchronized(self.retrievalQueue) {
-        DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
-        if (!merkleBlock) {
-            // sometimes it happens while rescan
-            DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
-            return;
-        }
-        UInt256 merkleBlockHash = merkleBlock.blockHash;
-        if ([self hasLatestBlockInRetrievalQueueWithHash:merkleBlockHash]) {
-            //we are asking for the same as the last one
-            return;
-        }
-        uint32_t lastHeight = merkleBlock.height;
-        DKGParams dkgParams = self.chain.isDevnetAny ? DKG_DEVNET_DIP_0024 : DKG_60_75;
-        uint32_t rotationOffset = dkgParams.mining_window_end;
-        uint32_t updateInterval = dkgParams.interval;
-        BOOL needUpdate = !self.masternodeListAtH || [self.masternodeListAtH hasUnverifiedRotatedQuorums] ||
-        (lastHeight % updateInterval == rotationOffset && lastHeight >= [self.store heightForBlockHash:self.masternodeListAtH.blockHash] + rotationOffset);
-        if (needUpdate && [self.store addBlockToValidationQueue:merkleBlock]) {
-            DSLog(@"[%@] QuorumRotationService.Getting masternode list %u", self.chain.name, merkleBlock.height);
-            NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
-            BOOL emptyRequestQueue = ![self retrievalQueueCount];
-            [self addToRetrievalQueue:merkleBlockHashData];
-            if (emptyRequestQueue) {
-                [self dequeueMasternodeListRequest];
-            }
-        }
+    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
+    if (!merkleBlock) {
+        // sometimes it happens while rescan
+        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
+        return;
     }
+    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
+    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_qr_info(self.chain.shareCore.processor->obj, block);
 }
 
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {

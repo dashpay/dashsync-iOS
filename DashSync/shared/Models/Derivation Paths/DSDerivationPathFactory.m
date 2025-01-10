@@ -6,9 +6,22 @@
 //
 
 #import "DSDerivationPathFactory.h"
+#import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath+Protected.h"
-#import "DSCreditFundingDerivationPath+Protected.h"
+#import "DSChain+Params.h"
+#import "DSAssetLockDerivationPath+Protected.h"
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
+#import "NSMutableData+Dash.h"
+
+#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DP_EPK_WBL"
+#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DP_EPK_SBL"
+#define DERIVATION_PATH_STANDALONE_INFO_DICTIONARY_LOCATION @"DP_SIDL"
+#define DERIVATION_PATH_EXTENDED_SECRET_KEY_WALLET_BASED_LOCATION @"DP_ESK_WBL"
+
 
 @interface DSDerivationPathFactory ()
 
@@ -17,11 +30,11 @@
 @property (nonatomic, strong) NSMutableDictionary *operatorKeysDerivationPathByWallet;
 @property (nonatomic, strong) NSMutableDictionary *platformNodeKeysDerivationPathByWallet;
 @property (nonatomic, strong) NSMutableDictionary *providerFundsDerivationPathByWallet;
-@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityRegistrationFundingDerivationPathByWallet;
-@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityTopupFundingDerivationPathByWallet;
-@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityInvitationFundingDerivationPathByWallet;
-@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityBLSDerivationPathByWallet;
-@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityECDSADerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *identityRegistrationFundingDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *identityTopupFundingDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *identityInvitationFundingDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *identityBLSDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *identityECDSADerivationPathByWallet;
 
 @end
 
@@ -134,104 +147,104 @@
     return [self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
-// MARK: - Blockchain Identity Funding
+// MARK: - Identity Funding
 
-- (DSCreditFundingDerivationPath *)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet {
-    static dispatch_once_t blockchainIdentityRegistrationFundingDerivationPathByWalletToken = 0;
-    dispatch_once(&blockchainIdentityRegistrationFundingDerivationPathByWalletToken, ^{
-        self.blockchainIdentityRegistrationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
+- (DSAssetLockDerivationPath *)identityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet {
+    static dispatch_once_t identityRegistrationFundingDerivationPathByWalletToken = 0;
+    dispatch_once(&identityRegistrationFundingDerivationPathByWalletToken, ^{
+        self.identityRegistrationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
-            DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForChain:wallet.chain];
+        if (![self.identityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
+            DSAssetLockDerivationPath *derivationPath = [DSAssetLockDerivationPath identityRegistrationFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityRegistrationFundingDerivationPathByWallet setObject:derivationPath
-                                                                                 forKey:wallet.uniqueIDString];
+            [self.identityRegistrationFundingDerivationPathByWallet setObject:derivationPath
+                                                                       forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
+    return [self.identityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
-- (DSCreditFundingDerivationPath *)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet *)wallet {
-    static dispatch_once_t blockchainIdentityTopupFundingDerivationPathByWalletToken = 0;
-    dispatch_once(&blockchainIdentityTopupFundingDerivationPathByWalletToken, ^{
-        self.blockchainIdentityTopupFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
+- (DSAssetLockDerivationPath *)identityTopupFundingDerivationPathForWallet:(DSWallet *)wallet {
+    static dispatch_once_t identityTopupFundingDerivationPathByWalletToken = 0;
+    dispatch_once(&identityTopupFundingDerivationPathByWalletToken, ^{
+        self.identityTopupFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
-            DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:wallet.chain];
+        if (![self.identityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
+            DSAssetLockDerivationPath *derivationPath = [DSAssetLockDerivationPath identityTopupFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityTopupFundingDerivationPathByWallet setObject:derivationPath
-                                                                          forKey:wallet.uniqueIDString];
+            [self.identityTopupFundingDerivationPathByWallet setObject:derivationPath
+                                                                forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
+    return [self.identityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
-- (DSCreditFundingDerivationPath *)blockchainIdentityInvitationFundingDerivationPathForWallet:(DSWallet *)wallet {
-    static dispatch_once_t blockchainIdentityInvitationFundingDerivationPathByWalletToken = 0;
-    dispatch_once(&blockchainIdentityInvitationFundingDerivationPathByWalletToken, ^{
-        self.blockchainIdentityInvitationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
+- (DSAssetLockDerivationPath *)identityInvitationFundingDerivationPathForWallet:(DSWallet *)wallet {
+    static dispatch_once_t identityInvitationFundingDerivationPathByWalletToken = 0;
+    dispatch_once(&identityInvitationFundingDerivationPathByWalletToken, ^{
+        self.identityInvitationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
-            DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:wallet.chain];
+        if (![self.identityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
+            DSAssetLockDerivationPath *derivationPath = [DSAssetLockDerivationPath identityInvitationFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityInvitationFundingDerivationPathByWallet setObject:derivationPath
+            [self.identityInvitationFundingDerivationPathByWallet setObject:derivationPath
                                                                                forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
+    return [self.identityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
-// MARK: - Blockchain Identity Authentication
+// MARK: - Identity Authentication
 
-- (DSAuthenticationKeysDerivationPath *)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet *)wallet {
-    static dispatch_once_t blockchainIdentityBLSDerivationPathByWalletToken = 0;
-    dispatch_once(&blockchainIdentityBLSDerivationPathByWalletToken, ^{
-        self.blockchainIdentityBLSDerivationPathByWallet = [NSMutableDictionary dictionary];
+- (DSAuthenticationKeysDerivationPath *)identityBLSKeysDerivationPathForWallet:(DSWallet *)wallet {
+    static dispatch_once_t identityBLSDerivationPathByWalletToken = 0;
+    dispatch_once(&identityBLSDerivationPathByWalletToken, ^{
+        self.identityBLSDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
-            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
+        if (![self.identityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identityBLSKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath
-                                                                 forKey:wallet.uniqueIDString];
+            [self.identityBLSDerivationPathByWallet setObject:derivationPath
+                                                       forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString];
+    return [self.identityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
-- (DSAuthenticationKeysDerivationPath *)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet *)wallet {
+- (DSAuthenticationKeysDerivationPath *)identityECDSAKeysDerivationPathForWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
-    static dispatch_once_t blockchainIdentityECDSADerivationPathByWalletToken = 0;
-    dispatch_once(&blockchainIdentityECDSADerivationPathByWalletToken, ^{
-        self.blockchainIdentityECDSADerivationPathByWallet = [NSMutableDictionary dictionary];
+    static dispatch_once_t identityECDSADerivationPathByWalletToken = 0;
+    dispatch_once(&identityECDSADerivationPathByWalletToken, ^{
+        self.identityECDSADerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
-            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
+        if (![self.identityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identityECDSAKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath
-                                                                   forKey:wallet.uniqueIDString];
+            [self.identityECDSADerivationPathByWallet setObject:derivationPath
+                                                         forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString];
+    return [self.identityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (NSArray<DSDerivationPath *> *)loadedSpecializedDerivationPathsForWallet:(DSWallet *)wallet {
@@ -242,10 +255,10 @@
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] platformNodeKeysDerivationPathForWallet:wallet]];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:wallet]];
     if (wallet.chain.isEvolutionEnabled) {
-        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:wallet]];
-        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet]];
-        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet]];
-        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:wallet]];
+        [mArray addObject:[[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet]];
+        [mArray addObject:[[DSDerivationPathFactory sharedInstance] identityBLSKeysDerivationPathForWallet:wallet]];
+        [mArray addObject:[[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet]];
+        [mArray addObject:[[DSDerivationPathFactory sharedInstance] identityTopupFundingDerivationPathForWallet:wallet]];
     }
     return mArray;
 }
@@ -281,10 +294,10 @@
     }
     if (wallet.chain.isEvolutionEnabled) {
         for (DSAccount *account in wallet.accounts) {
-            DSDerivationPath *masterBlockchainIdentityContactsDerivationPath = [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:account.accountNumber onChain:wallet.chain];
-            masterBlockchainIdentityContactsDerivationPath.wallet = wallet;
-            if (![masterBlockchainIdentityContactsDerivationPath hasExtendedPublicKey]) {
-                [mArray addObject:masterBlockchainIdentityContactsDerivationPath];
+            DSDerivationPath *masterIdentityContactsDerivationPath = [DSDerivationPath masterIdentityContactsDerivationPathForAccountNumber:account.accountNumber onChain:wallet.chain];
+            masterIdentityContactsDerivationPath.wallet = wallet;
+            if (![masterIdentityContactsDerivationPath hasExtendedPublicKey]) {
+                [mArray addObject:masterIdentityContactsDerivationPath];
             }
         }
     }
@@ -319,29 +332,176 @@
     [mArray addObject:providerPlatformNodeKeysDerivationPath];
 
     if (wallet.chain.isEvolutionEnabled) {
-        // Blockchain Identities
-        DSAuthenticationKeysDerivationPath *blockchainIdentitiesECDSADerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
-        blockchainIdentitiesECDSADerivationPath.wallet = wallet;
-        [mArray addObject:blockchainIdentitiesECDSADerivationPath];
+        // Identities
+        DSAuthenticationKeysDerivationPath *identitiesECDSADerivationPath = [DSAuthenticationKeysDerivationPath identityECDSAKeysDerivationPathForChain:wallet.chain];
+        identitiesECDSADerivationPath.wallet = wallet;
+        [mArray addObject:identitiesECDSADerivationPath];
 
-        DSAuthenticationKeysDerivationPath *blockchainIdentitiesBLSDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
-        blockchainIdentitiesBLSDerivationPath.wallet = wallet;
-        [mArray addObject:blockchainIdentitiesBLSDerivationPath];
+        DSAuthenticationKeysDerivationPath *identitiesBLSDerivationPath = [DSAuthenticationKeysDerivationPath identityBLSKeysDerivationPathForChain:wallet.chain];
+        identitiesBLSDerivationPath.wallet = wallet;
+        [mArray addObject:identitiesBLSDerivationPath];
 
-        DSCreditFundingDerivationPath *blockchainIdentitiesRegistrationDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForChain:wallet.chain];
-        blockchainIdentitiesRegistrationDerivationPath.wallet = wallet;
-        [mArray addObject:blockchainIdentitiesRegistrationDerivationPath];
+        DSAssetLockDerivationPath *identitiesRegistrationDerivationPath = [DSAssetLockDerivationPath identityRegistrationFundingDerivationPathForChain:wallet.chain];
+        identitiesRegistrationDerivationPath.wallet = wallet;
+        [mArray addObject:identitiesRegistrationDerivationPath];
 
-        DSCreditFundingDerivationPath *blockchainIdentitiesTopupDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:wallet.chain];
-        blockchainIdentitiesTopupDerivationPath.wallet = wallet;
-        [mArray addObject:blockchainIdentitiesTopupDerivationPath];
+        DSAssetLockDerivationPath *identitiesTopupDerivationPath = [DSAssetLockDerivationPath identityTopupFundingDerivationPathForChain:wallet.chain];
+        identitiesTopupDerivationPath.wallet = wallet;
+        [mArray addObject:identitiesTopupDerivationPath];
 
-        DSCreditFundingDerivationPath *blockchainIdentitiesInvitationsDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:wallet.chain];
-        blockchainIdentitiesInvitationsDerivationPath.wallet = wallet;
-        [mArray addObject:blockchainIdentitiesInvitationsDerivationPath];
+        DSAssetLockDerivationPath *identitiesInvitationsDerivationPath = [DSAssetLockDerivationPath identityInvitationFundingDerivationPathForChain:wallet.chain];
+        identitiesInvitationsDerivationPath.wallet = wallet;
+        [mArray addObject:identitiesInvitationsDerivationPath];
     }
 
     return [mArray copy];
+}
+
+
++ (DMaybeOpaqueKeys *)privateKeysAtIndexPaths:(NSArray *)indexPaths
+                                     fromSeed:(NSData *)seed
+                               derivationPath:(DSDerivationPath *)derivationPath {
+    if (!seed || !indexPaths || !derivationPath)
+        return nil;
+    if (indexPaths.count == 0)
+        return Result_ok_Vec_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_ctor(Vec_dash_spv_crypto_keys_key_OpaqueKey_ctor(0, NULL), NULL);
+    NSUInteger count = indexPaths.count;
+    SLICE *seed_slice = slice_ctor(seed);
+    Vec_u32 **values = malloc(count * sizeof(Vec_u32 *));
+    for (NSUInteger i = 0; i < count; i++) {
+        values[i] = [NSIndexPath ffi_to:indexPaths[i]];
+    }
+    Vec_Vec_u32 *index_paths = Vec_Vec_u32_ctor(count, values);
+    dash_spv_crypto_keys_key_IndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
+    return dash_spv_crypto_keys_key_KeyKind_private_keys_at_index_paths_wrapped(derivationPath.signingAlgorithm, seed_slice, index_paths, path);
+}
+
++ (NSString *)serializedExtendedPrivateKeyFromSeed:(NSData *)seed
+                                    derivationPath:(DSDerivationPath *)derivationPath {
+    @autoreleasepool {
+        if (!seed) return nil;
+        SLICE *slice = slice_ctor(seed);
+        DIndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
+        DMaybeKeyString *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_extended_private_key_from_seed_at_u256_path(slice, path, derivationPath.chain.chainType);
+        NSString *serializedKey = nil;
+        if (result->ok) {
+            serializedKey = [NSString stringWithUTF8String:result->ok];
+        }
+        DMaybeKeyStringDtor(result);
+        return serializedKey;
+    }
+}
+
++ (NSArray<NSString *> *)serializedPrivateKeysAtIndexPaths:(NSArray *)indexPaths
+                                                  fromSeed:(NSData *)seed
+                                            derivationPath:(DSDerivationPath *)derivationPath {
+    if (!seed || !indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
+    
+    NSUInteger count = indexPaths.count;
+    Vec_u32 **values = malloc(count * sizeof(Vec_u32 *));
+    for (NSUInteger i = 0; i < count; i++) {
+        values[i] = [NSIndexPath ffi_to:indexPaths[i]];
+    }
+    Vec_Vec_u32 *index_paths = Vec_Vec_u32_ctor(count, values);
+    DIndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
+    SLICE *seed_slice = slice_ctor(seed);
+    Result_ok_Vec_String_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_key_KeyKind_serialized_private_keys_at_index_paths_wrapper(derivationPath.signingAlgorithm, seed_slice, index_paths, path, derivationPath.chain.chainType);
+    Vec_String *keys = result->ok;
+    NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:keys->count];
+    for (NSUInteger i = 0; i < keys->count; i++) {
+        [privateKeys addObject:[NSString stringWithUTF8String:keys->values[i]]];
+    }
+    Result_ok_Vec_String_err_dash_spv_crypto_keys_KeyError_destroy(result);
+    return privateKeys;
+}
+
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString
+                                  onChain:(DSChain *)chain
+                                   rDepth:(uint8_t *)depth
+                        rTerminalHardened:(BOOL *)terminalHardened
+                           rTerminalIndex:(UInt256 *)terminalIndex {
+    uint32_t fingerprint;
+    UInt256 chainHash;
+    NSData *pubkey = nil;
+    NSMutableData *masterPublicKey = [NSMutableData secureData];
+    BOOL valid = deserialize(extendedPublicKeyString, depth, &fingerprint, terminalHardened, terminalIndex, &chainHash, &pubkey, [chain isMainnet]);
+    if (!valid) return nil;
+    [masterPublicKey appendUInt32:fingerprint];
+    [masterPublicKey appendBytes:&chainHash length:32];
+    [masterPublicKey appendData:pubkey];
+    return [masterPublicKey copy];
+}
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain *)chain {
+    __unused uint8_t depth = 0;
+    __unused BOOL terminalHardened = 0;
+    __unused UInt256 terminalIndex = UINT256_ZERO;
+    NSData *extendedPublicKey = [self deserializedExtendedPublicKey:extendedPublicKeyString onChain:chain rDepth:&depth rTerminalHardened:&terminalHardened rTerminalIndex:&terminalIndex];
+    return extendedPublicKey;
+}
+
++ (NSString *)serializedExtendedPublicKey:(DSDerivationPath *)derivationPath {
+    //todo make sure this works with BLS keys
+    NSData *extPubKeyData = derivationPath.extendedPublicKeyData;
+    if (extPubKeyData.length < 36) return nil;
+    uint32_t fingerprint = [extPubKeyData UInt32AtOffset:0];
+    UInt256 chain = [extPubKeyData UInt256AtOffset:4];
+    DSECPoint pubKey = [extPubKeyData ECPointAtOffset:36];
+    UInt256 child = UINT256_ZERO;
+    BOOL isHardened = NO;
+    if (derivationPath.length) {
+        child = [derivationPath indexAtPosition:[derivationPath length] - 1];
+        isHardened = [derivationPath isHardenedAtPosition:[derivationPath length] - 1];
+    }
+
+    return serialize([derivationPath.depth unsignedCharValue], fingerprint, isHardened, child, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)], [derivationPath.chain isMainnet]);
+}
+
+
+
++ (NSData *)deserializedExtendedPublicKey:(DSDerivationPath *)derivationPath extendedPublicKeyString:(NSString *)extendedPublicKeyString {
+    return [DSDerivationPathFactory deserializedExtendedPublicKey:extendedPublicKeyString onChain:derivationPath.chain];
+}
+
+
+
++ (NSString *)standaloneExtendedPublicKeyLocationStringForUniqueID:(NSString *)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@", DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION, uniqueID];
+}
+
++ (NSString *)standaloneInfoDictionaryLocationStringForUniqueID:(NSString *)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@", DERIVATION_PATH_STANDALONE_INFO_DICTIONARY_LOCATION, uniqueID];
+}
+
++ (NSString *)walletBasedExtendedPublicKeyLocationStringForUniqueID:(NSString *)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@", DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION, uniqueID];
+}
+
++ (NSString *)walletBasedExtendedPrivateKeyLocationStringForUniqueID:(NSString *)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@", DERIVATION_PATH_EXTENDED_SECRET_KEY_WALLET_BASED_LOCATION, uniqueID];
+}
+
+
++ (NSString *)stringRepresentationOfIndex:(UInt256)index
+                                 hardened:(BOOL)hardened
+                                inContext:(NSManagedObjectContext *)context {
+    if (uint256_is_31_bits(index)) {
+        return [NSString stringWithFormat:@"/%lu%@", (unsigned long)index.u64[0], hardened ? @"'" : @""];
+    } else if (context) {
+        __block NSString *rString = nil;
+        [context performBlockAndWait:^{
+            DSDashpayUserEntity *dashpayUserEntity = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(index)];
+            if (dashpayUserEntity) {
+                DSBlockchainIdentityUsernameEntity *usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
+                rString = [NSString stringWithFormat:@"/%@%@", usernameEntity.stringValue, hardened ? @"'" : @""];
+            } else {
+                rString = [NSString stringWithFormat:@"/0x%@%@", uint256_hex(index), hardened ? @"'" : @""];
+            }
+        }];
+        return rString;
+    } else {
+        return [NSString stringWithFormat:@"/0x%@%@", uint256_hex(index), hardened ? @"'" : @""];
+    }
 }
 
 @end

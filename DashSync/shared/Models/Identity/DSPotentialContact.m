@@ -17,7 +17,7 @@
 
 #import "DSPotentialContact.h"
 #import "BigIntTypes.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
@@ -35,13 +35,15 @@
     self = [super init];
     if (self) {
         _username = username;
-        _associatedBlockchainIdentityUniqueId = UINT256_ZERO;
+        _associatedIdentityUniqueId = UINT256_ZERO;
         self.keyDictionary = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
-- (instancetype)initWithUsername:(NSString *)username avatarPath:(NSString *)avatarPath publicMessage:(NSString *)publicMessage {
+- (instancetype)initWithUsername:(NSString *)username
+                      avatarPath:(NSString *)avatarPath
+                   publicMessage:(NSString *)publicMessage {
     self = [self initWithUsername:username];
     if (self) {
         _avatarPath = avatarPath;
@@ -52,15 +54,17 @@
 
 - (instancetype)initWithDashpayUser:(DSDashpayUserEntity *)dashpayUserEntity {
     DSBlockchainIdentityUsernameEntity *usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
-    self = [self initWithUsername:usernameEntity.stringValue avatarPath:dashpayUserEntity.avatarPath publicMessage:dashpayUserEntity.publicMessage];
+    self = [self initWithUsername:usernameEntity.stringValue
+                       avatarPath:dashpayUserEntity.avatarPath
+                    publicMessage:dashpayUserEntity.publicMessage];
     if (self) {
-        _associatedBlockchainIdentityUniqueId = dashpayUserEntity.associatedBlockchainIdentity.uniqueID.UInt256;
+        _associatedIdentityUniqueId = dashpayUserEntity.associatedBlockchainIdentity.uniqueID.UInt256;
     }
     return self;
 }
 
 - (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainIdentityUniqueId)];
+    return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedIdentityUniqueId)];
 }
 
 - (void)addPublicKey:(NSValue *)key atIndex:(NSUInteger)index {

@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPeer.h"
 #import "DSPeerEntity+CoreDataClass.h"

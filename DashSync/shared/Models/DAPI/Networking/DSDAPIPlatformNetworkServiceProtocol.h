@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
     DSDAPINetworkServiceErrorCodeInvalidResponse = 100,
 };
 
-@class DSTransition, DSPlatformDocumentsRequest, DSBlockchainIdentity;
+@class DSTransition, DSPlatformDocumentsRequest, DSIdentity;
 
 @protocol DSDAPIPlatformNetworkServiceProtocol <NSObject>
 
@@ -389,7 +389,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
 - (id<DSDAPINetworkServiceRequest> _Nullable)getIdentityByName:(NSString *)username
                                                       inDomain:(NSString *)domain
                                                completionQueue:(dispatch_queue_t)completionQueue
-                                                       success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
+                                                       success:(void (^)(NSDictionary *_Nullable identity))success
                                                        failure:(void (^)(NSError *error))failure;
 
 /**
@@ -401,7 +401,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  */
 - (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSData *)userId
                                    completionQueue:(dispatch_queue_t)completionQueue
-                                           success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
+                                           success:(void (^)(NSDictionary *_Nullable identity))success
                                            failure:(void (^)(NSError *error))failure;
 
 /**

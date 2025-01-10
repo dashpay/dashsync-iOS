@@ -16,11 +16,11 @@
 //
 
 #import "DSDocumentTransition.h"
-#import "DPDocument.h"
 #import "DPDocumentState.h"
 #import "DSPlatformQuery.h"
 #import "DSPlatformTreeQuery.h"
 #import "DSTransition+Protected.h"
+#import "NSData+Dash.h"
 
 @interface DSDocumentTransition ()
 
@@ -42,16 +42,19 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"transitions"] = [self documentsAsArrayOfDictionaries];
-    json[@"ownerId"] = uint256_data(self.blockchainIdentityUniqueId);
+    json[@"ownerId"] = uint256_data(self.identityUniqueId);
     return json;
 }
 
-- (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    if (!(self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain])) return nil;
+- (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents
+           withTransitionVersion:(uint16_t)version
+                identityUniqueId:(UInt256)identityUniqueId
+                         onChain:(DSChain *)chain {
+    if (!(self = [super initWithTransitionVersion:version identityUniqueId:identityUniqueId onChain:chain])) return nil;
 
     self.documents = documents;
     self.type = DSTransitionType_Documents;
-    self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
+    self.identityUniqueId = identityUniqueId;
 
     return self;
 }

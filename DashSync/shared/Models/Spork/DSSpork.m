@@ -8,6 +8,7 @@
 
 #import "DSSpork.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSKeyManager.h"
 #import "DSPeerManager.h"
@@ -78,12 +79,44 @@
     [stringMessageData appendString:DASH_MESSAGE_MAGIC];
     [stringMessageData appendString:stringMessage];
     UInt256 messageDigest = stringMessageData.SHA256_2;
+    SLICE *compact_sig = slice_ctor(signature);
+    u256 *message_digest = Arr_u8_32_ctor(32, messageDigest.u8);
+
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *msg_public_key = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_compact_sig(compact_sig, message_digest);
+//    slice_dtor(compact_sig);
+//    u256_dtor(message_digest);
+    if (!msg_public_key) {
+        return NO;
+    }
+    if (!msg_public_key->ok) {
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(msg_public_key);
+        return NO;
+    }
+    NSData *publicKeyData = [NSData dataFromHexString:[self sporkKey]];
+    SLICE *public_key_data = slice_ctor(publicKeyData);
     
-    OpaqueKey *messagePublicKey = key_ecdsa_recovered_from_compact_sig(signature.bytes, signature.length, messageDigest.u8);
-    OpaqueKey *sporkPublicKey = [DSKeyManager keyWithPublicKeyData:[NSData dataFromHexString:[self sporkKey]] ofType:KeyKind_ECDSA];
-    BOOL isEqual = [DSKeyManager keysPublicKeyDataIsEqual:sporkPublicKey key2:messagePublicKey];
-    processor_destroy_opaque_key(messagePublicKey);
-    processor_destroy_opaque_key(sporkPublicKey);
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *spork_public_key = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_public_key_data(public_key_data);
+//    slice_dtor(public_key_data);
+    if (!spork_public_key) {
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(msg_public_key);
+        return NO;
+    }
+    if (!spork_public_key->ok) {
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(msg_public_key);
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(spork_public_key);
+        return NO;
+    }
+    BYTES *spork_public_key_data = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(spork_public_key->ok);
+    BOOL isEqual = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_equal_to(msg_public_key->ok, spork_public_key_data);
+    bytes_dtor(spork_public_key_data);
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(msg_public_key);
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(spork_public_key);
+
+//    DOpaqueKey *messagePublicKey = key_ecdsa_recovered_from_compact_sig(signature.bytes, signature.length, messageDigest.u8);
+//    DOpaqueKey *sporkPublicKey = [DSKeyManager keyWithPublicKeyData:[NSData dataFromHexString:[self sporkKey]] ofType:KeyKind_ECDSA];
+//    BOOL isEqual = [DSKeyManager keysPublicKeyDataIsEqual:sporkPublicKey key2:messagePublicKey];
+//    processor_destroy_opaque_key(messagePublicKey);
+//    processor_destroy_opaque_key(sporkPublicKey);
     return isEqual;
 }
 
@@ -91,9 +124,21 @@
     if (self.chain.protocolVersion < 70209) {
         return [self checkSignature70208Method:signature];
     } else {
-        OpaqueKey *messagePublicKey = key_ecdsa_recovered_from_compact_sig(signature.bytes, signature.length, self.sporkHash.u8);
-        NSString *sporkAddress = [DSKeyManager addressForKey:messagePublicKey forChainType:self.chain.chainType];
-        processor_destroy_opaque_key(messagePublicKey);
+        SLICE *compact_sig = slice_ctor(signature);
+        u256 *message_digest = Arr_u8_32_ctor(32, self.sporkHash.u8);
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_compact_sig(compact_sig, message_digest);
+        if (!result) return NO;
+        if (!result->ok) {
+            Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+            return NO;
+        }
+        char *addr = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_with_public_key_data(result->ok, self.chain.chainType);
+        NSString *sporkAddress = [DSKeyManager NSStringFrom:addr];
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+
+//        DOpaqueKey *messagePublicKey = key_ecdsa_recovered_from_compact_sig(signature.bytes, signature.length, self.sporkHash.u8);
+//        NSString *sporkAddress = [DSKeyManager addressForKey:messagePublicKey forChainType:self.chain.chainType];
+//        processor_destroy_opaque_key(messagePublicKey);
         DSSporkManager *sporkManager = self.chain.chainManager.sporkManager;
         return [[self sporkAddress] isEqualToString:sporkAddress] || (![sporkManager sporksUpdatedSignatures] && [self checkSignature70208Method:signature]);
     }
@@ -101,10 +146,16 @@
 
 - (NSString *)sporkKey {
     if (self.chain.sporkPublicKeyHexString) return self.chain.sporkPublicKeyHexString;
+    NSString *key = NULL;
     if (self.chain.sporkPrivateKeyBase58String) {
-        return [DSKeyManager NSDataFrom:key_ecdsa_public_key_data_for_private_key([self.chain.sporkPrivateKeyBase58String UTF8String], self.chain.chainType)].hexString;
+        DMaybeKeyData *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_for_private_key((char *) [self.chain.sporkPrivateKeyBase58String UTF8String], self.chain.chainType);
+        if (result) {
+            if (result->ok)
+                key = [NSData dataWithBytes:(const void *)result->ok->values length:result->ok->count].hexString;
+            DMaybeKeyDataDtor(result);
+        }
     }
-    return nil;
+    return key;
 }
 
 //starting in 12.3 sporks use addresses instead of public keys

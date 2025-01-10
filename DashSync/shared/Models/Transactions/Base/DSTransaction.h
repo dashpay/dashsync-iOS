@@ -29,10 +29,13 @@
 #import "DSShapeshiftEntity+CoreDataClass.h"
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import "DSKeyManager.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSAccount, DSWallet, DSTransactionLockVote, DSTransactionEntity, DSInstantSendTransactionLock, DSBlockchainIdentity, DSDerivationPath, DSTransactionInput, DSTransactionOutput;
+@class DSChain, DSAccount, DSWallet, DSTransactionLockVote, DSTransactionEntity, DSInstantSendTransactionLock, DSIdentity, DSDerivationPath, DSTransactionInput, DSTransactionOutput;
 
 #define TX_FEE_PER_B 1ULL                                                          // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT 10000ULL                                                  // standard ix fee per input
@@ -65,6 +68,14 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
     DSTransactionSortType_BIP69,
 };
 
+typedef NS_ENUM(NSUInteger, DSTransactionDirection)
+{
+    DSTransactionDirection_Sent,
+    DSTransactionDirection_Received,
+    DSTransactionDirection_Moved,
+    DSTransactionDirection_NotAccountFunds,
+};
+
 @interface DSTransaction : NSObject
 
 @property (nonatomic, readonly) NSArray<DSTransactionInput *> *inputs;
@@ -73,8 +84,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, readonly) NSArray *inputAddresses;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 
-@property (nonatomic, readonly) NSSet<DSBlockchainIdentity *> *sourceBlockchainIdentities;
-@property (nonatomic, readonly) NSSet<DSBlockchainIdentity *> *destinationBlockchainIdentities;
+@property (nonatomic, readonly) NSSet<DSIdentity *> *sourceIdentities;
+@property (nonatomic, readonly) NSSet<DSIdentity *> *destinationIdentities;
 
 @property (nonatomic, readonly) BOOL instantSendReceived;
 @property (nonatomic, readonly) BOOL confirmed;
@@ -104,7 +115,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
-@property (nonatomic, readonly) BOOL isCreditFundingTransaction;
+//@property (nonatomic, readonly) BOOL isCreditFundingTransaction;
 @property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
 
 @property (nonatomic, strong) DSShapeshiftEntity *associatedShapeshift;
@@ -116,7 +127,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain;
-+ (UInt256)devnetGenesisCoinbaseTxHash:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
++ (UInt256)devnetGenesisCoinbaseTxHash:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
 
 - (instancetype)initOnChain:(DSChain *)chain;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;
@@ -143,6 +154,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 - (void)hasSetInputsAndOutputs;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
+// TMP method to handle specific c structures
+- (BOOL)signWithMaybePrivateKeys:(NSArray *)keys;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;
@@ -168,9 +181,10 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock *)instantSendLock;
 
-- (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
+- (void)loadIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
 @end
+//typedef NSUInteger DSTransactionDirection;
 
 @interface DSTransaction (Extensions)
 - (DSTransactionDirection)direction;

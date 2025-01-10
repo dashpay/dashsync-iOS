@@ -17,17 +17,18 @@
 
 #import "BigIntTypes.h"
 #import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import "DPTypes.h"
 #import <Foundation/Foundation.h>
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactRequest : NSObject
 
-@property (nonatomic, readonly) UInt256 recipientBlockchainIdentityUniqueId;
-@property (nonatomic, readonly) UInt256 senderBlockchainIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 recipientIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 senderIdentityUniqueId;
 @property (nonatomic, readonly) uint32_t recipientKeyIndex;
 @property (nonatomic, readonly) uint32_t senderKeyIndex;
 @property (nonatomic, readonly) uint32_t accountReference;
@@ -37,9 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSData *encryptedPublicKeyData;
 
-+ (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
++ (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary
+                                  onIdentity:(DSIdentity *)identity;
 
-- (NSData *)decryptedPublicKeyDataWithKey:(OpaqueKey *)key;
+- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key;
 
 @end
 

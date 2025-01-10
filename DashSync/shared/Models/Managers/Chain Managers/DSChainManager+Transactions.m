@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSChain+Params.h"
 #import "DSChainManager+Protected.h"
 #import "DSChainManager+Transactions.h"
 #import "DSWallet+Protected.h"

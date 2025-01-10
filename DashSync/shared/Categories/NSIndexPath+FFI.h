@@ -20,11 +20,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSIndexPath (FFI)
+@interface NSIndexPath (Vec_u32)
 
-- (IndexPathData *)ffi_malloc;
-+ (void)ffi_free:(IndexPathData *)entry;
-
++ (NSIndexPath *)ffi_from:(Vec_u32 *)ffi_ref;
++ (Vec_u32 *)ffi_to:(NSIndexPath *)obj;
++ (void)ffi_destroy:(Vec_u32 *)ffi_ref;
 @end
 
 NS_ASSUME_NONNULL_END

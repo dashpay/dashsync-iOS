@@ -7,6 +7,7 @@
 
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSBlock.h"
+#import "DSChain+Params.h"
 #import "DSKeyManager.h"
 #import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
@@ -296,9 +297,12 @@
 }
 
 + (UInt256)hashConfirmedHash:(UInt256)confirmedHash withProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
-    ByteArray byte_array = masternode_hash_confirmed_hash(confirmedHash.u8, providerRegistrationTransactionHash.u8);
-    NSData *data = [DSKeyManager NSDataFrom:byte_array];
-    return data.UInt256;
+    u256 *confirmed_hash = u256_ctor_u(confirmedHash);
+    u256 *provider_reg_tx_hash = u256_ctor_u(providerRegistrationTransactionHash);
+    u256 *result = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_hash_confirmed_hash(confirmed_hash, provider_reg_tx_hash);
+    UInt256 hash = u256_cast(result);
+    u256_dtor(result);
+    return hash;
 }
 
 - (void)updateConfirmedHashHashedWithProviderRegistrationTransactionHash {
@@ -479,36 +483,48 @@
     masternodeEntity.platformPingDate = self.platformPingDate;
 }
 
-- (void)mergedWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight {
-    if (self.updateHeight < blockHeight) {
-        self.updateHeight = blockHeight;
-        if (!uint128_eq(self.address, masternodeEntry.address)) {
-            self.address = masternodeEntry.address;
-        }
-        if (!uint256_eq(self.confirmedHash, masternodeEntry.confirmedHash)) {
-            self.confirmedHash = masternodeEntry.confirmedHash;
-            self.knownConfirmedAtHeight = masternodeEntry.knownConfirmedAtHeight;
-        }
-        if (self.port != masternodeEntry.port) {
-            self.port = masternodeEntry.port;
-        }
-        if (!uint160_eq(self.keyIDVoting, masternodeEntry.keyIDVoting)) {
-            self.keyIDVoting = masternodeEntry.keyIDVoting;
-        }
-        if (!uint384_eq(self.operatorPublicKey, masternodeEntry.operatorPublicKey)) {
-            self.operatorPublicKey = masternodeEntry.operatorPublicKey;
-            self.operatorPublicKeyVersion = masternodeEntry.operatorPublicKeyVersion;
-        }
-        if (self.isValid != masternodeEntry.isValid) {
-            self.isValid = masternodeEntry.isValid;
-        }
-        self.simplifiedMasternodeEntryHash = masternodeEntry.simplifiedMasternodeEntryHash;
-        [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:masternodeEntry atBlockHeight:blockHeight];
-    }
-    else if (blockHeight < self.updateHeight) {
-        [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:masternodeEntry atBlockHeight:blockHeight];
-    }
-}
+//- (void)mergedWithSimplifiedMasternodeEntry:(DMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight {
+//    if (self.updateHeight < blockHeight) {
+//        self.updateHeight = blockHeight;
+//        u128 *addr = u128_ctor_u(self.address);
+//        BOOL addr_are_equal = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_address_is_equal_to(masternodeEntry, addr);
+//        u128_dtor(addr);
+//        if (!addr_are_equal) {
+//            self.address = *((UInt128 *)masternodeEntry->socket_address->ip_address);
+//        }
+//        u256 *confirmed_hash = u256_ctor_u(self.confirmedHash);
+//        BOOL confirmed_hashes_are_equal = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_confirmed_hash_is_equal_to(masternodeEntry, confirmed_hash);
+//        u256_dtor(confirmed_hash);
+//        if (!confirmed_hashes_are_equal) {
+//            self.confirmedHash = *((UInt256 *)masternodeEntry->confirmed_hash->values);
+//            self.knownConfirmedAtHeight = *(masternodeEntry->known_confirmed_at_height);
+//        }
+//        if (self.port != masternodeEntry->socket_address->port) {
+//            self.port = masternodeEntry->socket_address->port;
+//        }
+//        u160 *key_id = u160_ctor_u(self.keyIDVoting);
+//        BOOL key_ids_are_equal = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_key_id_is_equal_to(masternodeEntry, key_id);
+//        u160_dtor(key_id);
+//        if (!key_ids_are_equal) {
+//            self.keyIDVoting = *((UInt160 *)masternodeEntry->key_id_voting->values);
+//        }
+//        u384 *pub_key = u384_ctor_u(self.operatorPublicKey);
+//        BOOL pubkeys_are_equal = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_operator_pub_key_is_equal_to(masternodeEntry, pub_key);
+//        u384_dtor(pub_key);
+//        if (!pubkeys_are_equal) {
+//            self.operatorPublicKey = *((UInt384 *)masternodeEntry->operator_public_key->data->values);
+//            self.operatorPublicKeyVersion = masternodeEntry->operator_public_key->version;
+//        }
+//        if (self.isValid != masternodeEntry->is_valid) {
+//            self.isValid = masternodeEntry->is_valid;
+//        }
+//        self.simplifiedMasternodeEntryHash = *((UInt256 *)masternodeEntry->entry_hash->values);
+//        [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:masternodeEntry atBlockHeight:blockHeight];
+//    }
+//    else if (blockHeight < self.updateHeight) {
+//        [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:masternodeEntry atBlockHeight:blockHeight];
+//    }
+//}
 
 - (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
@@ -523,26 +539,78 @@
     return rDictionary;
 }
 
-- (void)mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:(DSSimplifiedMasternodeEntry *)entry atBlockHeight:(uint32_t)blockHeight {
-    //SimplifiedMasternodeEntryHashes
-    NSDictionary *oldPreviousSimplifiedMasternodeEntryHashesDictionary = entry.previousSimplifiedMasternodeEntryHashes;
-    if (oldPreviousSimplifiedMasternodeEntryHashesDictionary && oldPreviousSimplifiedMasternodeEntryHashesDictionary.count) {
-        self.previousSimplifiedMasternodeEntryHashes = [NSDictionary mergeDictionary:self.previousSimplifiedMasternodeEntryHashes withDictionary:oldPreviousSimplifiedMasternodeEntryHashesDictionary];
+- (void)mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:(DMasternodeEntry *)entry
+                                                           atBlockHeight:(uint32_t)blockHeight {
+    std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_u8_arr_32 *prev_entry_hashes = entry->previous_entry_hashes;
+    NSMutableDictionary *prevEntryHashes = [NSMutableDictionary dictionaryWithCapacity:prev_entry_hashes->count];
+    for (int i = 0; i < prev_entry_hashes->count; i++) {
+        DBlock *key = prev_entry_hashes->keys[i];
+        NSMutableData *d = [NSMutableData dataWithBytes:key->hash->values length:32];
+        [d appendUInt32:key->height];
+        u256 *value = prev_entry_hashes->values[i];
+        [prevEntryHashes setObject:NSDataFromPtr(value) forKey:d];
+    }
+    if (!self.previousSimplifiedMasternodeEntryHashes || [self.previousSimplifiedMasternodeEntryHashes count] == 0) {
+        self.previousSimplifiedMasternodeEntryHashes = prevEntryHashes;
+    } else {
+        NSMutableDictionary *mergedDictionary = [self.previousSimplifiedMasternodeEntryHashes mutableCopy];
+        [mergedDictionary addEntriesFromDictionary:prevEntryHashes];
+        self.previousSimplifiedMasternodeEntryHashes = mergedDictionary;
+    }
+    std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_dash_spv_crypto_keys_operator_public_key_OperatorPublicKey *prev_operator_keys = entry->previous_operator_public_keys;
+    NSMutableDictionary *prevOperatorKeys = [NSMutableDictionary dictionaryWithCapacity:prev_operator_keys->count];
+    // TODO: key version lost here
+    for (int i = 0; i < prev_operator_keys->count; i++) {
+        DBlock *key = prev_operator_keys->keys[i];
+        NSMutableData *d = [NSMutableData dataWithBytes:key->hash->values length:32];
+        [d appendUInt32:key->height];
+        dash_spv_crypto_keys_operator_public_key_OperatorPublicKey *value = prev_operator_keys->values[i];
+        [prevOperatorKeys setObject:NSDataFromPtr(value->data) forKey:d];
+    }
+    if (!self.previousOperatorPublicKeys || [self.previousOperatorPublicKeys count] == 0) {
+        self.previousOperatorPublicKeys = prevOperatorKeys;
+    } else {
+        NSMutableDictionary *mergedDictionary = [self.previousOperatorPublicKeys mutableCopy];
+        [mergedDictionary addEntriesFromDictionary:prevOperatorKeys];
+        self.previousOperatorPublicKeys = mergedDictionary;
+    }
+    std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_bool *prev_validity = entry->previous_validity;
+    NSMutableDictionary *prevValidity = [NSMutableDictionary dictionaryWithCapacity:prev_validity->count];
+    for (int i = 0; i < prev_validity->count; i++) {
+        DBlock *key = prev_validity->keys[i];
+        NSMutableData *d = [NSMutableData dataWithBytes:key->hash->values length:32];
+        [d appendUInt32:key->height];
+        bool value = prev_validity->values[i];
+        [prevValidity setObject:@(value) forKey:d];
+    }
+    if (!self.previousValidity || [self.previousValidity count] == 0) {
+        self.previousValidity = prevValidity;
+    } else {
+        NSMutableDictionary *mergedDictionary = [self.previousValidity mutableCopy];
+        [mergedDictionary addEntriesFromDictionary:prevValidity];
+        self.previousValidity = mergedDictionary;
     }
 
-    //OperatorBLSPublicKeys
-    NSDictionary *oldPreviousOperatorBLSPublicKeysDictionary = entry.previousOperatorPublicKeys;
-    if (oldPreviousOperatorBLSPublicKeysDictionary && oldPreviousOperatorBLSPublicKeysDictionary.count) {
-        self.previousOperatorPublicKeys = [NSDictionary mergeDictionary:self.previousOperatorPublicKeys withDictionary:oldPreviousOperatorBLSPublicKeysDictionary];
-    }
-
-    //MasternodeValidity
-    NSDictionary *oldPreviousValidityDictionary = entry.previousValidity;
-    if (oldPreviousValidityDictionary && oldPreviousValidityDictionary.count) {
-        self.previousValidity = [NSDictionary mergeDictionary:self.previousValidity withDictionary:oldPreviousValidityDictionary];
-    }
-
-    if (uint256_is_not_zero(self.confirmedHash) && uint256_is_not_zero(entry.confirmedHash) && (self.knownConfirmedAtHeight > blockHeight)) {
+    
+    
+//    NSDictionary *oldPreviousSimplifiedMasternodeEntryHashesDictionary = entry.previousSimplifiedMasternodeEntryHashes;
+//    if (oldPreviousSimplifiedMasternodeEntryHashesDictionary && oldPreviousSimplifiedMasternodeEntryHashesDictionary.count) {
+//        self.previousSimplifiedMasternodeEntryHashes = [NSDictionary mergeDictionary:self.previousSimplifiedMasternodeEntryHashes withDictionary:oldPreviousSimplifiedMasternodeEntryHashesDictionary];
+//    }
+//
+//    //OperatorBLSPublicKeys
+//    NSDictionary *oldPreviousOperatorBLSPublicKeysDictionary = entry.previousOperatorPublicKeys;
+//    if (oldPreviousOperatorBLSPublicKeysDictionary && oldPreviousOperatorBLSPublicKeysDictionary.count) {
+//        self.previousOperatorPublicKeys = [NSDictionary mergeDictionary:self.previousOperatorPublicKeys withDictionary:oldPreviousOperatorBLSPublicKeysDictionary];
+//    }
+//
+//    //MasternodeValidity
+//    NSDictionary *oldPreviousValidityDictionary = entry.previousValidity;
+//    if (oldPreviousValidityDictionary && oldPreviousValidityDictionary.count) {
+//        self.previousValidity = [NSDictionary mergeDictionary:self.previousValidity withDictionary:oldPreviousValidityDictionary];
+//    }
+    
+    if (uint256_is_not_zero(self.confirmedHash) && !u_is_zero(entry->confirmed_hash) && (self.knownConfirmedAtHeight > blockHeight)) {
         //we now know it was confirmed earlier so update to earlier
         self.knownConfirmedAtHeight = blockHeight;
     }

@@ -21,6 +21,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSChain+Checkpoint.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
@@ -147,8 +148,8 @@
     }];
 }
 
-+ (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(blockHash)];
++ (instancetype)merkleBlockEntityForBlockHash:(NSData *)blockHash inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", blockHash];
     return merkleBlockEntity;
 }
 
@@ -162,12 +163,12 @@
     return nil;
 }
 
-+ (instancetype)createMerkleBlockEntityForBlockHash:(UInt256)blockHash
++ (instancetype)createMerkleBlockEntityForBlockHash:(NSData *)blockHash
                                         blockHeight:(uint32_t)blockHeight
                                         chainEntity:(DSChainEntity *)chainEntity
                                           inContext:(NSManagedObjectContext *)context {
     DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
-    merkleBlockEntity.blockHash = uint256_data(blockHash);
+    merkleBlockEntity.blockHash = blockHash;
     merkleBlockEntity.height = blockHeight;
     merkleBlockEntity.chain = chainEntity;
     return merkleBlockEntity;

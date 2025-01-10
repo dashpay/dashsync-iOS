@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // returns the index of an address in the derivation path as long as it is within the gap limit
 - (NSUInteger)indexOfKnownAddress:(NSString *)address;
+- (NSUInteger)indexOfKnownAddressHash:(UInt160)hash;
 
 // returns the index of the first unused Address;
 - (NSUInteger)firstUnusedIndex;
@@ -27,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)addressAtIndex:(uint32_t)index;
 
 // true if the address at the index was previously used as an input or output in any wallet transaction
-- (BOOL)addressIsUsedAtIndex:(uint32_t)index;
+//- (BOOL)addressIsUsedAtIndex:(uint32_t)index;
 
 // gets addresses to an index, does not use cache and does not add to cache
 - (NSArray *)addressesToIndex:(NSUInteger)index;
@@ -36,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)addressesToIndex:(NSUInteger)index useCache:(BOOL)useCache addToCache:(BOOL)addToCache;
 
 // gets a private key at an index
-- (OpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;
 
 // get private keys for a range or to an index
 - (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed;

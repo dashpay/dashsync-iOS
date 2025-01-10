@@ -1,0 +1,597 @@
+//  
+//  Created by Vladimir Pirogov
+//  Copyright © 2024 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DPDocument.h"
+#import "DPDocumentFactory.h"
+#import "DSDocumentTransition.h"
+#import "DSIdentity+Profile.h"
+#import "DSIdentity+Protected.h"
+#import "DSIdentity+Username.h"
+#import "DSTransientDashpayUser.h"
+#import "DSWallet.h"
+#import "NSError+Dash.h"
+#import "NSManagedObject+Sugar.h"
+#import <CocoaImageHashing/CocoaImageHashing.h>
+
+#define DEFAULT_FETCH_PROFILE_RETRY_COUNT 5
+
+#define ERROR_TRANSITION_NO_UPDATE [NSError errorWithCode:500 localizedDescriptionKey:@"Transition had nothing to update"]
+#define ERROR_DASHPAY_CONTRACT_NOT_REGISTERED [NSError errorWithCode:500 localizedDescriptionKey:@"Dashpay Contract is not yet registered on network"]
+#define ERROR_IDENTITY_NO_LONGER_ACTIVE [NSError errorWithCode:410 localizedDescriptionKey:@"Identity no longer active in wallet"]
+
+@implementation DSIdentity (Profile)
+
+- (NSString *)avatarPath {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.avatarPath;
+    } else {
+        return self.matchingDashpayUserInViewContext.avatarPath;
+    }
+}
+
+- (NSData *)avatarFingerprint {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.avatarFingerprint;
+    } else {
+        return self.matchingDashpayUserInViewContext.avatarFingerprint;
+    }
+}
+
+- (NSData *)avatarHash {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.avatarHash;
+    } else {
+        return self.matchingDashpayUserInViewContext.avatarHash;
+    }
+}
+
+- (NSString *)displayName {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.displayName;
+    } else {
+        return self.matchingDashpayUserInViewContext.displayName;
+    }
+}
+
+- (NSString *)publicMessage {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.publicMessage;
+    } else {
+        return self.matchingDashpayUserInViewContext.publicMessage;
+    }
+}
+
+- (uint64_t)dashpayProfileUpdatedAt {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.updatedAt;
+    } else {
+        return self.matchingDashpayUserInViewContext.updatedAt;
+    }
+}
+
+- (uint64_t)dashpayProfileCreatedAt {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.createdAt;
+    } else {
+        return self.matchingDashpayUserInViewContext.createdAt;
+    }
+}
+
+// MARK: Profile
+
+- (DPDocument *)matchingDashpayUserProfileDocumentInContext:(NSManagedObjectContext *)context {
+    //The revision must be at least at 1, otherwise nothing was ever done
+    DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+    if (matchingDashpayUser && matchingDashpayUser.localProfileDocumentRevision) {
+        __block DSMutableStringValueDictionary *dataDictionary = nil;
+        
+        __block NSData *entropyData = nil;
+        __block NSData *documentIdentifier = nil;
+        [context performBlockAndWait:^{
+            dataDictionary = [@{@"$updatedAt": @(matchingDashpayUser.updatedAt), } mutableCopy];
+            if (matchingDashpayUser.createdAt == matchingDashpayUser.updatedAt)
+                dataDictionary[@"$createdAt"] = @(matchingDashpayUser.createdAt);
+            else
+                dataDictionary[@"$revision"] = @(matchingDashpayUser.localProfileDocumentRevision);
+            if (matchingDashpayUser.publicMessage)
+                dataDictionary[@"publicMessage"] = matchingDashpayUser.publicMessage;
+            if (matchingDashpayUser.avatarPath)
+                dataDictionary[@"avatarUrl"] = matchingDashpayUser.avatarPath;
+            if (matchingDashpayUser.avatarFingerprint)
+                dataDictionary[@"avatarFingerprint"] = matchingDashpayUser.avatarFingerprint;
+            if (matchingDashpayUser.avatarHash)
+                dataDictionary[@"avatarHash"] = matchingDashpayUser.avatarHash;
+            if (matchingDashpayUser.displayName)
+                dataDictionary[@"displayName"] = matchingDashpayUser.displayName;
+            entropyData = matchingDashpayUser.originalEntropyData;
+            documentIdentifier = matchingDashpayUser.documentIdentifier;
+        }];
+        NSError *error = nil;
+        if (documentIdentifier == nil) {
+            NSAssert(entropyData, @"Entropy string must be present");
+            return [self.dashpayDocumentFactory documentOnTable:@"profile"
+                                             withDataDictionary:dataDictionary
+                                                   usingEntropy:entropyData
+                                                          error:&error];
+        } else {
+            return [self.dashpayDocumentFactory documentOnTable:@"profile"
+                                             withDataDictionary:dataDictionary
+                                        usingDocumentIdentifier:documentIdentifier
+                                                          error:&error];
+        }
+    } else {
+        return nil;
+    }
+}
+
+- (DSDocumentTransition *)profileDocumentTransitionInContext:(NSManagedObjectContext *)context {
+    DPDocument *profileDocument = [self matchingDashpayUserProfileDocumentInContext:context];
+    return profileDocument ? [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withTransitionVersion:1 identityUniqueId:self.uniqueID onChain:self.chain] : nil;
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName {
+    [self updateDashpayProfileWithDisplayName:displayName
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                                  inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.displayName = displayName;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+- (void)updateDashpayProfileWithPublicMessage:(NSString *)publicMessage {
+    [self updateDashpayProfileWithPublicMessage:publicMessage
+                                      inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithPublicMessage:(NSString *)publicMessage
+                                    inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.publicMessage = publicMessage;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+- (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithAvatarURLString:avatarURLString
+                                        inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString
+                                      inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.avatarPath = avatarURLString;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage {
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                                  inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.displayName = displayName;
+        matchingDashpayUser.publicMessage = publicMessage;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                            avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                              avatarURLString:avatarURLString
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                            avatarURLString:(NSString *)avatarURLString
+                                  inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.displayName = displayName;
+        matchingDashpayUser.publicMessage = publicMessage;
+        matchingDashpayUser.avatarPath = avatarURLString;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+#if TARGET_OS_IOS
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                                avatarImage:(UIImage *)avatarImage
+                                 avatarData:(NSData *)data
+                            avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                                  avatarImage:avatarImage
+                                   avatarData:data
+                              avatarURLString:avatarURLString
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                                avatarImage:(UIImage *)avatarImage
+                                 avatarData:(NSData *)avatarData
+                            avatarURLString:(NSString *)avatarURLString
+                                  inContext:(NSManagedObjectContext *)context {
+    NSData *avatarHash = uint256_data(avatarData.SHA256);
+    uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                              avatarURLString:avatarURLString
+                                   avatarHash:avatarHash
+                            avatarFingerprint:[NSData dataWithUInt64:fingerprint]
+                                    inContext:context];
+}
+
+- (void)updateDashpayProfileWithAvatarImage:(UIImage *)avatarImage
+                                 avatarData:(NSData *)data
+                            avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithAvatarImage:avatarImage
+                                   avatarData:data
+                              avatarURLString:avatarURLString
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithAvatarImage:(UIImage *)avatarImage
+                                 avatarData:(NSData *)avatarData
+                            avatarURLString:(NSString *)avatarURLString
+                                  inContext:(NSManagedObjectContext *)context {
+    NSData *avatarHash = uint256_data(avatarData.SHA256);
+    uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
+    [self updateDashpayProfileWithAvatarURLString:avatarURLString
+                                       avatarHash:avatarHash
+                                avatarFingerprint:[NSData dataWithUInt64:fingerprint]
+                                        inContext:context];
+}
+
+#else
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                                avatarImage:(NSImage *)avatarImage
+                                 avatarData:(NSData *)data
+                            avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                                  avatarImage:avatarImage
+                                   avatarData:data
+                              avatarURLString:avatarURLString
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                                avatarImage:(NSImage *)avatarImage
+                                 avatarData:(NSData *)avatarData
+                            avatarURLString:(NSString *)avatarURLString
+                                  inContext:(NSManagedObjectContext *)context {
+    NSData *avatarHash = uint256_data(avatarData.SHA256);
+    uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                              avatarURLString:avatarURLString
+                                   avatarHash:avatarHash
+                            avatarFingerprint:[NSData dataWithUInt64:fingerprint]
+                                    inContext:context];
+}
+
+- (void)updateDashpayProfileWithAvatarImage:(NSImage *)avatarImage
+                                 avatarData:(NSData *)data
+                            avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithAvatarImage:avatarImage
+                                   avatarData:data
+                              avatarURLString:avatarURLString
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithAvatarImage:(NSImage *)avatarImage
+                                 avatarData:(NSData *)avatarData
+                            avatarURLString:(NSString *)avatarURLString
+                                  inContext:(NSManagedObjectContext *)context {
+    NSData *avatarHash = uint256_data(avatarData.SHA256);
+    uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
+    [self updateDashpayProfileWithAvatarURLString:avatarURLString
+                                       avatarHash:avatarHash
+                                avatarFingerprint:[NSData dataWithUInt64:fingerprint]
+                                        inContext:context];
+}
+
+#endif
+
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                            avatarURLString:(NSString *)avatarURLString
+                                 avatarHash:(NSData *)avatarHash
+                          avatarFingerprint:(NSData *)avatarFingerprint {
+    [self updateDashpayProfileWithDisplayName:displayName
+                                publicMessage:publicMessage
+                              avatarURLString:avatarURLString
+                                   avatarHash:avatarHash
+                            avatarFingerprint:avatarFingerprint
+                                    inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName
+                              publicMessage:(NSString *)publicMessage
+                            avatarURLString:(NSString *)avatarURLString
+                                 avatarHash:(NSData *)avatarHash
+                          avatarFingerprint:(NSData *)avatarFingerprint
+                                  inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.displayName = displayName;
+        matchingDashpayUser.publicMessage = publicMessage;
+        matchingDashpayUser.avatarPath = avatarURLString;
+        matchingDashpayUser.avatarFingerprint = avatarFingerprint;
+        matchingDashpayUser.avatarHash = avatarHash;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+- (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString
+                                     avatarHash:(NSData *)avatarHash
+                              avatarFingerprint:(NSData *)avatarFingerprint {
+    [self updateDashpayProfileWithAvatarURLString:avatarURLString
+                                       avatarHash:avatarHash
+                                avatarFingerprint:avatarFingerprint
+                                        inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString
+                                     avatarHash:(NSData *)avatarHash
+                              avatarFingerprint:(NSData *)avatarFingerprint
+                                      inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        matchingDashpayUser.avatarPath = avatarURLString;
+        matchingDashpayUser.avatarFingerprint = avatarFingerprint;
+        matchingDashpayUser.avatarHash = avatarHash;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyData)
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
+        matchingDashpayUser.localProfileDocumentRevision++;
+        [context ds_save];
+    }];
+}
+
+- (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext *)context
+                                  withCompletion:(void (^)(DSTransition *transition, BOOL cancelled, NSError *error))completion {
+    __weak typeof(self) weakSelf = self;
+    DSDocumentTransition *transition = [self profileDocumentTransitionInContext:context];
+    if (!transition) {
+        if (completion) completion(nil, NO, ERROR_TRANSITION_NO_UPDATE);
+        return;
+    }
+    if ([self signStateTransition:transition])
+        completion(transition, NO, nil);
+}
+
+- (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
+    [self signAndPublishProfileInContext:self.platformContext
+                          withCompletion:completion];
+}
+
+- (void)signAndPublishProfileInContext:(NSManagedObjectContext *)context
+                        withCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
+    __weak typeof(self) weakSelf = self;
+    __block uint32_t profileDocumentRevision;
+    [context performBlockAndWait:^{
+        DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        if (matchingDashpayUser.localProfileDocumentRevision > matchingDashpayUser.remoteProfileDocumentRevision)
+            matchingDashpayUser.localProfileDocumentRevision = matchingDashpayUser.remoteProfileDocumentRevision + 1;
+        profileDocumentRevision = matchingDashpayUser.localProfileDocumentRevision;
+        [context ds_save];
+    }];
+    [self signedProfileDocumentTransitionInContext:context
+                                    withCompletion:^(DSTransition *transition, BOOL cancelled, NSError *error) {
+        if (!transition) {
+            if (completion) completion(NO, cancelled, error);
+            return;
+        }
+        [self.DAPIClient publishTransition:transition
+                           completionQueue:self.identityQueue
+                                   success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                if (completion) completion(NO, NO, ERROR_MEM_ALLOC);
+                return;
+            }
+            [context performBlockAndWait:^{
+                [self matchingDashpayUserInContext:context].remoteProfileDocumentRevision = profileDocumentRevision;
+                [context ds_save];
+            }];
+            if (completion)
+                dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, NO, nil); });
+        }
+                                   failure:^(NSError *_Nonnull error) {
+            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, NO, error); });
+        }];
+    }];
+}
+
+//
+
+// MARK: Fetching
+
+- (void)fetchProfileWithCompletion:(void (^)(BOOL success, NSError *error))completion {
+    dispatch_async(self.identityQueue, ^{
+        [self fetchProfileInContext:self.platformContext
+                     withCompletion:completion
+                  onCompletionQueue:dispatch_get_main_queue()];
+    });
+}
+
+- (void)fetchProfileInContext:(NSManagedObjectContext *)context
+               withCompletion:(void (^)(BOOL success, NSError *error))completion
+            onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self fetchProfileInContext:context
+                     retryCount:DEFAULT_FETCH_PROFILE_RETRY_COUNT
+                 withCompletion:completion
+              onCompletionQueue:completionQueue];
+}
+
+- (void)fetchProfileInContext:(NSManagedObjectContext *)context
+                   retryCount:(uint32_t)retryCount
+               withCompletion:(void (^)(BOOL success, NSError *error))completion
+            onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self internalFetchProfileInContext:context
+                         withCompletion:^(BOOL success, NSError *error) {
+        if (!success && retryCount > 0) {
+            [self fetchUsernamesInContext:context retryCount:retryCount - 1 withCompletion:completion onCompletionQueue:completionQueue];
+        } else if (completion) {
+            completion(success, error);
+        }
+    }
+                      onCompletionQueue:completionQueue];
+}
+
+- (void)internalFetchProfileInContext:(NSManagedObjectContext *)context
+                       withCompletion:(void (^)(BOOL success, NSError *error))completion
+                    onCompletionQueue:(dispatch_queue_t)completionQueue {
+    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DASHPAY_CONTRACT_NOT_REGISTERED); });
+        return;
+    }
+    
+    [self.identitiesManager fetchProfileForIdentity:self
+                                     withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
+        if (!success || error || dashpayUserInfo == nil) {
+            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
+            return;
+        }
+        [self applyProfileChanges:dashpayUserInfo
+                        inContext:context
+                      saveContext:YES
+                       completion:^(BOOL success, NSError *_Nullable error) {
+            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
+        }
+                onCompletionQueue:self.identityQueue];
+    }
+                                            onCompletionQueue:self.identityQueue];
+}
+
+- (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser
+                  inContext:(NSManagedObjectContext *)context
+                saveContext:(BOOL)saveContext
+                 completion:(void (^)(BOOL success, NSError *error))completion
+          onCompletionQueue:(dispatch_queue_t)completionQueue {
+    if (![self isActive]) {
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_IDENTITY_NO_LONGER_ACTIVE); });
+        return;
+    }
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.identityQueue, ^{
+        [context performBlockAndWait:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                if (completion) completion(NO, ERROR_MEM_ALLOC);
+                return;
+            }
+            if (![self isActive]) {
+                if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_IDENTITY_NO_LONGER_ACTIVE); });
+                return;
+            }
+            DSDashpayUserEntity *contact = [[self identityEntityInContext:context] matchingDashpayUser];
+            NSAssert(contact, @"It is weird to get here");
+            if (!contact)
+                contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", self.uniqueIDData];
+            if (!contact || transientDashpayUser.updatedAt > contact.updatedAt) {
+                if (!contact) {
+                    contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
+                    contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
+                    contact.associatedBlockchainIdentity = [strongSelf identityEntityInContext:context];
+                }
+                NSError *error = [contact applyTransientDashpayUser:transientDashpayUser save:saveContext];
+                if (error) {
+                    if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
+                    return;
+                }
+            }
+            [self saveProfileTimestamp];
+            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
+        }];
+    });
+}
+@end

@@ -25,6 +25,7 @@
 
 #import "DSBackgroundManager.h"
 #import "DSChain.h"
+#import "DSDAPIClient.h"
 #import "DSKeyManager.h"
 #import "DSPeer.h"
 #import "DSSyncState.h"

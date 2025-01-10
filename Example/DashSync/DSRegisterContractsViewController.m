@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import <DashSync/DPContract.h>
 #import "DSRegisterContractsViewController.h"
 #import "DSContractTableViewCell.h"
 
@@ -31,18 +32,17 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.platform = [DSDashPlatform sharedInstanceForChain:self.blockchainIdentity.wallet.chain];
+    self.platform = [DSDashPlatform sharedInstanceForChain:self.identity.wallet.chain];
     self.contracts = self.platform.knownContracts;
     self.contractObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DPContractDidUpdateNotification
                                                                               object:nil
                                                                                queue:nil
                                                                           usingBlock:^(NSNotification *note) {
-                                                                              DPContract *contract = note.userInfo[DSContractUpdateNotificationKey];
-                                                                              NSUInteger index = [[self.contracts allValues] indexOfObject:contract];
-                                                                              if (index != NSNotFound) {
-                                                                                  [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
-                                                                              }
-                                                                          }];
+        DPContract *contract = note.userInfo[DSContractUpdateNotificationKey];
+        NSUInteger index = [[self.contracts allValues] indexOfObject:contract];
+        if (index != NSNotFound)
+            [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    }];
 }
 
 #pragma mark - Table view data source
@@ -53,19 +53,17 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
-        case 0:
-            return self.platform.knownContracts.count;
-        case 1:
-            return 1;
+        case 0: return self.platform.knownContracts.count;
+        case 1: return 1;
+        default: return 0;
     }
-    return 0;
 }
 
 - (void)configureContractCell:(DSContractTableViewCell *)cell forItemIndex:(NSUInteger)index {
     NSString *identifier = [[self.contracts allKeys] objectAtIndex:index];
     DPContract *contract = self.contracts[identifier];
     cell.contractNameLabel.text = contract.name;
-    if (uint256_is_not_zero(contract.registeredBlockchainIdentityUniqueID) && [contract.base58OwnerId isEqualToString:self.blockchainIdentity.uniqueIdString]) {
+    if (uint256_is_not_zero(contract.registeredIdentityUniqueID) && [contract.base58OwnerId isEqualToString:self.identity.uniqueIdString]) {
         cell.statusLabel.text = [NSString stringWithFormat:@"%@ - self", contract.statusString];
     } else {
         cell.statusLabel.text = contract.statusString;
@@ -74,7 +72,6 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell;
-
     if (!indexPath.section) {
         cell = [tableView dequeueReusableCellWithIdentifier:@"ContractTableViewCellIdentifier" forIndexPath:indexPath];
         [self configureContractCell:(DSContractTableViewCell *)cell forItemIndex:indexPath.row];
@@ -82,7 +79,6 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         cell.textLabel.text = @"Add Contract";
     }
-
     return cell;
 }
 
@@ -90,7 +86,7 @@
     if (!indexPath.section) {
         NSString *identifier = [[self.platform.knownContracts allKeys] objectAtIndex:indexPath.row];
         DPContract *contract = self.platform.knownContracts[identifier];
-        [self.blockchainIdentity fetchAndUpdateContract:contract];
+        [self.identity fetchAndUpdateContract:contract];
     }
 }
 

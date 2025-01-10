@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DSQuorumSnapshot.h"
-
-@implementation DSQuorumSnapshot
-
-- (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@: mode: %d, members: %@, skipped: %@",
-            [super debugDescription], self.skipListMode, self.memberList, self.skipList
-    ];
-}
-
-@end
+//#import "DSQuorumSnapshot.h"
+//
+//@implementation DSQuorumSnapshot
+//
+//- (NSString *)debugDescription {
+//    return [NSString stringWithFormat:@"%@: mode: %d, members: %@, skipped: %@",
+//            [super debugDescription], self.skipListMode, self.memberList, self.skipList
+//    ];
+//}
+//
+//@end

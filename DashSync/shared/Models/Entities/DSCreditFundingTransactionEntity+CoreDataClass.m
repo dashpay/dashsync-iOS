@@ -7,7 +7,7 @@
 //
 
 #import "DSAccount.h"
-#import "DSBlockchainIdentity+Protected.h"
+#import "DSIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
@@ -38,8 +38,8 @@
 //        [super setAttributesFromTransaction:tx];
 //        DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)tx;
 //        DSWallet * wallet = tx.account.wallet;
-//        DSBlockchainIdentity * identity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
-//        self.blockchainIdentity = identity.blockchainIdentityEntity;
+//        DSIdentity * identity = [wallet identityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
+//        self.identity = identity.identityEntity;
 //    }];
 //
 //    return self;

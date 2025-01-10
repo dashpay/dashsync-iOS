@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DSDashpayUserEntityFriendActivityType)
     DSDashpayUserEntityFriendActivityType_OutgoingTransactions
 };
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSTransientDashpayUser, DSBlockchainIdentity, DSPotentialOneWayFriendship, DSWallet, DSIncomingFundsDerivationPath, DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
+@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSTransientDashpayUser, DSIdentity, DSPotentialOneWayFriendship, DSWallet, DSIncomingFundsDerivationPath, DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
 
 NS_ASSUME_NONNULL_BEGIN
 

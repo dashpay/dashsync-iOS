@@ -30,7 +30,10 @@
 @implementation NSData (DSHash)
 
 - (NSData *)blake3Data {
-    return [DSKeyManager NSDataFrom:processor_blake3(self.bytes, self.length)];
+    SLICE *slice = slice_ctor(self);
+    u256 *result = dash_spv_crypto_blake3(slice);
+    NSData *data = [DSKeyManager NSDataFromArr_u8_32:result];
+    return data;
 }
 
 

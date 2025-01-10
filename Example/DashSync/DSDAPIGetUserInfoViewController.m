@@ -83,12 +83,14 @@
     if (!username) {
         return;
     }
+    
+//    spv_identity_
 
     [self.chainManager.DAPIClient.DAPIPlatformNetworkService getIdentityByName:username
         inDomain:@"dash"
         completionQueue:dispatch_get_main_queue()
-        success:^(NSDictionary *_Nonnull blockchainIdentity) {
-            NSLog(@"%@", blockchainIdentity);
+        success:^(NSDictionary *_Nonnull identity) {
+            NSLog(@"%@", identity);
         }
         failure:^(NSError *_Nonnull error) {
             NSLog(@"%@", error);

@@ -17,18 +17,17 @@
 
 #import "DSChain.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSimplifiedMasternodeEntry (Mndiff)
 
-+ (instancetype)simplifiedEntryWith:(MasternodeEntry *)entry onChain:(DSChain *)chain;
-+ (NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
-
-- (MasternodeEntry *)ffi_malloc;
-+ (void)ffi_free:(MasternodeEntry *)entry;
+//+ (instancetype)simplifiedEntryWith:(MasternodeEntry *)entry onChain:(DSChain *)chain;
+//+ (NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
+//
+//- (MasternodeEntry *)ffi_malloc;
+//+ (void)ffi_free:(MasternodeEntry *)entry;
 
 @end
 

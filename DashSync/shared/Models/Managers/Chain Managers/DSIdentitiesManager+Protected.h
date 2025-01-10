@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSIdentitiesManager (Protected)
 
-- (void)clearExternalBlockchainIdentities;
+- (void)clearExternalIdentities;
 
 @property (nonatomic, readonly) dispatch_queue_t identityQueue;
 

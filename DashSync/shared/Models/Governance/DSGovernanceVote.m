@@ -7,6 +7,7 @@
 
 #import "DSGovernanceVote.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainsManager.h"
 #import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
@@ -20,7 +21,8 @@
 
 @interface DSGovernanceVote ()
 
-@property (nonatomic, strong) DSSimplifiedMasternodeEntry *masternode;
+@property (nonatomic, assign) DMasternodeEntry *masternode;
+//@property (nonatomic, strong) DSSimplifiedMasternodeEntry *masternode;
 @property (nonatomic, assign) DSGovernanceVoteOutcome outcome;
 @property (nonatomic, assign) DSGovernanceVoteSignal signal;
 @property (nonatomic, assign) NSTimeInterval createdAt;
@@ -138,18 +140,20 @@
     return self;
 }
 
-- (DSSimplifiedMasternodeEntry *)masternode {
-    if (!_masternode) {
-        /// WTF? old fields ?
-       self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@", [NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash], @(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
-    }
-    return _masternode;
-}
-
-- (void)signWithKey:(OpaqueKey *)key {
+//- (DMasternodeEntry *)masternode {
+//    if (!_masternode) {
+//        /// WTF? old fields ?
+//       self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@", [NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash], @(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
+//    }
+//    return _masternode;
+//}
+//
+- (void)signWithKey:(DOpaqueKey *)key {
     NSParameterAssert(key);
     // ECDSA
-    self.signature = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, self.governanceVoteHash.u8, 32)];
+    SLICE *slice = slice_u256_ctor_u(self.governanceVoteHash);
+    BYTES *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_sign(key->ecdsa, slice);
+    self.signature = [DSKeyManager NSDataFrom:result];
 }
 
 - (BOOL)isValid {

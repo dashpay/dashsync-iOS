@@ -15,9 +15,12 @@
 //  limitations under the License.
 //
 
+//#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+#define ERROR_500(msg) [NSError errorWithCode:500 localizedDescriptionKey:msg]
 
 @interface NSError (Dash)
 

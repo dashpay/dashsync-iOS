@@ -15,18 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DSTransition.h"
+//#import "DSTransition.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DPContract;
-
-@interface DSContractTransition : DSTransition
-
-@property (nonatomic, readonly) DPContract *contract;
-
-- (instancetype)initWithContract:(DPContract *)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
-
-@end
+//@class DPContract;
+//
+//@interface DSContractTransition : DSTransition
+//
+//@property (nonatomic, readonly) DPContract *contract;
+//
+//- (instancetype)initWithContract:(DPContract *)contract
+//           withTransitionVersion:(uint16_t)version
+//                identityUniqueId:(UInt256)identityUniqueId
+//                         onChain:(DSChain *)chain;
+//
+//@end
 
 NS_ASSUME_NONNULL_END

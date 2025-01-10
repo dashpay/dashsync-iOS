@@ -21,20 +21,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSIncomingFundsDerivationPath : DSDerivationPath
 
-@property (nonatomic, readonly) UInt256 contactSourceBlockchainIdentityUniqueId;
-@property (nonatomic, readonly) UInt256 contactDestinationBlockchainIdentityUniqueId;
-@property (nonatomic, readonly) DSBlockchainIdentity *contactSourceBlockchainIdentity;
-@property (nonatomic, readonly) DSBlockchainIdentity *contactDestinationBlockchainIdentity;
-@property (nonatomic, readonly) BOOL sourceIsLocal;
-@property (nonatomic, readonly) BOOL destinationIsLocal;
+@property (nonatomic, readonly) UInt256 contactSourceIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 contactDestinationIdentityUniqueId;
 
-+ (instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId forAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
++ (instancetype)contactBasedDerivationPathWithDestinationIdentityUniqueId:(UInt256)destinationIdentityUniqueId
+                                                   sourceIdentityUniqueId:(UInt256)sourceIdentityUniqueId
+                                                               forAccount:(DSAccount *)account
+                                                                  onChain:(DSChain *)chain;
 
 //The extended public key will be saved to disk (storeExternalDerivationPathExtendedPublicKeyToKeyChain call needed)
-+ (instancetype)externalDerivationPathWithExtendedPublicKey:(OpaqueKey *)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId onChain:(DSChain *)chain;
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(DMaybeOpaqueKey *)extendedPublicKey
+                            withDestinationIdentityUniqueId:(UInt256)destinationIdentityUniqueId
+                                     sourceIdentityUniqueId:(UInt256)sourceIdentityUniqueId
+                                                    onChain:(DSChain *)chain;
 
 //The extended public key will be loaded from disk
-+ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString *)extendedPublicKeyUniqueId withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId onChain:(DSChain *)chain;
++ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString *)extendedPublicKeyUniqueId
+                                    withDestinationIdentityUniqueId:(UInt256)destinationIdentityUniqueId
+                                             sourceIdentityUniqueId:(UInt256)sourceIdentityUniqueId
+                                                            onChain:(DSChain *)chain;
 
 // returns the first unused external address
 @property (nonatomic, readonly, nullable) NSString *receiveAddress;
@@ -47,14 +52,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError *_Nullable *_Nullable)error;
 
-- (NSString *_Nullable)privateKeyStringAtIndex:(uint32_t)n fromSeed:(NSData *)seed;
-- (NSArray *_Nullable)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed;
-- (NSArray *_Nullable)privateKeys:(NSArray *)n fromSeed:(NSData *)seed;
-
 - (NSData *_Nullable)publicKeyDataAtIndex:(uint32_t)n;
 
-// gets an addess at an index one level down based on bip32
-- (NSString *)addressAtIndex:(uint32_t)index;
+//// gets an addess at an index one level down based on bip32
+//- (NSString *)addressAtIndex:(uint32_t)index;
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
 

@@ -18,12 +18,13 @@
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DPContract.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSDocumentTransition.h"
+#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPlatformQuery.h"
 #import "DSPlatformRootMerkleTree.h"
-#import "DSQuorumEntry.h"
 #import "DSTransition.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
@@ -452,7 +453,11 @@
     return [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:metaData query:self.query onChain:self.chain error:error];
 }
 
-+ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query onChain:(DSChain *)chain error:(NSError **)error {
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof
+                               withMetadata:(ResponseMetadata *)metaData
+                                      query:(DSPlatformQuery *)query
+                                    onChain:(DSChain *)chain
+                                      error:(NSError **)error {
     NSData *quorumHashData = proof.signatureLlmqHash;
     if (!quorumHashData) {
         *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no quorum hash data"];
@@ -461,19 +466,29 @@
     if (uint256_is_zero(quorumHash)) {
         *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an empty quorum hash"];
     }
-    DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
-    if (quorumEntry && quorumEntry.verified) {
-        return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:quorum_type_for_platform(chain.chainType) error:error];
+    DLLMQEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
+    
+    if (quorumEntry && quorumEntry->verified) {
+        DLLMQType *llmq_type = dash_spv_crypto_network_chain_type_ChainType_platform_type(chain.chainType);
+        return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:llmq_type onChain:chain error:error];
     } else if (quorumEntry) {
         *error = [NSError errorWithCode:400 descriptionKey:DSLocalizedString(@"Quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash))];
-        DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
+        char *quorumHash = DLLMQEntryHashHex(quorumEntry);
+        DSLog(@"quorum entry %s found but is not yet verified",  quorumHash);
+        str_destroy(quorumHash);
     } else {
         DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
     }
     return nil;
 }
 
-+ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType error:(NSError **)error {
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof
+                               withMetadata:(ResponseMetadata *)metaData
+                                      query:(DSPlatformQuery *)query
+                             forQuorumEntry:(DLLMQEntry *)quorumEntry
+                                 quorumType:(DLLMQType *)quorumType
+                                    onChain:(DSChain *)chain
+                                      error:(NSError **)error {
     NSData *signatureData = proof.signature;
     if (!signatureData) {
         *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no signature data"];
@@ -572,7 +587,7 @@
 //    [stateData appendInt64:metaData.height - 1];
 //    [stateData appendUInt256:stateHash];
 //    UInt256 stateMessageHash = [stateData SHA256];
-//    BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry quorumType:quorumType];
+//    BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry quorumType:quorumType onChain:chain];
 //    if (!signatureVerified) {
 //        *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned an empty or wrongly sized signature"];
 //        DSLog(@"unable to verify platform signature");
@@ -597,27 +612,34 @@
 //    return elementsDictionary;
 }
 
-+ (UInt256)requestIdForHeight:(int64_t)height {
-    NSMutableData *data = [NSMutableData data];
-    [data appendBytes:@"dpsvote".UTF8String length:7];
-    [data appendUInt64:height];
-    return [data SHA256];
-}
+//+ (UInt256)requestIdForHeight:(int64_t)height {
+//    NSMutableData *data = [NSMutableData data];
+//    [data appendBytes:@"dpsvote".UTF8String length:7];
+//    [data appendUInt64:height];
+//    return [data SHA256];
+//}
+//
+//+ (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DLLMQType)quorumType forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
+//    UInt256 requestId = [self requestIdForHeight:height];
+//    NSMutableData *data = [NSMutableData data];
+//    [data appendUInt8:quorumType];
+//    [data appendUInt256:quorumEntry.quorumHash];
+//    [data appendUInt256:uint256_reverse(requestId)];
+//    [data appendUInt256:uint256_reverse(stateMessageHash)];
+//    return [data SHA256_2];
+//}
 
-+ (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
-    UInt256 requestId = [self requestIdForHeight:height];
-    NSMutableData *data = [NSMutableData data];
-    [data appendUInt8:quorumType];
-    [data appendUInt256:quorumEntry.quorumHash];
-    [data appendUInt256:uint256_reverse(requestId)];
-    [data appendUInt256:uint256_reverse(stateMessageHash)];
-    return [data SHA256_2];
++ (BOOL)verifyStateSignature:(UInt768)signature
+         forStateMessageHash:(UInt256)stateMessageHash
+                      height:(int64_t)height
+               againstQuorum:(DLLMQEntry *)quorumEntry
+                  quorumType:(DLLMQType)quorumType
+                     onChain:(DSChain *)chain {
+    u256 *state_msg_hash = Arr_u8_32_ctor(32, stateMessageHash.u8);
+    u768 *sig = Arr_u8_96_ctor(32, signature.u8);
+    u256 *sign_id = dash_spv_crypto_llmq_entry_LLMQEntry_platform_sign_id(quorumEntry, (uint32_t) height, state_msg_hash);
+    bool verified = DLLMQEntryVerifySignature(quorumEntry, sign_id, sig);
+    return verified;
 }
-
-+ (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry quorumType:(LLMQType)quorumType {
-    UInt256 signId = [self signIDForQuorumEntry:quorumEntry quorumType:quorumType forStateMessageHash:stateMessageHash height:height];
-    return key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, signature.u8);
-}
-
 
 @end

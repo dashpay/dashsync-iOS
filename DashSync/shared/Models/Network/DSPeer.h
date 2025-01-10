@@ -28,8 +28,6 @@
 
 #import "BigIntTypes.h"
 #import "DSChain.h"
-//#import "DSGovernanceHashesRequest.h"
-//#import "DSGovernanceSyncRequest.h"
 #import "DSMessageRequest.h"
 #import <Foundation/Foundation.h>
 
@@ -179,7 +177,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interruptedByDisconnect);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSBlock, DSChain, DSSpork, DSGovernanceObject, DSGovernanceVote, DSTransactionLockVote, DSInstantSendTransactionLock, DSChainLock;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSBlock, DSChain, DSSpork, DSGovernanceObject, DSGovernanceVote, DSTransactionLockVote, DSInstantSendTransactionLock, DSChainLock, DSGovernanceSyncRequest, DSGovernanceHashesRequest;
 
 @protocol DSPeerDelegate <NSObject>
 @required
@@ -248,7 +246,7 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 
 @end
 
-typedef NS_ENUM(NSUInteger, DSPeerStatus)
+typedef NS_ENUM(NSInteger, DSPeerStatus)
 {
     DSPeerStatus_Unknown = -1,
     DSPeerStatus_Disconnected = 0,
@@ -257,14 +255,13 @@ typedef NS_ENUM(NSUInteger, DSPeerStatus)
     DSPeerStatus_Banned
 };
 
-typedef NS_ENUM(NSUInteger, DSPeerType)
+typedef NS_ENUM(NSInteger, DSPeerType)
 {
     DSPeerType_Unknown = -1,
     DSPeerType_FullNode = 0,
     DSPeerType_MasterNode
 };
 
-@class DSGovernanceSyncRequest, DSGovernanceHashesRequest;
 
 @interface DSPeer : NSObject <NSStreamDelegate>
 
@@ -308,11 +305,11 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 @property (nonatomic, readonly) DSChain *chain;
 
 + (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain *)chain;
-+ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry;
+//+ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry;
 + (instancetype)peerWithHost:(NSString *)host onChain:(DSChain *)chain;
 
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain *)chain;
-- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry;
+//- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry;
 - (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain *)chain timestamp:(NSTimeInterval)timestamp
                        services:(uint64_t)services;
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain *)chain;

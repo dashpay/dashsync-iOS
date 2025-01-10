@@ -1,7 +1,7 @@
 def common_pods
 #  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :branch => 'fix/core-20-test-additional'
-#  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => '7dda9489a1d23221032e2b050c31a317a6e95631'
-#  pod 'DashSharedCore', :path => '../../dash-shared-core/'
+#  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => 'd3a5346707d3b63152e8958e39d965d98caead1e'
+  pod 'DashSharedCore', :path => '../../dash-shared-core-ferment/'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.14.3'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'

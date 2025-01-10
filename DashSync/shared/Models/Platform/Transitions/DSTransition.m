@@ -7,8 +7,8 @@
 
 #import "DSTransition.h"
 #import "BigIntTypes.h"
-#import "DSBlockchainIdentity.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSIdentity.h"
+#import "DSIdentityRegistrationTransition.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSKeyManager.h"
 #import "DSTransition+Protected.h"
@@ -21,7 +21,7 @@
 
 @interface DSTransition ()
 
-@property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction;
+@property (nonatomic, strong) DSIdentityRegistrationTransition *identityRegistrationTransaction;
 
 @end
 
@@ -43,34 +43,36 @@
     if (!(self = [self initOnChain:chain])) return nil;
     NSError *error = nil;
     _keyValueDictionary = [data ds_decodeCborError:&error];
-    if (error || !_keyValueDictionary) {
-        return nil;
-    }
+    if (error || !_keyValueDictionary) return nil;
     [self applyKeyValueDictionary:_keyValueDictionary];
     return self;
 }
 
-- (instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *_Nonnull)chain {
+- (instancetype)initWithTransitionVersion:(uint16_t)version identityUniqueId:(UInt256)identityUniqueId onChain:(DSChain *_Nonnull)chain {
     NSParameterAssert(chain);
 
     if (!(self = [self initOnChain:chain])) return nil;
     self.type = DSTransitionType_Documents;
     self.version = version;
-    self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
+    self.identityUniqueId = identityUniqueId;
     return self;
 }
 
-- (BOOL)checkTransitionSignature:(OpaqueKey *)key {
+- (BOOL)checkTransitionSignature:(DOpaqueKey *)key {
     return [DSKeyManager verifyMessageDigest:key digest:[self serializedBaseDataHash].UInt256 signature:self.signatureData];
 }
 
-- (BOOL)checkTransitionSignedByBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    return [blockchainIdentity verifySignature:self.signatureData ofType:KeyKind_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
+- (BOOL)checkTransitionSignedByIdentity:(DSIdentity *)identity {
+    return [identity verifySignature:self.signatureData
+                              ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                    forMessageDigest:[self serializedBaseDataHash].UInt256];
 }
 
-- (void)signWithKey:(OpaqueKey *)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)signWithKey:(DMaybeOpaqueKey *)privateKey
+            atIndex:(uint32_t)index
+       fromIdentity:(DSIdentity *)identity {
     NSParameterAssert(privateKey);
-    if ([self isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+    if ([self isKindOfClass:[DSIdentityRegistrationTransition class]]) {
         NSAssert(index == UINT32_MAX, @"index must not exist");
     } else {
         NSAssert(index != UINT32_MAX, @"index must exist");
@@ -78,8 +80,9 @@
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
 //    DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
 //    DSLogPrivate(@"Signing %@ with key %@", [self serializedBaseDataHash].hexString, privateKey.publicKeyData.hexString);
-    self.signatureType = (KeyKind) privateKey->tag;
-    self.signatureData = [DSKeyManager signMesasageDigest:privateKey digest:[self serializedBaseDataHash].UInt256];
+//    dash_spv_crypto_keys_key_OpaqueKey_kind(privateKey);
+//    self.signatureType = (KeyKind) privateKey->tag;
+    self.signatureData = [DSKeyManager signMesasageDigest:privateKey->ok digest:[self serializedBaseDataHash].UInt256];
     self.signaturePublicKeyId = index;
     self.transitionHash = self.data.SHA256;
 }

@@ -46,8 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSData *)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight;
 
-- (void)loadBlockchainIdentities;
-
 @end
 
 NS_ASSUME_NONNULL_END

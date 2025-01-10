@@ -6,7 +6,7 @@
 //
 //
 
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN

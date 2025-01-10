@@ -23,21 +23,24 @@
 //  THE SOFTWARE.
 
 #import "BigIntTypes.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSQuorumEntry, DSMasternodeList;
+@class DSChain;
 
 @interface DSChainLock : NSObject
 
+@property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) UInt256 requestID;
 @property (nonatomic, readonly) UInt768 signature;
 @property (nonatomic, readonly) BOOL signatureVerified;
 @property (nonatomic, readonly) BOOL saved;
-@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
+//@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
+@property (nonatomic, readonly) u384 *intendedQuorumPublicKey;
 
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain;
@@ -48,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList *_Nullable *_Nullable)returnMasternodeList;
+//- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList *_Nullable *_Nullable)returnMasternodeList;
 
 - (BOOL)verifySignature;
 

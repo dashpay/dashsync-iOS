@@ -28,10 +28,11 @@
 
 #import "DSPaymentRequest.h"
 #import "DSAccount.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
@@ -97,9 +98,11 @@
     NSURL *url = [NSURL URLWithString:s];
 
     if (!url || !url.scheme) {
-        if ([DSKeyManager isValidDashAddress:s forChain:self.chain] ||
-            [s isValidDashPrivateKeyOnChain:self.chain] ||
-            [DSKeyManager isValidDashBIP38Key:s]) {
+        
+        if (dash_spv_crypto_bip_bip38_is_valid_payment_request_address((char *)[s UTF8String], self.chain.chainType)) {
+//        if ([DSKeyManager isValidDashAddress:s forChain:self.chain] ||
+//            [s isValidDashPrivateKeyOnChain:self.chain] ||
+//            [DSKeyManager isValidDashBIP38Key:s]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
         }
@@ -257,11 +260,13 @@
     }
 }
 
-- (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account inContext:(NSManagedObjectContext *)context {
+- (BOOL)isValidAsDashpayPaymentRequestForIdentity:(DSIdentity *)identity
+                                                  onAccount:(DSAccount *)account
+                                                  inContext:(NSManagedObjectContext *)context {
     if ([self.scheme isEqualToString:@"dash"]) {
         __block DSIncomingFundsDerivationPath *friendshipDerivationPath = nil;
         [context performBlockAndWait:^{
-            DSDashpayUserEntity *dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+            DSDashpayUserEntity *dashpayUserEntity = [identity matchingDashpayUserInContext:context];
 
             for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
                 if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
@@ -289,8 +294,11 @@
     }
 }
 
-- (NSString *)paymentAddressForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue inContext:(NSManagedObjectContext *)context {
-    if (!blockchainIdentity || !self.dashpayUsername) {
+- (NSString *)paymentAddressForIdentity:(DSIdentity *)identity
+                                        onAccount:(DSAccount *)account
+                  fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue
+                                        inContext:(NSManagedObjectContext *)context {
+    if (!identity || !self.dashpayUsername) {
         if (fallbackToPaymentAddressIfIssue) {
             return [self paymentAddress];
         } else {
@@ -299,7 +307,7 @@
     }
     __block DSIncomingFundsDerivationPath *friendshipDerivationPath = nil;
     [context performBlockAndWait:^{
-        DSDashpayUserEntity *dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+        DSDashpayUserEntity *dashpayUserEntity = [identity matchingDashpayUserInContext:context];
 
         for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
             if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
@@ -319,13 +327,15 @@
     return friendshipDerivationPath.receiveAddress;
 }
 
-- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account inContext:(NSManagedObjectContext *)context {
-    if (!blockchainIdentity || !self.dashpayUsername) {
+- (DSPaymentProtocolRequest *)protocolRequestForIdentity:(DSIdentity *)identity
+                                                         onAccount:(DSAccount *)account
+                                                         inContext:(NSManagedObjectContext *)context {
+    if (!identity || !self.dashpayUsername) {
         return [self protocolRequest];
     }
     __block DSIncomingFundsDerivationPath *friendshipDerivationPath = nil;
     [context performBlockAndWait:^{
-        DSDashpayUserEntity *dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+        DSDashpayUserEntity *dashpayUserEntity = [identity matchingDashpayUserInContext:context];
 
         for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
             if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {

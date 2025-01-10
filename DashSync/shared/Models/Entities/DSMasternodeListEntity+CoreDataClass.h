@@ -7,18 +7,22 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSMerkleBlockEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSMasternodeList, DSSimplifiedMasternodeEntry, DSQuorumEntry, DSChainEntity;
+@class DSMerkleBlockEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListEntity : NSManagedObject
 
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries;
+- (DArcMasternodeList *)masternodeListWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+//- (DArcMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(DMasternodeEntryMap *)simplifiedMasternodeEntries
+//                                                    quorumEntryPool:(DLLMQMap *)quorumEntries
+//                                              withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity;
 

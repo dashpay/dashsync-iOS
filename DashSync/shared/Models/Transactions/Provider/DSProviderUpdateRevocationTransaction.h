@@ -30,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateInputsHash;
 
-- (void)signPayloadWithKey:(OpaqueKey *_Nonnull)privateKey;
+- (void)signPayloadWithKey:(DOpaqueKey *_Nonnull)privateKey;
 
 - (BOOL)checkPayloadSignature;
 
-- (BOOL)checkPayloadSignature:(OpaqueKey *)publicKey;
+- (BOOL)checkPayloadSignature:(DOpaqueKey *)publicKey;
 
 
 @end

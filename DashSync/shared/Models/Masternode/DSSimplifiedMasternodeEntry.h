@@ -70,6 +70,6 @@
 - (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (void)setPlatformPing:(uint64_t)platformPing at:(NSDate *)time;
 - (void)savePlatformPingInfoInContext:(NSManagedObjectContext *)context;
-- (void)mergedWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight;
+//- (void)mergedWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight;
 
 @end

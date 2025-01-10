@@ -14,21 +14,21 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-#import "BigIntTypes.h"
-#import "dash_shared_core.h"
-#import <Foundation/Foundation.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSQuorumSnapshot : NSObject
-
-@property (nonatomic) NSData *memberList;
-@property (nonatomic) NSArray<NSNumber *> *skipList;
-@property (nonatomic) LLMQSnapshotSkipMode skipListMode;
-
-@property (nonatomic) UInt256 blockHash;
-
-@end
-
-NS_ASSUME_NONNULL_END
+//
+//#import "BigIntTypes.h"
+//#import "dash_shared_core.h"
+//#import <Foundation/Foundation.h>
+//
+//NS_ASSUME_NONNULL_BEGIN
+//
+//@interface DSQuorumSnapshot : NSObject
+//
+//@property (nonatomic) NSData *memberList;
+//@property (nonatomic) NSArray<NSNumber *> *skipList;
+//@property (nonatomic) dash_spv_masternode_processor_common_llmq_snapshot_skip_mode_LLMQSnapshotSkipMode skipListMode;
+//
+//@property (nonatomic) UInt256 blockHash;
+//
+//@end
+//
+//NS_ASSUME_NONNULL_END

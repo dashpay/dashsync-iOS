@@ -17,10 +17,9 @@
 
 #import "DSCreateInvitationViewController.h"
 #import "DSAccountChooserViewController.h"
-#import "DSBlockchainIdentity.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainInvitation.h"
-#import "DSCreditFundingTransaction.h"
+#import "DSIdentity.h"
+#import "DSIdentityRegistrationTransition.h"
+#import "DSInvitation.h"
 #import "DSWalletChooserViewController.h"
 
 @interface DSCreateInvitationViewController ()
@@ -47,7 +46,7 @@
         self.wallet = self.fundingAccount.wallet;
     }
 
-    self.indexLabel.text = [NSString stringWithFormat:@"%d", [self.wallet unusedBlockchainInvitationIndex]];
+    self.indexLabel.text = [NSString stringWithFormat:@"%d", [self.wallet unusedInvitationIndex]];
 
     self.topupAmountLabel.text = [NSString stringWithFormat:@"%d", 1000000]; //0.01 Dash
 }
@@ -119,18 +118,18 @@
         [self raiseIssue:@"No funding account with balance" message:@"To create an invitation you must have a wallet with enough balance to pay the minimum credit fee"];
         return;
     }
-    DSBlockchainInvitation *blockchainInvitation = [self.wallet createBlockchainInvitationUsingDerivationIndex:[self.indexLabel.text intValue]];
-    DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
-    [blockchainInvitation generateBlockchainInvitationsExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
+    DSInvitation *invitation = [self.wallet createInvitationUsingDerivationIndex:[self.indexLabel.text intValue]];
+    DSIdentityRegistrationStep steps = DSIdentityRegistrationStep_L1Steps;
+    [invitation generateInvitationsExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
                                                                          completion:^(BOOL registered) {
-        [blockchainInvitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?" completion:^(BOOL success, BOOL cancelled) {
+        [invitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?" completion:^(BOOL success, BOOL cancelled) {
             if (success && !cancelled) {
-                [blockchainInvitation.identity registerOnNetwork:steps
+                [invitation.identity registerOnNetwork:steps
                                               withFundingAccount:self.fundingAccount
                                                   forTopupAmount:topupAmount
                                                        pinPrompt:@"Enter your PIN?"
-                                                  stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
-                                                      completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                                                  stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
+                                                      completion:^(DSIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
                     if (error) {
                         [self raiseIssue:@"Error" message:error.localizedDescription];
                         return;

@@ -7,12 +7,12 @@
 //
 
 #import <DashSync/DashSync.h>
+#import "dash_shared_core.h"
 #import <UIKit/UIKit.h>
 
 @interface DSMasternodeViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
 @property (nonatomic, strong) DSChain *chain;
-// could be moved into rust lib [blockHash, masternodeMerkleRoot,]
-@property (nonatomic, strong) DSMasternodeList *masternodeList;
+@property (nonatomic, assign) DArcMasternodeList *masternodeList;
 
 @end

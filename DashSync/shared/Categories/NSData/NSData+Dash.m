@@ -95,6 +95,7 @@ BOOL hasKeychainData(NSString *key, NSError **error) {
 }
 
 NSData *getKeychainData(NSString *key, NSError **error) {
+//    NSLog(@"getKeychainData: %@", key);
     NSDictionary *query = @{(__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrService: SEC_ATTR_SERVICE,
         (__bridge id)kSecAttrAccount: key,
@@ -119,6 +120,7 @@ BOOL setKeychainInt(int64_t i, NSString *key, BOOL authenticated) {
 }
 
 int64_t getKeychainInt(NSString *key, NSError **error) {
+//    NSLog(@"getKeychainInt: %@", key);
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
 
@@ -137,6 +139,7 @@ BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated) {
 }
 
 NSString *getKeychainString(NSString *key, NSError **error) {
+//    NSLog(@"getKeychainString: %@", key);
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
 
@@ -155,6 +158,7 @@ BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated) {
 }
 
 NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error) {
+//    NSLog(@"getKeychainDict: %@", key);
     //@autoreleasepool {
     NSData *d = getKeychainData(key, error);
     if (d == nil) return nil;
@@ -180,6 +184,7 @@ BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated) {
 }
 
 NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error) {
+//    NSLog(@"getKeychainArray: %@", key);
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
         if (d == nil) return nil;
@@ -197,6 +202,7 @@ NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error) {
 }
 
 NSOrderedSet *getKeychainOrderedSet(NSString *key, NSError **error) {
+//    NSLog(@"getKeychainOrderedSet: %@", key);
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
 

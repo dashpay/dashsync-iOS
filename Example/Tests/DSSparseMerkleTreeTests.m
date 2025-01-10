@@ -11,7 +11,7 @@
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DSMerkleTree.h"
 #import "DSPlatformRootMerkleTree.h"
-#import "DSQuorumEntry.h"
+//#import "DSQuorumEntry.h"
 #import "DSSparseMerkleTree.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
@@ -433,7 +433,7 @@
     NSData *rootHash = [proofData executeProofReturnElementDictionary:&elementDictionary query:nil decode:TRUE usesVersion:TRUE error:&error];
     XCTAssertNil(error);
     NSString *expectedRootHashString = @"6ef4c210cb5e919d9dcd894bc841506f93ef3f8638eab452502050b04ee079fb";
-    NSDictionary *identityDictionary = elementDictionary.allValues[0];
+//    NSDictionary *identityDictionary = elementDictionary.allValues[0];
     XCTAssertEqualObjects(rootHash.hexString, expectedRootHashString);
 }
 

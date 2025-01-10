@@ -18,6 +18,7 @@
 #import "DSFullBlock.h"
 #import "DSBlock+Protected.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainLock.h"
 #import "DSKeyManager.h"
 #import "DSTransactionFactory.h"

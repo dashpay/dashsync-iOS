@@ -23,6 +23,7 @@
     return [NSFetchRequest fetchRequestWithEntityName:@"DSAssetLockTransactionEntity"];
 }
 
+@dynamic identity;
 @dynamic creditOutputs;
 
 @end

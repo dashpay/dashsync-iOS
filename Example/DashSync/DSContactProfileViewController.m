@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = self.blockchainIdentity.currentDashpayUsername;
+    self.title = self.identity.currentDashpayUsername;
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
@@ -96,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = @"Enter Display Name";
-        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.displayName;
+        cellModel.text = self.identity.matchingDashpayUserInViewContext.displayName;
         __weak typeof(self) weakSelf = self;
         cellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -115,8 +115,8 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
-                                          self.blockchainIdentity.currentDashpayUsername ? self.blockchainIdentity.currentDashpayUsername : @"default"];
-        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath;
+                                          self.identity.currentDashpayUsername ? self.identity.currentDashpayUsername : @"default"];
+        cellModel.text = self.identity.matchingDashpayUserInViewContext.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -134,15 +134,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (TextViewFormCellModel *)aboutMeCellModel {
     if (!_aboutMeCellModel) {
         TextViewFormCellModel *cellModel = [[TextViewFormCellModel alloc] initWithTitle:@"About me"];
-        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.currentDashpayUsername];
-        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
+        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.identity.currentDashpayUsername];
+        cellModel.text = self.identity.matchingDashpayUserInViewContext.publicMessage;
         _aboutMeCellModel = cellModel;
     }
     return _aboutMeCellModel;
 }
 
 - (NSArray<BaseFormCellModel *> *)profileItems {
-    if (self.blockchainIdentity.currentDashpayUsername) {
+    if (self.identity.currentDashpayUsername) {
         return @[self.displayNameCellModel, self.avatarCellModel, self.aboutMeCellModel];
     } else {
         //show username model if no username is set
@@ -175,7 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateUsername {
     if (![self.usernameCellModel.text isEqualToString:@""]) {
-        [self.blockchainIdentity addDashpayUsername:self.usernameCellModel.text save:YES];
+        [self.identity addDashpayUsername:self.usernameCellModel.text save:YES];
         [self.formTableViewController.tableView reloadData];
     }
 }
@@ -189,7 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.view.userInteractionEnabled = NO;
     // TODO: show HUD
-    BOOL isCreate = !self.blockchainIdentity.matchingDashpayUserInViewContext;
+    BOOL isCreate = !self.identity.matchingDashpayUserInViewContext;
     NSString *displayName = self.displayNameCellModel.text.length > 0 ? self.displayNameCellModel.text : self.displayNameCellModel.placeholder;
     NSString *aboutMe = self.aboutMeCellModel.text.length > 0 ? self.aboutMeCellModel.text : self.aboutMeCellModel.placeholder;
     NSString *avatarURLString = self.avatarCellModel.text.length > 0 ? self.avatarCellModel.text : self.avatarCellModel.placeholder;
@@ -199,9 +199,9 @@ NS_ASSUME_NONNULL_BEGIN
                                                                  completionHandler:^(NSData *_Nullable data, NSURLResponse *_Nullable response, NSError *_Nullable error) {
                                                                      if (!error) {
                                                                          UIImage *image = [UIImage imageWithData:data];
-                                                                         [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName publicMessage:aboutMe avatarImage:image avatarData:data avatarURLString:avatarURLString];
+                                                                         [self.identity updateDashpayProfileWithDisplayName:displayName publicMessage:aboutMe avatarImage:image avatarData:data avatarURLString:avatarURLString];
                                                                          __weak typeof(self) weakSelf = self;
-                                                                         [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {
+                                                                         [self.identity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {
                                                                              __strong typeof(weakSelf) strongSelf = weakSelf;
                                                                              if (!strongSelf) {
                                                                                  return;

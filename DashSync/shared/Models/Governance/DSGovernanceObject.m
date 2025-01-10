@@ -7,6 +7,7 @@
 
 #import "DSGovernanceObject.h"
 #import "DSAccount.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
@@ -299,7 +300,9 @@
     if (!_knownGovernanceVoteHashesForExistingGovernanceVotes) _knownGovernanceVoteHashesForExistingGovernanceVotes = [NSMutableOrderedSet orderedSet];
     for (DSGovernanceVoteEntity *governanceVoteEntity in governanceVoteEntities) {
         DSGovernanceVote *governanceVote = [governanceVoteEntity governanceVote];
-        DSLog(@"%@ : %@ -> %d/%d", self.identifier, [NSData dataWithUInt256:governanceVote.masternode.simplifiedMasternodeEntryHash].shortHexString, governanceVote.outcome, governanceVote.signal);
+        
+        UInt256 entryHash = u256_cast(governanceVote.masternode->entry_hash);
+        DSLog(@"%@ : %@ -> %d/%d", self.identifier, [NSData dataWithUInt256:entryHash].shortHexString, governanceVote.outcome, governanceVote.signal);
         [_knownGovernanceVoteHashesForExistingGovernanceVotes addObject:[NSData dataWithUInt256:governanceVote.governanceVoteHash]];
         [_governanceVotes addObject:governanceVote];
     }

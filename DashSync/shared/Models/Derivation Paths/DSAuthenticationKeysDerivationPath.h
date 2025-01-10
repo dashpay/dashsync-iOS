@@ -20,16 +20,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet *)wallet;
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet *)wallet;
 + (instancetype)platformNodeKeysDerivationPathForWallet:(DSWallet *)wallet;
-+ (instancetype)blockchainIdentitiesBLSKeysDerivationPathForWallet:(DSWallet *)wallet;
-+ (instancetype)blockchainIdentitiesECDSAKeysDerivationPathForWallet:(DSWallet *)wallet;
++ (instancetype)identitiesBLSKeysDerivationPathForWallet:(DSWallet *)wallet;
++ (instancetype)identitiesECDSAKeysDerivationPathForWallet:(DSWallet *)wallet;
 
 - (NSData *)firstUnusedPublicKey;
-- (OpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed;
-- (OpaqueKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed;
-- (OpaqueKey *)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData *)seed;
 - (NSData *)publicKeyDataForHash160:(UInt160)hash160;
 
-- (OpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath;
+- (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

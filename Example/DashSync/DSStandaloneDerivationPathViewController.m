@@ -61,7 +61,7 @@
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     DSStandaloneDerivationPathTableViewCell *walletCell = (DSStandaloneDerivationPathTableViewCell *)cell;
     DSDerivationPath *derivationPath = [[self.chain standaloneDerivationPaths] objectAtIndex:indexPath.row];
-    walletCell.xPublicKeyLabel.text = [derivationPath serializedExtendedPublicKey];
+    walletCell.xPublicKeyLabel.text = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {

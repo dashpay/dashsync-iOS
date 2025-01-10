@@ -25,6 +25,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint8_t specialTransactionVersion;
 @property (nonatomic, strong) NSMutableArray<DSTransactionOutput *> *creditOutputs;
+@property (nonatomic, readonly) UInt160 creditBurnPublicKeyHash;
+@property (nonatomic, readonly) DSUTXO lockedOutpoint;
+
+- (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
+- (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
+
+- (void)markInvitationAddressAsUsedInWallet:(DSWallet *)wallet;
+- (void)markAddressAsUsedInWallet:(DSWallet *)wallet;
 
 @end
 

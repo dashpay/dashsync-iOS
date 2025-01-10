@@ -62,7 +62,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 //- (void)sendDocument:(DPDocument *)document
-//             forUser:(DSBlockchainIdentity*)blockchainIdentity
+//             forUser:(DSIdentity*)identity
 //            contract:(DPContract *)contract
 //          completion:(void (^)(NSError *_Nullable error))completion {
 //    NSParameterAssert(document);
@@ -72,56 +72,36 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 //
 //    DSDashPlatform *platform = [DSDashPlatform sharedInstanceForChain:self.chain];
 //
-//    DSDocumentTransition *transition = [blockchainIdentity documentTransition];
+//    DSDocumentTransition *transition = [identity documentTransition];
 //
 //    DPSTPacket *stPacket = [platform.stPacketFactory packetWithContractId:contract.identifier documents:documents];
-//    [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
+//    [self sendPacket:stPacket forUser:identity completion:completion];
 //}
 
 - (void)sendDocument:(DPDocument *)document
-         forIdentity:(DSBlockchainIdentity *)blockchainIdentity
+         forIdentity:(DSIdentity *)identity
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(document);
     NSParameterAssert(contract);
 
-    DSDocumentTransition *documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
-
-    __weak typeof(self) weakSelf = self;
-    [blockchainIdentity signStateTransition:documentTransition
-                                 completion:^(BOOL success) {
-                                     __strong typeof(weakSelf) strongSelf = weakSelf;
-                                     if (!strongSelf) {
-                                         if (completion) {
-                                             completion([NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]);
-                                         }
-                                         return;
-                                     }
-
-                                     if (success) {
-                                         [strongSelf publishTransition:documentTransition
-                                             success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-                                                 if (completion) {
-                                                     completion(nil);
-                                                 }
-                                             }
-                                             failure:^(NSError *_Nonnull error) {
-                                                 if (completion) {
-                                                     completion(error);
-                                                 }
-                                             }];
-                                     } else {
-                                         if (completion) {
-                                             NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain
-                                                                                  code:DSDAPIClientErrorCodeSignTransitionFailed
-                                                                              userInfo:nil];
-                                             completion(error);
-                                         }
-                                     }
-                                 }];
+    DSDocumentTransition *documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 identityUniqueId:identity.uniqueID onChain:self.chain];
+    if ([identity signStateTransition:documentTransition]) {
+        [self publishTransition:documentTransition
+            success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
+                if (completion) completion(nil);
+            }
+            failure:^(NSError *_Nonnull error) {
+                if (completion) completion(error);
+            }];
+    } else if (completion) {
+        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
+                                       code:DSDAPIClientErrorCodeSignTransitionFailed
+                                   userInfo:nil]);
+    }
 }
 
-- (void)getAllStateTransitionsForUser:(DSBlockchainIdentity *)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion {
+- (void)getAllStateTransitionsForUser:(DSIdentity *)identity completion:(void (^)(NSError *_Nullable error))completion {
     //    DSDAPINetworkService * service = self.DAPINetworkService;
     //    if (!service) {
     //        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
@@ -129,11 +109,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     //                                   userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
     //        return;
     //    }
-    //    [service getUserById:uint256_reverse_hex(blockchainIdentity.registrationTransitionHash) success:^(NSDictionary * _Nonnull blockchainIdentityDictionary) {
-    //        if ([blockchainIdentityDictionary objectForKey:@"subtx"] && [[blockchainIdentityDictionary objectForKey:@"subtx"] isKindOfClass:[NSArray class]]) {
-    //            NSArray * subscriptionTransactions = [blockchainIdentityDictionary objectForKey:@"subtx"];
+    //    [service getUserById:uint256_reverse_hex(identity.registrationTransitionHash) success:^(NSDictionary * _Nonnull identityDictionary) {
+    //        if ([identityDictionary objectForKey:@"subtx"] && [[identityDictionary objectForKey:@"subtx"] isKindOfClass:[NSArray class]]) {
+    //            NSArray * subscriptionTransactions = [identityDictionary objectForKey:@"subtx"];
     //            NSMutableArray * oldSubscriptionTransactionHashes = [NSMutableArray array];
-    //            for (DSTransaction * transaction in blockchainIdentity.allTransitions) {
+    //            for (DSTransaction * transaction in identity.allTransitions) {
     //                [oldSubscriptionTransactionHashes addObject:[NSData dataWithUInt256:transaction.txHash]];
     //            }
     //            NSMutableArray * novelSubscriptionTransactionHashes = [NSMutableArray array];
@@ -151,10 +131,10 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     //                        //this is a transition
     //                        NSString * extraPayload = tx[@"extraPayload"];
     //                        uint16_t version = [tx[@"version"] shortValue];
-    //                        DSTransition * transition = [[DSTransition alloc] initWithVersion:version payloadData:extraPayload.hexToData onChain:blockchainIdentity.wallet.chain];
+    //                        DSTransition * transition = [[DSTransition alloc] initWithVersion:version payloadData:extraPayload.hexToData onChain:identity.wallet.chain];
     //                        transition.blockHeight = [tx[@"blockheight"] unsignedIntValue];
-    //                        [blockchainIdentity.wallet.specialTransactionsHolder registerTransaction:transition];
-    //                        [blockchainIdentity updateWithTransition:transition save:TRUE];
+    //                        [identity.wallet.specialTransactionsHolder registerTransaction:transition];
+    //                        [identity updateWithTransition:transition save:TRUE];
     //                        if (completion) {
     //                            completion(nil);
     //                        }
@@ -179,44 +159,45 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 //check ping times of all DAPI nodes
-- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion {
-    dispatch_async(self.platformMetadataDispatchQueue, ^{
-        HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-        __block dispatch_group_t dispatch_group = dispatch_group_create();
-        __block NSMutableDictionary<NSData *, NSError *> *errorDictionary = [NSMutableDictionary dictionary];
-        __block NSMutableDictionary<NSData *, NSNumber *> *pingTimeDictionary = [NSMutableDictionary dictionary];
-        dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(32);
-
-        for (DSSimplifiedMasternodeEntry *masternode in masternodes) {
-            if (uint128_is_zero(masternode.address)) continue;
-            if (!masternode.isValid) continue;
-            dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
-            dispatch_group_enter(dispatch_group);
-            DSDAPICoreNetworkService *coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
-            __block NSDate *time = [NSDate date];
-            [coreNetworkService
-                getStatusWithCompletionQueue:self.platformMetadataDispatchQueue
-                success:^(NSDictionary *_Nonnull status) {
-                    NSTimeInterval platformPing = -[time timeIntervalSinceNow] * 1000;
-                    pingTimeDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = @(platformPing);
-                    [masternode setPlatformPing:platformPing at:[NSDate date]];
-                    dispatch_semaphore_signal(dispatchSemaphore);
-                    dispatch_group_leave(dispatch_group);
-                }
-                failure:^(NSError *_Nonnull error) {
-                    errorDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = error;
-                    dispatch_semaphore_signal(dispatchSemaphore);
-                    dispatch_group_leave(dispatch_group);
-                }];
-        }
-
-        dispatch_group_notify(dispatch_group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            if (completion) {
-                completion(pingTimeDictionary, errorDictionary);
-            }
-        });
-    });
-}
+//- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes
+//                          completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion {
+//    dispatch_async(self.platformMetadataDispatchQueue, ^{
+//        HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+//        __block dispatch_group_t dispatch_group = dispatch_group_create();
+//        __block NSMutableDictionary<NSData *, NSError *> *errorDictionary = [NSMutableDictionary dictionary];
+//        __block NSMutableDictionary<NSData *, NSNumber *> *pingTimeDictionary = [NSMutableDictionary dictionary];
+//        dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(32);
+//
+//        for (DSSimplifiedMasternodeEntry *masternode in masternodes) {
+//            if (uint128_is_zero(masternode.address)) continue;
+//            if (!masternode.isValid) continue;
+//            dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
+//            dispatch_group_enter(dispatch_group);
+//            DSDAPICoreNetworkService *coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
+//            __block NSDate *time = [NSDate date];
+//            [coreNetworkService
+//                getStatusWithCompletionQueue:self.platformMetadataDispatchQueue
+//                success:^(NSDictionary *_Nonnull status) {
+//                    NSTimeInterval platformPing = -[time timeIntervalSinceNow] * 1000;
+//                    pingTimeDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = @(platformPing);
+//                    [masternode setPlatformPing:platformPing at:[NSDate date]];
+//                    dispatch_semaphore_signal(dispatchSemaphore);
+//                    dispatch_group_leave(dispatch_group);
+//                }
+//                failure:^(NSError *_Nonnull error) {
+//                    errorDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = error;
+//                    dispatch_semaphore_signal(dispatchSemaphore);
+//                    dispatch_group_leave(dispatch_group);
+//                }];
+//        }
+//
+//        dispatch_group_notify(dispatch_group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+//            if (completion) {
+//                completion(pingTimeDictionary, errorDictionary);
+//            }
+//        });
+//    });
+//}
 
 #pragma mark - Peers
 
@@ -317,10 +298,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             completionQueue:completionQueue
                     success:success
                     failure:^(NSDictionary<NSNumber *, NSError *> *_Nonnull errorPerAttempt) {
-                        if (failure) {
-                            failure(errorPerAttempt[@(4)]);
-                        }
-                    }];
+        if (failure) failure(errorPerAttempt[@(4)]);
+    }];
 }
 
 - (void)publishTransition:(DSTransition *)transition
@@ -335,12 +314,19 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     DSDAPIPlatformNetworkService *service = self.DAPIPlatformNetworkService;
     if (!service) {
         NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
-        NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain
-                                             code:DSDAPIClientErrorCodeNoKnownDAPINodes
-                                         userInfo:@{NSLocalizedDescriptionKey: @"No known DAPI Nodes"}];
-        mErrorsPerAttempt[@(currentAttempt)] = error;
+        mErrorsPerAttempt[@(currentAttempt)] = [NSError errorWithDomain:DSDAPIClientErrorDomain
+                                                                   code:DSDAPIClientErrorCodeNoKnownDAPINodes
+                                                               userInfo:@{NSLocalizedDescriptionKey: @"No known DAPI Nodes"}];
         if (retryCount) {
-            [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt completionQueue:completionQueue success:success failure:failure];
+            [self publishTransition:transition
+                         retryCount:retryCount - 1
+                              delay:delay + delayIncrease
+                      delayIncrease:delayIncrease
+                     currentAttempt:currentAttempt + 1
+                      currentErrors:mErrorsPerAttempt
+                    completionQueue:completionQueue
+                            success:success
+                            failure:failure];
         } else if (failure) {
             failure([mErrorsPerAttempt copy]);
         }
@@ -351,21 +337,29 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                completionQueue:completionQueue
                        success:success
                        failure:^(NSError *_Nonnull error) {
-                           if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-                               [self removeDAPINodeByAddress:service.ipAddress];
-                           }
-                           NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
-                           if (error) {
-                               mErrorsPerAttempt[@(currentAttempt)] = error;
-                           }
-                           if (retryCount) {
-                               dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.coreNetworkingDispatchQueue, ^{
-                                   [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt completionQueue:completionQueue success:success failure:failure];
-                               });
-                           } else if (failure) {
-                               failure([mErrorsPerAttempt copy]);
-                           }
-                       }];
+        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+            [self removeDAPINodeByAddress:service.ipAddress];
+        }
+        NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
+        if (error) {
+            mErrorsPerAttempt[@(currentAttempt)] = error;
+        }
+        if (retryCount) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.coreNetworkingDispatchQueue, ^{
+                [self publishTransition:transition
+                             retryCount:retryCount - 1
+                                  delay:delay + delayIncrease
+                          delayIncrease:delayIncrease
+                         currentAttempt:currentAttempt + 1
+                          currentErrors:mErrorsPerAttempt
+                        completionQueue:completionQueue
+                                success:success
+                                failure:failure];
+            });
+        } else if (failure) {
+            failure([mErrorsPerAttempt copy]);
+        }
+    }];
 }
 
 

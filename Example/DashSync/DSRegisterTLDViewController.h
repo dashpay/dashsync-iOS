@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSRegisterTLDViewController : UIViewController
 
-@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nonatomic, strong) DSIdentity *identity;
 
 @end
 

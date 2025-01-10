@@ -28,11 +28,15 @@
 
 #import "DSAccount.h"
 #import "DSAddressEntity+CoreDataClass.h"
+#import "DSAssetLockTransaction.h"
 #import "DSAssetUnlockTransaction.h"
 #import "DSChain.h"
+#import "DSChain+Identity.h"
+#import "DSChain+Params.h"
+#import "DSChain+Transaction.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
-#import "DSCreditFundingTransaction.h"
 #import "DSIdentitiesManager.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager.h"
@@ -40,8 +44,6 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "DSTransactionInput.h"
-#import "DSTransactionOutput.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -54,8 +56,8 @@
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) BOOL confirmed;
-@property (nonatomic, strong) NSSet<DSBlockchainIdentity *> *sourceBlockchainIdentities;
-@property (nonatomic, strong) NSSet<DSBlockchainIdentity *> *destinationBlockchainIdentities;
+@property (nonatomic, strong) NSSet<DSIdentity *> *sourceIdentities;
+@property (nonatomic, strong) NSSet<DSIdentity *> *destinationIdentities;
 @property (nonatomic, strong) NSMutableArray<DSTransactionInput *> *mInputs;
 @property (nonatomic, strong) NSMutableArray<DSTransactionOutput *> *mOutputs;
 
@@ -69,9 +71,11 @@
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-+ (UInt256)devnetGenesisCoinbaseTxHash:(DevnetType)devnetType onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
++ (UInt256)devnetGenesisCoinbaseTxHash:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType
+                     onProtocolVersion:(uint32_t)protocolVersion
+                              forChain:(DSChain *)chain {
     DSTransaction *transaction = [[self alloc] initOnChain:chain];
-    NSData *coinbaseData = [DSKeyManager NSDataFrom:devnet_genesis_coinbase_message(devnetType, protocolVersion)];
+    NSData *coinbaseData = [DSKeyManager NSDataFrom:dash_spv_crypto_devnet_genesis_coinbase_message(devnetType, protocolVersion)];
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
     [transaction addOutputScript:[NSData dataWithUInt8:OP_RETURN] amount:chain.baseReward];
     return transaction.toData.SHA256_2;
@@ -94,8 +98,8 @@
     self.hasUnverifiedInstantSendLock = NO;
     _lockTime = TX_LOCKTIME;
     self.blockHeight = TX_UNCONFIRMED;
-    self.sourceBlockchainIdentities = [NSSet set];
-    self.destinationBlockchainIdentities = [NSSet set];
+    self.sourceIdentities = [NSSet set];
+    self.destinationIdentities = [NSSet set];
     return self;
 }
 
@@ -380,15 +384,15 @@
     }
 }
 
-- (BOOL)isCreditFundingTransaction {
-    for (DSTransactionOutput *output in self.outputs) {
-        NSData *script = output.outScript;
-        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            return YES;
-        }
-    }
-    return NO;
-}
+//- (BOOL)isCreditFundingTransaction {
+//    for (DSTransactionOutput *output in self.outputs) {
+//        NSData *script = output.outScript;
+//        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
+//            return YES;
+//        }
+//    }
+//    return NO;
+//}
 
 - (NSUInteger)hash {
     if (uint256_is_zero(_txHash)) return super.hash;
@@ -409,7 +413,7 @@
         NSArray<DSTransactionOutput *> *outputs = self.outputs;
         NSUInteger inputsCount = inputs.count;
         NSUInteger outputsCount = outputs.count;
-        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]] || [self isMemberOfClass:[DSAssetUnlockTransaction class]]) && subscriptIndex != NSNotFound;
+        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSAssetLockTransaction class]] || [self isMemberOfClass:[DSAssetUnlockTransaction class]]) && subscriptIndex != NSNotFound;
         NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:inputsCount] + [NSMutableData sizeOfVarInt:outputsCount] + TX_INPUT_SIZE * inputsCount + TX_OUTPUT_SIZE * outputsCount + (forSigHash ? 4 : 0);
 
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
@@ -563,7 +567,8 @@
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
 
     for (NSString *pk in privateKeys) {
-        OpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
+        DKeyKind *kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+        DMaybeOpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:kind forChainType:self.chain.chainType];
         if (!key) continue;
         [keys addObject:[NSValue valueWithPointer:key]];
     }
@@ -575,34 +580,49 @@
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
     // TODO: avoid double looping: defer getting address into signWithPrivateKeys key <-> address
 
-    for (NSValue *key in keys) {
-        [addresses addObject:[DSKeyManager addressForKey:key.pointerValue forChainType:self.chain.chainType]];
+    for (NSValue *keyValue in keys) {
+        DMaybeOpaqueKey *key = (DMaybeOpaqueKey *) keyValue.pointerValue;
+        [addresses addObject:[DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType]];
     }
     @synchronized (self) {
-       for (NSUInteger i = 0; i < self.mInputs.count; i++) {
-            DSTransactionInput *transactionInput = self.mInputs[i];
-           
+        for (NSUInteger i = 0; i < self.mInputs.count; i++) {DSTransactionInput *transactionInput = self.mInputs[i];
             NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
             NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
             if (keyIdx == NSNotFound) continue;
             NSData *data = [self toDataWithSubscriptIndex:i];
-            NSMutableData *sig = [NSMutableData data];
-            NSValue *keyValue = keys[keyIdx];
-            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
-            UInt256 hash = data.SHA256_2;
-            NSData *signedData = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, hash.u8, 32)];
-            
-            NSMutableData *s = [NSMutableData dataWithData:signedData];
-            [s appendUInt8:SIGHASH_ALL];
-            [sig appendScriptPushData:s];
-            NSArray *elem = [transactionInput.inScript scriptElements];
-            if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-                [sig appendScriptPushData:[DSKeyManager publicKeyData:key]];
-            }
-
+            NSData *inScript = transactionInput.inScript;
+            NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKeyValue:keys[keyIdx]];
             transactionInput.signature = sig;
         }
+        if (!self.isSigned) return NO;
+        _txHash = self.data.SHA256_2;
+        return YES;
+    }
+}
 
+- (BOOL)signWithMaybePrivateKeys:(NSArray *)keys {
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
+
+    for (NSValue *keyValue in keys) {
+        DMaybeOpaqueKeys *maybe_key_set = (DMaybeOpaqueKeys *) keyValue.pointerValue;
+        if (maybe_key_set && maybe_key_set->ok) {
+            for (int i = 0; i < maybe_key_set->ok->count; i++) {
+                DOpaqueKey *key = maybe_key_set->ok->values[i];
+                [addresses addObject:[DSKeyManager addressForKey:key forChainType:self.chain.chainType]];
+            }
+        }
+        
+    }
+    @synchronized (self) {
+        for (NSUInteger i = 0; i < self.mInputs.count; i++) {DSTransactionInput *transactionInput = self.mInputs[i];
+            NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
+            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
+            if (keyIdx == NSNotFound) continue;
+            NSData *data = [self toDataWithSubscriptIndex:i];
+            NSData *inScript = transactionInput.inScript;
+            NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKeyValue:keys[keyIdx]];
+            transactionInput.signature = sig;
+        }
         if (!self.isSigned) return NO;
         _txHash = self.data.SHA256_2;
         return YES;
@@ -613,29 +633,26 @@
     @synchronized (self) {
         for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSMutableData *sig = [NSMutableData data];
-            NSData *data = [self toDataWithSubscriptIndex:i];
-            UInt256 hash = data.SHA256_2;
-            NSValue *keyValue = keys[i];
-            OpaqueKey *key = ((OpaqueKey *) keyValue.pointerValue);
-            NSData *signedData = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, hash.u8, 32)];
-            NSMutableData *s = [NSMutableData dataWithData:signedData];
-            NSArray *elem = [transactionInput.inScript scriptElements];
-
-            [s appendUInt8:SIGHASH_ALL];
-            [sig appendScriptPushData:s];
-
-            if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-                [sig appendScriptPushData:[DSKeyManager publicKeyData:key]];
-            }
-
+            NSData *sig = [DSTransaction signInput:[self toDataWithSubscriptIndex:i] inputScript:transactionInput.inScript withOpaqueKeyValue:keys[i]];
             transactionInput.signature = sig;
         }
-
         if (!self.isSigned) return NO;
         _txHash = self.data.SHA256_2;
         return YES;
     }
+}
+
++ (NSData *)signInput:(NSData *)data
+          inputScript:(NSData *)inputScript
+   withOpaqueKeyValue:(NSValue *)keyValue {
+    DMaybeOpaqueKey *key = ((DMaybeOpaqueKey *) keyValue.pointerValue);
+    SLICE *input = slice_ctor(data);
+    BYTES *tx_input_script = bytes_ctor(inputScript);
+    BYTES *tx_sig = dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key->ok, input, tx_input_script);
+    NSData *result = [DSKeyManager NSDataFrom:tx_sig];
+//    bytes_dtor(tx_input_script);
+//    slice_dtor(input);
+    return result;
 }
 
 // MARK: - Priority (Deprecated)
@@ -715,27 +732,34 @@
 
 // MARK: - Blockchain Identities
 
-- (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
-    NSMutableSet *destinationBlockchainIdentities = [NSMutableSet set];
-    NSMutableSet *sourceBlockchainIdentities = [NSMutableSet set];
+- (void)loadIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+    NSMutableSet *destinationIdentities = [NSMutableSet set];
+    NSMutableSet *sourceIdentities = [NSMutableSet set];
     for (DSTransactionOutput *output in self.outputs) {
         for (DSFundsDerivationPath *derivationPath in derivationPaths) {
             if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] &&
                 [derivationPath containsAddress:output.address]) {
                 DSIncomingFundsDerivationPath *incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath *)derivationPath);
-                DSBlockchainIdentity *destinationBlockchainIdentity = [incomingFundsDerivationPath contactDestinationBlockchainIdentity];
-                DSBlockchainIdentity *sourceBlockchainIdentity = [incomingFundsDerivationPath contactSourceBlockchainIdentity];
-                if (sourceBlockchainIdentity) {
-                    [destinationBlockchainIdentities addObject:sourceBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
+                DSIdentity *destinationIdentity = [self.chain identityForUniqueId:incomingFundsDerivationPath.contactDestinationIdentityUniqueId
+                                                                                                  foundInWallet:nil
+                                                                             includeForeignIdentities:YES];
+
+                DSIdentity *sourceIdentity = [self.chain identityForUniqueId:incomingFundsDerivationPath.contactSourceIdentityUniqueId
+                                                                                             foundInWallet:nil
+                                                                        includeForeignIdentities:YES];
+
+                
+                if (sourceIdentity) {
+                    [destinationIdentities addObject:sourceIdentity]; //these need to be inverted since the derivation path is incoming
                 }
-                if (destinationBlockchainIdentity) {
-                    [sourceBlockchainIdentities addObject:destinationBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
+                if (destinationIdentity) {
+                    [sourceIdentities addObject:destinationIdentity]; //these need to be inverted since the derivation path is incoming
                 }
             }
         }
     }
-    self.sourceBlockchainIdentities = [self.sourceBlockchainIdentities setByAddingObjectsFromSet:[sourceBlockchainIdentities copy]];
-    self.destinationBlockchainIdentities = [self.destinationBlockchainIdentities setByAddingObjectsFromSet:[destinationBlockchainIdentities copy]];
+    self.sourceIdentities = [self.sourceIdentities setByAddingObjectsFromSet:[sourceIdentities copy]];
+    self.destinationIdentities = [self.destinationIdentities setByAddingObjectsFromSet:[destinationIdentities copy]];
 }
 
 // MARK: - Polymorphic data
@@ -880,6 +904,24 @@
 
 @implementation DSTransaction (Extensions)
 - (DSTransactionDirection)direction {
-    return [_chain directionOfTransaction: self];
+    const uint64_t sent = [_chain amountSentByTransaction:self];
+    const uint64_t received = [_chain amountReceivedFromTransaction:self];
+    const uint64_t fee = self.feeUsed;
+    if (sent > 0 && (received + fee) == sent) {
+        // moved
+        return DSTransactionDirection_Moved;
+    } else if (sent > 0) {
+        // sent
+        return DSTransactionDirection_Sent;
+    } else if (received > 0) {
+        // received
+        return DSTransactionDirection_Received;
+    } else {
+        // no funds moved on this account
+        return DSTransactionDirection_NotAccountFunds;
+    }
+//
+//    
+//    return [_chain directionOfTransaction: self];
 }
 @end

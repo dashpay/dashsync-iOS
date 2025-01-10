@@ -7,7 +7,9 @@
 //
 
 #import "DashSync.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"
 #import "DSDataController.h"

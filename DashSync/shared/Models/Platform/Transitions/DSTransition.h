@@ -6,9 +6,9 @@
 //
 
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
 #import "DPBaseObject.h"
-#import "DSBlockchainIdentity.h"
+//#import "DSIdentity.h"
+#import "DSKeyManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,13 +27,13 @@ typedef NS_ENUM(NSUInteger, DSTransitionType)
 
 #define TS_VERSION 0x00000001u
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @interface DSTransition : DPBaseObject
 
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) DSTransitionType type;
-@property (nonatomic, readonly) UInt256 blockchainIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 identityUniqueId;
 @property (nonatomic, readonly) uint64_t creditFee;
 @property (nonatomic, readonly) UInt256 transitionHash;
 
@@ -42,15 +42,20 @@ typedef NS_ENUM(NSUInteger, DSTransitionType)
 @property (nonatomic, readonly) NSTimeInterval createdTimestamp;
 @property (nonatomic, readonly) NSTimeInterval registeredTimestamp;
 
-@property (nonatomic, readonly) KeyKind signatureType;
+//@property (nonatomic, readonly) DKeyKind signatureType;
 @property (nonatomic, readonly) NSData *signatureData;
 @property (nonatomic, readonly) uint32_t signaturePublicKeyId;
 
-- (instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *_Nonnull)chain; //local creation
+- (instancetype)initWithTransitionVersion:(uint16_t)version
+                         identityUniqueId:(UInt256)identityUniqueId
+                                  onChain:(DSChain *_Nonnull)chain; //local creation
 
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain;
+- (instancetype)initWithData:(NSData *)data
+                     onChain:(DSChain *)chain;
 
-- (void)signWithKey:(OpaqueKey *)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity;
+- (void)signWithKey:(DMaybeOpaqueKey *)privateKey
+            atIndex:(uint32_t)index
+       fromIdentity:(DSIdentity *_Nullable)identity;
 
 @end
 

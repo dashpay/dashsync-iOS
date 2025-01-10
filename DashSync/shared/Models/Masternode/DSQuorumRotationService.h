@@ -22,12 +22,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQuorumRotationService : DSMasternodeListService
 
-@property (nonatomic) DSMasternodeList *masternodeListAtTip;
-@property (nonatomic) DSMasternodeList *masternodeListAtH;
-@property (nonatomic) DSMasternodeList *masternodeListAtHC;
-@property (nonatomic) DSMasternodeList *masternodeListAtH2C;
-@property (nonatomic) DSMasternodeList *masternodeListAtH3C;
-@property (nonatomic) DSMasternodeList *masternodeListAtH4C;
+//@property (nonatomic, assign, nullable) struct dash_spv_masternode_processor_processing_qr_info_result_QRInfoResult *last_result;
+//@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtTip;
+//@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH;
+//@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtHC;
+//@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH2C;
+//@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH3C;
+//@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH4C;
 
 @end
 

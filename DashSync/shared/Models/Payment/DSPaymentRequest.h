@@ -30,7 +30,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSPaymentProtocolRequest, DSPaymentProtocolPayment, DSPaymentProtocolACK, DSChain, DSBlockchainIdentity, DSAccount;
+@class DSPaymentProtocolRequest, DSPaymentProtocolPayment, DSPaymentProtocolACK, DSChain, DSIdentity, DSAccount;
 
 // BIP21 bitcoin payment request URI https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @interface DSPaymentRequest : NSObject
@@ -61,22 +61,36 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain;
 - (instancetype)initWithURL:(NSURL *)url onChain:(DSChain *)chain;
 
-- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity onAccount:(DSAccount *)account inContext:(NSManagedObjectContext *)context;
+- (DSPaymentProtocolRequest *)protocolRequestForIdentity:(DSIdentity *_Nullable)identity
+                                               onAccount:(DSAccount *)account
+                                               inContext:(NSManagedObjectContext *)context;
 
-- (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account inContext:(NSManagedObjectContext *)context;
+- (BOOL)isValidAsDashpayPaymentRequestForIdentity:(DSIdentity *)identity
+                                        onAccount:(DSAccount *)account
+                                        inContext:(NSManagedObjectContext *)context;
 
-- (NSString *)paymentAddressForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue inContext:(NSManagedObjectContext *)context;
+- (NSString *)paymentAddressForIdentity:(DSIdentity *)identity
+                              onAccount:(DSAccount *)account
+        fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue
+                              inContext:(NSManagedObjectContext *)context;
 
 - (void)fetchBIP70WithTimeout:(NSTimeInterval)timeout
                    completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
-+ (void)fetch:(NSString *)url scheme:(NSString *)scheme callbackScheme:(NSString *)callbackScheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
-        completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
++ (void)fetch:(NSString *)url
+       scheme:(NSString *)scheme
+callbackScheme:(NSString *)callbackScheme
+      onChain:(DSChain *)chain
+      timeout:(NSTimeInterval)timeout
+   completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
 
 // posts a BIP70 payment object to the specified URL
-+ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString *)scheme to:(NSString *)paymentURL onChain:(DSChain *)chain
++ (void)postPayment:(DSPaymentProtocolPayment *)payment
+             scheme:(NSString *)scheme
+                 to:(NSString *)paymentURL
+            onChain:(DSChain *)chain
             timeout:(NSTimeInterval)timeout
          completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion;
 

@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPDocumentFactory
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)identity
+- (instancetype)initWithIdentity:(DSIdentity *)identity
                                   contract:(DPContract *)contract
                                    onChain:(DSChain *)chain {
     NSParameterAssert(identity);
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
         dataDictionary = @{};
     }
 
-    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
+    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
@@ -107,7 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
         dataDictionary = @{};
     }
 
-    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
+    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType

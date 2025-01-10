@@ -6,6 +6,8 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import "NSData+Dash.h"
 #import <Foundation/Foundation.h>
 
@@ -21,6 +23,27 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)compactMap:(id (^)(id obj))block;
 - (NSArray *)map:(id (^)(id obj))block;
 
+@end
+
+@interface NSArray (HashSet_u8_32)
++ (NSArray<NSData *> *)ffi_from_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref;
++ (std_collections_HashSet_u8_32 *)ffi_to_hash_set:(NSArray<NSData *> *)obj;
++ (void)ffi_destroy_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref;
+@end
+
+@interface NSArray (_)
+
++ (NSArray<NSString *> *)ffi_from_vec:(Vec_ *)ffi_ref;
++ (Vec_ *)ffi_to_vec:(NSArray<NSString *> *)obj;
++ (void)ffi_destroy_vec:(Vec_ *)ffi_ref;
+
+@end
+
+@interface NSArray (Vec_u8_32)
+
++ (NSArray<NSData *> *)ffi_from_vec_u256:(Vec_u8_32 *)ffi_ref;
++ (Vec_u8_32 *)ffi_to_vec_u256:(NSArray<NSData *> *)obj;
++ (void)ffi_destroy_vec_u256:(Vec_u8_32 *)ffi_ref;
 @end
 
 NS_ASSUME_NONNULL_END

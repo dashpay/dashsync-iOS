@@ -106,30 +106,30 @@
     id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
     NSInteger quorumType = [[sectionInfo name] integerValue];
     switch (quorumType) {
-        case LLMQType_LlmqtypeUnknown:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeUnknown:
             return @"Unknown Quorums (0)";
-        case LLMQType_Llmqtype50_60:
+        case dash_spv_crypto_network_llmq_type_LLMQType_Llmqtype50_60:
             return @"1 Hour Quorums (1)";
-        case LLMQType_Llmqtype400_60:
+        case dash_spv_crypto_network_llmq_type_LLMQType_Llmqtype400_60:
             return @"Day Quorums (2)";
-        case LLMQType_Llmqtype400_85:
+        case dash_spv_crypto_network_llmq_type_LLMQType_Llmqtype400_85:
             return @"2 Day Quorums (3)";
-        case LLMQType_Llmqtype100_67:
+        case dash_spv_crypto_network_llmq_type_LLMQType_Llmqtype100_67:
             return @"1 Hour Platform Quorums (4)";
-        case LLMQType_Llmqtype60_75:
+        case dash_spv_crypto_network_llmq_type_LLMQType_Llmqtype60_75:
             return @"1 Hour Rotated Quorums (v0.18) (5)";
-        case LLMQType_Llmqtype25_67:
+        case dash_spv_crypto_network_llmq_type_LLMQType_Llmqtype25_67:
             return @"1 Hour Platform Quorums (v0.19) (6)";
-        case LLMQType_LlmqtypeTest:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeTest:
             return @"Test Quorums (100)";
-        case LLMQType_LlmqtypeDevnet:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeDevnet:
             return @"10 Member Devnet Quorums (101)";
-        case LLMQType_LlmqtypeTestV17:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeTestV17:
             return @"Test V17 Quorums (102)";
-        case LLMQType_LlmqtypeTestDIP0024:
-        case LLMQType_LlmqtypeDevnetDIP0024:
-        case LLMQType_LlmqtypeTestnetPlatform:
-        case LLMQType_LlmqtypeDevnetPlatform:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeTestDIP0024:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeDevnetDIP0024:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeTestnetPlatform:
+        case dash_spv_crypto_network_llmq_type_LLMQType_LlmqtypeDevnetPlatform:
             return [NSString stringWithFormat:@"Test DIP-0024 & DIP-0027 Quorums (%ld)", quorumType] ;
         default:
             return [NSString stringWithFormat:@"Unknown Quorum Type (%ld)", quorumType];

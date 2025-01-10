@@ -43,7 +43,9 @@
     if (!self.masternodeList) {
         return [self mainSearchPredicate];
     } else {
-        NSPredicate *masternodeListPredicate = [NSPredicate predicateWithFormat:@"ANY masternodeLists.block.height == %@", @(self.masternodeList.height)];
+        
+        
+        NSPredicate *masternodeListPredicate = [NSPredicate predicateWithFormat:@"ANY masternodeLists.block.height == %@", @(self.masternodeList->obj->known_height)];
         return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self mainSearchPredicate], masternodeListPredicate]];
     }
 }
@@ -227,18 +229,21 @@
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    BlockHeightFinder finder = ^uint32_t(UInt256 blockHash) {
+        return [self.chain heightForBlockHash:blockHash];
+    };
     if ([segue.identifier isEqualToString:@"MasternodeDetailSegue"]) {
         NSIndexPath *indexPath = self.tableView.indexPathForSelectedRow;
         DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         DSMasternodeDetailViewController *masternodeDetailViewController = (DSMasternodeDetailViewController *)segue.destinationViewController;
-        masternodeDetailViewController.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
+        masternodeDetailViewController.simplifiedMasternodeEntry = [simplifiedMasternodeEntryEntity simplifiedMasternodeEntryWithBlockHeightLookup:finder];
         masternodeDetailViewController.localMasternode = simplifiedMasternodeEntryEntity.localMasternode ? [simplifiedMasternodeEntryEntity.localMasternode loadLocalMasternode] : nil;
         masternodeDetailViewController.chain = self.chain;
     } else if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
         NSIndexPath *indexPath = self.tableView.indexPathForSelectedRow;
         DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         DSClaimMasternodeViewController *claimMasternodeViewController = (DSClaimMasternodeViewController *)segue.destinationViewController;
-        claimMasternodeViewController.masternode = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
+        claimMasternodeViewController.masternode = [simplifiedMasternodeEntryEntity simplifiedMasternodeEntryWithBlockHeightLookup:finder];
         claimMasternodeViewController.chain = self.chain;
     } else if ([segue.identifier isEqualToString:@"RegisterMasternodeSegue"]) {
         UINavigationController *navigationController = (UINavigationController *)segue.destinationViewController;

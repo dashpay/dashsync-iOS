@@ -7,6 +7,7 @@
 
 #import "dash_shared_core.h"
 #import "DSChain.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,7 +34,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome)
 @interface DSGovernanceVote : NSObject
 
 @property (nullable, nonatomic, strong) DSGovernanceObject *governanceObject;
-@property (nonatomic, readonly) DSSimplifiedMasternodeEntry *masternode;
+@property (nonatomic, readonly) DMasternodeEntry *masternode;
 @property (nonatomic, readonly) DSGovernanceVoteOutcome outcome;
 @property (nonatomic, readonly) DSGovernanceVoteSignal signal;
 @property (nonatomic, readonly) NSTimeInterval createdAt;
@@ -45,7 +46,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome)
 
 + (DSGovernanceVote *_Nullable)governanceVoteFromMessage:(NSData *)message onChain:(DSChain *)chain;
 - (instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData *_Nullable)signature onChain:(DSChain *)chain;
-- (void)signWithKey:(OpaqueKey *)key;
+- (void)signWithKey:(DOpaqueKey *)key;
 
 - (NSData *)dataMessage;
 - (BOOL)isValid;

@@ -43,5 +43,6 @@
 @dynamic type;
 @dynamic platformHTTPPort;
 @dynamic platformNodeID;
+@dynamic version;
 
 @end

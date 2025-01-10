@@ -16,15 +16,15 @@
 //
 
 #import "DSContactRequest.h"
-#import "DSBlockchainIdentity+Protected.h"
+#import "DSIdentity+Protected.h"
 #import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSContactRequest ()
 
-@property (nonatomic, assign) UInt256 recipientBlockchainIdentityUniqueId;
-@property (nonatomic, assign) UInt256 senderBlockchainIdentityUniqueId;
+@property (nonatomic, assign) UInt256 recipientIdentityUniqueId;
+@property (nonatomic, assign) UInt256 senderIdentityUniqueId;
 @property (nonatomic, assign) uint32_t recipientKeyIndex;
 @property (nonatomic, assign) uint32_t senderKeyIndex;
 @property (nonatomic, assign) uint32_t accountReference;
@@ -33,15 +33,15 @@
 @property (nonatomic, assign) NSTimeInterval createdAt;
 
 @property (nonatomic, strong) NSData *encryptedPublicKeyData;
-@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nonatomic, strong) DSIdentity *identity;
 
 @end
 
 @implementation DSContactRequest
 
-- (instancetype)initWithDictionary:(DSStringValueDictionary *)rawContact onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithDictionary:(DSStringValueDictionary *)rawContact onIdentity:(DSIdentity *)identity {
     NSParameterAssert(rawContact);
-    NSParameterAssert(blockchainIdentity);
+    NSParameterAssert(identity);
     if (!(self = [super init])) return nil;
 
     NSData *recipientData = rawContact[@"toUserId"];
@@ -56,27 +56,28 @@
         NSAssert(FALSE, @"malformed server response");
         return nil;
     }
-    self.recipientBlockchainIdentityUniqueId = recipientData.UInt256;
-    self.senderBlockchainIdentityUniqueId = senderData.UInt256;
+    self.recipientIdentityUniqueId = recipientData.UInt256;
+    self.senderIdentityUniqueId = senderData.UInt256;
     self.encryptedPublicKeyData = encryptedPublicKeyData;
     self.encryptedAccountLabel = encryptedAccountLabel;
     self.accountReference = [accountReference unsignedIntValue];
     self.createdAt = [createdAt doubleValue] / 1000.0;
     self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue];
     self.senderKeyIndex = [senderKeyIndex unsignedIntValue];
-    self.blockchainIdentity = blockchainIdentity;
+    self.identity = identity;
     return self;
 }
 
-+ (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    return [[self alloc] initWithDictionary:serverDictionary onBlockchainIdentity:blockchainIdentity];
++ (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary
+                                  onIdentity:(DSIdentity *)identity {
+    return [[self alloc] initWithDictionary:serverDictionary onIdentity:identity];
 }
 
-- (BOOL)blockchainIdentityIsRecipient {
-    if (uint256_eq(self.blockchainIdentity.uniqueID, self.recipientBlockchainIdentityUniqueId)) {
+- (BOOL)identityIsRecipient {
+    if (uint256_eq(self.identity.uniqueID, self.recipientIdentityUniqueId)) {
         //we are the recipient of the friend request
         return YES;
-    } else if (uint256_eq(self.blockchainIdentity.uniqueID, self.senderBlockchainIdentityUniqueId)) {
+    } else if (uint256_eq(self.identity.uniqueID, self.senderIdentityUniqueId)) {
         //we are the sender of the friend request
         return NO;
     }
@@ -84,20 +85,24 @@
     return NO;
 }
 
-- (OpaqueKey *)secretKeyForDecryptionOfType:(KeyKind)type {
-    uint32_t index = [self blockchainIdentityIsRecipient] ? self.recipientKeyIndex : self.senderKeyIndex;
-    OpaqueKey *key = [self.blockchainIdentity privateKeyAtIndex:index ofType:type];
+- (DMaybeOpaqueKey *)secretKeyForDecryptionOfType:(DKeyKind *)type {
+    uint32_t index = [self identityIsRecipient] ? self.recipientKeyIndex : self.senderKeyIndex;
+    DMaybeOpaqueKey *key = [self.identity privateKeyAtIndex:index ofType:type];
     NSAssert(key, @"Key should exist");
     return key;
 }
 
-- (NSData *)decryptedPublicKeyDataWithKey:(OpaqueKey *)key {
+- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key {
     NSParameterAssert(key);
-    return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:(int16_t) key->tag] fromPublicKey:key];
+    DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(key);
+    DMaybeOpaqueKey *maybe_key = [self secretKeyForDecryptionOfType:kind];
+    NSData *data = [self.encryptedPublicKeyData decryptWithSecretKey:maybe_key->ok fromPublicKey:key];
+    DMaybeOpaqueKeyDtor(maybe_key);
+    return data;
 }
 
 - (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@ - from %@/%d to %@/%d", [super debugDescription], uint256_base58(self.senderBlockchainIdentityUniqueId), self.senderKeyIndex, uint256_base58(self.recipientBlockchainIdentityUniqueId), self.recipientKeyIndex];
+    return [NSString stringWithFormat:@"%@ - from %@/%d to %@/%d", [super debugDescription], uint256_base58(self.senderIdentityUniqueId), self.senderKeyIndex, uint256_base58(self.recipientIdentityUniqueId), self.recipientKeyIndex];
 }
 
 @end

@@ -10,11 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @interface DSIncomingContactsTableViewController : DSFetchedResultsTableViewController
 
-@property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
+@property (strong, nonatomic) DSIdentity *identity;
 
 @end
 

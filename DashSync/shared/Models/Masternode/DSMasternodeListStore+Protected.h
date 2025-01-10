@@ -16,27 +16,30 @@
 //
 
 #import "BigIntTypes.h"
-#import "DSMasternodeList.h"
+//#import "DSMasternodeList.h"
 #import "DSMasternodeListStore.h"
 #import "DSMerkleBlock.h"
-#import "DSQuorumEntry.h"
+//#import "DSQuorumEntry.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListStore (Protected)
 
-@property (nonatomic, readwrite, nullable) DSMasternodeList *masternodeListAwaitingQuorumValidation;
-@property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListQueriesNeedingQuorumsValidated;
-@property (nonatomic, readwrite, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
+//@property (nonatomic, readwrite, nullable) DSMasternodeList *masternodeListAwaitingQuorumValidation;
+//@property (nonatomic, readwrite, nullable) NSData *masternodeListBlockHashAwaitingQuorumValidation;
+//@property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListQueriesNeedingQuorumsValidated;
+//@property (nonatomic, readwrite, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 
-- (void)savePlatformPingInfoForEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)entries
-                             inContext:(NSManagedObjectContext *)context;
+//- (void)savePlatformPingInfoForEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)entries
+//                             inContext:(NSManagedObjectContext *)context;
 //- (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash;
-- (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;
-- (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;
+//- (DLLMQEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID
+//                                                            forMerkleBlock:(DSMerkleBlock *)merkleBlock;
+//- (DLLMQEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID
+//                                                              forMerkleBlock:(DSMerkleBlock *)merkleBlock;
 
-- (BOOL)addBlockToValidationQueue:(DSMerkleBlock *)merkleBlock;
+//- (BOOL)addBlockToValidationQueue:(DSMerkleBlock *)merkleBlock;
 @end
 
 NS_ASSUME_NONNULL_END

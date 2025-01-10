@@ -13,16 +13,15 @@
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSChainLockEntity
 
-+ (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:chainLock.blockHash inContext:context];
++ (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock
+                                  inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:uint256_data(chainLock.blockHash) inContext:context];
     if (!merkleBlockEntity) {
         return nil;
     }
@@ -30,9 +29,12 @@
     chainLockEntity.validSignature = chainLock.signatureVerified;
     chainLockEntity.signature = [NSData dataWithUInt768:chainLock.signature];
     chainLockEntity.merkleBlock = merkleBlockEntity;
-    chainLockEntity.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
+    chainLockEntity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", NSDataFromPtr(chainLock.intendedQuorumPublicKey)];
+//    chainLockEntity.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
     if (chainLock.signatureVerified) {
-        DSChainEntity *chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:context];
+        
+//        DSChainEntity *chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:context];
+        DSChainEntity *chainEntity = [chainLock.chain chainEntityInContext:context];
         if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < chainLock.height) {
             chainEntity.lastChainLock = chainLockEntity;
         }

@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentitiesViewController.h
+//  DSInvitationsViewController.h
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 7/26/18.

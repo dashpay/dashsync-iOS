@@ -8,8 +8,9 @@
 
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSKeyManager.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSQuorumEntry.h"
+//#import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -18,20 +19,24 @@
 @implementation DSQuorumEntryEntity
 
 
-+ (instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
++ (instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
+                                                inContext:(NSManagedObjectContext *)context
+                                                  onChain:(DSChain *)chain {
+    NSData *quorumHash = NSDataFromPtr(potentialQuorumEntry->llmq_hash);
+    int16_t llmqType = dash_spv_crypto_network_llmq_type_LLMQType_index(potentialQuorumEntry->llmq_type);
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:quorumHash inContext:context];
     DSQuorumEntryEntity *quorumEntryEntity = nil;
     if (block) {
-        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)]] anyObject];
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", quorumHash, @(llmqType)]] anyObject];
     } else {
-        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)];
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", quorumHash, @(llmqType)];
     }
     if (!quorumEntryEntity) {
-        if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
+        if (potentialQuorumEntry->saved) { //it was deleted in the meantime, and should be ignored
             return nil;
         } else {
             quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
-            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block onChain:chain];
         }
     } else {
         [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
@@ -39,20 +44,24 @@
     return quorumEntryEntity;
 }
 
-+ (instancetype)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
++ (instancetype)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DLLMQEntry *)potentialQuorumEntry
+                                                          inContext:(NSManagedObjectContext *)context
+                                                            onChain:(DSChain *)chain {
+    NSData *quorumHash = NSDataFromPtr(potentialQuorumEntry->llmq_hash);
+    int16_t llmqType = dash_spv_crypto_network_llmq_type_LLMQType_index(potentialQuorumEntry->llmq_type);
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:quorumHash inContext:context];
     DSQuorumEntryEntity *quorumEntryEntity = nil;
     if (block) {
-        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)]] anyObject];
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", quorumHash, @(llmqType)]] anyObject];
     } else {
-        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @((int16_t)potentialQuorumEntry.llmqType)];
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", quorumHash, @(llmqType)];
     }
     if (!quorumEntryEntity) {
-        if (potentialQuorumEntry.saved && potentialQuorumEntry.verified) {
+        if (potentialQuorumEntry->saved && potentialQuorumEntry->verified) {
             return nil;
         } else {
             quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
-            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block onChain:chain];
         }
     } else {
         [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
@@ -60,29 +69,33 @@
     return quorumEntryEntity;
 }
 
-- (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *)block {
-    self.verified = (block != nil) && potentialQuorumEntry.verified;
+- (void)setAttributesFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
+                                      onBlock:(DSMerkleBlockEntity *)block
+                                      onChain:(DSChain *)chain {
+    self.verified = (block != nil) && potentialQuorumEntry->verified;
     self.block = block;
-    self.quorumHash = potentialQuorumEntry.quorumHash;
-    self.quorumPublicKey = potentialQuorumEntry.quorumPublicKey;
-    self.quorumThresholdSignature = potentialQuorumEntry.quorumThresholdSignature;
-    self.quorumVerificationVectorHash = potentialQuorumEntry.quorumVerificationVectorHash;
-    self.signersCount = potentialQuorumEntry.signersCount;
-    self.signersBitset = potentialQuorumEntry.signersBitset;
-    self.validMembersCount = potentialQuorumEntry.validMembersCount;
-    self.validMembersBitset = potentialQuorumEntry.validMembersBitset;
-    self.llmqType = (int16_t)potentialQuorumEntry.llmqType;
-    self.version = potentialQuorumEntry.version;
-    self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
-    self.commitmentHash = potentialQuorumEntry.quorumEntryHash;
-    self.quorumIndex = potentialQuorumEntry.quorumIndex;
-    self.chain = [potentialQuorumEntry.chain chainEntityInContext:self.managedObjectContext];
-    potentialQuorumEntry.saved = TRUE;
+    self.quorumHash = u256_cast(potentialQuorumEntry->llmq_hash);
+    self.quorumPublicKey = u384_cast(potentialQuorumEntry->public_key);
+    self.quorumThresholdSignature = u768_cast(potentialQuorumEntry->threshold_signature);
+    self.quorumVerificationVectorHash = u256_cast(potentialQuorumEntry->verification_vector_hash);
+    self.signersCount = (int32_t) potentialQuorumEntry->signers->count;
+    self.signersBitset = NSDataFromPtr(potentialQuorumEntry->signers->bitset);
+    self.validMembersCount = (int32_t) potentialQuorumEntry->valid_members->count;
+    self.validMembersBitset = NSDataFromPtr(potentialQuorumEntry->valid_members->bitset);
+    self.llmqType = (int16_t)dash_spv_crypto_network_llmq_type_LLMQType_index(potentialQuorumEntry->llmq_type);
+    self.version = dash_spv_crypto_llmq_version_LLMQVersion_index(potentialQuorumEntry->version);
+    self.allCommitmentAggregatedSignature = u768_cast(potentialQuorumEntry->all_commitment_aggregated_signature);
+    self.commitmentHashData = NSDataFromPtr(potentialQuorumEntry->entry_hash);
+    self.quorumIndex = potentialQuorumEntry->index;
+    self.chain = [chain chainEntityInContext:self.managedObjectContext];
+    potentialQuorumEntry->saved = TRUE;
+    // TODO: make sure the cache is updated with "saved" flag
 }
 
-- (void)updateAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *)block {
+- (void)updateAttributesFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
+                                         onBlock:(DSMerkleBlockEntity *)block {
     if (!self.verified) {
-        self.verified = (block != nil) && potentialQuorumEntry.verified;
+        self.verified = (block != nil) && potentialQuorumEntry->verified;
     }
     if (!self.block) {
         self.block = block;
@@ -165,8 +178,8 @@
     return [data SHA256_2];
 }
 
-- (DSQuorumEntry *)quorumEntry {
-    return [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumIndex:self.quorumIndex signersCount:self.signersCount signersBitset:self.signersBitset validMembersCount:self.validMembersCount validMembersBitset:self.validMembersBitset quorumPublicKey:self.quorumPublicKey quorumVerificationVectorHash:self.quorumVerificationVectorHash quorumThresholdSignature:self.quorumThresholdSignature allCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature quorumEntryHash:self.commitmentHash onChain:self.chain.chain];
-}
-
+//- (DSQuorumEntry *)quorumEntry {
+//    return [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumIndex:self.quorumIndex signersCount:self.signersCount signersBitset:self.signersBitset validMembersCount:self.validMembersCount validMembersBitset:self.validMembersBitset quorumPublicKey:self.quorumPublicKey quorumVerificationVectorHash:self.quorumVerificationVectorHash quorumThresholdSignature:self.quorumThresholdSignature allCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature quorumEntryHash:self.commitmentHash onChain:self.chain.chain];
+//}
+//
 @end

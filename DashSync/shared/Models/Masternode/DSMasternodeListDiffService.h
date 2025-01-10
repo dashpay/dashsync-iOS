@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListDiffService : DSMasternodeListService
 
-- (void)sendReversedHashes:(NSString *)baseBlockHash blockHash:(NSString *)blockHash;
+//- (void)sendReversedHashes:(NSString *)baseBlockHash blockHash:(NSString *)blockHash;
 
 @end
 

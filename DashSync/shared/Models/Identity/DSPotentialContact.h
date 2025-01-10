@@ -28,16 +28,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *displayName;
 @property (nonatomic, copy) NSString *avatarPath;
 @property (nonatomic, copy) NSString *publicMessage;
-@property (nonatomic, assign) UInt256 associatedBlockchainIdentityUniqueId;
+@property (nonatomic, assign) UInt256 associatedIdentityUniqueId;
 
 - (instancetype)initWithUsername:(NSString *)username;
-
-- (instancetype)initWithUsername:(NSString *)username avatarPath:(NSString *)avatarPath publicMessage:(NSString *)publicMessage;
-
+- (instancetype)initWithUsername:(NSString *)username
+                      avatarPath:(NSString *)avatarPath
+                   publicMessage:(NSString *)publicMessage;
 - (instancetype)initWithDashpayUser:(DSDashpayUserEntity *)contactEntity;
-
 - (void)addPublicKey:(NSValue *)key atIndex:(NSUInteger)index;
-
 - (NSValue *)publicKeyAtIndex:(NSUInteger)index;
 
 @end

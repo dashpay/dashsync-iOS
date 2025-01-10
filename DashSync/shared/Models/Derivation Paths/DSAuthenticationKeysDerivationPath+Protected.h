@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain *)chain;
 + (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain *)chain;
 + (instancetype)platformNodeKeysDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityECDSAKeysDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain *)chain;
++ (instancetype)identityECDSAKeysDerivationPathForChain:(DSChain *)chain;
++ (instancetype)identityBLSKeysDerivationPathForChain:(DSChain *)chain;
 
 @end
 

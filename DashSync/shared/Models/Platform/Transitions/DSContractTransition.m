@@ -19,30 +19,36 @@
 #import "DPContract+Protected.h"
 #import "DPDocument.h"
 #import "DSTransition+Protected.h"
+#import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
-@interface DSContractTransition ()
-
-@property (nonatomic, strong) DPContract *contract;
-
-@end
-
-@implementation DSContractTransition
-
-- (DSMutableStringValueDictionary *)baseKeyValueDictionary {
-    DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"dataContract"] = self.contract.objectDictionary;
-    json[@"entropy"] = uint256_data(self.contract.entropy);
-    return json;
-}
-
-- (instancetype)initWithContract:(DPContract *)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
-        self.contract = contract;
-    }
-    self.type = DSTransitionType_DataContract;
-
-    return self;
-}
-
-@end
+//@interface DSContractTransition ()
+//
+//@property (nonatomic, strong) DPContract *contract;
+//
+//@end
+//
+//@implementation DSContractTransition
+//
+//- (DSMutableStringValueDictionary *)baseKeyValueDictionary {
+//    DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
+////    json[@"dataContract"] = self.contract.objectDictionary;
+//    json[@"entropy"] = uint256_data(self.contract.entropy);
+//    return json;
+//}
+//
+//- (instancetype)initWithContract:(DPContract *)contract
+//           withTransitionVersion:(uint16_t)version
+//                identityUniqueId:(UInt256)identityUniqueId
+//                         onChain:(DSChain *)chain {
+//    if (self = [super initWithTransitionVersion:version
+//                               identityUniqueId:identityUniqueId
+//                                        onChain:chain]) {
+//        self.contract = contract;
+//    }
+//    self.type = DSTransitionType_DataContract;
+//
+//    return self;
+//}
+//
+//@end
