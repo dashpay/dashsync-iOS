@@ -37,8 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *confirmTarget;
 @property (nonatomic, assign) CoinType coinType;
 @property (nonatomic, strong) NSMutableOrderedSet *setSelected;
+@property (nonatomic, strong) NSString *destChange;
 
-- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl;
+- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl chainType:(ChainType)chainType;
 
 - (BOOL)hasSelected;
 - (BOOL)isSelected:(DSUTXO)utxo;

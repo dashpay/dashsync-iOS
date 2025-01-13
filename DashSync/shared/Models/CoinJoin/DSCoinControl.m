@@ -19,13 +19,18 @@
 
 @implementation DSCoinControl
 
-- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl {
+- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl chainType:(ChainType)chainType {
     if (!(self = [super init])) return nil;
     self.coinType = coinControl->coin_type;
     self.minDepth = coinControl->min_depth;
     self.maxDepth = coinControl->max_depth;
     self.avoidAddressReuse = coinControl->avoid_address_reuse;
     self.allowOtherInputs = coinControl->allow_other_inputs;
+    
+    if (coinControl->dest_change) {
+        char *c_string = address_with_script_pubkey(coinControl->dest_change->ptr, coinControl->dest_change->len, chainType);
+        self.destChange = [NSString stringWithUTF8String:c_string];
+    }
 
     if (coinControl->set_selected && coinControl->set_selected_size > 0) {
         self.setSelected = [[NSMutableOrderedSet alloc] init];
@@ -59,6 +64,7 @@
         _avoidPartialSpends = NO;
         _avoidAddressReuse = NO;
         _minDepth = 0;
+        _destChange = NULL;
     }
     return self;
 }

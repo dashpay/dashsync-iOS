@@ -347,7 +347,7 @@ GatheredOutputs* availableCoins(bool onlySafe, CoinControl *coinControl, WalletE
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         ChainType chainType = wrapper.chain.chainType;
-        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl];
+        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl chainType:wrapper.chain.chainType];
         NSArray<DSInputCoin *> *coins = [wrapper.manager availableCoins:walletEx onlySafe:onlySafe coinControl:cc minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
         
         gatheredOutputs = malloc(sizeof(GatheredOutputs));
@@ -471,7 +471,7 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinContr
     
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
-        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl];
+        DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl chainType:wrapper.chain.chainType];
         result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts coinControl:cc onPublished:^(UInt256 txId, NSError * _Nullable error) {
             @synchronized (context) {
                 if (error) {

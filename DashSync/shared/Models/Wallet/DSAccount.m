@@ -1192,9 +1192,18 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (followBIP69sorting) {
             [transaction sortInputsAccordingToBIP69];
         }
-
+        
         if (balance - (amount + feeAmount) >= self.wallet.chain.minOutputAmount) {
-            [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
+            NSString *changeAddress;
+            
+            if (coinControl.destChange) {
+                changeAddress = coinControl.destChange;
+            } else {
+                changeAddress = self.changeAddress;
+            }
+            
+            [transaction addOutputAddress:changeAddress amount:balance - (amount + feeAmount)];
+            
             if (followBIP69sorting) {
                 [transaction sortOutputsAccordingToBIP69];
             } else if (sortType == DSTransactionSortType_Shuffle) {

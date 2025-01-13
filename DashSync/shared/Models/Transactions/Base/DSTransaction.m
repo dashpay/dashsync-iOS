@@ -327,7 +327,7 @@
     if (self.cachedDashAmount != UINT64_MAX) {
         return self.cachedDashAmount;
     }
-
+    
     uint64_t amount = 0;
     const uint64_t sent = [self.chain amountSentByTransaction:self];
     const uint64_t received = [self.chain amountReceivedFromTransaction:self];
