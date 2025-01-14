@@ -13,29 +13,21 @@
 #import "DSAssetLockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSAuthenticationManager.h"
-//#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
-//#import "DSChain+Identity.h"
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChain+Transaction.h"
 #import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
-//#import "DSContactRequest.h"
-////#import "DSContractTransition.h"
-//#import "DSAssetLockDerivationPath.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
-//#import "DSDocumentTransition.h"
 #import "DSIdentitiesManager+Protected.h"
 #import "DSIdentitiesManager+CoreData.h"
 #import "DSIdentity+ContactRequest.h"
-//#import "DSIdentity+Friendship.h"
 #import "DSIdentity+Profile.h"
 #import "DSIdentity+Protected.h"
 #import "DSIdentity+Username.h"
-//#import "DSIdentityRegistrationTransition.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSInvitation+Protected.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
@@ -43,17 +35,12 @@
 #import "DSOptionsManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransition.h"
-//#import "DSTransactionInput.h"
-//#import "DSTransactionManager+Protected.h"
-//#import "DSTransactionOutput.h"
-//#import "DSTransientDashpayUser.h"
 #import "DSWallet+Identity.h"
 #import "NSData+Encryption.h"
 #import "NSError+Dash.h"
 #import "NSError+Platform.h"
 #import "NSIndexPath+Dash.h"
 #import "NSManagedObject+Sugar.h"
-//#import "NSString+Bitcoin.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_FETCH_IDENTITY_RETRY_COUNT 5
@@ -106,11 +93,14 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     if (_internalRegistrationFundingPrivateKey != NULL) {
         DMaybeOpaqueKeyDtor(_internalRegistrationFundingPrivateKey);
     }
+//    if (_transientDashpayUser)
+//        DMaybeTransientUserDtor(_transientDashpayUser);
 }
 // MARK: - Initialization
 
 - (instancetype)initWithUniqueId:(UInt256)uniqueId
-                     isTransient:(BOOL)isTransient onChain:(DSChain *)chain {
+                     isTransient:(BOOL)isTransient
+                         onChain:(DSChain *)chain {
     //this is the initialization of a non local blockchain identity
     if (!(self = [super init])) return nil;
     NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
@@ -324,34 +314,34 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     return self;
 }
 
-- (instancetype)initAtIndex:(uint32_t)index
-     withIdentityDictionary:(NSDictionary *)identityDictionary
-                    version:(uint32_t)version
-                   inWallet:(DSWallet *)wallet {
-    NSParameterAssert(wallet);
-    if (!(self = [super init])) return nil;
-    self.wallet = wallet;
-    self.isLocal = YES;
-    self.isOutgoingInvitation = NO;
-    self.isTransient = FALSE;
-    self.keysCreated = 0;
-    self.currentMainKeyIndex = 0;
-    self.currentMainKeyType = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
-    NSData *identityIdData = [identityDictionary objectForKey:@"id"];
-    self.uniqueID = identityIdData.UInt256;
-    self.keyInfoDictionaries = [NSMutableDictionary dictionary];
-    self.registrationStatus = DSIdentityRegistrationStatus_Registered;
-    [self setupUsernames];
-    self.chain = wallet.chain;
-    self.index = index;
-    [self applyIdentityDictionary:identityDictionary version:version save:NO inContext:nil];
-    return self;
-}
+//- (instancetype)initAtIndex:(uint32_t)index
+//     withIdentityDictionary:(NSDictionary *)identityDictionary
+//                    version:(uint32_t)version
+//                   inWallet:(DSWallet *)wallet {
+//    NSParameterAssert(wallet);
+//    if (!(self = [super init])) return nil;
+//    self.wallet = wallet;
+//    self.isLocal = YES;
+//    self.isOutgoingInvitation = NO;
+//    self.isTransient = FALSE;
+//    self.keysCreated = 0;
+//    self.currentMainKeyIndex = 0;
+//    self.currentMainKeyType = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+//    NSData *identityIdData = [identityDictionary objectForKey:@"id"];
+//    self.uniqueID = identityIdData.UInt256;
+//    self.keyInfoDictionaries = [NSMutableDictionary dictionary];
+//    self.registrationStatus = DSIdentityRegistrationStatus_Registered;
+//    [self setupUsernames];
+//    self.chain = wallet.chain;
+//    self.index = index;
+//    [self applyIdentityDictionary:identityDictionary version:version save:NO inContext:nil];
+//    return self;
+//}
 
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
-                    balance:(uint64_t)balance
-                public_keys:(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *)public_keys
+//                    balance:(uint64_t)balance
+//                public_keys:(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *)public_keys
                    inWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
     if (!(self = [super init])) return nil;
@@ -368,15 +358,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     [self setupUsernames];
     self.chain = wallet.chain;
     self.index = index;
-    self.creditBalance = balance;
-    for (int k = 0; k < public_keys->count; k++) {
-        [self addKey:dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(public_keys->values[k])
-             atIndex:index
-              ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
-          withStatus:DSIdentityKeyStatus_Registered
-                save:NO
-           inContext:nil];
-    }
     return self;
 }
 
@@ -913,6 +894,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     for (uint32_t index = 0; index < self.keyInfoDictionaries.count; index++) {
         DKeyKind *keyType = [self typeOfKeyAtIndex:index];
         DMaybeOpaqueKey *key = [self keyAtIndex:index];
+        NSLog(@"verifyKeysForWallet.1: %u: %p %u", dash_spv_crypto_keys_key_KeyKind_index(keyType), key->ok, key->ok->tag);
         if (!key || !key->ok) {
             self.wallet = originalWallet;
             return FALSE;
@@ -925,6 +907,9 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         DMaybeOpaqueKey *derivedKey = [self publicKeyAtIndex:index ofType:keyType];
         if (!derivedKey || !derivedKey->ok) return NO;
         BOOL isEqual = [DSKeyManager keysPublicKeyDataIsEqual:derivedKey->ok key2:key->ok];
+        BYTES *derived = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(derivedKey->ok);
+        BYTES *obtained = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(key->ok);
+        DSLog(@"equal ? %@ == %@", [DSKeyManager NSDataFrom:derived].hexString, [DSKeyManager NSDataFrom:obtained].hexString);
         DMaybeOpaqueKeyDtor(derivedKey);
         if (!isEqual) {
             self.wallet = originalWallet;
@@ -1232,7 +1217,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                                     rType:(uint32_t *)rType
                                    rIndex:(uint32_t *)rIndex {
     NSData *keyData = dictionary[@"data"];
-    NSNumber *keyId = dictionary[@"id"];
+    NSNumber *keyId = dictionary[@"id"]; // TODO: why this treatead as u32???
     NSNumber *type = dictionary[@"type"];
     if (keyData && keyId && type) {
         DKeyKind *kind = dash_spv_crypto_keys_key_key_kind_from_index(type.intValue);
@@ -1249,8 +1234,8 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                       inContext:(NSManagedObjectContext *_Nullable)context {
     uint32_t index = 0;
     uint32_t type = 0;
-    DKeyKind *kind = dash_spv_crypto_keys_key_key_kind_from_index(index);
     DMaybeOpaqueKey *key = [DSIdentity keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
+    DKeyKind *kind = dash_spv_crypto_keys_key_key_kind_from_index(index);
     if (key && key->ok) {
         [self addKey:key atIndex:index ofType:kind withStatus:DSIdentityKeyStatus_Registered save:save inContext:context];
     }
@@ -1306,18 +1291,43 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         }
     }
 }
-
-+ (DMaybeOpaqueKey *)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary {
-    if (identityDictionary[@"publicKeys"]) {
-        for (NSDictionary *dictionary in identityDictionary[@"publicKeys"]) {
-            uint32_t index = 0;
-            uint32_t type = 0;
-            DMaybeOpaqueKey *key = [DSIdentity keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
-            if (index == 0) return key;
+- (void)applyIdentity:(dpp_identity_identity_Identity *)identity
+                 save:(BOOL)save
+            inContext:(NSManagedObjectContext *_Nullable)context {
+    switch (identity->tag) {
+        case dpp_identity_identity_Identity_V0: {
+            dpp_identity_v0_IdentityV0 *versioned = identity->v0;
+            _creditBalance = versioned->balance;
+            for (int k = 0; k < versioned->public_keys->count; k++) {
+                dpp_identity_identity_public_key_KeyID *key_id = versioned->public_keys->keys[k];
+                dpp_identity_identity_public_key_IdentityPublicKey *public_key = versioned->public_keys->values[k];
+                [self addKey:dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(public_key)
+                     atIndex:key_id->_0
+                      ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                  withStatus:DSIdentityKeyStatus_Registered
+                        save:save
+                   inContext:context];
+            }
+            break;
         }
+            
+        default:
+            break;
     }
-    return nil;
+
 }
+
+//+ (DMaybeOpaqueKey *)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary {
+//    if (identityDictionary[@"publicKeys"]) {
+//        for (NSDictionary *dictionary in identityDictionary[@"publicKeys"]) {
+//            uint32_t index = 0;
+//            uint32_t type = 0;
+//            DMaybeOpaqueKey *key = [DSIdentity keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
+//            if (index == 0) return key;
+//        }
+//    }
+//    return nil;
+//}
 
 // MARK: Transition
 
@@ -1463,7 +1473,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     }
     [self processStateTransitionResult:state_transition_result];
     
-    Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_with_delay(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), dash_spv_platform_util_RetryStrategy_Linear_ctor(5), dash_spv_platform_identity_manager_IdentityValidator_None_ctor(), 4);
+    DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_with_delay(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), dash_spv_platform_util_RetryStrategy_Linear_ctor(5), dash_spv_platform_identity_manager_IdentityValidator_None_ctor(), 4);
     
 //    BOOL unsuccess = result->error;
     if (result->error) {
@@ -1580,7 +1590,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
     dispatch_async(self.identityQueue, ^{
-        Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_id_bytes(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), dash_spv_platform_util_RetryStrategy_SlowingDown50Percent_ctor(DEFAULT_FETCH_IDENTITY_RETRY_COUNT), self.isLocal ? dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor() : dash_spv_platform_identity_manager_IdentityValidator_None_ctor());
+        DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_id_bytes(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), dash_spv_platform_util_RetryStrategy_SlowingDown50Percent_ctor(DEFAULT_FETCH_IDENTITY_RETRY_COUNT), self.isLocal ? dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor() : dash_spv_platform_identity_manager_IdentityValidator_None_ctor());
         if (!result) {
             completion(NO, NO, [NSError errorWithCode:0 localizedDescriptionKey:@"Unknown Error"]);
             return;
@@ -1599,7 +1609,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         self->_creditBalance = versioned_identity->balance;
         std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *public_keys = versioned_identity->public_keys;
         for (int i = 0; i < public_keys->count; i++) {
-            dpp_identity_identity_public_key_KeyID *key_id = public_keys->keys[i];
+//            dpp_identity_identity_public_key_KeyID *key_id = public_keys->keys[i];
             dpp_identity_identity_public_key_IdentityPublicKey *key = public_keys->values[i];
             DMaybeOpaqueKey *maybe_key = dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(key);
             DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(maybe_key->ok);
@@ -1937,14 +1947,14 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     }
     return _dpnsDocumentFactory;
 }
-
-- (DSDAPIClient *)DAPIClient {
-    return self.chain.chainManager.DAPIClient;
-}
-
-- (DSDAPIPlatformNetworkService *)DAPINetworkService {
-    return self.DAPIClient.DAPIPlatformNetworkService;
-}
+//
+//- (DSDAPIClient *)DAPIClient {
+//    return self.chain.chainManager.DAPIClient;
+//}
+//
+//- (DSDAPIPlatformNetworkService *)DAPINetworkService {
+//    return self.DAPIClient.DAPIPlatformNetworkService;
+//}
 
 // MARK: - Signing and Encryption
 
@@ -2359,55 +2369,55 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 //        }
 //    }];
 //}
-
-- (void)monitorForContract:(DPContract *)contract
-            withRetryCount:(uint32_t)retryCount
-                 inContext:(NSManagedObjectContext *)context
-                completion:(void (^)(BOOL success, NSError *error))completion {
-    __weak typeof(self) weakSelf = self;
-    NSParameterAssert(contract);
-    if (!contract) return;
-    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
-    [dapiNetworkService fetchContractForId:uint256_data(contract.contractId)
-                           completionQueue:self.identityQueue
-                                   success:^(id _Nonnull contractDictionary) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) completion(NO, ERROR_MEM_ALLOC);
-            return;
-        }
-        DSLog(@"Contract dictionary is %@", contractDictionary);
-        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"$id"] isEqualToData:uint256_data(contract.contractId)]) {
-            contract.contractState = DPContractState_Registered;
-            [contract saveAndWaitInContext:context];
-            if (completion) completion(TRUE, nil);
-        } else if (retryCount > 0) {
-            [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 inContext:context completion:completion];
-        } else if (completion) {
-            completion(NO, ERROR_MALFORMED_RESPONSE);
-        }
-    }
-                                   failure:^(NSError *_Nonnull error) {
-        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-        }
-        if (retryCount > 0) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    if (completion) completion(NO, ERROR_MEM_ALLOC);
-                    return;
-                }
-                [strongSelf monitorForContract:contract
-                                withRetryCount:retryCount - 1
-                                     inContext:context
-                                    completion:completion];
-            });
-        } else if (completion) {
-            completion(FALSE, error);
-        }
-    }];
-}
+//
+//- (void)monitorForContract:(DPContract *)contract
+//            withRetryCount:(uint32_t)retryCount
+//                 inContext:(NSManagedObjectContext *)context
+//                completion:(void (^)(BOOL success, NSError *error))completion {
+//    __weak typeof(self) weakSelf = self;
+//    NSParameterAssert(contract);
+//    if (!contract) return;
+//    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
+//    [dapiNetworkService fetchContractForId:uint256_data(contract.contractId)
+//                           completionQueue:self.identityQueue
+//                                   success:^(id _Nonnull contractDictionary) {
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            if (completion) completion(NO, ERROR_MEM_ALLOC);
+//            return;
+//        }
+//        DSLog(@"Contract dictionary is %@", contractDictionary);
+//        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"$id"] isEqualToData:uint256_data(contract.contractId)]) {
+//            contract.contractState = DPContractState_Registered;
+//            [contract saveAndWaitInContext:context];
+//            if (completion) completion(TRUE, nil);
+//        } else if (retryCount > 0) {
+//            [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 inContext:context completion:completion];
+//        } else if (completion) {
+//            completion(NO, ERROR_MALFORMED_RESPONSE);
+//        }
+//    }
+//                                   failure:^(NSError *_Nonnull error) {
+//        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+//            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+//        }
+//        if (retryCount > 0) {
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//                __strong typeof(weakSelf) strongSelf = weakSelf;
+//                if (!strongSelf) {
+//                    if (completion) completion(NO, ERROR_MEM_ALLOC);
+//                    return;
+//                }
+//                [strongSelf monitorForContract:contract
+//                                withRetryCount:retryCount - 1
+//                                     inContext:context
+//                                    completion:completion];
+//            });
+//        } else if (completion) {
+//            completion(FALSE, error);
+//        }
+//    }];
+//}
 
 // MARK: - Dashpay
 

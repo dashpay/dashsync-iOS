@@ -65,21 +65,20 @@
     [self.chainManager.identitiesManager searchIdentitiesByDashpayUsernamePrefix:namePrefix
                                                          queryDashpayProfileInfo:YES
                                                                   withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
-                                                                      if (success) {
-                                                                          self.identities = identities;
-                                                                          [self.tableView reloadData];
-                                                                      }
-                                                                  }];
+        if (success) [self updateIdentities:identities];
+    }];
+}
+
+- (void)updateIdentities:(NSArray<DSIdentity *> *_Nullable)identities {
+    self.identities = identities;
+    [self.tableView reloadData];
 }
 
 - (void)searchByIdentifier:(NSData *)identifier {
     [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredIdentityUniqueID:identifier
-                                                                           withCompletion:^(BOOL succeess, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
-                                                                                         if (succeess) {
-                                                                                             self.identities = identities;
-                                                                                             [self.tableView reloadData];
-                                                                                         }
-                                                                                     }];
+                                                                           withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
+        if (success) [self updateIdentities:identities];
+    }];
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {

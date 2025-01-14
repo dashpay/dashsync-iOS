@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary
                                   onIdentity:(DSIdentity *)identity;
 
-- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key;
+//- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key;
 
 @end
 

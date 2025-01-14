@@ -25,6 +25,7 @@
 #import "DSTransientDashpayUser.h"
 #import "DSWallet.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 #import <CocoaImageHashing/CocoaImageHashing.h>
 
@@ -33,6 +34,7 @@
 #define ERROR_TRANSITION_NO_UPDATE [NSError errorWithCode:500 localizedDescriptionKey:@"Transition had nothing to update"]
 #define ERROR_DASHPAY_CONTRACT_NOT_REGISTERED [NSError errorWithCode:500 localizedDescriptionKey:@"Dashpay Contract is not yet registered on network"]
 #define ERROR_IDENTITY_NO_LONGER_ACTIVE [NSError errorWithCode:410 localizedDescriptionKey:@"Identity no longer active in wallet"]
+#define ERROR_CONTRACT_SETUP [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]
 
 @implementation DSIdentity (Profile)
 
@@ -437,7 +439,7 @@
 
 - (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext *)context
                                   withCompletion:(void (^)(DSTransition *transition, BOOL cancelled, NSError *error))completion {
-    __weak typeof(self) weakSelf = self;
+//    __weak typeof(self) weakSelf = self;
     DSDocumentTransition *transition = [self profileDocumentTransitionInContext:context];
     if (!transition) {
         if (completion) completion(nil, NO, ERROR_TRANSITION_NO_UPDATE);
@@ -534,9 +536,50 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DASHPAY_CONTRACT_NOT_REGISTERED); });
         return;
     }
+    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_dashpay_profile_for_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(self.uniqueID), dashpayContract.raw_contract);
+        
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentDtor(result);
+        dispatch_async(completionQueue, ^{ completion(NO, error); });
+        return;
+    }
+    if (result->ok) {
+            
+        
+    }
+
     
     [self.identitiesManager fetchProfileForIdentity:self
                                      withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
+//                                     withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
+//        if (!result) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_CONTRACT_SETUP); });
+//            return;
+//        } else if (result->error) {
+//            NSError *error = [NSError ffi_from_platform_error:result->error];
+//            DMaybeDocumentDtor(result);
+//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
+//            return;
+//        } else if (!result->ok) {
+//            DMaybeDocumentDtor(result);
+//            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
+//            return;
+//        } else {
+//            [self applyProfileChanges:dashpayUserInfo
+//                            inContext:context
+//                          saveContext:YES
+//                           completion:^(BOOL success, NSError *_Nullable error) {
+//                if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
+//            }
+//                    onCompletionQueue:self.identityQueue];
+//        }
+        
+//        if (!result || result->error || !result->ok) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
+//
+//        }
+////        
         if (!success || error || dashpayUserInfo == nil) {
             if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
             return;
@@ -577,7 +620,7 @@
             NSAssert(contact, @"It is weird to get here");
             if (!contact)
                 contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", self.uniqueIDData];
-            if (!contact || transientDashpayUser.updatedAt > contact.updatedAt) {
+            if (!contact || transientDashpayUser.updatedAt> contact.updatedAt) {
                 if (!contact) {
                     contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
                     contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];

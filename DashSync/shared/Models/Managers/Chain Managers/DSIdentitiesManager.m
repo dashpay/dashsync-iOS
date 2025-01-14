@@ -28,7 +28,6 @@
 #import "DSChain+Protected.h"
 #import "DSChain+Wallet.h"
 #import "DSChainManager.h"
-#import "DSDAPIClient.h"
 #import "DSDAPIPlatformNetworkService.h"
 #import "DSDashPlatform.h"
 #import "DSMerkleBlock.h"
@@ -38,6 +37,7 @@
 #import "DSWallet.h"
 #import "DSWallet+Identity.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
@@ -170,43 +170,80 @@
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString *)name
                                                     withCompletion:(IdentityCompletionBlock)completion {
-    return [self searchIdentityByName:name inDomain:@"dash" withCompletion:completion];
+    return [self searchIdentityByName:name
+                             inDomain:@"dash"
+                       withCompletion:completion];
 }
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString *)name
                                                inDomain:(NSString *)domain
                                          withCompletion:(IdentityCompletionBlock)completion {
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDPNSDocumentsForUsernames:@[name]
-                                                                                                  inDomain:domain
-                                                                                           completionQueue:self.identityQueue
-                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __block NSMutableArray *rIdentities = [NSMutableArray array];
-        for (NSDictionary *document in documents) {
-            NSData *userIdData = document[@"$ownerId"];
-            NSString *normalizedLabel = document[@"normalizedLabel"];
-            NSString *domain = document[@"normalizedParentDomainName"];
-            DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
-            [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            [rIdentities addObject:identity];
-        }
-        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities firstObject], nil); });
-    }
-                                                                                                   failure:^(NSError *_Nonnull error) {
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, (char *)[name UTF8String]);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentsMapDtor(result);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, error); });
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentityByName %@", error);
-#else
-        DSLog(@"Failure in searchIdentityByName %@", @"<REDACTED>");
-#endif
-    }];
-    return call;
+        return nil;
+    }
+    
+    // TODO: in wallet we have unusuable but cancelable request, so...
+    __block NSMutableArray *rIdentities = [NSMutableArray array];
+    DDocumentsMap *documents = result->ok;
+    for (int i = 0; i < documents->count; i++) {
+        dpp_document_Document *document = documents->values[i];
+        if (!document) continue;
+        platform_value_Value *normalized_label_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedLabel" UTF8String]);
+        NSString *normalizedLabel = [NSString stringWithCString:normalized_label_value->text encoding:NSUTF8StringEncoding];
+        platform_value_Value_destroy(normalized_label_value);
+        platform_value_Value *normalized_parent_domain_name_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedParentDomainName" UTF8String]);
+        NSString *domain = [NSString stringWithCString:normalized_parent_domain_name_value->text encoding:NSUTF8StringEncoding];
+        platform_value_Value_destroy(normalized_parent_domain_name_value);
+        platform_value_types_identifier_Identifier *owner_id = document->v0->owner_id;
+
+        DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:*(UInt256 *)owner_id->_0->_0 isTransient:TRUE onChain:self.chain];
+        [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+        [rIdentities addObject:identity];
+
+    }
+    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities firstObject], nil); });
+    return nil;
+
+//    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
+//    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDPNSDocumentsForUsernames:@[name]
+//                                                                                                  inDomain:domain
+//                                                                                           completionQueue:self.identityQueue
+//                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        __block NSMutableArray *rIdentities = [NSMutableArray array];
+//        for (NSDictionary *document in documents) {
+//            NSData *userIdData = document[@"$ownerId"];
+//            NSString *normalizedLabel = document[@"normalizedLabel"];
+//            NSString *domain = document[@"normalizedParentDomainName"];
+//            DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
+//            [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+//            [rIdentities addObject:identity];
+//        }
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities firstObject], nil); });
+//    }
+//                                                                                                   failure:^(NSError *_Nonnull error) {
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, error); });
+//#if DEBUG
+//        DSLogPrivate(@"Failure in searchIdentityByName %@", error);
+//#else
+//        DSLog(@"Failure in searchIdentityByName %@", @"<REDACTED>");
+//#endif
+//    }];
+//    return call;
 }
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity
                                             withCompletion:(DashpayUserInfoCompletionBlock)completion
                                          onCompletionQueue:(dispatch_queue_t)completionQueue {
-    return [self fetchProfileForIdentity:identity retryCount:5 delay:2 delayIncrease:1 withCompletion:completion onCompletionQueue:completionQueue];
+    return [self fetchProfileForIdentity:identity
+                              retryCount:5
+                                   delay:2
+                           delayIncrease:1
+                          withCompletion:completion
+                       onCompletionQueue:completionQueue];
 }
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity
@@ -217,83 +254,130 @@
                                          onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_CONTRACT_SETUP); });
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, nil); });
         return nil;
     }
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfileForUserId:identity.uniqueIDData
-                                                                                         completionQueue:self.identityQueue
-                                                                                                 success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        if (documents.count == 0) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil, nil); });
-            return;
-        }
-        NSDictionary *contactDictionary = documents.firstObject;
-        DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:contactDictionary];
-        if (completion) dispatch_async(completionQueue, ^{ completion(YES, transientDashpayUser, nil); });
+    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_dashpay_profile_for_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+        DMaybeDocumentDtor(result);
+        return nil;
     }
-                                                                                                 failure:^(NSError *_Nonnull error) {
-        if (retryCount > 0) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.identityQueue, ^{
-                [self fetchProfileForIdentity:identity
-                                   retryCount:retryCount - 1
-                                        delay:delay + delayIncrease
-                                delayIncrease:delayIncrease
-                               withCompletion:completion
-                            onCompletionQueue:completionQueue];
-            });
-        } else if (completion) {
-            dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
-        }
-    }];
-    return call;
+    if (!result->ok) {
+        if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil, nil); });
+        DMaybeDocumentDtor(result);
+        return nil;
+   }
+    DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:result->ok];
+    dispatch_async(completionQueue, ^{ if (completion) completion(YES, transientDashpayUser, nil); });
+    return nil;
+    
+//    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
+//    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfileForUserId:identity.uniqueIDData
+//                                                                                         completionQueue:self.identityQueue
+//                                                                                                 success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        if (documents.count == 0) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil, nil); });
+//            return;
+//        }
+//        NSDictionary *contactDictionary = documents.firstObject;
+//        DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:contactDictionary];
+//        if (completion) dispatch_async(completionQueue, ^{ completion(YES, transientDashpayUser, nil); });
+//    }
+//                                                                                                 failure:^(NSError *_Nonnull error) {
+//        if (retryCount > 0) {
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.identityQueue, ^{
+//                [self fetchProfileForIdentity:identity
+//                                   retryCount:retryCount - 1
+//                                        delay:delay + delayIncrease
+//                                delayIncrease:delayIncrease
+//                               withCompletion:completion
+//                            onCompletionQueue:completionQueue];
+//            });
+//        } else if (completion) {
+//            dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+//        }
+//    }];
+//    return call;
 }
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
                                                withCompletion:(DashpayUserInfosCompletionBlock)completion
                                             onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
-    
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_CONTRACT_SETUP); });
         return nil;
     }
-//    NSMutableArray *identityUserIds = [NSMutableArray array];
-//    for (DSIdentity *identity in identities) {
-//        [identityUserIds addObject:identity.uniqueIDData];
-//    }
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfilesForUserIds:identityUserIds
-                                                                                           completionQueue:self.identityQueue
-                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_MEM_ALLOC); });
-            return;
-        }
-        
-        NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
-        for (NSDictionary *documentDictionary in documents) {
-            NSData *userIdData = documentDictionary[@"$ownerId"];
-            DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:documentDictionary];
-            [dashpayUserDictionary setObject:transientDashpayUser forKey:userIdData];
-        }
-        __weak typeof(self) weakSelf = self;
-        if (completion) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+    NSUInteger user_ids_count = identityUserIds.count;
+    u256 **user_ids_values = malloc(sizeof(u256 *) * user_ids_count);
+    
+    for (int i = 0; i < user_ids_count; i++) {
+        NSData *userID = identityUserIds[i];
+        user_ids_values[i] = u256_ctor(userID);
+    }
+    Vec_u8_32 *user_ids = Vec_u8_32_ctor(user_ids_count, user_ids_values);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dashpay_profiles_for_user_ids_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, user_ids, dashpayContract.raw_contract);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+        DMaybeDocumentsMapDtor(result);
+        return nil;
+    }
+    DDocumentsMap *documents = result->ok;
+    NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
+    for (int i = 0; i < documents->count; i++) {
+        platform_value_types_identifier_Identifier *identifier = documents->keys[i];
+        dpp_document_Document *document = documents->values[i];
+        switch (document->tag) {
+            case dpp_document_Document_V0: {
+                platform_value_types_identifier_Identifier *owner_id = document->v0->owner_id;
+                DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:document];
+                [dashpayUserDictionary setObject:transientDashpayUser forKey:NSDataFromPtr(document->v0->owner_id->_0->_0)];
+                break;
             }
-            dispatch_async(completionQueue, ^{
-                completion(YES, dashpayUserDictionary, nil);
-            });
+            default:
+                break;
         }
     }
-                                                                                                   failure:^(NSError *_Nonnull error) {
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
-    }];
-    return call;
+    DMaybeDocumentsMapDtor(result);
+    if (completion) dispatch_async(completionQueue, ^{ completion(YES, dashpayUserDictionary, nil); });
+    return nil;
+
+    
+//    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
+//    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfilesForUserIds:identityUserIds
+//                                                                                           completionQueue:self.identityQueue
+//                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_MEM_ALLOC); });
+//            return;
+//        }
+//        
+//        NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
+//        for (NSDictionary *documentDictionary in documents) {
+//            NSData *userIdData = documentDictionary[@"$ownerId"];
+//            DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:documentDictionary];
+//            [dashpayUserDictionary setObject:transientDashpayUser forKey:userIdData];
+//        }
+//        __weak typeof(self) weakSelf = self;
+//        if (completion) {
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//            dispatch_async(completionQueue, ^{
+//                completion(YES, dashpayUserDictionary, nil);
+//            });
+//        }
+//    }
+//                                                                                                   failure:^(NSError *_Nonnull error) {
+//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+//    }];
+//    return call;
 }
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
@@ -312,7 +396,6 @@
                                                    queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
                                                             withCompletion:(IdentitiesCompletionBlock)completion {
     return [self searchIdentitiesByNamePrefix:namePrefix
-                                     inDomain:@"dash"
                                    startAfter:startAfter
                                         limit:limit
                                withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
@@ -338,69 +421,148 @@
     }];
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix inDomain:(NSString *)domain startAfter:(NSData* _Nullable)startAfter limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix
-                                                                                                          inDomain:domain
-                                                                                                        startAfter:startAfter
-                                                                                                             limit:limit
-                                                                                                   completionQueue:self.identityQueue
-                                                                                                           success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __block NSMutableDictionary *rIdentities = [NSMutableDictionary dictionary];
-        for (NSDictionary *document in documents) {
-            NSData *userIdData = document[@"$ownerId"];
-            DSIdentity *identity = [rIdentities objectForKey:userIdData];
-            UInt256 uniqueId = userIdData.UInt256;
-            if (!identity)
-                identity = [self.chain identityForUniqueId:uniqueId foundInWallet:nil includeForeignIdentities:YES];
-            NSString *label = document[@"label"];
-            NSString *domain = document[@"normalizedParentDomainName"];
-            if (!identity) {
-                identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
-                [identity addUsername:label inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            } else if (![identity.dashpayUsernames containsObject:label]) {
-                [identity addUsername:label inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
-            }
-            [rIdentities setObject:identity forKey:userIdData];
-        }
-        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [[rIdentities allValues] copy], @[]); });
-    }
-                                                                                                           failure:^(NSError *_Nonnull error) {
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix
+                                                     startAfter:(NSData* _Nullable)startAfter
+                                                          limit:(uint32_t)limit
+                                                 withCompletion:(IdentitiesCompletionBlock)completion {
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, (char *)[namePrefix UTF8String]);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentsMapDtor(result);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentitiesByNamePrefix %@", error);
-#else
-        DSLog(@"Failure in searchIdentitiesByNamePrefix %@", @"<REDACTED>");
-#endif
-    }];
-    return call;
+        return nil;
+    }
+    DDocumentsMap *documents = result->ok;
+    __block NSMutableDictionary *rIdentities = [NSMutableDictionary dictionary];
+    for (int i = 0; i < documents->count; i++) {
+        dpp_document_Document *document = documents->values[i];
+        if (!document) continue;
+        switch (document->tag) {
+            case dpp_document_Document_V0: {
+                u256 *owner_id = document->v0->owner_id->_0->_0;
+                NSData *userIdData = NSDataFromPtr(owner_id);
+                UInt256 uniqueId = *(UInt256 *)owner_id->values;
+                DSIdentity *identity = [rIdentities objectForKey:userIdData];
+                if (!identity)
+                    identity = [self.chain identityForUniqueId:uniqueId foundInWallet:nil includeForeignIdentities:YES];
+                platform_value_Value *label_value = dash_spv_platform_document_get_document_property(document, (char *) [@"label" UTF8String]);
+                platform_value_Value *domain_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedParentDomainName" UTF8String]);
+                NSString *label = [NSString stringWithCString:label_value->text encoding:NSUTF8StringEncoding];
+                NSString *domain = [NSString stringWithCString:domain_value->text encoding:NSUTF8StringEncoding];
+                if (!identity) {
+                    identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
+                    [identity addUsername:label inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+                } else if (![identity.dashpayUsernames containsObject:label]) {
+                    [identity addUsername:label inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
+                }
+                [rIdentities setObject:identity forKey:userIdData];
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [[rIdentities allValues] copy], @[]); });
+    return nil;
+//    
+//    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
+//    
+//    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix
+//                                                                                                        startAfter:startAfter
+//                                                                                                             limit:limit
+//                                                                                                   completionQueue:self.identityQueue
+//                                                                                                           success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        __block NSMutableDictionary *rIdentities = [NSMutableDictionary dictionary];
+//        for (NSDictionary *document in documents) {
+//            NSData *userIdData = document[@"$ownerId"];
+//            DSIdentity *identity = [rIdentities objectForKey:userIdData];
+//            UInt256 uniqueId = userIdData.UInt256;
+//            if (!identity)
+//                identity = [self.chain identityForUniqueId:uniqueId foundInWallet:nil includeForeignIdentities:YES];
+//            NSString *label = document[@"label"];
+//            NSString *domain = document[@"normalizedParentDomainName"];
+//            if (!identity) {
+//                identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
+//                [identity addUsername:label inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+//            } else if (![identity.dashpayUsernames containsObject:label]) {
+//                [identity addUsername:label inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
+//            }
+//            [rIdentities setObject:identity forKey:userIdData];
+//        }
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [[rIdentities allValues] copy], @[]); });
+//    }
+//                                                                                                           failure:^(NSError *_Nonnull error) {
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
+//#if DEBUG
+//        DSLogPrivate(@"Failure in searchIdentitiesByNamePrefix %@", error);
+//#else
+//        DSLog(@"Failure in searchIdentitiesByNamePrefix %@", @"<REDACTED>");
+//#endif
+//    }];
+//    return call;
 }
 
 - (void)searchIdentitiesByDPNSRegisteredIdentityUniqueID:(NSData *)userID
                                           withCompletion:(IdentitiesCompletionBlock)completion {
-    [self.chain.chainManager.DAPIClient.DAPIPlatformNetworkService getDPNSDocumentsForIdentityWithUserId:userID
-                                                                                         completionQueue:self.identityQueue
-                                                                                                 success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __block NSMutableArray *rIdentities = [NSMutableArray array];
-        for (NSDictionary *document in documents) {
-            NSData *userIdData = document[@"$ownerId"];
-            NSString *normalizedLabel = document[@"normalizedLabel"];
-            NSString *domain = document[@"normalizedParentDomainName"];
-            DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
-            [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
-            [rIdentities addObject:identity];
-        }
-        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities copy], @[]); });
-    }
-                                                                                                 failure:^(NSError *_Nonnull error) {
+    
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor(userID));
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentsMapDtor(result);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentitiesByDPNSRegisteredIdentityUniqueID %@", error);
-#else
-        DSLog(@"Failure in searchIdentitiesByDPNSRegisteredIdentityUniqueID %@", @"<REDACTED>");
-#endif
-    }];
+        return;
+    }
+    DDocumentsMap *identities = result->ok;
+    __block NSMutableArray *rIdentities = [NSMutableArray array];
+    for (int i = 0; i < identities->count; i++) {
+        platform_value_types_identifier_Identifier *identifier = identities->keys[i];
+        dpp_document_Document *document = identities->values[i];
+        if (!document) continue;
+        switch (document->tag) {
+            case dpp_document_Document_V0: {
+                platform_value_Value *normalized_label_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedLabel" UTF8String]);
+                NSString *normalizedLabel = [NSString stringWithCString:normalized_label_value->text encoding:NSUTF8StringEncoding];
+                platform_value_Value_destroy(normalized_label_value);
+                platform_value_Value *normalized_parent_domain_name_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedParentDomainName" UTF8String]);
+                NSString *domain = [NSString stringWithCString:normalized_parent_domain_name_value->text encoding:NSUTF8StringEncoding];
+                platform_value_Value_destroy(normalized_parent_domain_name_value);
+                platform_value_types_identifier_Identifier *owner_id = document->v0->owner_id;
+                DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:*(UInt256 *)owner_id->_0->_0 isTransient:TRUE onChain:self.chain];
+                [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+                [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
+                [rIdentities addObject:identity];
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    DMaybeDocumentsMapDtor(result);
+    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities copy], @[]); });
+//
+//    [self.chain.chainManager.DAPIClient.DAPIPlatformNetworkService getDPNSDocumentsForIdentityWithUserId:userID
+//                                                                                         completionQueue:self.identityQueue
+//                                                                                                 success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        __block NSMutableArray *rIdentities = [NSMutableArray array];
+//        for (NSDictionary *document in documents) {
+//            NSData *userIdData = document[@"$ownerId"];
+//            NSString *normalizedLabel = document[@"normalizedLabel"];
+//            NSString *domain = document[@"normalizedParentDomainName"];
+//            DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
+//            [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+//            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
+//            [rIdentities addObject:identity];
+//        }
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities copy], @[]); });
+//    }
+//                                                                                                 failure:^(NSError *_Nonnull error) {
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
+//#if DEBUG
+//        DSLogPrivate(@"Failure in searchIdentitiesByDPNSRegisteredIdentityUniqueID %@", error);
+//#else
+//        DSLog(@"Failure in searchIdentitiesByDPNSRegisteredIdentityUniqueID %@", @"<REDACTED>");
+//#endif
+//    }];
 }
 
 - (void)checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction {
@@ -542,12 +704,14 @@
             NSMutableArray *identities = [NSMutableArray array];
             
             for (int j = 0; j < ok->count; j++) {
-                dpp_identity_v0_IdentityV0 *identity_v0 = ok->values[j]->v0;
+                dpp_identity_identity_Identity *identity = ok->values[j];
+                dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
                 DMaybeOpaqueKey *maybe_opaque_key = dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(identity_v0->public_keys->values[0]);
                 NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
                 NSNumber *index = [keyIndexes objectForKey:publicKeyData];
-                DSIdentity *identity = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) balance:identity_v0->balance public_keys:identity_v0->public_keys inWallet:wallet];
-                [identities addObject:identity];
+                DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
+                [identityModel applyIdentity:identity save:NO inContext:nil];
+                [identities addObject:identityModel];
             }
             BOOL success = [wallet registerIdentities:identities verify:YES];
             DSLog(@"get_identities_for_key_hashes: Success: %u ", success);

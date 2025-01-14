@@ -27,8 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^IdentitiesSuccessCompletionBlock)(NSArray<DSIdentity *> *_Nullable identities);
 typedef void (^IdentitiesCompletionBlock)(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *errors);
 typedef void (^IdentityCompletionBlock)(BOOL success, DSIdentity *_Nullable identity, NSError *_Nullable error);
-typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error);
 typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByIdentityUniqueId, NSError *_Nullable error);
+typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error);
 
 @interface DSIdentitiesManager : NSObject <DSChainIdentitiesDelegate>
 
@@ -74,12 +74,13 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
                                                             withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix
-                                                       inDomain:(NSString *)domain
                                                      startAfter:(NSData* _Nullable)startAfter
                                                           limit:(uint32_t)limit
                                                  withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity withCompletion:(DashpayUserInfoCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue;
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity
+                                            withCompletion:(DashpayUserInfoCompletionBlock)completion
+                                         onCompletionQueue:(dispatch_queue_t)completionQueue;
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity
                                                           retryCount:(uint32_t)retryCount
@@ -88,10 +89,10 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
                                                       withCompletion:(DashpayUserInfoCompletionBlock)completion
                                                    onCompletionQueue:(dispatch_queue_t)completionQueue;
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
-                                               withCompletion:(DashpayUserInfosCompletionBlock)completion
-                                            onCompletionQueue:(dispatch_queue_t)completionQueue;
-
+//- (id<DSDAPINetworkServiceRequest>)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
+//                                               withCompletion:(DashpayUserInfosCompletionBlock)completion
+//                                            onCompletionQueue:(dispatch_queue_t)completionQueue;
+//
 - (void)searchIdentitiesByDPNSRegisteredIdentityUniqueID:(NSData *)userID
                                           withCompletion:(IdentitiesCompletionBlock)completion;
 

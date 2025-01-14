@@ -45,7 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary<NSData *, NSNumber *> *)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
 
-- (NSError *)applyTransientDashpayUser:(DSTransientDashpayUser *)transientDashpayUser save:(BOOL)save;
+- (NSError *)applyTransientDashpayUser:(DSTransientDashpayUser *)transientDashpayUser
+                                  save:(BOOL)save;
 
 - (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account toFriendWithIdentityIdentifier:(UInt256)identityIdentifier requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
                   presentChallenge:(DSTransactionChallengeBlock)challenge

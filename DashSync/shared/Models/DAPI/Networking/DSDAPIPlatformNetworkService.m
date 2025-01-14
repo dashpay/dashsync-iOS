@@ -602,7 +602,6 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (id<DSDAPINetworkServiceRequest>)searchDPNSDocumentsForUsernamePrefix:(NSString *)usernamePrefix
-                                                               inDomain:(NSString *)domain
                                                              startAfter:(NSData* _Nullable)startAfter
                                                                   limit:(uint32_t)limit
                                                         completionQueue:(dispatch_queue_t)completionQueue
@@ -610,8 +609,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                                 failure:(void (^)(NSError *error))failure {
     NSParameterAssert(usernamePrefix);
     NSParameterAssert(completionQueue);
-    DSPlatformRequestLog(@"searchDPNSDocumentsForUsernamePrefix %@ inDomain %@ startAfter(bs58) %@, limit %u", usernamePrefix, domain, startAfter.base58String, limit);
-    DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernameStartsWithSearch:[usernamePrefix lowercaseString] inDomain:domain startAfter:startAfter limit:limit];
+    DSPlatformRequestLog(@"searchDPNSDocumentsForUsernamePrefix %@ startAfter(bs58) %@, limit %u", usernamePrefix, startAfter.base58String, limit);
+    DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernameStartsWithSearch:[usernamePrefix lowercaseString] inDomain:@"dash" startAfter:startAfter limit:limit];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForDocumentsQueryRequest:platformDocumentsRequest withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
@@ -740,11 +739,13 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSData *)userId since:(NSTimeInterval)timestamp
+- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSData *)userId
+                                                                        since:(NSTimeInterval)timestamp
                                                                    startAfter:(NSData* _Nullable)startAfter
                                                               completionQueue:(dispatch_queue_t)completionQueue
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure {
+    // DocumentsManager_incoming_contact_requests or incoming_contact_requests_using_contract
     NSParameterAssert(userId);
     NSParameterAssert(completionQueue);
     DSPlatformRequestLog(@"getDashpayIncomingContactRequestsForUserId (bs58) %@ since %f startAfter (bs58) %@", userId.base58String, timestamp, startAfter);
@@ -766,7 +767,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                               completionQueue:(dispatch_queue_t)completionQueue
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure {
-    NSParameterAssert(userId);
+    // DocumentsManager_outgoing_contact_requests or outgoing_contact_requests_using_contract
+   NSParameterAssert(userId);
     NSParameterAssert(completionQueue);
     DSPlatformRequestLog(@"getDashpayOutgoingContactRequestsForUserId (base58) %@ since %f startAfter (bs58) %@", userId.base58String, timestamp, startAfter);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForSendingUserId:userId since:timestamp startAfter:startAfter];
@@ -789,6 +791,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                       failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
     NSParameterAssert(completionQueue);
+    
     DSPlatformRequestLog(@"getDashpayProfileForUserId (base58) %@", userId.base58String);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForProfileWithUserId:userId];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;

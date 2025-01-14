@@ -141,6 +141,7 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 /*! @brief This is TRUE only if the blockchain identity is contained within a wallet. It could be in a cleanup phase where it was removed from the wallet but still being help in memory by callbacks. */
 @property (nonatomic, readonly) BOOL isActive;
 /*! @brief This references transient Dashpay user info if on a transient blockchain identity. */
+//@property (nonatomic, readonly, nullable) DMaybeTransientUser *transientDashpayUser;
 @property (nonatomic, readonly) DSTransientDashpayUser *transientDashpayUser;
 /*! @brief This is the bitwise steps that the identity has already performed in registration. */
 @property (nonatomic, readonly) DSIdentityRegistrationStep stepsCompleted;
@@ -280,7 +281,7 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 + (DMaybeOpaqueKey *_Nullable)keyFromKeyDictionary:(NSDictionary *)dictionary
                                              rType:(uint32_t *)rType
                                             rIndex:(uint32_t *)rIndex;
-+ (DMaybeOpaqueKey *_Nullable)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary;
+//+ (DMaybeOpaqueKey *_Nullable)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error;
 - (BOOL)verifyKeysForWallet:(DSWallet *)wallet;

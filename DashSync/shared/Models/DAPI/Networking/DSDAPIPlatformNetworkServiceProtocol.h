@@ -448,14 +448,12 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
 Get a list of users after matching search criteria
 
 @param usernamePrefix The username prefix that will be searched upon
-@param domain The domain in which to search
 @param startAfter Starting amount of results to return
 @param limit Limit of search results to return
 @param success A block object to be executed when the request operation finishes successfully
 @param failure A block object to be executed when the request operation finishes unsuccessfully
 */
 - (id<DSDAPINetworkServiceRequest>)searchDPNSDocumentsForUsernamePrefix:(NSString *)usernamePrefix
-                                                               inDomain:(NSString *)domain
                                                              startAfter:(NSData* _Nullable)startAfter
                                                                   limit:(uint32_t)limit
                                                         completionQueue:(dispatch_queue_t)completionQueue

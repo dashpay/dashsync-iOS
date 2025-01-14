@@ -145,6 +145,12 @@
 - (DArcDocumentsManager *)documentsManager {
     return dash_spv_platform_PlatformSDK_doc_manager(self.platform->obj);
 }
+- (DArcContactRequestManager *)contactRequests {
+    return dash_spv_platform_PlatformSDK_contact_requests(self.platform->obj);
+}
+- (DSaltedDomainHashesManager *)saltedDomainHashes {
+    return dash_spv_platform_PlatformSDK_salted_domain_hashes(self.platform->obj);
+}
 
 - (instancetype)initOnChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;

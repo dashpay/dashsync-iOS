@@ -30,6 +30,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "DSTransientDashpayUser.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 
 #define ERROR_KEY_HANDLING [NSError errorWithCode:501 localizedDescriptionKey:@"Internal key handling error"]
@@ -65,7 +66,7 @@
                                completion:^(BOOL success, NSError *_Nullable error) {
                 if (success && !error) {
                     DSDashpayUserEntity *dashpayUser = [identity matchingDashpayUserInContext:context];
-                    if (identity.transientDashpayUser.revision == dashpayUser.remoteProfileDocumentRevision)
+                    if (identity.transientDashpayUser.revision== dashpayUser.remoteProfileDocumentRevision)
                         identity.transientDashpayUser = nil;
                 }
             }
@@ -123,49 +124,107 @@
     if (!self.isLocal) return;
     __weak typeof(self) weakSelf = self;
     DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
-    [dapiNetworkService getIdentityByName:potentialContact.username
-                                 inDomain:@"dash"
-                          completionQueue:self.identityQueue
-                                  success:^(NSDictionary *_Nonnull identityVersionedDictionary) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) completion(NO, @[ERROR_MEM_ALLOC]);
-            return;
-        }
-        NSNumber *_Nonnull version = identityVersionedDictionary[@(DSPlatformStoredMessage_Version)];
-        NSDictionary *_Nonnull identityDictionary = identityVersionedDictionary[@(DSPlatformStoredMessage_Item)];
-        NSData *identityIdData = nil;
-        if (!identityDictionary || !(identityIdData = identityDictionary[@"id"])) {
-            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MALFORMED_RESPONSE]); });
-            return;
-        }
-        UInt256 identityContactUniqueId = identityIdData.UInt256;
-        NSAssert(uint256_is_not_zero(identityContactUniqueId), @"identityContactUniqueId should not be null");
-        DSBlockchainIdentityEntity *potentialContactIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", uint256_data(identityContactUniqueId)];
-        DSIdentity *potentialContactIdentity = nil;
-        if (potentialContactIdentityEntity) {
-            potentialContactIdentity = [self.chain identityForUniqueId:identityContactUniqueId];
-            if (!potentialContactIdentity)
-                potentialContactIdentity = [[DSIdentity alloc] initWithIdentityEntity:potentialContactIdentityEntity];
-        } else {
-            potentialContactIdentity = [self.identitiesManager foreignIdentityWithUniqueId:identityContactUniqueId
-                                                                           createIfMissing:YES
-                                                                                 inContext:self.platformContext];
-        }
-        [potentialContactIdentity applyIdentityDictionary:identityDictionary
-                                                  version:[version intValue]
-                                                     save:YES
-                                                inContext:self.platformContext];
-        [potentialContactIdentity saveInContext:self.platformContext];
-        [self sendNewFriendRequestToIdentity:potentialContactIdentity completion:completion];
-    }
-                                  failure:^(NSError *_Nonnull error) {
-        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-        }
-        DSLogPrivate(@"%@", error);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, (char *)[potentialContact.username UTF8String]);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
-    }];
+        DMaybeDocumentsMapDtor(result);
+        return;
+    }
+    dpp_document_Document *document = result->ok->values[0];
+    switch (document->tag) {
+        case dpp_document_Document_V0: {
+            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, document->v0->owner_id);
+            if (identity_result->error) {
+                NSError *error = [NSError ffi_from_platform_error:identity_result->error];
+                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
+                Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(identity_result);
+                DMaybeDocumentsMapDtor(result);
+                return;
+            }
+            dpp_identity_identity_Identity *identity = identity_result->ok;
+            if (!identity) {
+                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MALFORMED_RESPONSE]); });
+                Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(identity_result);
+                return;
+            }
+            switch (identity->tag) {
+                case dpp_identity_identity_Identity_V0: {
+                    u256 *identity_contact_unique_id = identity->v0->id->_0->_0;
+                    UInt256 identityContactUniqueId = *(UInt256 *)identity_contact_unique_id->values;
+                    DSBlockchainIdentityEntity *potentialContactIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", NSDataFromPtr(identity_contact_unique_id)];
+                    DSIdentity *potentialContactIdentity = nil;
+                    if (potentialContactIdentityEntity) {
+                        potentialContactIdentity = [self.chain identityForUniqueId:identityContactUniqueId];
+                        if (!potentialContactIdentity)
+                            potentialContactIdentity = [[DSIdentity alloc] initWithIdentityEntity:potentialContactIdentityEntity];
+                    } else {
+                        potentialContactIdentity = [self.identitiesManager foreignIdentityWithUniqueId:identityContactUniqueId
+                                                                                       createIfMissing:YES
+                                                                                             inContext:self.platformContext];
+                    }
+                    [potentialContactIdentity applyIdentity:identity save:YES inContext:self.platformContext];
+                    [self sendNewFriendRequestToIdentity:potentialContactIdentity
+                                               inContext:self.platformContext
+                                              completion:completion
+                                       onCompletionQueue:dispatch_get_main_queue()];
+
+                    break;
+                }
+                    
+                default:
+                    break;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    
+//    [dapiNetworkService getIdentityByName:potentialContact.username
+//                                 inDomain:@"dash"
+//                          completionQueue:self.identityQueue
+//                                  success:^(NSDictionary *_Nonnull identityVersionedDictionary) {
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            if (completion) completion(NO, @[ERROR_MEM_ALLOC]);
+//            return;
+//        }
+//        NSNumber *_Nonnull version = identityVersionedDictionary[@(DSPlatformStoredMessage_Version)];
+//        NSDictionary *_Nonnull identityDictionary = identityVersionedDictionary[@(DSPlatformStoredMessage_Item)];
+//        NSData *identityIdData = nil;
+//        if (!identityDictionary || !(identityIdData = identityDictionary[@"id"])) {
+//            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MALFORMED_RESPONSE]); });
+//            return;
+//        }
+//        UInt256 identityContactUniqueId = identityIdData.UInt256;
+//        NSAssert(uint256_is_not_zero(identityContactUniqueId), @"identityContactUniqueId should not be null");
+//        DSBlockchainIdentityEntity *potentialContactIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", uint256_data(identityContactUniqueId)];
+//        DSIdentity *potentialContactIdentity = nil;
+//        if (potentialContactIdentityEntity) {
+//            potentialContactIdentity = [self.chain identityForUniqueId:identityContactUniqueId];
+//            if (!potentialContactIdentity)
+//                potentialContactIdentity = [[DSIdentity alloc] initWithIdentityEntity:potentialContactIdentityEntity];
+//        } else {
+//            potentialContactIdentity = [self.identitiesManager foreignIdentityWithUniqueId:identityContactUniqueId
+//                                                                           createIfMissing:YES
+//                                                                                 inContext:self.platformContext];
+//        }
+//        [potentialContactIdentity applyIdentityDictionary:identityDictionary
+//                                                  version:[version intValue]
+//                                                     save:YES
+//                                                inContext:self.platformContext];
+//        [potentialContactIdentity saveInContext:self.platformContext];
+//        [self sendNewFriendRequestToIdentity:potentialContactIdentity completion:completion];
+//    }
+//                                  failure:^(NSError *_Nonnull error) {
+//        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+//            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+//        }
+//        DSLogPrivate(@"%@", error);
+//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
+//    }];
 }
 
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship

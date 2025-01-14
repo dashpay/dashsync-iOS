@@ -188,7 +188,8 @@
             uintptr_t masternode_lists_count = DStoredMasternodeListsCount(cache);
             DSLog(@"[%@] loadMasternodeListsWithBlockHeightLookup: cache count: %lu at %d", self.chain.name, masternode_lists_count, masternodeListEntity.block.height);
 
-            if ((i == masternodeListEntities.count - 1) || ((masternode_lists_count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
+            if ((i == masternodeListEntities.count - 1) || ((masternode_lists_count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) {
+                //either last one or there are less than 3 (we aim for 3)
                 //we only need a few in memory as new quorums will mostly be verified against recent masternode lists
                 DArcMasternodeList *list = [masternodeListEntity masternodeListWithBlockHeightLookup:blockHeightLookup];
                 DAddMasternodeList(cache, list->obj->block_hash, list);
@@ -242,8 +243,7 @@
                     //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
                     [self.managedObjectContext deleteObject:masternodeListEntity];
                     NSData *blockHash = masternodeListEntity.block.blockHash;
-                    u256 *block_hash = Arr_u8_32_ctor(32, (uint8_t *) blockHash.bytes);
-                    DRemoveMasternodeList(cache, block_hash);
+                    DRemoveMasternodeList(cache, u256_ctor(blockHash));
                 }
                 if (removedItems) {
                     

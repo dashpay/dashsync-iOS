@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "dash_shared_core.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSTimeInterval updatedAt;
 
 - (instancetype)initWithDashpayProfileDocument:(NSDictionary *)profileDocument;
+- (instancetype)initWithDocument:(dpp_document_Document *)document;
 
 @end
 

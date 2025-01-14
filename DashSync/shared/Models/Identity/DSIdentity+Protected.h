@@ -19,6 +19,7 @@
 #import "DSDAPIClient.h"
 #import "DSDAPIPlatformNetworkService.h"
 #import "DSIdentitiesManager.h"
+#import "DSTransientDashpayUser.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -86,14 +87,14 @@ NS_ASSUME_NONNULL_BEGIN
                withUniqueId:(UInt256)uniqueId
                    inWallet:(DSWallet *)wallet;
 
-- (instancetype)initAtIndex:(uint32_t)index
-     withIdentityDictionary:(NSDictionary *)identityDictionary
-                    version:(uint32_t)version
-                   inWallet:(DSWallet *)wallet;
+//- (instancetype)initAtIndex:(uint32_t)index
+//     withIdentityDictionary:(NSDictionary *)identityDictionary
+//                    version:(uint32_t)version
+//                   inWallet:(DSWallet *)wallet;
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
-                    balance:(uint64_t)balance
-                public_keys:(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *)public_keys
+//                    balance:(uint64_t)balance
+//                public_keys:(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *)public_keys
                    inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index
@@ -164,6 +165,9 @@ NS_ASSUME_NONNULL_BEGIN
                         version:(uint32_t)version
                            save:(BOOL)save
                       inContext:(NSManagedObjectContext *_Nullable)context;
+- (void)applyIdentity:(dpp_identity_identity_Identity *)identity
+                 save:(BOOL)save
+            inContext:(NSManagedObjectContext *_Nullable)context;
 - (uint32_t)firstIndexOfKeyOfType:(DKeyKind *)type
                createIfNotPresent:(BOOL)createIfNotPresent
                           saveKey:(BOOL)saveKey;

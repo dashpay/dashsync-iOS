@@ -69,7 +69,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 
 + (instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray *)preorderSaltedHashes;
 
-+ (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId;
+//+ (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId;
 
 + (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp startAfter:(NSData* _Nullable)startAfter;
 

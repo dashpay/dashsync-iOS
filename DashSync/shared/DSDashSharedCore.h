@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define DArcIdentitiesManager std_sync_Arc_dash_spv_platform_identity_manager_IdentitiesManager
 #define DArcContractsManager std_sync_Arc_dash_spv_platform_contract_manager_ContractsManager
 #define DArcDocumentsManager std_sync_Arc_dash_spv_platform_document_manager_DocumentsManager
+#define DArcContactRequestManager std_sync_Arc_dash_spv_platform_document_contact_request_ContactRequestManager
+#define DSaltedDomainHashesManager std_sync_Arc_dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager
 
 @class DSChain;
 
@@ -41,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DArcIdentitiesManager *)identitiesManager;
 - (DArcContractsManager *)contractsManager;
 - (DArcDocumentsManager *)documentsManager;
+- (DArcContactRequestManager *)contactRequests;
+- (DSaltedDomainHashesManager *)saltedDomainHashes;
 
 @property (nonatomic, readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
 

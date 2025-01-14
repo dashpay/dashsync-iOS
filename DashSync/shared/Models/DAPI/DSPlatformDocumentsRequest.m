@@ -90,6 +90,7 @@
 }
 
 + (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain startAfter:(NSData* _Nullable)startAfter limit:(uint32_t)limit {
+    //dpns_documents_for_username_prefix_using_contract
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
     if (usernamePrefix.length) {
@@ -138,17 +139,17 @@
     return platformDocumentsRequest;
 }
 
-+ (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId {
-    DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId]; // why not path predicate and predicate?
-    platformDocumentsRequest.startAt = nil;
-    platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
-    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
-    platformDocumentsRequest.tableName = @"contactRequest";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
-    return platformDocumentsRequest;
-}
+//+ (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId {
+//    DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+//    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId]; // why not path predicate and predicate?
+//    platformDocumentsRequest.startAt = nil;
+//    platformDocumentsRequest.limit = 100;
+//    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+//    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
+//    platformDocumentsRequest.tableName = @"contactRequest";
+//    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
+//    return platformDocumentsRequest;
+//}
 
 + (instancetype)dashpayRequestForProfileWithUserId:(NSData *)userId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];

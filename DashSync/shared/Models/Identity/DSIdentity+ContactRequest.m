@@ -33,6 +33,7 @@
 #import "DSPotentialOneWayFriendship.h"
 #import "DSTransactionManager+Protected.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 
 #define DEFAULT_CONTACT_REQUEST_FETCH_RETRIES 5
@@ -98,6 +99,7 @@
                                   retriesLeft:(int32_t)retriesLeft
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue {
+    
     [self internalFetchIncomingContactRequestsInContext:context
                                              startAfter:startAfter
                                          withCompletion:^(BOOL success, NSData*_Nullable hasMoreStartAfter, NSArray<NSError *> *errors) {
@@ -127,39 +129,81 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
         return;
     }
+    u256 *user_id = u256_ctor_u(self.uniqueID);
+    uint64_t since = self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
+    BYTES *start_after = startAfter ? bytes_ctor(startAfter) : nil;
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIDData
-                                                                  since:self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
-                                                             startAfter:startAfter
-                                                        completionQueue:self.identityQueue
-                                                                success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        //todo chance the since parameter
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_incoming_contact_requests(self.chain.shareCore.runtime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeContactRequestsDtor(result);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
+        return;
+    }
+    Vec_dash_spv_platform_models_contact_request_ContactRequestKind *documents = result->ok;
+
+    dispatch_async(self.identityQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
             return;
         }
-        
-        dispatch_async(self.identityQueue, ^{
-            [strongSelf handleContactRequestObjects:documents
-                                            context:context
-                                         completion:^(BOOL success, NSArray<NSError *> *errors) {
-                BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
-                if (!hasMore)
-                    [self.platformContext performBlockAndWait:^{
-                        self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                    }];
-                if (completion) {
-                    NSData * hasMoreStartAfter = documents.lastObject[@"$id"];
-                    dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
-                }
+        [strongSelf handleContactRequestObjects:documents
+                                        context:context
+                                     completion:^(BOOL success, NSArray<NSError *> *errors) {
+            BOOL hasMore = result->ok->count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+            if (!hasMore)
+                [self.platformContext performBlockAndWait:^{
+                    self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                }];
+            if (completion) {
+                dash_spv_platform_models_contact_request_ContactRequestKind *last = documents->values[documents->count-1];
+                __block NSData * hasMoreStartAfter = nil;
+                if (last->incoming)
+                    hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
+                else if (last->outgoing)
+                    hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
+
+//                NSData * hasMoreStartAfter = documents.lastObject[@"$id"];
+                dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
             }
-                                  onCompletionQueue:self.identityQueue];
-        });
-    }
-                                                                failure:^(NSError *_Nonnull error) {
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
-    }];
+        }
+                              onCompletionQueue:self.identityQueue];
+    });
+
+//    __weak typeof(self) weakSelf = self;
+//    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIDData
+//                                                                  since:self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
+//                                                             startAfter:startAfter
+//                                                        completionQueue:self.identityQueue
+//                                                                success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        //todo chance the since parameter
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
+//            return;
+//        }
+//        
+//        dispatch_async(self.identityQueue, ^{
+//            [strongSelf handleContactRequestObjects:documents
+//                                            context:context
+//                                         completion:^(BOOL success, NSArray<NSError *> *errors) {
+//                BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+//                if (!hasMore)
+//                    [self.platformContext performBlockAndWait:^{
+//                        self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+//                    }];
+//                if (completion) {
+//                    NSData * hasMoreStartAfter = documents.lastObject[@"$id"];
+//                    dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
+//                }
+//            }
+//                                  onCompletionQueue:self.identityQueue];
+//        });
+//    }
+//                                                                failure:^(NSError *_Nonnull error) {
+//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
+//    }];
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
@@ -213,36 +257,72 @@
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIDData
-                                                                  since:self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
-                                                             startAfter:startAfter
-                                                        completionQueue:self.identityQueue
-                                                                success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        //todo chance the since parameter
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
-            return;
-        }
-        
-        dispatch_async(self.identityQueue, ^{
-            [strongSelf handleContactRequestObjects:documents
-                                            context:context
-                                         completion:^(BOOL success, NSArray<NSError *> *errors) {
-                BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
-                if (!hasMore)
-                    [self.platformContext performBlockAndWait:^{
-                        self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                    }];
-                __block NSData * hasMoreStartAfter = success?documents.lastObject[@"$id"]:nil;
-                dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
-            }
-                                  onCompletionQueue:self.identityQueue];
-        });
-    }
-                                                                failure:^(NSError *_Nonnull error) {
+    
+    BYTES *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
+    uint64_t since = self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
+    u256 *user_id = u256_ctor_u(self.uniqueID);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_outgoing_contact_requests(self.chain.shareCore.runtime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeContactRequestsDtor(result);
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
-    }];
+        return;
+    }
+    
+    dispatch_async(self.identityQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        Vec_dash_spv_platform_models_contact_request_ContactRequestKind *documents = result->ok;
+        [strongSelf handleContactRequestObjects:documents
+                                        context:context
+                                     completion:^(BOOL success, NSArray<NSError *> *errors) {
+            BOOL hasMore = documents->count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+            if (!hasMore)
+                [self.platformContext performBlockAndWait:^{
+                    self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                }];
+            dash_spv_platform_models_contact_request_ContactRequestKind *last = documents->values[documents->count-1];
+            __block NSData * hasMoreStartAfter = nil;
+            if (last->incoming)
+                hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
+            else if (last->outgoing)
+                hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
+
+            dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
+        }
+                              onCompletionQueue:self.identityQueue];
+    });
+
+    
+//    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIDData
+//                                                                  since:self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
+//                                                             startAfter:startAfter
+//                                                        completionQueue:self.identityQueue
+//                                                                success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+//        //todo chance the since parameter
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
+//            return;
+//        }
+//        
+//        dispatch_async(self.identityQueue, ^{
+//            [strongSelf handleContactRequestObjects:documents
+//                                            context:context
+//                                         completion:^(BOOL success, NSArray<NSError *> *errors) {
+//                BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+//                if (!hasMore)
+//                    [self.platformContext performBlockAndWait:^{
+//                        self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+//                    }];
+//                __block NSData * hasMoreStartAfter = success?documents.lastObject[@"$id"]:nil;
+//                dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
+//            }
+//                                  onCompletionQueue:self.identityQueue];
+//        });
+//    }
+//                                                                failure:^(NSError *_Nonnull error) {
+//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
+//    }];
 }
 
 // MARK: Response Processing
@@ -253,31 +333,57 @@
 /// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.
 /// @param context The managed object context in which to process results.
 /// @param completion Completion callback with success boolean.
-- (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests
+- (void)handleContactRequestObjects:(Vec_dash_spv_platform_models_contact_request_ContactRequestKind *)rawContactRequests
                             context:(NSManagedObjectContext *)context
                          completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                   onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
-    __block NSMutableArray<DSContactRequest *> *incomingNewRequests = [NSMutableArray array];
-    __block NSMutableArray<DSContactRequest *> *outgoingNewRequests = [NSMutableArray array];
+    __block NSMutableArray<NSValue *> *incomingNewRequests = [NSMutableArray array];
+    __block NSMutableArray<NSValue *> *outgoingNewRequests = [NSMutableArray array];
     __block NSMutableArray *rErrors = [NSMutableArray array];
     [context performBlockAndWait:^{
-        for (NSDictionary *rawContact in rawContactRequests) {
-            DSContactRequest *contactRequest = [DSContactRequest contactRequestFromDictionary:rawContact onIdentity:self];
-            if (uint256_eq(contactRequest.recipientIdentityUniqueId, self.uniqueID)) {
-                //we are the recipient, this is an incoming request
-                DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderIdentityUniqueId)];
-                if (!friendRequest)
-                    [incomingNewRequests addObject:contactRequest];
-            } else if (uint256_eq(contactRequest.senderIdentityUniqueId, self.uniqueID)) {
-                //we are the sender, this is an outgoing request
-                BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], [NSData dataWithUInt256:contactRequest.recipientIdentityUniqueId]];
-                if (isNew) [outgoingNewRequests addObject:contactRequest];
-            } else {
-                //we should not have received this
-                NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
+        for (int i = 0; i < rawContactRequests->count; i++) {
+            dash_spv_platform_models_contact_request_ContactRequestKind *kind = rawContactRequests->values[i];
+            switch (kind->tag) {
+                case dash_spv_platform_models_contact_request_ContactRequestKind_Incoming: {
+                    NSData *identifier = NSDataFromPtr(kind->incoming->owner_id);
+                    //we are the recipient, this is an incoming request
+                    DSFriendRequestEntity *exist = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], identifier];
+                    // TODO: memory
+                    if (!exist) [incomingNewRequests addObject:[NSValue valueWithPointer:kind->incoming]];
+                    break;
+                }
+                case dash_spv_platform_models_contact_request_ContactRequestKind_Outgoing: {
+                    NSData *identifier = NSDataFromPtr(kind->outgoing->recipient);
+
+                    BOOL exist = [DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], identifier];
+                    // TODO: memory
+                    if (!exist) [outgoingNewRequests addObject:[NSValue valueWithPointer:kind->outgoing]];
+                    break;
+                }
+                default: {
+                    //we should not have received this
+                    NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
+                    break;
+                }
             }
         }
+//        for (NSDictionary *rawContact in rawContactRequests) {
+//            DSContactRequest *contactRequest = [DSContactRequest contactRequestFromDictionary:rawContact onIdentity:self];
+//            if (uint256_eq(contactRequest.recipientIdentityUniqueId, self.uniqueID)) {
+//                //we are the recipient, this is an incoming request
+//                DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderIdentityUniqueId)];
+//                if (!friendRequest)
+//                    [incomingNewRequests addObject:contactRequest];
+//            } else if (uint256_eq(contactRequest.senderIdentityUniqueId, self.uniqueID)) {
+//                //we are the sender, this is an outgoing request
+//                BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], [NSData dataWithUInt256:contactRequest.recipientIdentityUniqueId]];
+//                if (isNew) [outgoingNewRequests addObject:contactRequest];
+//            } else {
+//                //we should not have received this
+//                NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
+//            }
+//        }
     }];
     __block BOOL succeeded = YES;
     dispatch_group_t dispatchGroup = dispatch_group_create();
@@ -310,7 +416,7 @@
     dispatch_group_notify(dispatchGroup, completionQueue, ^{ if (completion) completion(succeeded, [rErrors copy]); });
 }
 
-- (void)handleIncomingRequests:(NSArray<DSContactRequest *> *)incomingRequests
+- (void)handleIncomingRequests:(NSArray<NSValue *> *)incomingRequests
                        context:(NSManagedObjectContext *)context
                     completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
              onCompletionQueue:(dispatch_queue_t)completionQueue {
@@ -323,17 +429,19 @@
         __block NSMutableArray *errors = [NSMutableArray array];
         dispatch_group_t dispatchGroup = dispatch_group_create();
         
-        for (DSContactRequest *contactRequest in incomingRequests) {
-            DSBlockchainIdentityEntity *externalIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data(contactRequest.senderIdentityUniqueId)];
+        for (NSValue *contactRequest in incomingRequests) {
+            dash_spv_platform_models_contact_request_ContactRequest *request = contactRequest.pointerValue;
+            NSData *senderIdentityUniqueId = NSDataFromPtr(request->owner_id);
+            DSBlockchainIdentityEntity *externalIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", senderIdentityUniqueId];
             if (!externalIdentityEntity) {
                 //no externalBlockchainIdentity exists yet, which means no dashpay user
                 dispatch_group_enter(dispatchGroup);
-                DSIdentity *senderIdentity = [self.identitiesManager foreignIdentityWithUniqueId:contactRequest.senderIdentityUniqueId createIfMissing:YES inContext:context];
+                DSIdentity *senderIdentity = [self.identitiesManager foreignIdentityWithUniqueId:senderIdentityUniqueId.UInt256 createIfMissing:YES inContext:context];
                 [senderIdentity fetchNeededNetworkStateInformationInContext:self.platformContext
-                                                                       withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
+                                                             withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
                     if (!failureStep) {
-                        DMaybeOpaqueKey *senderPublicKey = [senderIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                        NSData *extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:senderPublicKey->ok];
+                        DMaybeOpaqueKey *senderPublicKey = [senderIdentity keyAtIndex:request->sender_key_index];
+                        NSData *extendedPublicKeyData = [self decryptedPublicKeyDataWithKey:senderPublicKey->ok request:request];
                         DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:extendedPublicKeyData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
@@ -343,7 +451,7 @@
                             NSAssert(senderDashpayUserEntity, @"The sender should exist");
                             [self addIncomingRequestFromContact:senderDashpayUserEntity
                                            forExtendedPublicKey:extendedPublicKey
-                                                    atTimestamp:contactRequest.createdAt];
+                                                    atTimestamp:request->created_at];
                         }
                     } else {
                         [errors addObjectsFromArray:networkErrors];
@@ -357,13 +465,13 @@
                     //it's also local (aka both contacts are local to this device), we should store the extended public key for the destination
                     DSIdentity *sourceIdentity = [self.chain identityForUniqueId:externalIdentityEntity.uniqueID.UInt256];
                     DSAccount *account = [sourceIdentity.wallet accountWithNumber:0];
-                    DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationIdentity:self destinationKeyIndex:contactRequest.recipientKeyIndex sourceIdentity:sourceIdentity sourceKeyIndex:contactRequest.senderKeyIndex account:account];
+                    DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationIdentity:self destinationKeyIndex:request->recipient_key_index sourceIdentity:sourceIdentity sourceKeyIndex:request->sender_key_index account:account];
                     if (![DSFriendRequestEntity existingFriendRequestEntityWithSourceIdentifier:sourceIdentity.uniqueID destinationIdentifier:self.uniqueID onAccountIndex:account.accountNumber inContext:context]) {
                         dispatch_group_enter(dispatchGroup);
                         [potentialFriendship createDerivationPathAndSaveExtendedPublicKeyWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath *_Nonnull incomingFundsDerivationPath) {
                             if (success) {
                                 DSDashpayUserEntity *matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
-                                DSFriendRequestEntity *friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:matchingDashpayUserInContext atTimestamp:contactRequest.createdAt];
+                                DSFriendRequestEntity *friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:matchingDashpayUserInContext atTimestamp:request->created_at];
                                 [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
                                 [matchingDashpayUserInContext addIncomingRequestsObject:friendRequest];
                                 if ([[friendRequest.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", matchingDashpayUserInContext]] count])
@@ -384,10 +492,10 @@
                 } else {
                     DSIdentity *sourceIdentity = [[DSIdentity alloc] initWithIdentityEntity:externalIdentityEntity];
                     NSAssert(sourceIdentity, @"This should not be null");
-                    if ([sourceIdentity activeKeyCount] > 0 && [sourceIdentity keyAtIndex:contactRequest.senderKeyIndex]) {
+                    if ([sourceIdentity activeKeyCount] > 0 && [sourceIdentity keyAtIndex:request->sender_key_index]) {
                         //the contact already existed, and has an encryption public key set, create the incoming friend request, add a friendship if an outgoing friend request also exists
-                        DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                        NSData *decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key->ok];
+                        DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
+                        NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
                         NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                         dash_spv_crypto_keys_key_KeyKind *kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
                         DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:kind];
@@ -399,7 +507,7 @@
                         }
                         [self addIncomingRequestFromContact:externalIdentityEntity.matchingDashpayUser
                                        forExtendedPublicKey:extendedPublicKey
-                                                atTimestamp:contactRequest.createdAt];
+                                                atTimestamp:request->created_at];
                         
                         DSDashpayUserEntity *matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
                         if ([[externalIdentityEntity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", matchingDashpayUserInContext]] count]) {
@@ -411,18 +519,18 @@
                         //the blockchain identity is already known, but needs to updated to get the right key, create the incoming friend request, add a friendship if an outgoing friend request also exists
                         dispatch_group_enter(dispatchGroup);
                         [sourceIdentity fetchNeededNetworkStateInformationInContext:context
-                                                                               withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *networkStateInformationErrors) {
+                                                                     withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *networkStateInformationErrors) {
                             if (!failureStep) {
                                 [context performBlockAndWait:^{
-                                    DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:contactRequest.senderKeyIndex];
+                                    DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
                                     NSAssert(key, @"key should be known");
-                                    NSData *decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key->ok];
+                                    NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
                                     NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                                     DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
                                     NSAssert(extendedPublicKey, @"A key should be recovered");
                                     [self addIncomingRequestFromContact:externalIdentityEntity.matchingDashpayUser
                                                    forExtendedPublicKey:extendedPublicKey
-                                                            atTimestamp:contactRequest.createdAt];
+                                                            atTimestamp:request->created_at];
                                     DSDashpayUserEntity *matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
                                     if ([[externalIdentityEntity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", matchingDashpayUserInContext]] count]) {
                                         [matchingDashpayUserInContext addFriendsObject:externalIdentityEntity.matchingDashpayUser];
@@ -444,7 +552,22 @@
     }];
 }
 
-- (void)handleOutgoingRequests:(NSArray<DSContactRequest *> *)outgoingRequests
+- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key
+                                  request:(dash_spv_platform_models_contact_request_ContactRequest *)request {
+    NSParameterAssert(key);
+    DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(key);
+    uint32_t index = uint256_eq(self.uniqueID, *(UInt256 *)request->recipient) ? request->sender_key_index : request->recipient_key_index;
+    DMaybeOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
+    NSAssert(maybe_key->ok, @"Key should exist");
+    DMaybeKeyData *key_data = dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(maybe_key->ok, key, request->encrypted_public_key);
+    NSData *data = key_data->ok ? NSDataFromPtr(key_data->ok) : nil;
+    DMaybeKeyDataDtor(key_data);
+    DMaybeOpaqueKeyDtor(maybe_key);
+    return data;
+}
+
+
+- (void)handleOutgoingRequests:(NSArray<NSValue *> *)outgoingRequests
                        context:(NSManagedObjectContext *)context
                     completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
              onCompletionQueue:(dispatch_queue_t)completionQueue {

@@ -73,34 +73,6 @@
     return [[self alloc] initWithDictionary:serverDictionary onIdentity:identity];
 }
 
-- (BOOL)identityIsRecipient {
-    if (uint256_eq(self.identity.uniqueID, self.recipientIdentityUniqueId)) {
-        //we are the recipient of the friend request
-        return YES;
-    } else if (uint256_eq(self.identity.uniqueID, self.senderIdentityUniqueId)) {
-        //we are the sender of the friend request
-        return NO;
-    }
-    NSAssert(NO, @"We should never get here");
-    return NO;
-}
-
-- (DMaybeOpaqueKey *)secretKeyForDecryptionOfType:(DKeyKind *)type {
-    uint32_t index = [self identityIsRecipient] ? self.recipientKeyIndex : self.senderKeyIndex;
-    DMaybeOpaqueKey *key = [self.identity privateKeyAtIndex:index ofType:type];
-    NSAssert(key, @"Key should exist");
-    return key;
-}
-
-- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key {
-    NSParameterAssert(key);
-    DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(key);
-    DMaybeOpaqueKey *maybe_key = [self secretKeyForDecryptionOfType:kind];
-    NSData *data = [self.encryptedPublicKeyData decryptWithSecretKey:maybe_key->ok fromPublicKey:key];
-    DMaybeOpaqueKeyDtor(maybe_key);
-    return data;
-}
-
 - (NSString *)debugDescription {
     return [NSString stringWithFormat:@"%@ - from %@/%d to %@/%d", [super debugDescription], uint256_base58(self.senderIdentityUniqueId), self.senderKeyIndex, uint256_base58(self.recipientIdentityUniqueId), self.recipientKeyIndex];
 }
