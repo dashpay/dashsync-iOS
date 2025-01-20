@@ -713,6 +713,7 @@
                 [identityModel applyIdentity:identity save:NO inContext:nil];
                 [identities addObject:identityModel];
             }
+            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
             BOOL success = [wallet registerIdentities:identities verify:YES];
             DSLog(@"get_identities_for_key_hashes: Success: %u ", success);
             if (success) {
@@ -726,7 +727,6 @@
             } else {
                 [errors addObject:ERROR_UNKNOWN_KEYS];
             }
-            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
         }
         dispatch_group_notify(dispatch_group, completionQueue, ^{
             completion(!errors.count, allIdentities, errors);

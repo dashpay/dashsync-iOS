@@ -79,7 +79,9 @@
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getTransactionWithHash:(UInt256)transactionHash completionQueue:(dispatch_queue_t)completionQueue success:(void (^)(DSTransaction *transaction))success
+- (id<DSDAPINetworkServiceRequest>)getTransactionWithHash:(UInt256)transactionHash
+                                          completionQueue:(dispatch_queue_t)completionQueue
+                                                  success:(void (^)(DSTransaction *transaction))success
                                                   failure:(void (^)(NSError *error))failure {
     NSParameterAssert(completionQueue);
     GetTransactionRequest *transactionRequest = [[GetTransactionRequest alloc] init];
