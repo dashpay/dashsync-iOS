@@ -26,6 +26,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransaction.h"
+#import "DSCoinControl.h"
 #import "NSData+Dash.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
@@ -52,6 +53,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath *bip32DerivationPath;
 
 @property (nullable, nonatomic, readonly) DSDerivationPath *masterContactsDerivationPath;
+
+@property (nullable, nonatomic, readonly) DSFundsDerivationPath *coinJoinDerivationPath;
 
 @property (nullable, nonatomic, weak) DSWallet *wallet;
 
@@ -94,13 +97,25 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray<NSString *> *internalAddresses;
 
+// returns the first unused coinjoin address
+@property (nullable, nonatomic, readonly) NSString *coinJoinReceiveAddress;
+
+// returns the first unused coinjoin internal address
+@property (nullable, nonatomic, readonly) NSString *coinJoinChangeAddress;
+
+// returns all issued CoinJoin receive addresses
+@property (nullable, nonatomic, readonly) NSArray *usedCoinJoinReceiveAddresses;
+
+// returns all used CoinJoin receive addresses
+@property (nullable, nonatomic, readonly) NSArray *allCoinJoinReceiveAddresses;
+
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray<DSPotentialOneWayFriendship *> *_Nonnull contacts;
 
 // has an extended public key missing in one of the account derivation paths
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error;
+- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit coinJoinGapLimit:(NSUInteger)coinJoinGapLimit internal:(BOOL)internal error:(NSError **)error;
 
 + (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *_Nullable)context;
 
@@ -131,6 +146,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
+
+// true if the coinjoin address is controlled by the wallet
+- (BOOL)containsCoinJoinAddress:(NSString *)coinJoinAddress;
 
 // true if the address is internal and is controlled by the wallet
 - (BOOL)containsInternalAddress:(NSString *)address;
@@ -163,6 +181,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
                                   toOutputScripts:(NSArray *)scripts
                                           withFee:(BOOL)fee;
 
+- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee coinControl:(DSCoinControl *)coinControl;
+
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *_Nullable)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee toShapeshiftAddress:(NSString *_Nullable)shapeshiftAddress;
 
@@ -175,11 +195,24 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 ///
 /// - Parameters:
 ///   - transaction: Instance of `DSTransaction` you want to sign
-///   - completion: Completion block that has type `TransactionValidityCompletionBlock`
+///
+/// - Returns: boolean value indicating if the transaction was signed
 ///
 /// - Note: Using this method to sign a tx doesn't present pin controller, use this method carefully from UI
 ///
-- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion;
+- (BOOL)signTransaction:(DSTransaction *)transaction;
+
+/// Sign any inputs in the given transaction that can be signed using private keys from the wallet
+///
+/// - Parameters:
+///   - transaction: Instance of `DSTransaction` you want to sign
+///   - anyoneCanPay: apply SIGHASH_ANYONECANPAY signature type
+///
+/// - Returns: boolean value indicating if the transaction was signed
+///
+/// - Note: Using this method to sign a tx doesn't present pin controller, use this method carefully from UI
+///
+- (BOOL)signTransaction:(DSTransaction *)transaction anyoneCanPay:(BOOL)anyoneCanPay;
 
 /// Sign any inputs in the given transaction that can be signed using private keys from the wallet
 ///
@@ -215,6 +248,11 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
 
+- (BOOL)isSpent:(NSValue *)output;
+
+// returns input value if no previous account transaction spends this input, and the input is valid, -1 otherwise.
+- (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index;
+
 // received, sent or moved inside an account
 - (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
 
@@ -241,6 +279,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 
 // retuns the amount sent from the account by the trasaction (total account outputs consumed, change and fee included)
 - (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
+
+// Returns the amounts sent by the transaction
+- (NSArray *)amountsSentByTransaction:(DSTransaction *)transaction;
 
 // returns the external (receive) addresses of a transaction
 - (NSArray<NSString *> *)externalAddressesOfTransaction:(DSTransaction *)transaction;

@@ -64,6 +64,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionInvRequest.h"
 #import "DSVersionRequest.h"
+#import "DSCoinJoinManager.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -377,7 +378,7 @@
 - (void)sendRequest:(DSMessageRequest *)request {
     NSString *type = [request type];
     NSData *payload = [request toData];
-    //DSLog(@"%@:%u sendRequest: [%@]: %@", self.host, self.port, type, [payload hexString]);
+//    DSLog(@"%@:%u sendRequest: [%@]: %@", self.host, self.port, type, [payload hexString]);
     [self sendMessage:payload type:type];
 }
 
@@ -843,23 +844,17 @@
         [self acceptGovObjectMessage:message];
     //else if ([MSG_GOVOBJSYNC isEqual:type]) [self acceptGovObjectSyncMessage:message];
 
-    //private send
-    else if ([MSG_DARKSENDANNOUNCE isEqual:type])
-        [self acceptDarksendAnnounceMessage:message];
-    else if ([MSG_DARKSENDCONTROL isEqual:type])
-        [self acceptDarksendControlMessage:message];
-    else if ([MSG_DARKSENDFINISH isEqual:type])
-        [self acceptDarksendFinishMessage:message];
-    else if ([MSG_DARKSENDINITIATE isEqual:type])
-        [self acceptDarksendInitiateMessage:message];
-    else if ([MSG_DARKSENDQUORUM isEqual:type])
-        [self acceptDarksendQuorumMessage:message];
-    else if ([MSG_DARKSENDSESSION isEqual:type])
-        [self acceptDarksendSessionMessage:message];
-    else if ([MSG_DARKSENDSESSIONUPDATE isEqual:type])
-        [self acceptDarksendSessionUpdateMessage:message];
-    else if ([MSG_DARKSENDTX isEqual:type])
-        [self acceptDarksendTransactionMessage:message];
+    // CoinJoin
+    else if ([MSG_COINJOIN_COMPLETE isEqual:type])
+        [self acceptCoinJoinCompleteMessage:message];
+    else if ([MSG_COINJOIN_FINAL_TRANSACTION isEqual:type])
+        [self acceptCoinJoinFinalTransaction:message];
+    else if ([MSG_COINJOIN_QUEUE isEqual:type])
+        [self acceptCoinJoinQueueMessage:message];
+    else if ([MSG_COINJOIN_STATUS_UPDATE isEqual:type])
+        [self acceptCoinJoinStatusUpdateMessage:message];
+    else if ([MSG_COINJOIN_BROADCAST_TX isEqual:type])
+        [self acceptCoinJoinBroadcastTxMessage:message];
 #if DROP_MESSAGE_LOGGING
     else {
         DSLogWithLocation(self, @"dropping %@, len:%u, not implemented", type, message.length);
@@ -1824,61 +1819,26 @@
     DSLogWithLocation(self, @"Gov Object Sync");
 }
 
-// MARK: - Accept Dark send
+// MARK: - Accept CoinJoin messages
 
-- (void)acceptDarksendAnnounceMessage:(NSData *)message {
+- (void)acceptCoinJoinCompleteMessage:(NSData *)message {
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_COMPLETE];
 }
 
-- (void)acceptDarksendControlMessage:(NSData *)message {
+- (void)acceptCoinJoinFinalTransaction:(NSData *)message {
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_FINAL_TRANSACTION];
 }
 
-- (void)acceptDarksendFinishMessage:(NSData *)message {
+- (void)acceptCoinJoinQueueMessage:(NSData *)message {
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_QUEUE];
 }
 
-- (void)acceptDarksendInitiateMessage:(NSData *)message {
+- (void)acceptCoinJoinStatusUpdateMessage:(NSData *)message {
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_STATUS_UPDATE];
 }
 
-- (void)acceptDarksendQuorumMessage:(NSData *)message {
-}
-
-- (void)acceptDarksendSessionMessage:(NSData *)message {
-}
-
-- (void)acceptDarksendSessionUpdateMessage:(NSData *)message {
-}
-
-- (void)acceptDarksendTransactionMessage:(NSData *)message {
-    //    DSTransaction *tx = [DSTransaction transactionWithMessage:message];
-    //
-    //    if (! tx) {
-    //        [self error:@"malformed tx message: %@", message];
-    //        return;
-    //    }
-    //    else if (! self.sentFilter && ! self.sentTxAndBlockGetdata) {
-    //        [self error:@"got tx message before loading a filter"];
-    //        return;
-    //    }
-    //
-    //    DSLogPrivate(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
-    //
-    //    dispatch_async(self.delegateQueue, ^{
-    //        [self.delegate peer:self relayedTransaction:tx];
-    //    });
-    //
-    //    if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-    //        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
-    //
-    //        if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
-    //            BRMerkleBlock *block = self.currentBlock;
-    //
-    //            self.currentBlock = nil;
-    //            self.currentBlockTxHashes = nil;
-    //
-    //            dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
-    //                [self.delegate peer:self relayedBlock:block];
-    //            });
-    //        }
-    //    }
+- (void)acceptCoinJoinBroadcastTxMessage:(NSData *)message {
+    [[DSCoinJoinManager sharedInstanceForChain:self.chain] processMessageFrom:self message:message type:MSG_COINJOIN_BROADCAST_TX];
 }
 
 // MARK: - hash

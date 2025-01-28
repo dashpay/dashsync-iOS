@@ -37,6 +37,12 @@
     BOOL hardenedIndexes[] = {YES, YES, YES};
     return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
++ (instancetype _Nonnull)coinJoinDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long((uint64_t) chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_COINJOIN), uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES, YES, YES, YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_AnonymousFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_CoinJoin onChain:chain];
+}
+
 
 - (instancetype)initWithIndexes:(const UInt256[])indexes hardened:(const BOOL[])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
@@ -107,8 +113,18 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:YES error:nil];
-        [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:NO error:nil];
+        NSUInteger gapLimit = 0;
+        
+        if (self.shouldUseReducedGapLimit) {
+            gapLimit = SEQUENCE_UNUSED_GAP_LIMIT_INITIAL;
+        } else if (self.type == DSDerivationPathType_AnonymousFunds) {
+            gapLimit = SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN;
+        } else {
+            gapLimit = SEQUENCE_GAP_LIMIT_INITIAL;
+        }
+        
+        [self registerAddressesWithGapLimit:gapLimit internal:YES error:nil];
+        [self registerAddressesWithGapLimit:gapLimit internal:NO error:nil];
     }
 }
 
@@ -134,9 +150,10 @@
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError **)error {
-    if (!self.account.wallet.isTransient) {
-        NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
+    if (!self.account.wallet.isTransient && !self.addressesLoaded) {
+        return @[];
     }
+    
     @synchronized(self) {
         NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
         NSUInteger i = a.count;

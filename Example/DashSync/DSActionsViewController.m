@@ -9,6 +9,7 @@
 #import "DSActionsViewController.h"
 #import "DSMiningViewController.h"
 #import "DSTransactionFloodingViewController.h"
+#import "DSCoinJoinViewController.h"
 
 @interface DSActionsViewController ()
 
@@ -37,6 +38,9 @@
     } else if ([segue.identifier isEqualToString:@"MiningSegue"]) {
         DSMiningViewController *miningViewController = (DSMiningViewController *)segue.destinationViewController;
         miningViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"CoinJoinSeque"]) {
+        DSCoinJoinViewController *coinjoinViewController = (DSCoinJoinViewController *)segue.destinationViewController;
+        coinjoinViewController.chainManager = self.chainManager;
     }
 }
 

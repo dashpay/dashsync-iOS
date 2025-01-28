@@ -82,7 +82,7 @@
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
     @synchronized(self) {
-        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:NO] mutableCopy];
         [data appendCountedData:[self payloadData]];
         if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
         return data;

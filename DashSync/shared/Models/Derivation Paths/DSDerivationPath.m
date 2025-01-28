@@ -358,7 +358,6 @@
     return [self.mAllAddresses copy];
 }
 
-
 - (NSSet *)usedAddresses {
     return [self.mUsedAddresses copy];
 }
@@ -496,6 +495,9 @@
             break;
         case DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding:
             return @"BI Credit Invitation Funding";
+            break;
+        case DSDerivationPathReference_CoinJoin:
+            return @"CoinJoin";
             break;
         default:
             return @"Unknown";
