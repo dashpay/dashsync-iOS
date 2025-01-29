@@ -16,12 +16,13 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_shared_core.h"
 #import "DSDashPlatform.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DPDocument, DSIdentity, DSAccount, DSIdentityRegistrationTransition, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
+@class DSIdentity, DSAccount, DSIdentityRegistrationTransition, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
 
 @interface DSPotentialOneWayFriendship : NSObject
 
@@ -32,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSIncomingFundsDerivationPath *derivationPath;
 @property (nonatomic, readonly) uint32_t sourceKeyIndex;
 @property (nonatomic, readonly) uint32_t destinationKeyIndex;
+@property (nonatomic, readonly) UInt256 destinationIdentityUniqueId;
 
 - (instancetype)initWithDestinationIdentity:(DSIdentity *)destinationIdentity
                         destinationKeyIndex:(uint32_t)destinationKeyIndex
@@ -59,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
 
-- (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData;
+- (platform_value_Value *)toValue;
 
 @end
 

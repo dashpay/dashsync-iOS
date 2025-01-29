@@ -36,6 +36,7 @@
 #import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 
+#define DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT 100
 #define DEFAULT_CONTACT_REQUEST_FETCH_RETRIES 5
 
 #define ERROR_DASHPAY_CONTRACT_IMPROPER_SETUP [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]
@@ -140,7 +141,7 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
         return;
     }
-    Vec_dash_spv_platform_models_contact_request_ContactRequestKind *documents = result->ok;
+    DContactRequests *documents = result->ok;
 
     dispatch_async(self.identityQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -271,7 +272,7 @@
     
     dispatch_async(self.identityQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        Vec_dash_spv_platform_models_contact_request_ContactRequestKind *documents = result->ok;
+        DContactRequests *documents = result->ok;
         [strongSelf handleContactRequestObjects:documents
                                         context:context
                                      completion:^(BOOL success, NSArray<NSError *> *errors) {
@@ -333,7 +334,7 @@
 /// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.
 /// @param context The managed object context in which to process results.
 /// @param completion Completion callback with success boolean.
-- (void)handleContactRequestObjects:(Vec_dash_spv_platform_models_contact_request_ContactRequestKind *)rawContactRequests
+- (void)handleContactRequestObjects:(DContactRequests *)rawContactRequests
                             context:(NSManagedObjectContext *)context
                          completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                   onCompletionQueue:(dispatch_queue_t)completionQueue {

@@ -81,8 +81,8 @@
 
 #define ERROR_NO_PEERS [NSError errorWithCode:1 localizedDescriptionKey:@"No peers found"]
 #define ERROR_SYNC_TIMEOUT [NSError errorWithCode:500 descriptionKey:DSLocalizedString(@"Synchronization Timeout", @"An error message for notifying that chain sync has timed out")]
-#define ERROR_NO_SERVICE(host) [NSError errorWithCode:500 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not service network", nil), host]]
-#define ERROR_NO_BLOOM(host) [NSError errorWithCode:500 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not support bloom filtering", nil), host]]
+#define ERROR_NO_SERVICE(host) [NSError errorWithCode:500 descriptionKey:DSLocalizedFormat(@"Node at host %@ does not service network", nil, host)]
+#define ERROR_NO_BLOOM(host) [NSError errorWithCode:500 descriptionKey:DSLocalizedFormat(@"Node at host %@ does not support bloom filtering", nil, host)]
 
 @interface DSPeerManager ()
 

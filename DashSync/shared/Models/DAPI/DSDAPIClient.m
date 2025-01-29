@@ -77,29 +77,29 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 //    DPSTPacket *stPacket = [platform.stPacketFactory packetWithContractId:contract.identifier documents:documents];
 //    [self sendPacket:stPacket forUser:identity completion:completion];
 //}
-
-- (void)sendDocument:(DPDocument *)document
-         forIdentity:(DSIdentity *)identity
-            contract:(DPContract *)contract
-          completion:(void (^)(NSError *_Nullable error))completion {
-    NSParameterAssert(document);
-    NSParameterAssert(contract);
-
-    DSDocumentTransition *documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 identityUniqueId:identity.uniqueID onChain:self.chain];
-    if ([identity signStateTransition:documentTransition]) {
-        [self publishTransition:documentTransition
-            success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-                if (completion) completion(nil);
-            }
-            failure:^(NSError *_Nonnull error) {
-                if (completion) completion(error);
-            }];
-    } else if (completion) {
-        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
-                                       code:DSDAPIClientErrorCodeSignTransitionFailed
-                                   userInfo:nil]);
-    }
-}
+//
+//- (void)sendDocument:(DPDocument *)document
+//         forIdentity:(DSIdentity *)identity
+//            contract:(DPContract *)contract
+//          completion:(void (^)(NSError *_Nullable error))completion {
+//    NSParameterAssert(document);
+//    NSParameterAssert(contract);
+//
+//    DSDocumentTransition *documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 identityUniqueId:identity.uniqueID onChain:self.chain];
+//    if ([identity signStateTransition:documentTransition]) {
+//        [self publishTransition:documentTransition
+//            success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
+//                if (completion) completion(nil);
+//            }
+//            failure:^(NSError *_Nonnull error) {
+//                if (completion) completion(error);
+//            }];
+//    } else if (completion) {
+//        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
+//                                       code:DSDAPIClientErrorCodeSignTransitionFailed
+//                                   userInfo:nil]);
+//    }
+//}
 
 - (void)getAllStateTransitionsForUser:(DSIdentity *)identity completion:(void (^)(NSError *_Nullable error))completion {
     //    DSDAPINetworkService * service = self.DAPINetworkService;

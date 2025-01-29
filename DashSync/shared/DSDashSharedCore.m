@@ -152,6 +152,10 @@
     return dash_spv_platform_PlatformSDK_salted_domain_hashes(self.platform->obj);
 }
 
+- (DUsernamesManager *)usernames {
+    return dash_spv_platform_PlatformSDK_usernames(self.platform->obj);
+}
+
 - (instancetype)initOnChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     self.chain = chain;

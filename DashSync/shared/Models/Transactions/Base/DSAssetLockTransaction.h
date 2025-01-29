@@ -36,4 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface DSAssetLockTransaction (FFI)
++ (instancetype)ffi_from:(dashcore_blockdata_transaction_Transaction *)transaction onChain:(DSChain *)chain;
+@end
+
 NS_ASSUME_NONNULL_END

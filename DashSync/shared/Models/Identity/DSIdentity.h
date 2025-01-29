@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSIdentityRegistrationTransition, DSIdentityTopupTransition, DSIdentityUpdateTransition, DSIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSAssetLockTransaction, DSDocumentTransition, DPDocumentFactory, DSTransientDashpayUser, DSInvitation, DSAuthenticationKeysDerivationPath, UIImage;
+@class DSWallet, DSIdentityRegistrationTransition, DSIdentityTopupTransition, DSIdentityUpdateTransition, DSIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSAssetLockTransaction, DSTransientDashpayUser, DSInvitation, DSAuthenticationKeysDerivationPath, UIImage;
 
 typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStep)
 {
@@ -176,10 +176,6 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 @property (nonatomic, readonly) NSString *localizedRegistrationStatusString;
 /*! @brief This is a convenience method that checks to see if registrationStatus is confirmed */
 @property (nonatomic, readonly, getter=isRegistered) BOOL registered;
-/*! @brief This is a convenience factory to quickly make dashpay documents */
-@property (nonatomic, readonly) DPDocumentFactory *dashpayDocumentFactory;
-/*! @brief This is a convenience factory to quickly make dpns documents */
-@property (nonatomic, readonly) DPDocumentFactory *dpnsDocumentFactory;
 /*! @brief DashpaySyncronizationBlock represents the last L1 block height for which Dashpay would be synchronized, if this isn't at the end of the chain then we need to query L2 to make sure we don't need to update our bloom filter */
 @property (nonatomic, readonly) uint32_t dashpaySyncronizationBlockHeight;
 /*! @brief DashpaySyncronizationBlock represents the last L1 block hash for which Dashpay would be synchronized */
@@ -217,10 +213,10 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
 - (void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
-- (BOOL)signStateTransition:(DSTransition *)transition;
-- (BOOL)signStateTransition:(DSTransition *)transition
-                forKeyIndex:(uint32_t)keyIndex
-                     ofType:(DKeyKind *)signingAlgorithm;
+//- (BOOL)signStateTransition:(DSTransition *)transition;
+//- (BOOL)signStateTransition:(DSTransition *)transition
+//                forKeyIndex:(uint32_t)keyIndex
+//                     ofType:(DKeyKind *)signingAlgorithm;
 //- (void)signMessageDigest:(UInt256)digest
 //              forKeyIndex:(uint32_t)keyIndex
 //                   ofType:(DKeyKind *)signingAlgorithm

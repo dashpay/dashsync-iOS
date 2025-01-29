@@ -2405,7 +2405,7 @@
 				ORGANIZATIONNAME = "Dash Core Group";
 				TargetAttributes = {
 					6003F589195388D20070C39A = {
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 					6003F5AD195388D20070C39A = {
 						DevelopmentTeam = 44RJ69WHFF;
@@ -3239,12 +3239,20 @@
 			baseConfigurationReference = 61730B1B3737895F96BE6A54 /* Pods-DashSync-DashSync_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Sign to Run Locally";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"$(inherited)",
+					"GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1",
+					"DPP_STATE_TRANSITIONS=1",
+					"PLATFORM_VALUE_STD=1",
+				);
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MODULE_NAME = ExampleApp;
@@ -3286,8 +3294,8 @@
 					"\"SystemConfiguration\"",
 					"-framework",
 					"\"UIKit\"",
-					"-DPP_STATE_TRANSITIONS",
 					"-ld_classic",
+					"-DPP_STATE_TRANSITIONS",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3301,11 +3309,20 @@
 			baseConfigurationReference = BD44FCB7175424B2BE7993BB /* Pods-DashSync-DashSync_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"$(inherited)",
+					"GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1",
+					"DPP_STATE_TRANSITIONS=1",
+					"PLATFORM_VALUE_STD=1",
+				);
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MODULE_NAME = ExampleApp;
@@ -3347,8 +3364,8 @@
 					"\"SystemConfiguration\"",
 					"-framework",
 					"\"UIKit\"",
-					"-DPP_STATE_TRANSITIONS",
 					"-ld_classic",
+					"-DPP_STATE_TRANSITIONS",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";

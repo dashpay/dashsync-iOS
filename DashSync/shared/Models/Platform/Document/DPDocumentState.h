@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DPDocument;
+//@class DPDocument;
 
 typedef NS_ENUM(NSUInteger, DPDocumentStateType)
 {

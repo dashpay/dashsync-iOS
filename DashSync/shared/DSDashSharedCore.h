@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define DArcDocumentsManager std_sync_Arc_dash_spv_platform_document_manager_DocumentsManager
 #define DArcContactRequestManager std_sync_Arc_dash_spv_platform_document_contact_request_ContactRequestManager
 #define DSaltedDomainHashesManager std_sync_Arc_dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager
+#define DUsernamesManager std_sync_Arc_dash_spv_platform_document_usernames_UsernamesManager
 
 @class DSChain;
 
@@ -45,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DArcDocumentsManager *)documentsManager;
 - (DArcContactRequestManager *)contactRequests;
 - (DSaltedDomainHashesManager *)saltedDomainHashes;
+- (DUsernamesManager *)usernames;
 
 @property (nonatomic, readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
 

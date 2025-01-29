@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-//#import "DPDocumentFactory.h"
 #import <Foundation/Foundation.h>
 
 #define DPNS_CONTRACT @"DPNS_CONTRACT"
@@ -36,9 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) DSChain *chain;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-//- (DPDocumentFactory *)documentFactoryForIdentity:(DSIdentity *)identity
-//                                      forContract:(DPContract *)contract;
 
 + (NSString *)nameForContractWithIdentifier:(NSString *)identifier;
 

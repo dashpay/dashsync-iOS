@@ -43,15 +43,15 @@
         case dash_spv_crypto_keys_KeyError_WrongFormat:
             return [NSError errorWithCode:0 localizedDescriptionKey:@"Wrong key format"];
         case dash_spv_crypto_keys_KeyError_WrongLength:
-            return [NSError errorWithCode:0 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Wrong key length", nil), ffi_ref->wrong_length]];
+            return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"Wrong key length", nil, ffi_ref->wrong_length)];
         case dash_spv_crypto_keys_KeyError_Extended:
-            return [NSError errorWithCode:0 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Key extended error", nil), ffi_ref->extended]];
+            return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"Key extended error", nil, ffi_ref->extended)];
         case dash_spv_crypto_keys_KeyError_UnableToDerive:
             return [NSError errorWithCode:0 localizedDescriptionKey:@"Unable to derive key"];
         case dash_spv_crypto_keys_KeyError_DHKeyExchange:
             return [NSError errorWithCode:0 localizedDescriptionKey:@"Unable to exchange key"];
         case dash_spv_crypto_keys_KeyError_CCCrypt:
-            return [NSError errorWithCode:0 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"CCrypt error", nil), ffi_ref->cc_crypt]];
+            return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"CCrypt error", nil, ffi_ref->cc_crypt)];
         case dash_spv_crypto_keys_KeyError_EmptySecKey:
             return [NSError errorWithCode:0 localizedDescriptionKey:@"Private key is empty"];
         case dash_spv_crypto_keys_KeyError_Product:

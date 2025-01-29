@@ -30,10 +30,10 @@
 #import "DSFundsDerivationPath.h"
 #import "DSWallet+Protected.h"
 
-#import "DSIdentityCloseTransition.h"
-#import "DSIdentityRegistrationTransition.h"
-#import "DSIdentityTopupTransition.h"
-#import "DSIdentityUpdateTransition.h"
+//#import "DSIdentityCloseTransition.h"
+//#import "DSIdentityRegistrationTransition.h"
+//#import "DSIdentityTopupTransition.h"
+//#import "DSIdentityUpdateTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
@@ -968,6 +968,41 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         return NO;
     }
 }
+//- (BOOL)canContainRustTransaction:(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *)transaction {
+//    NSParameterAssert(transaction);
+//    @synchronized (self) {
+//        if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
+//        for (DSTransactionInput *input in transaction.inputs) {
+//            DSTransaction *tx = self.allTx[uint256_obj(input.inputHash)];
+//            uint32_t n = input.index;
+//            if (n < tx.outputs.count && [self containsAddress:tx.outputs[n].address])
+//                return YES;
+//        }
+//        
+//        switch (transaction->ok->special_transaction_payload->tag) {
+//            case dashcore_blockdata_transaction_special_transaction_TransactionPayload_ProviderRegistrationPayloadType:
+//                transaction->ok->special_transaction_payload->provider_registration_payload_type->script_payout
+//                break;
+//                
+//            default:
+//                break;
+//        }
+//        
+//        if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+//            DSProviderRegistrationTransaction *providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+//            if ([self containsAddress:providerRegistrationTransaction.payoutAddress]) return YES;
+//        } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+//            DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+//            NSString *payoutAddress = providerUpdateServiceTransaction.payoutAddress;
+//            if (payoutAddress && [self containsAddress:payoutAddress]) return YES;
+//        } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+//            DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+//            if ([self containsAddress:providerUpdateRegistrarTransaction.payoutAddress]) return YES;
+//        }
+//
+//        return NO;
+//    }
+//}
 
 - (BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
     NSParameterAssert(transaction);

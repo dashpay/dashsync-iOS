@@ -32,7 +32,6 @@ typedef NS_ENUM(NSInteger, DSPlatformStoredMessage)
     DSPlatformStoredMessage_Data,
 };
 
-#define DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT 100
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
     DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
-@class DSChain, DSIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSDAPICoreNetworkService, DSPeer;
+@class DSChain, DSIdentity, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSDAPICoreNetworkService, DSPeer;
 
 @interface DSDAPIClient : NSObject
 
@@ -47,10 +47,10 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
 
 - (void)getAllStateTransitionsForUser:(DSIdentity *)identity completion:(void (^)(NSError *_Nullable error))completion;
 
-- (void)sendDocument:(DPDocument *)document
-         forIdentity:(DSIdentity *)identity
-            contract:(DPContract *)contract
-          completion:(void (^)(NSError *_Nullable error))completion;
+//- (void)sendDocument:(DPDocument *)document
+//         forIdentity:(DSIdentity *)identity
+//            contract:(DPContract *)contract
+//          completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)publishTransition:(DSTransition *)stateTransition
           completionQueue:(dispatch_queue_t)completionQueue

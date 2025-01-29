@@ -479,13 +479,10 @@
                                          }
 
                                          if (!request) {
-                                             DSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                 [[NSString alloc] initWithData:data
-                                                                       encoding:NSUTF8StringEncoding]);
-                                             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                                        req.URL.host]]);
+                                             DSLog(@"unexpected response from %@:\n%@", req.URL.host, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                                             completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
                                          } else if (![request.details.chain isEqual:chain]) {
-                                             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Requested network \"%@\" not currently in use", nil), request.details.chain.networkName]]);
+                                             completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Requested network \"%@\" not currently in use", nil, request.details.chain.networkName)]);
                                          } else
                                              completion(request, nil);
                                      }] resume];
@@ -532,7 +529,7 @@
                                                  [[NSString alloc] initWithData:data
                                                                        encoding:NSUTF8StringEncoding]);
                                              if (completion) {
-                                                 completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil), req.URL.host]]);
+                                                 completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
                                              }
                                          } else if (completion)
                                              completion(ack, nil);

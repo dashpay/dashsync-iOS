@@ -6,7 +6,6 @@
 //
 #import "DSIdentity.h"
 #import "DPContract+Protected.h"
-#import "DPDocumentFactory.h"
 #import "DSAccount.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSAssetLockDerivationPath.h"
@@ -72,11 +71,9 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 @property (nonatomic, assign) uint32_t index;
 @property (nonatomic, assign) DSIdentityRegistrationStatus registrationStatus;
 @property (nonatomic, assign) uint64_t creditBalance;
-@property (nonatomic, assign) uint32_t keysCreated;
+//@property (nonatomic, assign) uint32_t keysCreated;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSDictionary *> *keyInfoDictionaries;
-@property (nonatomic, assign) uint32_t currentMainKeyIndex;
-@property (nonatomic, strong) DPDocumentFactory *dashpayDocumentFactory;
-@property (nonatomic, strong) DPDocumentFactory *dpnsDocumentFactory;
+//@property (nonatomic, assign) uint32_t currentMainKeyIndex;
 @property (nonatomic, strong) DSDashpayUserEntity *matchingDashpayUserInViewContext;
 @property (nonatomic, strong) DSDashpayUserEntity *matchingDashpayUserInPlatformContext;
 @property (nonatomic, assign) DMaybeOpaqueKey *internalRegistrationFundingPrivateKey;
@@ -227,7 +224,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     self.isLocal = YES;
     self.isOutgoingInvitation = NO;
     self.isTransient = FALSE;
-    self.keysCreated = 0;
+    _keysCreated = 0;
     self.currentMainKeyIndex = 0;
     self.currentMainKeyType = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
     self.index = index;
@@ -349,7 +346,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     self.isLocal = YES;
     self.isOutgoingInvitation = NO;
     self.isTransient = FALSE;
-    self.keysCreated = 0;
+    _keysCreated = 0;
     self.currentMainKeyIndex = 0;
     self.currentMainKeyType = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
     self.uniqueID = uniqueId;
@@ -1021,13 +1018,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 - (DMaybeOpaqueKey *)createNewKeyOfType:(DKeyKind *)type
                                 saveKey:(BOOL)saveKey
                             returnIndex:(uint32_t *)rIndex {
-    return [self createNewKeyOfType:type saveKey:saveKey returnIndex:rIndex inContext:[NSManagedObjectContext viewContext]];
-}
-
-- (DMaybeOpaqueKey *)createNewKeyOfType:(DKeyKind *)type
-                                saveKey:(BOOL)saveKey
-                            returnIndex:(uint32_t *)rIndex
-                              inContext:(NSManagedObjectContext *)context {
     if (!_isLocal) return nil;
     uint32_t keyIndex = self.keysCreated;
     const NSUInteger indexes[] = {_index | BIP32_HARD, keyIndex | BIP32_HARD};
@@ -1038,7 +1028,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     DMaybeOpaqueKey *privateKey = [derivationPath privateKeyAtIndexPath:hardenedIndexPath];
     NSAssert(privateKey && privateKey->ok, @"The private key should have been derived");
     NSAssert([DSKeyManager keysPublicKeyDataIsEqual:publicKey->ok key2:privateKey->ok], @"These should be equal");
-    self.keysCreated++;
+    _keysCreated++;
     if (rIndex) {
         *rIndex = keyIndex;
     }
@@ -1048,11 +1038,15 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         @(DSIdentityKeyDictionary_KeyStatus): @(DSIdentityKeyStatus_Registering)
     };
     [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
-    if (saveKey) {
-        [self saveNewKey:publicKey atPath:hardenedIndexPath withStatus:DSIdentityKeyStatus_Registering fromDerivationPath:derivationPath inContext:context];
-    }
+    if (saveKey)
+        [self saveNewKey:publicKey
+                  atPath:hardenedIndexPath
+              withStatus:DSIdentityKeyStatus_Registering
+      fromDerivationPath:derivationPath
+               inContext:[NSManagedObjectContext viewContext]];
     return publicKey;
 }
+
 
 - (uint32_t)firstIndexOfKeyOfType:(DKeyKind *)type
                createIfNotPresent:(BOOL)createIfNotPresent
@@ -1115,7 +1109,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                 return;
             }
         } else {
-            self.keysCreated = MAX(self.keysCreated, index + 1);
+            _keysCreated = MAX(self.keysCreated, index + 1);
             if (save) {
                 [self saveNewRemoteIdentityKey:key forKeyWithIndexID:index withStatus:status inContext:context];
             }
@@ -1165,7 +1159,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                 return;
             }
         } else {
-            self.keysCreated = MAX(self.keysCreated, index + 1);
+            _keysCreated = MAX(self.keysCreated, index + 1);
             if (save) {
                 [self saveNewKey:key atPath:indexPath withStatus:status fromDerivationPath:derivationPath inContext:context];
             }
@@ -1188,7 +1182,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     DMaybeOpaqueKey *key = [derivationPath publicKeyAtIndexPath:[indexPath hardenAllItems]];
     if (!key) return FALSE;
     uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
-    self.keysCreated = MAX(self.keysCreated, index + 1);
+    _keysCreated = MAX(self.keysCreated, index + 1);
     NSDictionary *keyDictionary = @{
         @(DSIdentityKeyDictionary_Key): [NSValue valueWithPointer:key],
         @(DSIdentityKeyDictionary_KeyType): [NSValue valueWithPointer:key],
@@ -1202,7 +1196,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
          withStatus:(DSIdentityKeyStatus)status
             atIndex:(uint32_t)index
              ofType:(DKeyKind *)type {
-    self.keysCreated = MAX(self.keysCreated, index + 1);
+    _keysCreated = MAX(self.keysCreated, index + 1);
     NSDictionary *keyDictionary = @{
         @(DSIdentityKeyDictionary_Key): [NSValue valueWithPointer:key],
         @(DSIdentityKeyDictionary_KeyType): [NSValue valueWithPointer:key],
@@ -1461,7 +1455,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         proof = dash_spv_platform_transition_chain_proof(self.registrationAssetLockTransaction.blockHeight, txid, vout);
     }
     
-    Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error *state_transition_result = dash_spv_platform_PlatformSDK_identity_register_using_public_key_at_index(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, public_key, index, proof, self.internalRegistrationFundingPrivateKey->ok);
+    DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_identity_register_using_public_key_at_index(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, public_key, index, proof, self.internalRegistrationFundingPrivateKey->ok);
     if (!state_transition_result) {
         completion(NO, ERROR_REG_TRANSITION);
         return;
@@ -1928,58 +1922,30 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     });
 }
 
-// MARK: - Platform Helpers
-
-- (DPDocumentFactory *)dashpayDocumentFactory {
-    if (!_dashpayDocumentFactory) {
-        DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-        NSAssert(contract, @"Contract must be defined");
-        self.dashpayDocumentFactory = [[DPDocumentFactory alloc] initWithIdentity:self contract:contract onChain:self.chain];
-    }
-    return _dashpayDocumentFactory;
-}
-
-- (DPDocumentFactory *)dpnsDocumentFactory {
-    if (!_dpnsDocumentFactory) {
-        DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
-        NSAssert(contract, @"Contract must be defined");
-        self.dpnsDocumentFactory = [[DPDocumentFactory alloc] initWithIdentity:self contract:contract onChain:self.chain];
-    }
-    return _dpnsDocumentFactory;
-}
-//
-//- (DSDAPIClient *)DAPIClient {
-//    return self.chain.chainManager.DAPIClient;
-//}
-//
-//- (DSDAPIPlatformNetworkService *)DAPINetworkService {
-//    return self.DAPIClient.DAPIPlatformNetworkService;
-//}
-
 // MARK: - Signing and Encryption
 
-- (BOOL)signStateTransition:(DSTransition *)transition
-                forKeyIndex:(uint32_t)keyIndex
-                     ofType:(DKeyKind *)signingAlgorithm {
-    NSParameterAssert(transition);
-    DMaybeOpaqueKey *privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
-    NSAssert(privateKey && privateKey->ok, @"The private key should exist");
-    DMaybeOpaqueKey *publicKey = [self publicKeyAtIndex:keyIndex ofType:signingAlgorithm];
-    NSAssert([DSKeyManager keysPublicKeyDataIsEqual:privateKey->ok key2:publicKey->ok], @"These should be equal");
-    //        NSLog(@"%@",uint160_hex(self.identityRegistrationTransition.pubkeyHash));
-    //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.identityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
-    [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
-    return YES;
-}
-
-- (BOOL)signStateTransition:(DSTransition *)transition {
-    if (!self.keysCreated) {
-        uint32_t index;
-        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
-    }
-    return [self signStateTransition:transition forKeyIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-}
-
+//- (BOOL)signStateTransition:(DSTransition *)transition
+//                forKeyIndex:(uint32_t)keyIndex
+//                     ofType:(DKeyKind *)signingAlgorithm {
+//    NSParameterAssert(transition);
+//    DMaybeOpaqueKey *privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
+//    NSAssert(privateKey && privateKey->ok, @"The private key should exist");
+//    DMaybeOpaqueKey *publicKey = [self publicKeyAtIndex:keyIndex ofType:signingAlgorithm];
+//    NSAssert([DSKeyManager keysPublicKeyDataIsEqual:privateKey->ok key2:publicKey->ok], @"These should be equal");
+//    //        NSLog(@"%@",uint160_hex(self.identityRegistrationTransition.pubkeyHash));
+//    //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.identityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
+//    [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
+//    return YES;
+//}
+//
+//- (BOOL)signStateTransition:(DSTransition *)transition {
+//    if (!self.keysCreated) {
+//        uint32_t index;
+//        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
+//    }
+//    return [self signStateTransition:transition forKeyIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
+//}
+//
 //- (void)signMessageDigest:(UInt256)digest
 //              forKeyIndex:(uint32_t)keyIndex
 //                   ofType:(DKeyKind *)signingAlgorithm
@@ -2063,7 +2029,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 //}
 //
 
-- (BOOL)processStateTransitionResult:(Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error *)result {
+- (BOOL)processStateTransitionResult:(DMaybeStateTransitionProofResult *)result {
 #if (!defined(TEST) && defined(DPP_STATE_TRANSITIONS))
     dpp_state_transition_proof_result_StateTransitionProofResult *proof_result = result->ok;
     switch (proof_result->tag) {
@@ -2113,7 +2079,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     NSManagedObjectContext *context = [NSManagedObjectContext platformContext];
     __weak typeof(contract) weakContract = contract;
     __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get service immediately
         BOOL isDPNSEmpty = [contract.name isEqual:@"DPNS"] && uint256_is_zero(self.chain.dpnsContractID);
         BOOL isDashpayEmpty = [contract.name isEqual:@"DashPay"] && uint256_is_zero(self.chain.dashpayContractID);
         BOOL isOtherContract = !([contract.name isEqual:@"DashPay"] || [contract.name isEqual:@"DPNS"]);
@@ -2126,7 +2092,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                 [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
             }
             DMaybeOpaqueKey *privateKey = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-            Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error *state_transition_result = dash_spv_platform_PlatformSDK_data_contract_update(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, 0, privateKey->ok);
+            DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_data_contract_update(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, 0, privateKey->ok);
             
             if (!state_transition_result) {
                 return;

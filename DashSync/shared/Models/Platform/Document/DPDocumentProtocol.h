@@ -20,20 +20,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DPDocument;
+//@class DPDocument;
 
 @protocol DPDocumentProtocol <NSObject>
 
-- (nullable DPDocument *)documentOnTable:(NSString *)tableName
-                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                            usingEntropy:(NSData *)entropy
-                                   error:(NSError *_Nullable __autoreleasing *)error;
-
-- (nullable DPDocument *)documentOnTable:(NSString *)tableName
-                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                 usingDocumentIdentifier:(NSData *)identifier
-                                   error:(NSError *_Nullable __autoreleasing *)error;
-
+//- (nullable DPDocument *)documentOnTable:(NSString *)tableName
+//                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+//                            usingEntropy:(NSData *)entropy
+//                                   error:(NSError *_Nullable __autoreleasing *)error;
+//
+//- (nullable DPDocument *)documentOnTable:(NSString *)tableName
+//                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+//                 usingDocumentIdentifier:(NSData *)identifier
+//                                   error:(NSError *_Nullable __autoreleasing *)error;
+//
 //- (nullable DPDocument *)documentFromSerialized:(NSData *)data
 //                                          error:(NSError *_Nullable __autoreleasing *)error;
 //

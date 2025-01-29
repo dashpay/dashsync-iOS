@@ -140,3 +140,20 @@
 }
 
 @end
+
+@implementation DSAssetLockTransaction (FFI)
++ (instancetype)ffi_from:(dashcore_blockdata_transaction_Transaction *)transaction onChain:(DSChain *)chain {
+    if (!transaction->special_transaction_payload) {
+        return nil;
+    }
+    switch (transaction->special_transaction_payload->tag) {
+        case dashcore_blockdata_transaction_special_transaction_TransactionPayload_AssetLockPayloadType: {
+            dashcore_blockdata_transaction_special_transaction_asset_lock_AssetLockPayload *payload = transaction->special_transaction_payload->asset_lock_payload_type;
+            DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initOnChain:chain];
+//            tx.
+            return tx;
+        }
+        default: return nil;
+    }
+}
+@end

@@ -64,7 +64,6 @@
 @property (nonatomic, strong) DSKeyManager *keyManager;
 @property (nonatomic, strong) DSGovernanceSyncManager *governanceSyncManager;
 @property (nonatomic, strong) DSIdentitiesManager *identitiesManager;
-@property (nonatomic, strong) DSDAPIClient *DAPIClient;
 @property (nonatomic, strong) DSTransactionManager *transactionManager;
 @property (nonatomic, strong) DSPeerManager *peerManager;
 @property (nonatomic, assign) uint64_t sessionConnectivityNonce;
@@ -89,7 +88,6 @@
     self.backgroundManager = [[DSBackgroundManager alloc] initWithChain:chain];
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
-    self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain]; //this must be
     [self.masternodeManager setUp];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];

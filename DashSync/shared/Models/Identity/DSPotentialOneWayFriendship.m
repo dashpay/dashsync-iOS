@@ -16,7 +16,6 @@
 //
 
 #import "dash_shared_core.h"
-#import "DPDocumentFactory.h"
 #import "DSPotentialOneWayFriendship.h"
 #import "DSAccount.h"
 #import "DSIdentity+Protected.h"
@@ -144,24 +143,18 @@
     return dash_spv_crypto_keys_key_OpaqueKey_create_account_reference([self sourceKeyAtIndex]->ok, self.extendedPublicKey->ok, self.account.accountNumber);
 }
 
-- (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData {
-    NSAssert(uint256_is_not_zero([self destinationIdentityUniqueId]), @"the destination contact's associatedIdentityUniqueId must be set before making a friend request");
-    NSAssert([self.encryptedExtendedPublicKeyData length] > 0, @"The encrypted extended public key must exist");
-    NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
-    NSError *error = nil;
-
-    uint64_t createAtMs = (self.createdAt) * 1000;
-    DSStringValueDictionary *data = @{
-        @"$createdAt": @(createAtMs),
-        @"toUserId": uint256_data([self destinationIdentityUniqueId]),
-        @"encryptedPublicKey": self.encryptedExtendedPublicKeyData,
-        @"senderKeyIndex": @(self.sourceKeyIndex),
-        @"recipientKeyIndex": @(self.destinationKeyIndex),
-        @"accountReference": @([self createAccountReference])
-    };
-    DPDocument *contact = [self.sourceIdentity.dashpayDocumentFactory documentOnTable:@"contactRequest" withDataDictionary:data usingEntropy:entropyData error:&error];
-    NSAssert(error == nil, @"Failed to build a contact");
-    return contact;
+- (platform_value_Value *)toValue {
+    uintptr_t field_count = 6;
+    Tuple_platform_value_Value_platform_value_Value **values = malloc(sizeof(Tuple_platform_value_Value_platform_value_Value) * field_count);
+    values[0] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"$createdAt" UTF8String]), platform_value_Value_U64_ctor(self.createdAt * 1000));
+    values[1] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"toUserId" UTF8String]), platform_value_Value_Identifier_ctor(platform_value_Hash256_ctor(u256_ctor_u([self destinationIdentityUniqueId]))));
+    values[2] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"encryptedPublicKey" UTF8String]), platform_value_Value_Bytes_ctor(bytes_ctor(self.encryptedExtendedPublicKeyData)));
+    values[3] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"senderKeyIndex" UTF8String]), platform_value_Value_U32_ctor(self.sourceKeyIndex));
+    values[4] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"recipientKeyIndex" UTF8String]), platform_value_Value_U32_ctor(self.destinationKeyIndex));
+    values[5] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"accountReference" UTF8String]), platform_value_Value_U32_ctor([self createAccountReference]));
+    Vec_Tuple_platform_value_Value_platform_value_Value *value_pairs = Vec_Tuple_platform_value_Value_platform_value_Value_ctor(field_count, values);
+    platform_value_value_map_ValueMap *value_map = platform_value_value_map_ValueMap_ctor(value_pairs);
+    return platform_value_Value_Map_ctor(value_map);
 }
 
 - (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)entity

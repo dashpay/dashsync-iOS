@@ -16,12 +16,12 @@
 //
 
 #import "DPContract.h"
-#import "DPDocumentFactory.h"
 #import "DSIdentity+Protected.h"
 #import "DSIdentity+Username.h"
 #import "DSChainManager.h"
 #import "DSDashPlatform.h"
-#import "DSDocumentTransition.h"
+#import "DSUsernameFullPathSaveContext.h"
+#import "DSWallet.h"
 #import "NSError+Dash.h"
 #import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
@@ -35,6 +35,31 @@
 NSString const *usernameStatusesKey = @"usernameStatusesKey";
 NSString const *usernameSaltsKey = @"usernameSaltsKey";
 NSString const *usernameDomainsKey = @"usernameDomainsKey";
+
+void usernames_save_context_caller(const void *context, dash_spv_platform_document_usernames_UsernameStatus *status) {
+    DSUsernameFullPathSaveContext *saveContext = ((__bridge DSUsernameFullPathSaveContext *)(context));
+    switch (*status) {
+        case dash_spv_platform_document_usernames_UsernameStatus_PreorderRegistrationPending: {
+            [saveContext setAndSaveUsernameFullPaths:DSIdentityUsernameStatus_PreorderRegistrationPending];
+            break;
+        }
+        case dash_spv_platform_document_usernames_UsernameStatus_Preordered:
+            [saveContext setAndSaveUsernameFullPaths:DSIdentityUsernameStatus_Preordered];
+            break;
+            
+        case dash_spv_platform_document_usernames_UsernameStatus_RegistrationPending:
+            [saveContext setAndSaveUsernameFullPaths:DSIdentityUsernameStatus_RegistrationPending];
+            break;
+        case dash_spv_platform_document_usernames_UsernameStatus_Confirmed:
+            [saveContext setAndSaveUsernameFullPaths:DSIdentityUsernameStatus_Confirmed];
+            break;
+        default:
+            break;
+    }
+
+    
+    dash_spv_platform_document_usernames_UsernameStatus_destroy(status);
+}
 
 @implementation DSIdentity (Username)
 
@@ -673,80 +698,7 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
     }
 }
 
-// MARK: Documents
-
-- (NSArray<DPDocument *> *)preorderDocumentsForUnregisteredUsernameFullPaths:(NSArray *)unregisteredUsernameFullPaths
-                                                            usingEntropyData:(NSData *)entropyData
-                                                                   inContext:(NSManagedObjectContext *)context
-                                                                       error:(NSError **)error {
-    NSMutableArray *usernamePreorderDocuments = [NSMutableArray array];
-    for (NSData *saltedDomainHashData in [[self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context] allValues]) {
-        DSStringValueDictionary *dataDictionary = @{@"saltedDomainHash": saltedDomainHashData};
-        DPDocument *document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary usingEntropy:entropyData error:error];
-        if (*error) return nil;
-        [usernamePreorderDocuments addObject:document];
-    }
-    return usernamePreorderDocuments;
-}
-
-- (NSArray<DPDocument *> *)domainDocumentsForUnregisteredUsernameFullPaths:(NSArray *)unregisteredUsernameFullPaths
-                                                          usingEntropyData:(NSData *)entropyData
-                                                                 inContext:(NSManagedObjectContext *)context
-                                                                     error:(NSError **)error {
-    NSMutableArray *usernameDomainDocuments = [NSMutableArray array];
-    for (NSString *usernameFullPath in [self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context]) {
-        NSString *username = [self usernameOfUsernameFullPath:usernameFullPath];
-        NSString *domain = [self domainOfUsernameFullPath:usernameFullPath];
-        DSStringValueDictionary *dataDictionary = @{
-            @"label": username,
-            @"normalizedLabel": [username lowercaseString],
-            @"normalizedParentDomainName": domain,
-            @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath],
-            @"records": @{@"identity": uint256_data(self.uniqueID)},
-            @"subdomainRules": @{@"allowSubdomains": @NO}
-        };
-        DPDocument *document = [self.dpnsDocumentFactory documentOnTable:@"domain"
-                                                      withDataDictionary:dataDictionary
-                                                            usingEntropy:entropyData
-                                                                   error:error];
-        if (*error) return nil;
-        [usernameDomainDocuments addObject:document];
-    }
-    return usernameDomainDocuments;
-}
-
 // MARK: Transitions
-
-- (DSDocumentTransition *)preorderTransitionForUnregisteredUsernameFullPaths:(NSArray *)unregisteredUsernameFullPaths
-                                                                   inContext:(NSManagedObjectContext *)context
-                                                                       error:(NSError **)error {
-    NSData *entropyData = uint256_random_data;
-    NSArray *usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths
-                                                                                usingEntropyData:entropyData
-                                                                                       inContext:context
-                                                                                           error:error];
-    if (![usernamePreorderDocuments count]) return nil;
-    return [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments
-                                    withTransitionVersion:1
-                                         identityUniqueId:self.uniqueID
-                                                  onChain:self.chain];
-}
-
-- (DSDocumentTransition *)domainTransitionForUnregisteredUsernameFullPaths:(NSArray *)unregisteredUsernameFullPaths
-                                                                 inContext:(NSManagedObjectContext *)context
-                                                                     error:(NSError **)error {
-    NSData *entropyData = uint256_random_data;
-    NSArray *usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths
-                                                                              usingEntropyData:entropyData
-                                                                                     inContext:context
-                                                                                         error:error];
-    if (![usernamePreorderDocuments count]) return nil;
-    return [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments
-                                    withTransitionVersion:1
-                                         identityUniqueId:self.uniqueID
-                                                  onChain:self.chain];
-}
-
 
 //Preorder stage
 - (void)registerPreorderedSaltedDomainHashesForUsernameFullPaths:(NSArray *)usernameFullPaths
@@ -754,31 +706,36 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
                                                       completion:(void (^_Nullable)(BOOL success, NSError *error))completion
                                                onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSError *error = nil;
-    DSDocumentTransition *transition = [self preorderTransitionForUnregisteredUsernameFullPaths:usernameFullPaths inContext:context error:&error];
-    if (error || !transition) {
+    NSData *entropyData = uint256_random_data;
+    NSMutableArray *usernamePreorderDocuments = [NSMutableArray array];
+    NSDictionary<NSString *, NSData *> *saltedDomainHashesForUsernameFullPaths = [self saltedDomainHashesForUsernameFullPaths:usernameFullPaths inContext:context];
+    uintptr_t i = 0;
+    Vec_u8 **salted_domain_hashes_values = malloc(sizeof(Vec_u8 *) * saltedDomainHashesForUsernameFullPaths.count);
+    for (NSData *saltedDomainHashData in [saltedDomainHashesForUsernameFullPaths allValues]) {
+        salted_domain_hashes_values[i] = bytes_ctor(saltedDomainHashData);
+        i++;
+    }
+    if (![usernamePreorderDocuments count]) {
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
         return;
     }
-    if ([self signStateTransition:transition]) {
-        //let's start by putting the usernames in an undetermined state
-        [self setAndSaveUsernameFullPaths:usernameFullPaths
-                                 toStatus:DSIdentityUsernameStatus_PreorderRegistrationPending
-                                inContext:context];
-        [self.DAPIClient publishTransition:transition
-                           completionQueue:self.identityQueue
-                                   success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-            [self setAndSaveUsernameFullPaths:usernameFullPaths
-                                     toStatus:DSIdentityUsernameStatus_Preordered
-                                    inContext:context];
-            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
-        }
-                                   failure:^(NSError *_Nonnull error) {
-            DSLogPrivate(@"%@", error);
-            if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
-        }];
-    } else {
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_TRANSITION_SIGNING); });
+    if (!self.keysCreated) {
+        uint32_t index;
+        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
     }
+    DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
+    DSUsernameFullPathSaveContext *saveContext = [DSUsernameFullPathSaveContext contextWithUsernames:usernameFullPaths forIdentity:self inContext:context];
+    Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_ save_callback = { .caller = &usernames_save_context_caller };
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hashes_for_username_full_paths(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), Vec_Vec_u8_ctor(i, salted_domain_hashes_values), u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeStateTransitionProofResultDtor(result);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
+        return;
+    }
+    DMaybeStateTransitionProofResultDtor(result);
+    if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
 }
 
 - (void)registerUsernameDomainsForUsernameFullPaths:(NSArray *)usernameFullPaths
@@ -786,30 +743,51 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
                                          completion:(void (^_Nullable)(BOOL success, NSError *error))completion
                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSError *error = nil;
-    DSDocumentTransition *transition = [self domainTransitionForUnregisteredUsernameFullPaths:usernameFullPaths
-                                                                                    inContext:context
-                                                                                        error:&error];
-    if (error || !transition) {
+    NSData *entropyData = uint256_random_data;
+    NSMutableArray *usernamePreorderDocuments = [NSMutableArray array];
+    NSDictionary<NSString *, NSData *> *saltedDomainHashesForUsernameFullPaths = [self saltedDomainHashesForUsernameFullPaths:usernameFullPaths inContext:context];
+    uintptr_t i = 0;
+    platform_value_Value **values_values = malloc(sizeof(Vec_platform_value_Value *) * saltedDomainHashesForUsernameFullPaths.count);
+    for (NSString *usernameFullPath in saltedDomainHashesForUsernameFullPaths) {
+        NSString *username = [self usernameOfUsernameFullPath:usernameFullPath];
+        NSString *domain = [self domainOfUsernameFullPath:usernameFullPath];
+        Tuple_platform_value_Value_platform_value_Value **values = malloc(sizeof(Tuple_platform_value_Value_platform_value_Value *) * 6);
+        Tuple_platform_value_Value_platform_value_Value **records = malloc(sizeof(Tuple_platform_value_Value_platform_value_Value *) * 1);
+        Tuple_platform_value_Value_platform_value_Value **subdomain_rules = malloc(sizeof(Tuple_platform_value_Value_platform_value_Value *) * 1);
+        records[0] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"identity" UTF8String]), platform_value_Value_Bytes_ctor(bytes_ctor(uint256_data(self.uniqueID))));
+        subdomain_rules[0] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"allowSubdomains" UTF8String]), platform_value_Value_Bool_ctor(false));
+        values[0] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"label" UTF8String]), platform_value_Value_Text_ctor((char *) [username UTF8String]));
+        values[1] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"normalizedLabel" UTF8String]), platform_value_Value_Text_ctor((char *) [[username lowercaseString] UTF8String]));
+        values[2] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"normalizedParentDomainName" UTF8String]), platform_value_Value_Text_ctor((char *) [domain UTF8String]));
+        values[3] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"preorderSalt" UTF8String]), platform_value_Value_Bytes_ctor(bytes_ctor([self.usernameSalts objectForKey:usernameFullPath])));
+        values[4] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"records" UTF8String]), platform_value_Value_Map_ctor(platform_value_value_map_ValueMap_ctor(Vec_Tuple_platform_value_Value_platform_value_Value_ctor(1, records))));
+        values[5] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"subdomainRules" UTF8String]), platform_value_Value_Map_ctor(platform_value_value_map_ValueMap_ctor(Vec_Tuple_platform_value_Value_platform_value_Value_ctor(1, subdomain_rules))));
+        values_values[i] = platform_value_Value_Map_ctor(platform_value_value_map_ValueMap_ctor(Vec_Tuple_platform_value_Value_platform_value_Value_ctor(6, values)));
+        i++;
+    }
+    if (![usernamePreorderDocuments count]) {
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
         return;
     }
-    if ([self signStateTransition:transition]) {
-        [self setAndSaveUsernameFullPaths:usernameFullPaths
-                                 toStatus:DSIdentityUsernameStatus_RegistrationPending
-                                inContext:context];
-        [self.DAPIClient publishTransition:transition
-                           completionQueue:self.identityQueue
-                                   success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-            [self setAndSaveUsernameFullPaths:usernameFullPaths
-                                     toStatus:DSIdentityUsernameStatus_Confirmed
-                                    inContext:context];
-            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
-        }
-                                   failure:^(NSError *_Nonnull error) {
-            DSLogPrivate(@"%@", error);
-            if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
-        }];
+    if (!self.keysCreated) {
+        uint32_t index;
+        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
     }
+    DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
+    DSUsernameFullPathSaveContext *saveContext = [DSUsernameFullPathSaveContext contextWithUsernames:usernameFullPaths forIdentity:self inContext:context];
+    Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_ save_callback = { .caller = &usernames_save_context_caller };
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
+    Vec_platform_value_Value *values = Vec_platform_value_Value_ctor(i, values_values);
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_username_domains_for_username_full_paths(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), values, u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeStateTransitionProofResultDtor(result);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
+        return;
+    }
+    DMaybeStateTransitionProofResultDtor(result);
+    if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
+
 }
 
 
@@ -864,83 +842,154 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
                       inContext:(NSManagedObjectContext *)context
                      completion:(void (^)(BOOL allFound, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue {
-    __weak typeof(self) weakSelf = self;
-    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
-    [dapiNetworkService getDPNSDocumentsForUsernames:usernames
-                                            inDomain:domain
-                                     completionQueue:self.identityQueue
-                                             success:^(id _Nonnull domainDocumentArray) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        if ([domainDocumentArray isKindOfClass:[NSArray class]]) {
-            NSMutableArray *usernamesLeft = [usernames mutableCopy];
-            for (NSString *username in usernames) {
-                for (NSDictionary *domainDocument in domainDocumentArray) {
-                    NSString *normalizedLabel = domainDocument[@"normalizedLabel"];
-                    NSString *label = domainDocument[@"label"];
-                    NSString *normalizedParentDomainName = domainDocument[@"normalizedParentDomainName"];
-                    if ([normalizedLabel isEqualToString:[username lowercaseString]]) {
-                        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
-                        if (!usernameStatusDictionary) {
-                            usernameStatusDictionary = [NSMutableDictionary dictionary];
-                            usernameStatusDictionary[BLOCKCHAIN_USERNAME_DOMAIN] = normalizedParentDomainName;
-                            usernameStatusDictionary[BLOCKCHAIN_USERNAME_PROPER] = label;
-                        }
-                        usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Confirmed);
-                        [self.usernameStatuses setObject:[usernameStatusDictionary copy]
-                                                  forKey:[self fullPathForUsername:username inDomain:@"dash"]];
-                        [strongSelf saveUsername:username
-                                        inDomain:normalizedParentDomainName
-                                          status:DSIdentityUsernameStatus_Confirmed
-                                            salt:nil
-                                      commitSave:YES
-                                       inContext:context];
-                        [usernamesLeft removeObject:username];
-                    }
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
+    NSUInteger usernamesCount = usernames.count;
+    char **usernames_values = malloc(sizeof(char *) * usernamesCount);
+    for (int i = 0; i < usernamesCount; i++) {
+        usernames_values[i] = strdup([usernames[i] UTF8String]);
+    }
+    
+    DMaybeDocumentsMap *result = dash_spv_platform_document_usernames_UsernamesManager_stream_usernames_with_contract(self.chain.shareCore.runtime, self.chain.shareCore.usernames->obj, (char *)[domain UTF8String], Vec_String_ctor(usernamesCount, usernames_values), contract.raw_contract, dash_spv_platform_util_RetryStrategy_Linear_ctor(5), dash_spv_platform_document_usernames_UsernameValidator_None_ctor(), 5 * NSEC_PER_SEC);
+    
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentsMapDtor(result);
+        dispatch_async(completionQueue, ^{ completion(FALSE, error); });
+        return;
+    }
+    DDocumentsMap *documents = result->ok;
+    
+    for (NSString *username in usernames) {
+        for (int i = 0; i < documents->count; i++) {
+            dpp_document_Document *document = documents->values[i];
+            platform_value_Value *normalized_label_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedLabel" UTF8String]);
+            platform_value_Value *label_value = dash_spv_platform_document_get_document_property(document, (char *) [@"label" UTF8String]);
+            platform_value_Value *domain_value = dash_spv_platform_document_get_document_property(document, (char *) [@"normalizedParentDomainName" UTF8String]);
+            NSString *normalizedLabel = [NSString stringWithCString:normalized_label_value->text encoding:NSUTF8StringEncoding];
+            NSString *label = [NSString stringWithCString:label_value->text encoding:NSUTF8StringEncoding];
+            NSString *normalizedParentDomainName = [NSString stringWithCString:domain_value->text encoding:NSUTF8StringEncoding];
+            if ([normalizedLabel isEqualToString:[username lowercaseString]]) {
+                NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
+                if (!usernameStatusDictionary) {
+                    usernameStatusDictionary = [NSMutableDictionary dictionary];
+                    usernameStatusDictionary[BLOCKCHAIN_USERNAME_DOMAIN] = normalizedParentDomainName;
+                    usernameStatusDictionary[BLOCKCHAIN_USERNAME_PROPER] = label;
                 }
+                usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Confirmed);
+                [self.usernameStatuses setObject:[usernameStatusDictionary copy]
+                                          forKey:[self fullPathForUsername:username inDomain:@"dash"]];
+                [self saveUsername:username
+                          inDomain:normalizedParentDomainName
+                            status:DSIdentityUsernameStatus_Confirmed
+                              salt:nil
+                        commitSave:YES
+                         inContext:context];
             }
-            if ([usernamesLeft count] && retryCount > 0) {
-                [strongSelf monitorForDPNSUsernames:usernamesLeft
-                                           inDomain:domain
-                                     withRetryCount:retryCount - 1
-                                          inContext:context
-                                         completion:completion
-                                  onCompletionQueue:completionQueue];
-            } else if (completion) {
-                dispatch_async(completionQueue, ^{ completion(![usernamesLeft count], nil); });
-            }
-        } else if (retryCount > 0) {
-            [strongSelf monitorForDPNSUsernames:usernames
-                                       inDomain:domain
-                                 withRetryCount:retryCount - 1
-                                      inContext:context
-                                     completion:completion
-                              onCompletionQueue:completionQueue];
-        } else if (completion) {
-            dispatch_async(completionQueue, ^{ completion(NO, ERROR_MALFORMED_RESPONSE); });
         }
     }
-                                             failure:^(NSError *_Nonnull error) {
-        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-        }
-        if (retryCount > 0) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.identityQueue, ^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) return;
-                [strongSelf monitorForDPNSUsernames:usernames
-                                           inDomain:domain
-                                     withRetryCount:retryCount - 1
-                                          inContext:context
-                                         completion:completion
-                                  onCompletionQueue:completionQueue];
-            });
-        } else {
-            dispatch_async(completionQueue, ^{ completion(FALSE, error); });
-        }
-    }];
+    DMaybeDocumentsMapDtor(result);
+    if (completion) {
+        dispatch_async(completionQueue, ^{ completion(YES, nil); });
+    }
+//
+//    
+//    __weak typeof(self) weakSelf = self;
+//    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
+//    [dapiNetworkService getDPNSDocumentsForUsernames:usernames
+//                                            inDomain:domain
+//                                     completionQueue:self.identityQueue
+//                                             success:^(id _Nonnull domainDocumentArray) {
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) return;
+//        if ([domainDocumentArray isKindOfClass:[NSArray class]]) {
+//            NSMutableArray *usernamesLeft = [usernames mutableCopy];
+//            for (NSString *username in usernames) {
+//                for (NSDictionary *domainDocument in domainDocumentArray) {
+//                    NSString *normalizedLabel = domainDocument[@"normalizedLabel"];
+//                    NSString *label = domainDocument[@"label"];
+//                    NSString *normalizedParentDomainName = domainDocument[@"normalizedParentDomainName"];
+//                    if ([normalizedLabel isEqualToString:[username lowercaseString]]) {
+//                        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
+//                        if (!usernameStatusDictionary) {
+//                            usernameStatusDictionary = [NSMutableDictionary dictionary];
+//                            usernameStatusDictionary[BLOCKCHAIN_USERNAME_DOMAIN] = normalizedParentDomainName;
+//                            usernameStatusDictionary[BLOCKCHAIN_USERNAME_PROPER] = label;
+//                        }
+//                        usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Confirmed);
+//                        [self.usernameStatuses setObject:[usernameStatusDictionary copy]
+//                                                  forKey:[self fullPathForUsername:username inDomain:@"dash"]];
+//                        [strongSelf saveUsername:username
+//                                        inDomain:normalizedParentDomainName
+//                                          status:DSIdentityUsernameStatus_Confirmed
+//                                            salt:nil
+//                                      commitSave:YES
+//                                       inContext:context];
+//                        [usernamesLeft removeObject:username];
+//                    }
+//                }
+//            }
+//            if ([usernamesLeft count] && retryCount > 0) {
+//                [strongSelf monitorForDPNSUsernames:usernamesLeft
+//                                           inDomain:domain
+//                                     withRetryCount:retryCount - 1
+//                                          inContext:context
+//                                         completion:completion
+//                                  onCompletionQueue:completionQueue];
+//            } else if (completion) {
+//                dispatch_async(completionQueue, ^{ completion(![usernamesLeft count], nil); });
+//            }
+//        } else if (retryCount > 0) {
+//            [strongSelf monitorForDPNSUsernames:usernames
+//                                       inDomain:domain
+//                                 withRetryCount:retryCount - 1
+//                                      inContext:context
+//                                     completion:completion
+//                              onCompletionQueue:completionQueue];
+//        } else if (completion) {
+//            dispatch_async(completionQueue, ^{ completion(NO, ERROR_MALFORMED_RESPONSE); });
+//        }
+//    }
+//                                             failure:^(NSError *_Nonnull error) {
+//        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+//            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+//        }
+//        if (retryCount > 0) {
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.identityQueue, ^{
+//                __strong typeof(weakSelf) strongSelf = weakSelf;
+//                if (!strongSelf) return;
+//                [strongSelf monitorForDPNSUsernames:usernames
+//                                           inDomain:domain
+//                                     withRetryCount:retryCount - 1
+//                                          inContext:context
+//                                         completion:completion
+//                                  onCompletionQueue:completionQueue];
+//            });
+//        } else {
+//            dispatch_async(completionQueue, ^{ completion(FALSE, error); });
+//        }
+//    }];
 }
 
+- (void)processSaltedDomainHashDocument:(NSString *)usernameFullPath hash:(NSData *)hash document:(dpp_document_Document *)document inContext:(NSManagedObjectContext  *)context {
+    switch (document->tag) {
+        case dpp_document_Document_V0: {
+            platform_value_Value *salted_domain_hash_value = dash_spv_platform_document_get_document_property(document, (char *)[@"saltedDomainHash" UTF8String]);
+            NSData *saltedDomainHash = NSDataFromPtr(salted_domain_hash_value->bytes);
+            if ([saltedDomainHash isEqualToData:hash]) {
+                NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
+                if (!usernameStatusDictionary)
+                    usernameStatusDictionary = [NSMutableDictionary dictionary];
+                usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Preordered);
+                [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:usernameFullPath];
+                [self saveUsernameFullPath:usernameFullPath status:DSIdentityUsernameStatus_Preordered salt:nil commitSave:YES inContext:context];
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+}
 
 - (void)monitorForDPNSPreorderSaltedDomainHashes:(NSDictionary *)saltedDomainHashes
                                   withRetryCount:(uint32_t)retryCount
@@ -952,7 +1001,7 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
     NSUInteger hashesCount = [hashes count];
     if (hashesCount == 1) {
         NSData *onlyHash = [hashes firstObject];
-        DMaybeDocument *result = dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager_dpns_documents_for_preorder_salted_domain_hash(self.chain.shareCore.runtime, self.chain.shareCore.saltedDomainHashes->obj, bytes_ctor(onlyHash));
+        DMaybeDocument *result = dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager_preorder_salted_domain_hash(self.chain.shareCore.runtime, self.chain.shareCore.saltedDomainHashes->obj, bytes_ctor(onlyHash));
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];
             DMaybeDocumentDtor(result);
@@ -960,26 +1009,8 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
             return;
         }
         NSString *usernameFullPath = [[saltedDomainHashes allKeys] firstObject];
-        dpp_document_Document *document = result->ok;
-        switch (document->tag) {
-            case dpp_document_Document_V0: {
-                platform_value_Value *salted_domain_hash_value = dash_spv_platform_document_get_document_property(document, (char *)[@"saltedDomainHash" UTF8String]);
-                NSData *saltedDomainHash = NSDataFromPtr(salted_domain_hash_value->bytes);
-                if (![saltedDomainHash isEqualToData:onlyHash]) break;
-                NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
-                if (!usernameStatusDictionary)
-                    usernameStatusDictionary = [NSMutableDictionary dictionary];
-                usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Preordered);
-                [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:usernameFullPath];
-                [self saveUsernameFullPath:usernameFullPath status:DSIdentityUsernameStatus_Preordered salt:nil commitSave:YES inContext:context];
-                break;
-            }
-            default:
-                break;
-        }
+        [self processSaltedDomainHashDocument:usernameFullPath hash:onlyHash document:result->ok inContext:context];
         DMaybeDocumentDtor(result);
-        dispatch_async(completionQueue, ^{ completion(YES, nil); });
-
     } else {
         Vec_u8 **hashes_values = malloc(sizeof(Vec_u8 *) * hashesCount);
         for (int i = 0; i < hashesCount; i++) {
@@ -987,76 +1018,92 @@ NSString const *usernameDomainsKey = @"usernameDomainsKey";
             hashes_values[i] = bytes_ctor(hash);
         }
         Vec_Vec_u8 *hashes = Vec_Vec_u8_ctor(hashesCount, hashes_values);
-        DMaybeDocumentsMap *result = dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager_dpns_documents_for_preorder_salted_domain_hashes(self.chain.shareCore.runtime, self.chain.shareCore.saltedDomainHashes->obj, hashes);
-    }
-    
-    
-    __weak typeof(self) weakSelf = self;
-    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
-    [dapiNetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues]
-                                                      completionQueue:self.identityQueue
-                                                              success:^(id _Nonnull preorderDocumentArray) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_MEM_ALLOC); });
+        DMaybeDocumentsMap *result = dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager_preorder_salted_domain_hashes(self.chain.shareCore.runtime, self.chain.shareCore.saltedDomainHashes->obj, hashes);
+        if (result->error) {
+            NSError *error = [NSError ffi_from_platform_error:result->error];
+            DMaybeDocumentsMapDtor(result);
+            if (completion) dispatch_async(completionQueue, ^{ completion(FALSE, error); });
             return;
         }
-        if ([preorderDocumentArray isKindOfClass:[NSArray class]]) {
-            NSMutableArray *usernamesLeft = [[saltedDomainHashes allKeys] mutableCopy];
-            for (NSString *usernameFullPath in saltedDomainHashes) {
-                NSData *saltedDomainHashData = saltedDomainHashes[usernameFullPath];
-                for (NSDictionary *preorderDocument in preorderDocumentArray) {
-                    if ([preorderDocument[@"saltedDomainHash"] isEqualToData:saltedDomainHashData]) {
-                        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
-                        if (!usernameStatusDictionary)
-                            usernameStatusDictionary = [NSMutableDictionary dictionary];
-                        usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Preordered);
-                        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:usernameFullPath];
-                        [strongSelf saveUsernameFullPath:usernameFullPath status:DSIdentityUsernameStatus_Preordered salt:nil commitSave:YES inContext:context];
-                        [usernamesLeft removeObject:usernameFullPath];
-                    }
-                }
+        
+        indexmap_IndexMap_platform_value_types_identifier_Identifier_Option_dpp_document_Document *index_map = result->ok;
+        for (NSString *usernameFullPath in saltedDomainHashes) {
+            NSData *saltedDomainHashData = saltedDomainHashes[usernameFullPath];
+            for (int i = 0; i < index_map->count; i++) {
+                [self processSaltedDomainHashDocument:usernameFullPath hash:saltedDomainHashData document:index_map->values[0] inContext:context];
             }
-            if ([usernamesLeft count] && retryCount > 0) {
-                [strongSelf monitorForDPNSPreorderSaltedDomainHashes:[saltedDomainHashes dictionaryWithValuesForKeys:usernamesLeft]
-                                                      withRetryCount:retryCount - 1
-                                                           inContext:context
-                                                          completion:completion
-                                                   onCompletionQueue:completionQueue];
-            } else if (completion) {
-                dispatch_async(completionQueue, ^{ completion(![usernamesLeft count], nil); });
-            }
-        } else if (retryCount > 0) {
-            [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes
-                                                  withRetryCount:retryCount - 1
-                                                       inContext:context
-                                                      completion:completion
-                                               onCompletionQueue:completionQueue];
-        } else if (completion) {
-            dispatch_async(completionQueue, ^{ completion(NO, ERROR_MALFORMED_RESPONSE); });
         }
+        DMaybeDocumentsMapDtor(result);
     }
-                                                              failure:^(NSError *_Nonnull error) {
-        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-        }
-        if (retryCount > 0) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.identityQueue, ^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_MEM_ALLOC); });
-                    return;
-                }
-                [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes
-                                                      withRetryCount:retryCount - 1
-                                                           inContext:context
-                                                          completion:completion
-                                                   onCompletionQueue:completionQueue];
-            });
-        } else if (completion) {
-            dispatch_async(completionQueue, ^{ completion(FALSE, error); });
-        }
-    }];
+    dispatch_async(completionQueue, ^{ completion(YES, nil); });
+
+    
+//    __weak typeof(self) weakSelf = self;
+//    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
+//    [dapiNetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues]
+//                                                      completionQueue:self.identityQueue
+//                                                              success:^(id _Nonnull preorderDocumentArray) {
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_MEM_ALLOC); });
+//            return;
+//        }
+//        if ([preorderDocumentArray isKindOfClass:[NSArray class]]) {
+//            NSMutableArray *usernamesLeft = [[saltedDomainHashes allKeys] mutableCopy];
+//            for (NSString *usernameFullPath in saltedDomainHashes) {
+//                NSData *saltedDomainHashData = saltedDomainHashes[usernameFullPath];
+//                for (NSDictionary *preorderDocument in preorderDocumentArray) {
+//                    if ([preorderDocument[@"saltedDomainHash"] isEqualToData:saltedDomainHashData]) {
+//                        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
+//                        if (!usernameStatusDictionary)
+//                            usernameStatusDictionary = [NSMutableDictionary dictionary];
+//                        usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSIdentityUsernameStatus_Preordered);
+//                        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:usernameFullPath];
+//                        [strongSelf saveUsernameFullPath:usernameFullPath status:DSIdentityUsernameStatus_Preordered salt:nil commitSave:YES inContext:context];
+//                        [usernamesLeft removeObject:usernameFullPath];
+//                    }
+//                }
+//            }
+//            if ([usernamesLeft count] && retryCount > 0) {
+//                [strongSelf monitorForDPNSPreorderSaltedDomainHashes:[saltedDomainHashes dictionaryWithValuesForKeys:usernamesLeft]
+//                                                      withRetryCount:retryCount - 1
+//                                                           inContext:context
+//                                                          completion:completion
+//                                                   onCompletionQueue:completionQueue];
+//            } else if (completion) {
+//                dispatch_async(completionQueue, ^{ completion(![usernamesLeft count], nil); });
+//            }
+//        } else if (retryCount > 0) {
+//            [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes
+//                                                  withRetryCount:retryCount - 1
+//                                                       inContext:context
+//                                                      completion:completion
+//                                               onCompletionQueue:completionQueue];
+//        } else if (completion) {
+//            dispatch_async(completionQueue, ^{ completion(NO, ERROR_MALFORMED_RESPONSE); });
+//        }
+//    }
+//                                                              failure:^(NSError *_Nonnull error) {
+//        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+//            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+//        }
+//        if (retryCount > 0) {
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.identityQueue, ^{
+//                __strong typeof(weakSelf) strongSelf = weakSelf;
+//                if (!strongSelf) {
+//                    if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_MEM_ALLOC); });
+//                    return;
+//                }
+//                [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes
+//                                                      withRetryCount:retryCount - 1
+//                                                           inContext:context
+//                                                          completion:completion
+//                                                   onCompletionQueue:completionQueue];
+//            });
+//        } else if (completion) {
+//            dispatch_async(completionQueue, ^{ completion(FALSE, error); });
+//        }
+//    }];
 }
 
 @end

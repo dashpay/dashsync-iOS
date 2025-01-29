@@ -29,22 +29,22 @@
 
 - (IBAction)checkAddress:(id)sender {
     NSString *address = self.addressTextField.text;
-    if ([DSKeyManager isValidDashAddress:address forChain:self.chainManager.chain]) {
-        [self.chainManager.DAPIClient.DAPIPlatformNetworkService getAddressSummary:@[address]
-            noTxList:NO
-            from:@(0)
-            to:@(10)
-            fromHeight:nil
-            toHeight:nil
-            success:^(NSDictionary *_Nonnull addressSummary) {
-                NSLog(@"%@", addressSummary);
-            }
-            failure:^(NSError *_Nonnull error) {
-                [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
-                                                            center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
-                                          popOutAfterDelay:2.0]];
-            }];
-    }
+//    if ([DSKeyManager isValidDashAddress:address forChain:self.chainManager.chain]) {
+//        [self.chainManager.DAPIClient.DAPIPlatformNetworkService getAddressSummary:@[address]
+//            noTxList:NO
+//            from:@(0)
+//            to:@(10)
+//            fromHeight:nil
+//            toHeight:nil
+//            success:^(NSDictionary *_Nonnull addressSummary) {
+//                NSLog(@"%@", addressSummary);
+//            }
+//            failure:^(NSError *_Nonnull error) {
+//                [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
+//                                                            center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
+//                                          popOutAfterDelay:2.0]];
+//            }];
+//    }
 }
 
 

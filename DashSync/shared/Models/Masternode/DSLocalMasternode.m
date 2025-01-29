@@ -423,7 +423,7 @@
     if (self.status != DSLocalMasternodeStatus_New) return;
     char s[INET6_ADDRSTRLEN];
     NSString *ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
-    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register a masternode at %@:%d?", nil), ipAddressString, self.port];
+    NSString *question = DSLocalizedFormat(@"Are you sure you would like to register a masternode at %@:%d?", nil, ipAddressString, self.port);
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question
                                                    forWallet:fundingAccount.wallet
                                                    forAmount:MASTERNODE_COST
@@ -528,7 +528,7 @@
     if (self.status != DSLocalMasternodeStatus_Registered) return;
     char s[INET6_ADDRSTRLEN];
     NSString *ipAddressString = @(inet_ntop(AF_INET, &ipAddress.u32[3], s, sizeof(s)));
-    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to update this masternode to %@:%d?", nil), ipAddressString, self.port];
+    NSString *question = DSLocalizedFormat(@"Are you sure you would like to update this masternode to %@:%d?", nil, ipAddressString, self.port);
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question
                                                    forWallet:fundingAccount.wallet
                                                    forAmount:0
@@ -556,7 +556,7 @@
 
 - (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction))completion {
     if (self.status != DSLocalMasternodeStatus_Registered) return;
-    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to update this masternode to pay to %@?", nil), payoutAddress];
+    NSString *question = DSLocalizedFormat(@"Are you sure you would like to update this masternode to pay to %@?", nil, payoutAddress);
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question
                                                    forWallet:fundingAccount.wallet
                                                    forAmount:0

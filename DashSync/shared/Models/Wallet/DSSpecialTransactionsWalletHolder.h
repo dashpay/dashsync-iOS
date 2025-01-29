@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
-@class DSWallet, DSTransaction, DSIdentityRegistrationTransition, DSIdentityUpdateTransition;
+@class DSWallet, DSTransaction;
 
 NS_ASSUME_NONNULL_BEGIN
 

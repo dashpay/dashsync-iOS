@@ -132,8 +132,7 @@
 
         if (error) {
             DSLogPrivate(@"Error decoding response (%@) %@", req.URL.absoluteString, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSNumber *version = json[@"version"];
@@ -174,8 +173,7 @@
 
         if (error) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSNumber *version = json[@"version"];
@@ -239,8 +237,7 @@
 
         if (error) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSString *rawTxString = json[@"rawtx"];
@@ -278,8 +275,7 @@
 
         if (error || ![json isKindOfClass:[NSDictionary class]] || ![json objectForKey:@"items"]) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSMutableSet *existingAddresses = [NSMutableSet set];
@@ -335,8 +331,7 @@
 
         if (error || ![json isKindOfClass:[NSArray class]]) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                 req.URL.host]]);
+            completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
 
@@ -358,8 +353,7 @@
                 ![utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
                 ![utxo[@"scriptPubKey"] hexToData] ||
                 (![utxo[@"duffs"] isKindOfClass:[NSNumber class]] && ![utxo[@"satoshis"] isKindOfClass:[NSNumber class]] && !amount)) {
-                completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                     req.URL.host]]);
+                completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
                 return;
             }
 

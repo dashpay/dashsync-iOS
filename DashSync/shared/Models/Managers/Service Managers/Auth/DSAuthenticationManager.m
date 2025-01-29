@@ -547,7 +547,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     if (failCount < MAX_FAIL_COUNT) {
         NSTimeInterval wait = [self lockoutWaitTime];
         NSString *waitString = [NSString waitTimeFromNow:wait];
-        message = [NSString stringWithFormat:DSLocalizedString(@"Try again in %@", nil), waitString];
+        message = DSLocalizedFormat(@"Try again in %@", nil, waitString);
     } else {
         message = DSLocalizedString(@"No attempts remaining", nil);
     }
@@ -873,9 +873,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             return;
         } else {
             //no longer locked out, give the user a try
-            attemptsMessage = [NSString localizedStringWithFormat:
-                                            DSLocalizedString(@"%ld attempt(s) remaining", @"#bc-ignore!"),
-                                        (long)(MAX_FAIL_COUNT - failCount)];
+            attemptsMessage = DSLocalizedFormat(@"%ld attempt(s) remaining", @"#bc-ignore!", (long)(MAX_FAIL_COUNT - failCount));
         }
     }
 

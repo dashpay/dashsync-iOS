@@ -344,9 +344,7 @@
         completion(self);
         return;
     }
-    NSString *prompt = [NSString stringWithFormat:DSLocalizedString(@"Please authenticate to create your %@ wallet",
-                                                      @"Please authenticate to create your Testnet wallet"),
-                                 chain.localizedName];
+    NSString *prompt = DSLocalizedFormat(@"Please authenticate to create your %@ wallet", @"Please authenticate to create your Testnet wallet", chain.localizedName);
 
     [self seedPhraseAfterAuthenticationWithPrompt:prompt
                                        completion:^(NSString *_Nullable seedPhrase) {
@@ -772,6 +770,15 @@
     }
     return [mArray copy];
 }
+//- (NSArray *)accountsThatCanContainRustTransaction:(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *)transaction {
+//    NSParameterAssert(transaction);
+//
+//    NSMutableArray *mArray = [NSMutableArray array];
+//    for (DSAccount *account in self.accounts) {
+//        if ([account canContainRustTransaction:transaction]) [mArray addObject:account];
+//    }
+//    return [mArray copy];
+//}
 
 // all previously generated external addresses
 - (NSSet *)allReceiveAddresses {

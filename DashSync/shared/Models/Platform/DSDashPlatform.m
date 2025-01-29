@@ -19,7 +19,6 @@
 #import "DSDashPlatform.h"
 #import "DPContract.h"
 #import "DSChain.h"
-#import "DSDAPIPlatformNetworkService.h"
 
 @interface DSDashPlatform ()
 
@@ -61,10 +60,6 @@ static dispatch_once_t platformChainToken = 0;
     }
     return platformForChain;
 }
-
-//- (DPDocumentFactory *)documentFactoryForIdentity:(DSIdentity *)identity forContract:(DPContract *)contract {
-//    return [[DPDocumentFactory alloc] initWithIdentity:identity contract:contract onChain:self.chain];
-//}
 
 + (NSString *)nameForContractWithIdentifier:(NSString *)identifier {
     if ([identifier hasPrefix:DASHPAY_CONTRACT]) {

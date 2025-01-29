@@ -21,7 +21,6 @@
 #import "DSChain.h"
 #import "DSChain+Params.h"
 #import "DSContractEntity+CoreDataClass.h"
-//#import "DSContractTransition.h"
 #import "DSDashPlatform.h"
 #import "DSWallet.h"
 #import "NSData+DSCborDecoding.h"
@@ -222,15 +221,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     self.entropy = [entropyData SHA256];
 }
-
-#pragma mark - Transitions
-
-//- (DSContractTransition *)contractRegistrationTransitionForIdentityId:(UInt256)identityId {
-//    return [[DSContractTransition alloc] initWithContract:self
-//                                    withTransitionVersion:1
-//                                         identityUniqueId:identityId
-//                                                  onChain:self.chain];
-//}
 
 
 #pragma mark - Saving

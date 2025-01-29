@@ -272,13 +272,13 @@
 
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     cell.titleLabel.text = NSLocalizedString(@"type:", nil);
-                    if ([self.transaction isMemberOfClass:[DSIdentityRegistrationTransition class]]) {
+                    if /*([self.transaction isMemberOfClass:[DSIdentityRegistrationTransition class]]) {
                         cell.statusLabel.text = @"BU Registration Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSIdentityTopupTransition class]]) {
                         cell.statusLabel.text = @"BU Topup Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSIdentityUpdateTransition class]]) {
                         cell.statusLabel.text = @"BU Reset Transaction";
-                    } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+                    } else if*/ ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
                         cell.statusLabel.text = @"Masternode Registration Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
                         cell.statusLabel.text = @"Masternode Update Service Transaction";

@@ -24,7 +24,6 @@
 #import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSAssetLockDerivationPath.h"
-#import "DSDAPICoreNetworkService.h"
 #import "DSDerivationPathFactory.h"
 #import "DSIdentitiesManager+Protected.h"
 #import "DSInstantSendTransactionLock.h"
@@ -33,6 +32,7 @@
 #import "DSWallet+Invitation.h"
 #import "NSData+DSHash.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
@@ -201,7 +201,8 @@
     return TRUE;
 }
 
-- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion
+//- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion
+- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result))completion
                            completionQueue:(dispatch_queue_t)completionQueue {
     [DSInvitation verifyInvitationLink:self.link
                                onChain:self.wallet.chain
@@ -211,9 +212,10 @@
 
 + (void)verifyInvitationLink:(NSString *)invitationLink
                      onChain:(DSChain *)chain
-                  completion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion
+                  completion:(void (^_Nullable)(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result))completion
+//                  completion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion
              completionQueue:(dispatch_queue_t)completionQueue {
-    DSDAPICoreNetworkService *coreNetworkService = chain.chainManager.DAPIClient.DAPICoreNetworkService;
+//    DSDAPICoreNetworkService *coreNetworkService = chain.chainManager.DAPIClient.DAPICoreNetworkService;
     NSURLComponents *components = [NSURLComponents componentsWithString:invitationLink];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
@@ -227,27 +229,46 @@
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
-        if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
+        if (completion) completion(nil);
+//        if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
         return;
     }
     if (isEmptyFundingPrivateKey) {
-        if (completion) completion(nil, NO, ERROR_INVALID_FUNDING_PRV_KEY);
+        if (completion) completion(nil);
         return;
     }
+    
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(chain.shareCore.runtime, chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
 
-    [coreNetworkService getTransactionWithHash:assetLockTransactionHash
-        completionQueue:completionQueue
-        success:^(DSTransaction *_Nonnull transaction) {
-            NSAssert(transaction, @"transaction must not be null");
-        if (!transaction || ![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
-                if (completion) completion(nil, NO, ERROR_INVALID_INV_TX);
-                return;
-            }
-            if (completion) completion(transaction, NO, nil);
-        }
-        failure:^(NSError *_Nonnull error) {
-            if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
-        }];
+    dispatch_async(completionQueue, ^{
+        if (completion) completion(result);
+//        if (result->error) {
+//            Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
+//            if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
+//            return;
+//        }
+//        if (!result->ok) {
+//            Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
+//            if (completion) completion(nil, NO, ERROR_INVALID_INV_TX);
+//            return;
+//        }
+//        [DSAssetLockTransaction ffi]
+//        if (completion) completion(tra)
+    });
+    
+//    [coreNetworkService getTransactionWithHash:assetLockTransactionHash
+//        completionQueue:completionQueue
+//        success:^(DSTransaction *_Nonnull transaction) {
+//            NSAssert(transaction, @"transaction must not be null");
+//        if (!transaction || ![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
+//                if (completion) completion(nil, NO, ERROR_INVALID_INV_TX);
+//                return;
+//            }
+//            if (completion) completion(transaction, NO, nil);
+//        }
+//        failure:^(NSError *_Nonnull error) {
+//            if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
+//        }];
 }
 
 - (void)acceptInvitationUsingWalletIndex:(uint32_t)index
@@ -257,7 +278,7 @@
                           stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion
                               completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSError *error))completion
                          completionQueue:(dispatch_queue_t)completionQueue {
-    DSDAPICoreNetworkService *coreNetworkService = self.chain.chainManager.DAPIClient.DAPICoreNetworkService;
+//    DSDAPICoreNetworkService *coreNetworkService = self.chain.chainManager.DAPIClient.DAPICoreNetworkService;
     NSURLComponents *components = [NSURLComponents componentsWithString:self.link];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
@@ -278,46 +299,89 @@
         if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVALID_FUNDING_PRV_KEY);
         return;
     }
-
-    [coreNetworkService getTransactionWithHash:assetLockTransactionHash
-                               completionQueue:self.chain.chainManager.identitiesManager.identityQueue
-                                       success:^(DSTransaction *_Nonnull transaction) {
-        NSAssert(transaction, @"transaction must not be null");
-        if (!transaction || ![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
-            if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVALID_INV_TX);
+    
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
+    dispatch_async(self.chain.chainManager.identitiesManager.identityQueue, ^{
+        if (result->error) {
+            NSError *error = [NSError ffi_from_platform_error:result->error];
+            Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
+            if (completion) completion(DSIdentityRegistrationStep_None, error);
             return;
         }
+        DSAssetLockTransaction *tx = [DSAssetLockTransaction ffi_from:result->ok onChain:self.chain];
+        Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
+
         self.identity = [[DSIdentity alloc] initAtIndex:index
-                               withAssetLockTransaction:(DSAssetLockTransaction *)transaction
+                               withAssetLockTransaction:tx
                                  withUsernameDictionary:nil
                                                inWallet:self.wallet];
         [self.identity setAssociatedInvitation:self];
         [self.identity addDashpayUsername:dashpayUsername save:NO];
-        [self.identity registerInWalletForAssetLockTransaction: (DSAssetLockTransaction *)transaction];
-            BOOL success = [self.identity setExternalFundingPrivateKey:fundingPrivateKey];
-            if (!success && fundingPrivateKey != NULL)
-                DMaybeOpaqueKeyDtor(fundingPrivateKey);
+        [self.identity registerInWalletForAssetLockTransaction:tx];
+        BOOL success = [self.identity setExternalFundingPrivateKey:fundingPrivateKey];
+        if (!success && fundingPrivateKey != NULL)
+            DMaybeOpaqueKeyDtor(fundingPrivateKey);
 
-            NSAssert(success, @"We must be able to set the external funding private key");
-            if (success) {
-                [self.identity generateIdentityExtendedPublicKeysWithPrompt:authenticationMessage
-                                                                 completion:^(BOOL registered) {
-                    if (registered) {
-                        [self.identity continueRegisteringIdentityOnNetwork:identityRegistrationSteps
-                                                             stepsCompleted:DSIdentityRegistrationStep_L1Steps
-                                                             stepCompletion:stepCompletion
-                                                                 completion:completion];
-                    } else if (completion) {
-                        completion(DSIdentityRegistrationStep_None, ERROR_GEN_IDENTITY_KEYS);
-                    }
-                }];
-            } else if (completion) {
-                completion(DSIdentityRegistrationStep_None, ERROR_SETTING_EXT_PRV_KEY);
-            }
+        NSAssert(success, @"We must be able to set the external funding private key");
+        if (success) {
+            [self.identity generateIdentityExtendedPublicKeysWithPrompt:authenticationMessage
+                                                             completion:^(BOOL registered) {
+                if (registered) {
+                    [self.identity continueRegisteringIdentityOnNetwork:identityRegistrationSteps
+                                                         stepsCompleted:DSIdentityRegistrationStep_L1Steps
+                                                         stepCompletion:stepCompletion
+                                                             completion:completion];
+                } else if (completion) {
+                    completion(DSIdentityRegistrationStep_None, ERROR_GEN_IDENTITY_KEYS);
+                }
+            }];
+        } else if (completion) {
+            completion(DSIdentityRegistrationStep_None, ERROR_SETTING_EXT_PRV_KEY);
         }
-                                       failure:^(NSError *_Nonnull error) {
-            if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVITATION_FORMAT);
-        }];
+        
+//                                       failure:^(NSError *_Nonnull error) {
+//            if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVITATION_FORMAT);
+
+    });
+//    [coreNetworkService getTransactionWithHash:assetLockTransactionHash
+//                               completionQueue:self.chain.chainManager.identitiesManager.identityQueue
+//                                       success:^(DSTransaction *_Nonnull transaction) {
+//        NSAssert(transaction, @"transaction must not be null");
+//        if (!transaction || ![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
+//            if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVALID_INV_TX);
+//            return;
+//        }
+//        self.identity = [[DSIdentity alloc] initAtIndex:index
+//                               withAssetLockTransaction:(DSAssetLockTransaction *)transaction
+//                                 withUsernameDictionary:nil
+//                                               inWallet:self.wallet];
+//        [self.identity setAssociatedInvitation:self];
+//        [self.identity addDashpayUsername:dashpayUsername save:NO];
+//        [self.identity registerInWalletForAssetLockTransaction: (DSAssetLockTransaction *)transaction];
+//            BOOL success = [self.identity setExternalFundingPrivateKey:fundingPrivateKey];
+//            if (!success && fundingPrivateKey != NULL)
+//                DMaybeOpaqueKeyDtor(fundingPrivateKey);
+//
+//            NSAssert(success, @"We must be able to set the external funding private key");
+//            if (success) {
+//                [self.identity generateIdentityExtendedPublicKeysWithPrompt:authenticationMessage
+//                                                                 completion:^(BOOL registered) {
+//                    if (registered) {
+//                        [self.identity continueRegisteringIdentityOnNetwork:identityRegistrationSteps
+//                                                             stepsCompleted:DSIdentityRegistrationStep_L1Steps
+//                                                             stepCompletion:stepCompletion
+//                                                                 completion:completion];
+//                    } else if (completion) {
+//                        completion(DSIdentityRegistrationStep_None, ERROR_GEN_IDENTITY_KEYS);
+//                    }
+//                }];
+//            } else if (completion) {
+//                completion(DSIdentityRegistrationStep_None, ERROR_SETTING_EXT_PRV_KEY);
+//            }
+//        }
+//                                       failure:^(NSError *_Nonnull error) {
+//            if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVITATION_FORMAT);
+//        }];
 }
 
 - (void)createInvitationFullLinkFromIdentity:(DSIdentity *)identity

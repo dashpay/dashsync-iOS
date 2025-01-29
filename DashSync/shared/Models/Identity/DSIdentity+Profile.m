@@ -16,9 +16,7 @@
 //
 
 #import "DSDashpayUserEntity+CoreDataClass.h"
-#import "DPDocument.h"
-#import "DPDocumentFactory.h"
-#import "DSDocumentTransition.h"
+#import "DPContract.h"
 #import "DSIdentity+Profile.h"
 #import "DSIdentity+Protected.h"
 #import "DSIdentity+Username.h"
@@ -95,56 +93,6 @@
 }
 
 // MARK: Profile
-
-- (DPDocument *)matchingDashpayUserProfileDocumentInContext:(NSManagedObjectContext *)context {
-    //The revision must be at least at 1, otherwise nothing was ever done
-    DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
-    if (matchingDashpayUser && matchingDashpayUser.localProfileDocumentRevision) {
-        __block DSMutableStringValueDictionary *dataDictionary = nil;
-        
-        __block NSData *entropyData = nil;
-        __block NSData *documentIdentifier = nil;
-        [context performBlockAndWait:^{
-            dataDictionary = [@{@"$updatedAt": @(matchingDashpayUser.updatedAt), } mutableCopy];
-            if (matchingDashpayUser.createdAt == matchingDashpayUser.updatedAt)
-                dataDictionary[@"$createdAt"] = @(matchingDashpayUser.createdAt);
-            else
-                dataDictionary[@"$revision"] = @(matchingDashpayUser.localProfileDocumentRevision);
-            if (matchingDashpayUser.publicMessage)
-                dataDictionary[@"publicMessage"] = matchingDashpayUser.publicMessage;
-            if (matchingDashpayUser.avatarPath)
-                dataDictionary[@"avatarUrl"] = matchingDashpayUser.avatarPath;
-            if (matchingDashpayUser.avatarFingerprint)
-                dataDictionary[@"avatarFingerprint"] = matchingDashpayUser.avatarFingerprint;
-            if (matchingDashpayUser.avatarHash)
-                dataDictionary[@"avatarHash"] = matchingDashpayUser.avatarHash;
-            if (matchingDashpayUser.displayName)
-                dataDictionary[@"displayName"] = matchingDashpayUser.displayName;
-            entropyData = matchingDashpayUser.originalEntropyData;
-            documentIdentifier = matchingDashpayUser.documentIdentifier;
-        }];
-        NSError *error = nil;
-        if (documentIdentifier == nil) {
-            NSAssert(entropyData, @"Entropy string must be present");
-            return [self.dashpayDocumentFactory documentOnTable:@"profile"
-                                             withDataDictionary:dataDictionary
-                                                   usingEntropy:entropyData
-                                                          error:&error];
-        } else {
-            return [self.dashpayDocumentFactory documentOnTable:@"profile"
-                                             withDataDictionary:dataDictionary
-                                        usingDocumentIdentifier:documentIdentifier
-                                                          error:&error];
-        }
-    } else {
-        return nil;
-    }
-}
-
-- (DSDocumentTransition *)profileDocumentTransitionInContext:(NSManagedObjectContext *)context {
-    DPDocument *profileDocument = [self matchingDashpayUserProfileDocumentInContext:context];
-    return profileDocument ? [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withTransitionVersion:1 identityUniqueId:self.uniqueID onChain:self.chain] : nil;
-}
 
 - (void)updateDashpayProfileWithDisplayName:(NSString *)displayName {
     [self updateDashpayProfileWithDisplayName:displayName
@@ -437,18 +385,6 @@
     }];
 }
 
-- (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext *)context
-                                  withCompletion:(void (^)(DSTransition *transition, BOOL cancelled, NSError *error))completion {
-//    __weak typeof(self) weakSelf = self;
-    DSDocumentTransition *transition = [self profileDocumentTransitionInContext:context];
-    if (!transition) {
-        if (completion) completion(nil, NO, ERROR_TRANSITION_NO_UPDATE);
-        return;
-    }
-    if ([self signStateTransition:transition])
-        completion(transition, NO, nil);
-}
-
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
     [self signAndPublishProfileInContext:self.platformContext
                           withCompletion:completion];
@@ -456,7 +392,6 @@
 
 - (void)signAndPublishProfileInContext:(NSManagedObjectContext *)context
                         withCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
-    __weak typeof(self) weakSelf = self;
     __block uint32_t profileDocumentRevision;
     [context performBlockAndWait:^{
         DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
@@ -465,31 +400,57 @@
         profileDocumentRevision = matchingDashpayUser.localProfileDocumentRevision;
         [context ds_save];
     }];
-    [self signedProfileDocumentTransitionInContext:context
-                                    withCompletion:^(DSTransition *transition, BOOL cancelled, NSError *error) {
-        if (!transition) {
-            if (completion) completion(NO, cancelled, error);
-            return;
-        }
-        [self.DAPIClient publishTransition:transition
-                           completionQueue:self.identityQueue
-                                   success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                if (completion) completion(NO, NO, ERROR_MEM_ALLOC);
-                return;
-            }
-            [context performBlockAndWait:^{
-                [self matchingDashpayUserInContext:context].remoteProfileDocumentRevision = profileDocumentRevision;
-                [context ds_save];
-            }];
-            if (completion)
-                dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, NO, nil); });
-        }
-                                   failure:^(NSError *_Nonnull error) {
-            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, NO, error); });
+    DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
+    __block dash_spv_platform_models_profile_Profile *profile = nil;
+    __block NSData *entropyData = nil, *documentIdentifier = nil;
+    if (matchingDashpayUser && matchingDashpayUser.localProfileDocumentRevision) {
+        __block Vec_u8 *avatarFingerprint = nil, *avatarHash = nil;
+        __block uint64_t updatedAt, createdAt, revision;
+        __block char *publicMessage = nil, *avatarUrl = nil, *displayName = nil;
+        [context performBlockAndWait:^{
+            updatedAt = matchingDashpayUser.updatedAt;
+            createdAt = matchingDashpayUser.createdAt;
+            revision = matchingDashpayUser.localProfileDocumentRevision;
+            if (matchingDashpayUser.publicMessage)
+                publicMessage = (char *)[matchingDashpayUser.publicMessage UTF8String];
+            if (matchingDashpayUser.avatarPath)
+                avatarUrl = (char *)[matchingDashpayUser.avatarPath UTF8String];
+            if (matchingDashpayUser.avatarFingerprint)
+                avatarFingerprint = bytes_ctor(matchingDashpayUser.avatarFingerprint);
+            if (matchingDashpayUser.avatarHash)
+                avatarHash = bytes_ctor(matchingDashpayUser.avatarHash);
+            if (matchingDashpayUser.displayName)
+                publicMessage = (char *)[matchingDashpayUser.displayName UTF8String];
+            entropyData = matchingDashpayUser.originalEntropyData;
+            documentIdentifier = matchingDashpayUser.documentIdentifier;
         }];
+        profile = dash_spv_platform_models_profile_Profile_ctor(updatedAt, createdAt, revision, (char *)[matchingDashpayUser.publicMessage UTF8String], (char *)[matchingDashpayUser.avatarPath UTF8String], avatarFingerprint, avatarHash, displayName);
+    } else {
+        if (completion) completion(nil, NO, ERROR_TRANSITION_NO_UPDATE);
+        return;
+    }
+
+    if (!self.keysCreated) {
+        uint32_t index;
+        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
+    }
+    DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeStateTransitionProofResultDtor(result);
+        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, NO, error); });
+        return;
+    }
+    DMaybeStateTransitionProofResultDtor(result);
+
+    [context performBlockAndWait:^{
+        [self matchingDashpayUserInContext:context].remoteProfileDocumentRevision = profileDocumentRevision;
+        [context ds_save];
     }];
+    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, NO, nil); });
+
 }
 
 //
@@ -536,18 +497,18 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DASHPAY_CONTRACT_NOT_REGISTERED); });
         return;
     }
-    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_dashpay_profile_for_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(self.uniqueID), dashpayContract.raw_contract);
-        
-    if (result->error) {
-        NSError *error = [NSError ffi_from_platform_error:result->error];
-        DMaybeDocumentDtor(result);
-        dispatch_async(completionQueue, ^{ completion(NO, error); });
-        return;
-    }
-    if (result->ok) {
-            
-        
-    }
+//    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_dashpay_profile_for_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(self.uniqueID), dashpayContract.raw_contract);
+//        
+//    if (result->error) {
+//        NSError *error = [NSError ffi_from_platform_error:result->error];
+//        DMaybeDocumentDtor(result);
+//        dispatch_async(completionQueue, ^{ completion(NO, error); });
+//        return;
+//    }
+//    if (result->ok) {
+//            
+//        
+//    }
 
     
     [self.identitiesManager fetchProfileForIdentity:self
@@ -620,7 +581,7 @@
             NSAssert(contact, @"It is weird to get here");
             if (!contact)
                 contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", self.uniqueIDData];
-            if (!contact || transientDashpayUser.updatedAt> contact.updatedAt) {
+            if (!contact || transientDashpayUser.updatedAt > contact.updatedAt) {
                 if (!contact) {
                     contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
                     contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];

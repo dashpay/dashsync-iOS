@@ -16,8 +16,6 @@
 //
 
 #import "DSIdentity.h"
-#import "DSDAPIClient.h"
-#import "DSDAPIPlatformNetworkService.h"
 #import "DSIdentitiesManager.h"
 #import "DSTransientDashpayUser.h"
 
@@ -38,10 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSManagedObjectContext *platformContext;
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, readonly) DSDAPIClient *DAPIClient;
-@property (nonatomic, readonly) DSDAPIPlatformNetworkService *DAPINetworkService;
 @property (nonatomic, readonly) DSIdentitiesManager *identitiesManager;
 @property (nonatomic, assign) DKeyKind *currentMainKeyType;
+@property (nonatomic, assign) uint32_t currentMainKeyIndex;
+@property (nonatomic, readonly) uint32_t keysCreated;
+
 @property (nonatomic, assign) BOOL isTransient;
 
 @property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;

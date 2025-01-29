@@ -36,7 +36,7 @@
 #import "DSChain+Wallet.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
-#import "DSDAPIPlatformNetworkService.h"
+//#import "DSDAPIPlatformNetworkService.h"
 #import "DSError.h"
 #import "DSEventManager.h"
 #import "DSIdentitiesManager.h"
@@ -53,7 +53,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionInput.h"
-#import "DSTransition.h"
+//#import "DSTransition.h"
 #import "DSWallet+Identity.h"
 #import "DSWallet+Protected.h"
 #import "NSData+Dash.h"
@@ -569,9 +569,7 @@
         return;
     } else if (amount < TX_MIN_OUTPUT_AMOUNT) {
         NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
-        NSString *errorMessage = [NSString stringWithFormat:
-                                               DSLocalizedString(@"Dash payments can't be less than %@", nil),
-                                           [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *errorMessage = DSLocalizedFormat(@"Dash payments can't be less than %@", nil, [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]);
         NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
         NSError *error = [NSError errorWithDomain:DSErrorDomain
                                              code:DSErrorPaymentAmountLessThenMinOutputAmount
@@ -580,9 +578,7 @@
         return;
     } else if (outputTooSmall) {
         NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
-        NSString *errorMessage = [NSString stringWithFormat:
-                                               DSLocalizedString(@"Dash transaction outputs can't be less than %@", nil),
-                                           [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *errorMessage = DSLocalizedFormat(@"Dash transaction outputs can't be less than %@", nil, [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]);
         NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
         NSError *error = [NSError errorWithDomain:DSErrorDomain
                                              code:DSErrorPaymentTransactionOutputTooSmall
@@ -760,10 +756,7 @@
                            completion:^(DSPaymentProtocolACK *ack, NSError *error) {
                                if (error) {
                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                       NSString *errorTitle = [NSString
-                                           stringWithFormat:
-                                               DSLocalizedString(@"Error from payment request server %@", nil),
-                                           protocolRequest.details.paymentURL];
+                                       NSString *errorTitle = DSLocalizedFormat(@"Error from payment request server %@", nil, protocolRequest.details.paymentURL);
                                        NSString *errorMessage = error.localizedDescription;
                                        NSString *localizedDescription = [NSString
                                            stringWithFormat:@"%@\n%@",
@@ -824,9 +817,9 @@
 
         if (amount > 0 && amount < requestedSendAmount) {
             NSString *challengeTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
-            NSString *challengeMessage = [NSString stringWithFormat:DSLocalizedString(@"Reduce payment amount by\n%@ (%@)?", nil),
+            NSString *challengeMessage = DSLocalizedFormat(@"Reduce payment amount by\n%@ (%@)?", nil,
                                                    [manager stringForDashAmount:requestedSendAmount - amount],
-                                                   [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]];
+                                                   [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]);
 
             NSString *reduceString = [NSString stringWithFormat:@"%@ (%@)",
                                                [manager stringForDashAmount:amount - requestedSendAmount],

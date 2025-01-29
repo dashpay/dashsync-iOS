@@ -40,14 +40,14 @@
 }
 
 - (void)refreshStateTransitions {
-    [self.chainManager.DAPIClient getAllStateTransitionsForUser:self.identity
-                                                     completion:^(NSError *_Nullable error) {
-                                                         if (!error) {
-                                                             self.transitions = nil; //[self.identity allTransitions];
-                                                             [self.tableView reloadData];
-                                                         }
-                                                         [self.tableView.refreshControl endRefreshing];
-                                                     }];
+//    [self.chainManager.DAPIClient getAllStateTransitionsForUser:self.identity
+//                                                     completion:^(NSError *_Nullable error) {
+//                                                         if (!error) {
+//                                                             self.transitions = nil; //[self.identity allTransitions];
+//                                                             [self.tableView reloadData];
+//                                                         }
+//                                                         [self.tableView.refreshControl endRefreshing];
+//                                                     }];
 }
 
 #pragma mark - Table view data source

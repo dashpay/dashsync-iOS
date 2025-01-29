@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Vladimir Pirogov
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,21 +16,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DPContract.h"
-#import "DPDocumentProtocol.h"
 #import "DSIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain;
-
-@interface DPDocumentFactory : NSObject <DPDocumentProtocol>
-
-- (instancetype)initWithIdentity:(DSIdentity *)identity
-                                  contract:(DPContract *)contract
-                                   onChain:(DSChain *)chain;
-
-- (instancetype)init NS_UNAVAILABLE;
+@interface DSUsernameFullPathSaveContext : NSObject
+@property (nonatomic, assign) NSArray<NSString *> *usernames;
+@property (nonatomic, assign) DSIdentity *identity;
+@property (nonatomic, assign) NSManagedObjectContext *context;
++ (instancetype)contextWithUsernames:(NSArray<NSString *> *)usernames forIdentity:(DSIdentity *)identity inContext:(NSManagedObjectContext *)context;
+- (void)setAndSaveUsernameFullPaths:(DSIdentityUsernameStatus)status;
 
 @end
 

@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountFromTransactionNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromTransactionNotification;
 
-@class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSIdentityRegistrationTransition, DSIdentityUpdateTransition, DSCoinbaseTransaction, DSPotentialOneWayFriendship;
+@class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSCoinbaseTransaction, DSPotentialOneWayFriendship;
 
 @interface DSAccount : NSObject
 
@@ -183,6 +183,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
 - (BOOL)canContainTransaction:(DSTransaction *)transaction;
+//- (BOOL)canContainRustTransaction:(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *)transaction;
 
 // adds a transaction to the account, or returns false if it isn't associated with the account
 - (BOOL)registerTransaction:(DSTransaction *)transaction

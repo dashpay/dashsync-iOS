@@ -16,7 +16,7 @@
 //
 
 #import "DPDocumentFactory.h"
-#import "DPDocument.h"
+//#import "DPDocument.h"
 #import "DPErrors.h"
 
 #import "BigIntTypes.h"
@@ -54,91 +54,53 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DPDocumentFactory
 
-- (nullable DPDocument *)documentOnTable:(NSString *)tableName
-                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                            usingEntropy:(NSData *)entropy
-                                   error:(NSError *_Nullable __autoreleasing *)error {
-    NSParameterAssert(tableName);
-
-    if (!dataDictionary) {
-        dataDictionary = @{};
-    }
-
-    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredIdentityUniqueID)) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:DPErrorDomain
-                                         code:DPErrorCode_InvalidDocumentType
-                                     userInfo:@{
-                                         NSLocalizedDescriptionKey:
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known", nil),
-                                                       self.contract.name],
-                                     }];
-        }
-
-        return nil;
-    }
-
-    if (![self.contract isDocumentDefinedForType:tableName]) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:DPErrorDomain
-                                         code:DPErrorCode_UnknownContract
-                                     userInfo:@{
-                                         NSLocalizedDescriptionKey:
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' doesn't contain a table named '%@'", nil),
-                                                       self.contract.name, tableName],
-                                     }];
-        }
-
-        return nil;
-    }
-
-    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingEntropy:entropy];
-
-    return object;
-}
-
-- (nullable DPDocument *)documentOnTable:(NSString *)tableName
-                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                 usingDocumentIdentifier:(NSData *)identifier
-                                   error:(NSError *_Nullable __autoreleasing *)error {
-    NSParameterAssert(tableName);
-
-    if (!dataDictionary) {
-        dataDictionary = @{};
-    }
-
-    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredIdentityUniqueID)) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:DPErrorDomain
-                                         code:DPErrorCode_InvalidDocumentType
-                                     userInfo:@{
-                                         NSLocalizedDescriptionKey:
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known", nil),
-                                                       self.contract.name],
-                                     }];
-        }
-
-        return nil;
-    }
-
-    if (![self.contract isDocumentDefinedForType:tableName]) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:DPErrorDomain
-                                         code:DPErrorCode_UnknownContract
-                                     userInfo:@{
-                                         NSLocalizedDescriptionKey:
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' doesn't contain a table named '%@'", nil),
-                                                       self.contract.name, tableName],
-                                     }];
-        }
-
-        return nil;
-    }
-
-    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingDocumentId:identifier.UInt256];
-
-    return object;
-}
+//- (nullable DPDocument *)documentOnTable:(NSString *)tableName
+//                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+//                            usingEntropy:(NSData *)entropy
+//                                   error:(NSError *_Nullable __autoreleasing *)error {
+//    NSParameterAssert(tableName);
+//    if (!dataDictionary)
+//        dataDictionary = @{};
+//    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredIdentityUniqueID)) {
+//        if (error != NULL)
+//            *error = [NSError errorWithDomain:DPErrorDomain
+//                                         code:DPErrorCode_InvalidDocumentType
+//                                     userInfo:@{ NSLocalizedDescriptionKey: DSLocalizedFormat(@"Contract '%@' needs to first be locally registered or known", nil, self.contract.name) }];
+//        return nil;
+//    }
+//    if (![self.contract isDocumentDefinedForType:tableName]) {
+//        if (error != NULL)
+//            *error = [NSError errorWithDomain:DPErrorDomain
+//                                         code:DPErrorCode_UnknownContract
+//                                     userInfo:@{ NSLocalizedDescriptionKey: DSLocalizedFormat(@"Contract '%@' doesn't contain a table named '%@'", nil, self.contract.name, tableName) }];
+//        return nil;
+//    }
+//    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingEntropy:entropy];
+//}
+//
+//- (nullable DPDocument *)documentOnTable:(NSString *)tableName
+//                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+//                 usingDocumentIdentifier:(NSData *)identifier
+//                                   error:(NSError *_Nullable __autoreleasing *)error {
+//    NSParameterAssert(tableName);
+//    if (!dataDictionary)
+//        dataDictionary = @{};
+//    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredIdentityUniqueID)) {
+//        if (error != NULL)
+//            *error = [NSError errorWithDomain:DPErrorDomain
+//                                         code:DPErrorCode_InvalidDocumentType
+//                                     userInfo:@{ NSLocalizedDescriptionKey: DSLocalizedFormat(@"Contract '%@' needs to first be locally registered or known", nil, self.contract.name) }];
+//        return nil;
+//    }
+//    if (![self.contract isDocumentDefinedForType:tableName]) {
+//        if (error != NULL)
+//            *error = [NSError errorWithDomain:DPErrorDomain
+//                                         code:DPErrorCode_UnknownContract
+//                                     userInfo:@{ NSLocalizedDescriptionKey: DSLocalizedFormat(@"Contract '%@' doesn't contain a table named '%@'", nil, self.contract.name, tableName) }];
+//        return nil;
+//    }
+//    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingDocumentId:identifier.UInt256];
+//}
 
 @end
 

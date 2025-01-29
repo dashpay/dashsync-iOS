@@ -299,6 +299,17 @@ NSString const *mWalletsKey = @"mWalletsKey";
     return [mArray copy];
 }
 
+//- (NSArray *)accountsThatCanContainRustTransaction:(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *_Nonnull)transaction {
+//    NSMutableArray *mArray = [NSMutableArray array];
+//    if (!transaction) return @[];
+//    for (DSWallet *wallet in self.wallets) {
+//        [mArray addObjectsFromArray:[wallet accountsThatCanContainRustTransaction:transaction]];
+//    }
+//    return [mArray copy];
+//
+//}
+
+
 - (DSAccount *_Nullable)accountContainingAddress:(NSString *)address {
     if (!address) return nil;
     for (DSWallet *wallet in self.wallets) {

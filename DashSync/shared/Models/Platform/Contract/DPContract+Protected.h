@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) DPContractState contractState;
 
-//- (DSContractTransition *)contractRegistrationTransitionForIdentityId:(UInt256)identityId;
 - (void)saveAndWaitInContext:(NSManagedObjectContext *)context;
 
 @end

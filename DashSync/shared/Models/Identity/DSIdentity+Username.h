@@ -58,6 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue;
 
+- (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
+                           toStatus:(DSIdentityUsernameStatus)status
+                          inContext:(NSManagedObjectContext *)context;
+
 @end
 
 NS_ASSUME_NONNULL_END

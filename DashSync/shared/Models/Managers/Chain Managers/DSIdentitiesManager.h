@@ -56,38 +56,38 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
 
 - (void)checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString *)name
-                                                    withCompletion:(IdentityCompletionBlock)completion;
+- (void)searchIdentityByDashpayUsername:(NSString *)name
+                         withCompletion:(IdentityCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString *)namePrefix
-                                               inDomain:(NSString *)domain
-                                         withCompletion:(IdentityCompletionBlock)completion;
+- (void)searchIdentityByName:(NSString *)namePrefix
+                    inDomain:(NSString *)domain
+              withCompletion:(IdentityCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-                                                   queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-                                                            withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-                                                                startAfter:(NSData* _Nullable)startAfter
-                                                                     limit:(uint32_t)limit
-                                                   queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-                                                            withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                                     startAfter:(NSData* _Nullable)startAfter
+                                          limit:(uint32_t)limit
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix
-                                                     startAfter:(NSData* _Nullable)startAfter
-                                                          limit:(uint32_t)limit
-                                                 withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)searchIdentitiesByNamePrefix:(NSString *)namePrefix
+                          startAfter:(NSData* _Nullable)startAfter
+                               limit:(uint32_t)limit
+                      withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity
-                                            withCompletion:(DashpayUserInfoCompletionBlock)completion
-                                         onCompletionQueue:(dispatch_queue_t)completionQueue;
+- (void)fetchProfileForIdentity:(DSIdentity *)identity
+                 withCompletion:(DashpayUserInfoCompletionBlock)completion
+              onCompletionQueue:(dispatch_queue_t)completionQueue;
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForIdentity:(DSIdentity *)identity
-                                                          retryCount:(uint32_t)retryCount
-                                                               delay:(uint32_t)delay
-                                                       delayIncrease:(uint32_t)delayIncrease
-                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion
-                                                   onCompletionQueue:(dispatch_queue_t)completionQueue;
+- (void)fetchProfileForIdentity:(DSIdentity *)identity
+                     retryCount:(uint32_t)retryCount
+                          delay:(uint32_t)delay
+                  delayIncrease:(uint32_t)delayIncrease
+                 withCompletion:(DashpayUserInfoCompletionBlock)completion
+              onCompletionQueue:(dispatch_queue_t)completionQueue;
 
 //- (id<DSDAPINetworkServiceRequest>)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
 //                                               withCompletion:(DashpayUserInfosCompletionBlock)completion
