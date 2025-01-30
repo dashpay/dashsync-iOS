@@ -33,7 +33,6 @@
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "DSTransition.h"
 #import "DSWallet+Identity.h"
 #import "NSData+Encryption.h"
 #import "NSError+Dash.h"
@@ -297,20 +296,20 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     return self;
 }
 
-- (instancetype)initAtIndex:(uint32_t)index
-   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
-     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
-              havingCredits:(uint64_t)credits
-         registrationStatus:(DSIdentityRegistrationStatus)registrationStatus
-                   inWallet:(DSWallet *)wallet {
-    if (!(self = [self initAtIndex:index withAssetLockTransaction:transaction
-            withUsernameDictionary:usernameDictionary
-                          inWallet:wallet])) return nil;
-    self.creditBalance = credits;
-    self.registrationStatus = registrationStatus;
-    return self;
-}
-
+//- (instancetype)initAtIndex:(uint32_t)index
+//   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
+//     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
+//              havingCredits:(uint64_t)credits
+//         registrationStatus:(DSIdentityRegistrationStatus)registrationStatus
+//                   inWallet:(DSWallet *)wallet {
+//    if (!(self = [self initAtIndex:index withAssetLockTransaction:transaction
+//            withUsernameDictionary:usernameDictionary
+//                          inWallet:wallet])) return nil;
+//    self.creditBalance = credits;
+//    self.registrationStatus = registrationStatus;
+//    return self;
+//}
+//
 //- (instancetype)initAtIndex:(uint32_t)index
 //     withIdentityDictionary:(NSDictionary *)identityDictionary
 //                    version:(uint32_t)version
@@ -1271,20 +1270,20 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     return @"";
 }
 
-- (void)applyIdentityDictionary:(NSDictionary *)identityDictionary
-                        version:(uint32_t)version
-                           save:(BOOL)save
-                      inContext:(NSManagedObjectContext *_Nullable)context {
-    if (identityDictionary[@"balance"]) {
-        uint64_t creditBalance = (uint64_t)[identityDictionary[@"balance"] longLongValue];
-        _creditBalance = creditBalance;
-    }
-    if (identityDictionary[@"publicKeys"]) {
-        for (NSDictionary *dictionary in identityDictionary[@"publicKeys"]) {
-            [self addKeyFromKeyDictionary:dictionary save:save inContext:context];
-        }
-    }
-}
+//- (void)applyIdentityDictionary:(NSDictionary *)identityDictionary
+//                        version:(uint32_t)version
+//                           save:(BOOL)save
+//                      inContext:(NSManagedObjectContext *_Nullable)context {
+//    if (identityDictionary[@"balance"]) {
+//        uint64_t creditBalance = (uint64_t)[identityDictionary[@"balance"] longLongValue];
+//        _creditBalance = creditBalance;
+//    }
+//    if (identityDictionary[@"publicKeys"]) {
+//        for (NSDictionary *dictionary in identityDictionary[@"publicKeys"]) {
+//            [self addKeyFromKeyDictionary:dictionary save:save inContext:context];
+//        }
+//    }
+//}
 - (void)applyIdentity:(dpp_identity_identity_Identity *)identity
                  save:(BOOL)save
             inContext:(NSManagedObjectContext *_Nullable)context {
@@ -2078,7 +2077,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 - (void)fetchAndUpdateContract:(DPContract *)contract {
     NSManagedObjectContext *context = [NSManagedObjectContext platformContext];
     __weak typeof(contract) weakContract = contract;
-    __weak typeof(self) weakSelf = self;
+//    __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get service immediately
         BOOL isDPNSEmpty = [contract.name isEqual:@"DPNS"] && uint256_is_zero(self.chain.dpnsContractID);
         BOOL isDashpayEmpty = [contract.name isEqual:@"DashPay"] && uint256_is_zero(self.chain.dashpayContractID);
@@ -2231,23 +2230,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
             DSLog(@"updateCreditBalance (%@): OK: %llu", self.uniqueIDData.hexString, result->ok[0]);
             strongSelf.creditBalance = result->ok[0];
         });
-
-        
-//        DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
-//        [dapiNetworkService getIdentityById:self.uniqueIDData
-//                            completionQueue:self.identityQueue
-//                                    success:^(NSDictionary *_Nullable profileDictionary) {
-//            __strong typeof(weakSelf) strongSelf = weakSelf;
-//            if (!strongSelf) return;
-//            dispatch_async(self.identityQueue, ^{
-//                strongSelf.creditBalance = (uint64_t)[profileDictionary[@"balance"] longLongValue];
-//            });
-//        }
-//                                    failure:^(NSError *_Nonnull error) {
-//            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-//                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-//            }
-//        }];
     });
 }
 

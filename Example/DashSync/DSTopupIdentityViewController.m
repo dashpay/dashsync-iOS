@@ -8,7 +8,7 @@
 
 #import "DSTopupIdentityViewController.h"
 #import "DSAccountChooserViewController.h"
-#import "DSIdentityRegistrationTransition.h"
+//#import "DSIdentityRegistrationTransition.h"
 #import "DSWalletChooserViewController.h"
 #import <DashSync/DashSync.h>
 

@@ -22,7 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSIdentity, DSAccount, DSIdentityRegistrationTransition, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
+@class DSIdentity, DSAccount, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
 
 @interface DSPotentialOneWayFriendship : NSObject
 

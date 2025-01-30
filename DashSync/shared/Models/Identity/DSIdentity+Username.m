@@ -441,7 +441,7 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
 - (void)internalFetchUsernamesInContext:(NSManagedObjectContext *)context
                          withCompletion:(void (^)(BOOL success, NSError *error))completion
                       onCompletionQueue:(dispatch_queue_t)completionQueue {
-    __weak typeof(self) weakSelf = self;
+//    __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     if (contract.contractState != DPContractState_Registered) {
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DPNS_CONTRACT_NOT_REGISTERED); });
@@ -461,11 +461,11 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
         return;
     }
     for (int i = 0; i < documents->count; i++) {
-        platform_value_types_identifier_Identifier *identifier = documents->keys[i];
+//        platform_value_types_identifier_Identifier *identifier = documents->keys[i];
         dpp_document_Document *document = documents->values[i];
         switch (document->tag) {
             case dpp_document_Document_V0: {
-                dpp_document_v0_DocumentV0 *v0 = document->v0;
+//                dpp_document_v0_DocumentV0 *v0 = document->v0;
                 platform_value_Value *username_value = dash_spv_platform_document_get_document_property(document, (char *)[@"label" UTF8String]);
                 platform_value_Value *lowercase_username_value = dash_spv_platform_document_get_document_property(document, (char *)[@"normalizedLabel" UTF8String]);
                 platform_value_Value *domain_value = dash_spv_platform_document_get_document_property(document, (char *)[@"normalizedParentDomainName" UTF8String]);

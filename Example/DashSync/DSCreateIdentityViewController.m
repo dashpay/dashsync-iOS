@@ -8,7 +8,7 @@
 
 #import "DSCreateIdentityViewController.h"
 #import "DSAccountChooserViewController.h"
-#import "DSIdentityRegistrationTransition.h"
+//#import "DSIdentityRegistrationTransition.h"
 #import "DSWalletChooserViewController.h"
 
 @interface DSCreateIdentityViewController ()

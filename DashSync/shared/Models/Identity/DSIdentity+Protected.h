@@ -101,12 +101,12 @@ NS_ASSUME_NONNULL_BEGIN
      withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
                    inWallet:(DSWallet *)wallet;
 
-- (instancetype)initAtIndex:(uint32_t)index
-   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
-     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
-              havingCredits:(uint64_t)credits
-         registrationStatus:(DSIdentityRegistrationStatus)registrationStatus
-                   inWallet:(DSWallet *)wallet;
+//- (instancetype)initAtIndex:(uint32_t)index
+//   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
+//     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
+//              havingCredits:(uint64_t)credits
+//         registrationStatus:(DSIdentityRegistrationStatus)registrationStatus
+//                   inWallet:(DSWallet *)wallet;
 
 
 - (void)addKey:(DMaybeOpaqueKey *)key
@@ -160,10 +160,10 @@ NS_ASSUME_NONNULL_BEGIN
                                      withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                                   onCompletionQueue:(dispatch_queue_t)completionQueue;
 - (void)saveInContext:(NSManagedObjectContext *)context;
-- (void)applyIdentityDictionary:(NSDictionary *)identityDictionary
-                        version:(uint32_t)version
-                           save:(BOOL)save
-                      inContext:(NSManagedObjectContext *_Nullable)context;
+//- (void)applyIdentityDictionary:(NSDictionary *)identityDictionary
+//                        version:(uint32_t)version
+//                           save:(BOOL)save
+//                      inContext:(NSManagedObjectContext *_Nullable)context;
 - (void)applyIdentity:(dpp_identity_identity_Identity *)identity
                  save:(BOOL)save
             inContext:(NSManagedObjectContext *_Nullable)context;

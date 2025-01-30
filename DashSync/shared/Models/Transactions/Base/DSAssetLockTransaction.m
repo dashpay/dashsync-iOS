@@ -149,6 +149,7 @@
     switch (transaction->special_transaction_payload->tag) {
         case dashcore_blockdata_transaction_special_transaction_TransactionPayload_AssetLockPayloadType: {
             dashcore_blockdata_transaction_special_transaction_asset_lock_AssetLockPayload *payload = transaction->special_transaction_payload->asset_lock_payload_type;
+            // TODO: implement it
             DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initOnChain:chain];
 //            tx.
             return tx;

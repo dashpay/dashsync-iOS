@@ -22,67 +22,67 @@
 #import "DSChain+Params.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
-#import <TinyCborObjc/NSObject+DSCborEncoding.h>
+//#import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 
 @implementation DPBaseObject
 
 @synthesize chain = _chain;
 
-- (void)resetSerializedValues {
-    _serialized = nil;
-    _serializedHash = nil;
-    _serializedBaseData = nil;
-    _serializedBaseDataHash = nil;
-}
+//- (void)resetSerializedValues {
+//    _serialized = nil;
+//    _serializedHash = nil;
+//    _serializedBaseData = nil;
+//    _serializedBaseDataHash = nil;
+//}
 
 #pragma mark - DPPSerializableObject
 
-@synthesize serialized = _serialized;
-@synthesize serializedHash = _serializedHash;
-@synthesize serializedBaseData = _serializedBaseData;
-@synthesize serializedBaseDataHash = _serializedBaseDataHash;
+//@synthesize serialized = _serialized;
+//@synthesize serializedHash = _serializedHash;
+//@synthesize serializedBaseData = _serializedBaseData;
+//@synthesize serializedBaseDataHash = _serializedBaseDataHash;
 
-- (DSMutableStringValueDictionary *)keyValueDictionary {
-    NSAssert(NO, @"Should be overriden in subclass");
-    return [DSMutableStringValueDictionary dictionary];
-}
+//- (DSMutableStringValueDictionary *)keyValueDictionary {
+//    NSAssert(NO, @"Should be overriden in subclass");
+//    return [DSMutableStringValueDictionary dictionary];
+//}
 
-- (NSData *)serialized {
-    if (_serialized == nil) {
-        NSMutableData *data = [NSMutableData data];
-        [data appendUInt32:self.chain.platformProtocolVersion];
-        [data appendData:[self.keyValueDictionary ds_cborEncodedObject]];
-        _serialized = [data copy];
-    }
-    return _serialized;
-}
+//- (NSData *)serialized {
+//    if (_serialized == nil) {
+//        NSMutableData *data = [NSMutableData data];
+//        [data appendUInt32:self.chain.platformProtocolVersion];
+//        [data appendData:[self.keyValueDictionary ds_cborEncodedObject]];
+//        _serialized = [data copy];
+//    }
+//    return _serialized;
+//}
+//
+//- (NSData *)serializedBaseData {
+//    if (_serializedBaseData == nil) {
+//        NSMutableData *data = [NSMutableData data];
+//        [data appendUInt32:self.chain.platformProtocolVersion];
+//        [data appendData:[self.baseKeyValueDictionary ds_cborEncodedObject]];
+//        _serializedBaseData = [data copy];
+//    }
+//    return _serializedBaseData;
+//}
+//
+//- (NSData *)serializedHash {
+//    if (_serializedHash == nil) {
+//        _serializedHash = uint256_data([self.serialized SHA256_2]);
+//    }
+//    return _serializedHash;
+//}
+//
+//- (NSData *)serializedBaseDataHash {
+//    if (_serializedBaseDataHash == nil) {
+//        _serializedBaseDataHash = uint256_data([self.serializedBaseData SHA256_2]);
+//    }
+//    return _serializedBaseDataHash;
+//}
 
-- (NSData *)serializedBaseData {
-    if (_serializedBaseData == nil) {
-        NSMutableData *data = [NSMutableData data];
-        [data appendUInt32:self.chain.platformProtocolVersion];
-        [data appendData:[self.baseKeyValueDictionary ds_cborEncodedObject]];
-        _serializedBaseData = [data copy];
-    }
-    return _serializedBaseData;
-}
 
-- (NSData *)serializedHash {
-    if (_serializedHash == nil) {
-        _serializedHash = uint256_data([self.serialized SHA256_2]);
-    }
-    return _serializedHash;
-}
-
-- (NSData *)serializedBaseDataHash {
-    if (_serializedBaseDataHash == nil) {
-        _serializedBaseDataHash = uint256_data([self.serializedBaseData SHA256_2]);
-    }
-    return _serializedBaseDataHash;
-}
-
-
-@synthesize baseKeyValueDictionary;
+//@synthesize baseKeyValueDictionary;
 
 @end

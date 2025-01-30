@@ -2776,14 +2776,10 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-macOS/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/Protobuf-macOS/Protobuf_Privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-macOS/gRPCCertificates.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Protobuf_Privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2820,14 +2816,10 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-iOS/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/Protobuf-iOS/Protobuf_Privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-iOS/gRPCCertificates.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Protobuf_Privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -3259,26 +3251,17 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
-					"-l\"BoringSSL-GRPC-iOS\"",
 					"-l\"CocoaImageHashing-iOS\"",
 					"-l\"CocoaLumberjack-iOS\"",
 					"-l\"DSDynamicOptions-iOS\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync-iOS\"",
 					"-l\"KVO-MVVM\"",
-					"-l\"Protobuf-iOS\"",
 					"-l\"SDWebImage-iOS\"",
-					"-l\"TinyCborObjc-iOS\"",
-					"-l\"abseil-iOS\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"gRPC-Core-iOS\"",
-					"-l\"gRPC-ProtoRPC-iOS\"",
-					"-l\"gRPC-RxLibrary-iOS\"",
-					"-l\"gRPC-iOS\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor-iOS\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -3329,26 +3312,17 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
-					"-l\"BoringSSL-GRPC-iOS\"",
 					"-l\"CocoaImageHashing-iOS\"",
 					"-l\"CocoaLumberjack-iOS\"",
 					"-l\"DSDynamicOptions-iOS\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync-iOS\"",
 					"-l\"KVO-MVVM\"",
-					"-l\"Protobuf-iOS\"",
 					"-l\"SDWebImage-iOS\"",
-					"-l\"TinyCborObjc-iOS\"",
-					"-l\"abseil-iOS\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"gRPC-Core-iOS\"",
-					"-l\"gRPC-ProtoRPC-iOS\"",
-					"-l\"gRPC-RxLibrary-iOS\"",
-					"-l\"gRPC-iOS\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor-iOS\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",

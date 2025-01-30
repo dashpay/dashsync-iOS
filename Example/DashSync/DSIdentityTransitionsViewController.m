@@ -16,7 +16,7 @@
 //
 
 #import "DSIdentityTransitionsViewController.h"
-#import "DSTransition.h"
+//#import "DSTransition.h"
 #import "DSTransitionTableViewCell.h"
 
 @interface DSIdentityTransitionsViewController ()
@@ -65,11 +65,11 @@
     static NSString *transitionCellIdentifier = @"TransitionCell";
     DSTransitionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:transitionCellIdentifier forIndexPath:indexPath];
 
-    DSTransition *transition = [self.transitions objectAtIndex:indexPath.row];
+//    DSTransition *transition = [self.transitions objectAtIndex:indexPath.row];
 
     cell.numberLabel.text = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
     //cell.confirmedInBlockLabel.text = [NSString stringWithFormat:@"%u",transition.blockHeight];
-    cell.transactionLabel.text = uint256_hex(transition.transitionHash);
+//    cell.transactionLabel.text = uint256_hex(transition.transitionHash);
     //cell.previousTransitionHashLabel.text = uint256_hex(transition.previousTransitionHash);
     return cell;
 }

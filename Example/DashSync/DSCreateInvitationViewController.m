@@ -18,7 +18,7 @@
 #import "DSCreateInvitationViewController.h"
 #import "DSAccountChooserViewController.h"
 #import "DSIdentity.h"
-#import "DSIdentityRegistrationTransition.h"
+//#import "DSIdentityRegistrationTransition.h"
 #import "DSInvitation.h"
 #import "DSWalletChooserViewController.h"
 

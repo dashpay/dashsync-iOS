@@ -45,11 +45,11 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 @property (readonly, copy, nonatomic) NSString *base58OwnerId;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
-@property (readonly, copy, nonatomic) NSString *jsonSchemaId;
-@property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
+//@property (readonly, copy, nonatomic) NSString *jsonSchemaId;
+//@property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-@property (assign, nonatomic) NSInteger version;
-@property (copy, nonatomic) NSString *jsonMetaSchema;
+//@property (assign, nonatomic) NSInteger version;
+//@property (copy, nonatomic) NSString *jsonMetaSchema;
 @property (readonly, nonatomic) dpp_data_contract_DataContract *raw_contract;
 @property (readonly, nonatomic) DDocumentTypes *documents;
 //@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;
@@ -62,7 +62,7 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (BOOL)isDocumentDefinedForType:(NSString *)type;
+//- (BOOL)isDocumentDefinedForType:(NSString *)type;
 //- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type;
 //- (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type;
 //- (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;

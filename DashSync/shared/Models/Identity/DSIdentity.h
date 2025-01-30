@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSIdentityRegistrationTransition, DSIdentityTopupTransition, DSIdentityUpdateTransition, DSIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSAssetLockTransaction, DSTransientDashpayUser, DSInvitation, DSAuthenticationKeysDerivationPath, UIImage;
+@class DSWallet, DSAccount, DSChain, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSAssetLockTransaction, DSTransientDashpayUser, DSInvitation, DSAuthenticationKeysDerivationPath, UIImage;
 
 typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStep)
 {

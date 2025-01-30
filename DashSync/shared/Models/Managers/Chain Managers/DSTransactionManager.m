@@ -28,7 +28,7 @@
 #import "DSAuthenticationManager.h"
 #import "DSBlock.h"
 #import "DSIdentity+Protected.h"
-#import "DSIdentityRegistrationTransition.h"
+//#import "DSIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"

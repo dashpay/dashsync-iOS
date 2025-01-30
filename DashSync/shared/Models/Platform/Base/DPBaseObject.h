@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPBaseObject : NSObject <DPSerializableObject>
 
-- (void)resetSerializedValues NS_REQUIRES_SUPER;
+//- (void)resetSerializedValues NS_REQUIRES_SUPER;
 
 @end
 

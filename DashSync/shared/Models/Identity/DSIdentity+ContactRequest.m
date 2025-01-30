@@ -21,7 +21,6 @@
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSChain+Identity.h"
 #import "DSChainManager.h"
-#import "DSContactRequest.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDashPlatform.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
@@ -580,12 +579,14 @@
         __block NSMutableArray *errors = [NSMutableArray array];
         __block BOOL succeeded = YES;
         dispatch_group_t dispatchGroup = dispatch_group_create();
-        for (DSContactRequest *contactRequest in outgoingRequests) {
-            DSBlockchainIdentityEntity *recipientIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data(contactRequest.recipientIdentityUniqueId)];
+        for (NSValue *contactRequest in outgoingRequests) {
+            dash_spv_platform_models_contact_request_ContactRequest *request = contactRequest.pointerValue;
+            
+            DSBlockchainIdentityEntity *recipientIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", NSDataFromPtr(request->recipient)];
             if (!recipientIdentityEntity) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                DSIdentity *recipientIdentity = [self.identitiesManager foreignIdentityWithUniqueId:contactRequest.recipientIdentityUniqueId
+                DSIdentity *recipientIdentity = [self.identitiesManager foreignIdentityWithUniqueId:*(UInt256 *)request->recipient
                                                                                     createIfMissing:YES
                                                                                           inContext:context];
                 NSAssert([recipientIdentity identityEntityInContext:context], @"Entity should now exist");
@@ -593,10 +594,10 @@
                                                                 withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
                     if (!failureStep) {
                         [self addFriendshipFromSourceIdentity:self
-                                               sourceKeyIndex:contactRequest.senderKeyIndex
+                                               sourceKeyIndex:request->sender_key_index
                                           toRecipientIdentity:recipientIdentity
-                                            recipientKeyIndex:contactRequest.recipientKeyIndex
-                                                  atTimestamp:contactRequest.createdAt
+                                            recipientKeyIndex:request->recipient_key_index
+                                                  atTimestamp:request->created_at
                                                     inContext:context];
                     } else {
                         succeeded = FALSE;
@@ -625,10 +626,10 @@
                                                          withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
                     if (!failureStep) {
                         [self addFriendshipFromSourceIdentity:self
-                                               sourceKeyIndex:contactRequest.senderKeyIndex
+                                               sourceKeyIndex:request->sender_key_index
                                           toRecipientIdentity:recipientIdentity
-                                            recipientKeyIndex:contactRequest.recipientKeyIndex
-                                                  atTimestamp:contactRequest.createdAt
+                                            recipientKeyIndex:request->recipient_key_index
+                                                  atTimestamp:request->created_at
                                                     inContext:context];
                     } else {
                         succeeded = FALSE;

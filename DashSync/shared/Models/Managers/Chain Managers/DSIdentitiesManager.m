@@ -247,7 +247,7 @@
 - (void)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
                     withCompletion:(DashpayUserInfosCompletionBlock)completion
                  onCompletionQueue:(dispatch_queue_t)completionQueue {
-    __weak typeof(self) weakSelf = self;
+//    __weak typeof(self) weakSelf = self;
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_CONTRACT_SETUP); });
@@ -271,11 +271,11 @@
     DDocumentsMap *documents = result->ok;
     NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
     for (int i = 0; i < documents->count; i++) {
-        platform_value_types_identifier_Identifier *identifier = documents->keys[i];
+//        platform_value_types_identifier_Identifier *identifier = documents->keys[i];
         dpp_document_Document *document = documents->values[i];
         switch (document->tag) {
             case dpp_document_Document_V0: {
-                platform_value_types_identifier_Identifier *owner_id = document->v0->owner_id;
+//                platform_value_types_identifier_Identifier *owner_id = document->v0->owner_id;
                 DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:document];
                 [dashpayUserDictionary setObject:transientDashpayUser forKey:NSDataFromPtr(document->v0->owner_id->_0->_0)];
                 break;

@@ -188,11 +188,9 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
 - (BOOL)registerIdentity:(DSIdentity *)identity
                   verify:(BOOL)verify {
     NSParameterAssert(identity);
-    if (verify) {
-        if (![identity verifyKeysForWallet:self]) {
-            identity.isLocal = FALSE;
-            return FALSE;
-        }
+    if (verify && ![identity verifyKeysForWallet:self]) {
+        identity.isLocal = FALSE;
+        return FALSE;
     }
     if ([self.mIdentities objectForKey:identity.uniqueIDData] == nil)
         [self addIdentity:identity];

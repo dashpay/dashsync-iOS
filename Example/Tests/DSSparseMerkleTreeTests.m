@@ -13,15 +13,15 @@
 #import "DSPlatformRootMerkleTree.h"
 //#import "DSQuorumEntry.h"
 #import "DSSparseMerkleTree.h"
-#import "NSData+DSCborDecoding.h"
+//#import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
 #import "NSString+Dash.h"
-#import <DAPI-GRPC/Core.pbobjc.h>
-#import <DAPI-GRPC/Core.pbrpc.h>
-#import <DAPI-GRPC/Platform.pbobjc.h>
-#import <DAPI-GRPC/Platform.pbrpc.h>
+//#import <DAPI-GRPC/Core.pbobjc.h>
+//#import <DAPI-GRPC/Core.pbrpc.h>
+//#import <DAPI-GRPC/Platform.pbobjc.h>
+//#import <DAPI-GRPC/Platform.pbrpc.h>
 
 @interface DSSparseMerkleTreeTests : XCTestCase
 
@@ -426,16 +426,16 @@
                                                   }];
 }
 
-- (void)testMerkAVLTreeProof {
-    NSData *proofData = @"014fc2c3d1930a2b5517c4d067ad709750df79a5d4b8999e01c0cc08876f2dbe4a02229ae7d97d361daa2e70c3d682f290bbceb5493d88a2a2f9ce560d20e1992fbd10013167d6ec26570bddc238e48494c404ebe2ae869d17652a9566bf6109e4de55d302e25e4ea30c17a86514960601b92227339ce88d057a12d76561b41d676457061210011a6849de9e9f8c663d06f7dc4c86bf66ccee22c4ad4ff8ea1f4125414956c3ad022cb8354f326e19583b2579ef99a598d63e5a2baa836eb2f2e13055c848208318100320e3105acf7fe6b61e6a3b9bf8054f59fb9264170945c4b40fb25d58b2ac2a1d47008da56269645820e3105acf7fe6b61e6a3b9bf8054f59fb9264170945c4b40fb25d58b2ac2a1d476762616c616e63651a3b9ac7e6687265766973696f6e006a7075626c69634b65797381a36269640064646174615821032fc3bdf73d86c40bd27fbd62a793356cd625508b2306231167ce4e61af66e55f6474797065006f70726f746f636f6c56657273696f6e0002a5fee690784b06f4765fec55ddbde482b40a7b4bb9ce8ed01440b59aa2f78f881001226345b996d3e565bd98de759767b7daddf2d452e428e542e1872622a1ef2b9511111111".hexToData;
-    NSDictionary *elementDictionary = nil;
-    NSError *error;
-    NSData *rootHash = [proofData executeProofReturnElementDictionary:&elementDictionary query:nil decode:TRUE usesVersion:TRUE error:&error];
-    XCTAssertNil(error);
-    NSString *expectedRootHashString = @"6ef4c210cb5e919d9dcd894bc841506f93ef3f8638eab452502050b04ee079fb";
-//    NSDictionary *identityDictionary = elementDictionary.allValues[0];
-    XCTAssertEqualObjects(rootHash.hexString, expectedRootHashString);
-}
+//- (void)testMerkAVLTreeProof {
+//    NSData *proofData = @"014fc2c3d1930a2b5517c4d067ad709750df79a5d4b8999e01c0cc08876f2dbe4a02229ae7d97d361daa2e70c3d682f290bbceb5493d88a2a2f9ce560d20e1992fbd10013167d6ec26570bddc238e48494c404ebe2ae869d17652a9566bf6109e4de55d302e25e4ea30c17a86514960601b92227339ce88d057a12d76561b41d676457061210011a6849de9e9f8c663d06f7dc4c86bf66ccee22c4ad4ff8ea1f4125414956c3ad022cb8354f326e19583b2579ef99a598d63e5a2baa836eb2f2e13055c848208318100320e3105acf7fe6b61e6a3b9bf8054f59fb9264170945c4b40fb25d58b2ac2a1d47008da56269645820e3105acf7fe6b61e6a3b9bf8054f59fb9264170945c4b40fb25d58b2ac2a1d476762616c616e63651a3b9ac7e6687265766973696f6e006a7075626c69634b65797381a36269640064646174615821032fc3bdf73d86c40bd27fbd62a793356cd625508b2306231167ce4e61af66e55f6474797065006f70726f746f636f6c56657273696f6e0002a5fee690784b06f4765fec55ddbde482b40a7b4bb9ce8ed01440b59aa2f78f881001226345b996d3e565bd98de759767b7daddf2d452e428e542e1872622a1ef2b9511111111".hexToData;
+//    NSDictionary *elementDictionary = nil;
+//    NSError *error;
+//    NSData *rootHash = [proofData executeProofReturnElementDictionary:&elementDictionary query:nil decode:TRUE usesVersion:TRUE error:&error];
+//    XCTAssertNil(error);
+//    NSString *expectedRootHashString = @"6ef4c210cb5e919d9dcd894bc841506f93ef3f8638eab452502050b04ee079fb";
+////    NSDictionary *identityDictionary = elementDictionary.allValues[0];
+//    XCTAssertEqualObjects(rootHash.hexString, expectedRootHashString);
+//}
 
 - (void)testMerkleTreeEvenElements {
     NSArray *elements = @[@"a", @"b", @"c", @"d", @"e", @"f"];

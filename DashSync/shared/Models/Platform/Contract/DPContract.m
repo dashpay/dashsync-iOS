@@ -23,7 +23,7 @@
 #import "DSContractEntity+CoreDataClass.h"
 #import "DSDashPlatform.h"
 #import "DSWallet.h"
-#import "NSData+DSCborDecoding.h"
+//#import "NSData+DSCborDecoding.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -39,7 +39,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @interface DPContract ()
 
 @property (assign, nonatomic) dpp_data_contract_DataContract *raw_contract;
-@property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
+//@property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
 @property (copy, nonatomic, null_resettable) NSString *localContractIdentifier;
 @property (assign, nonatomic) UInt256 contractId;
 @property (assign, nonatomic) UInt256 registeredIdentityUniqueID;
@@ -67,9 +67,9 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSParameterAssert(raw_contract);
 
     if (!(self = [super init])) return nil;
-    _version = DEFAULT_VERSION;
+//    _version = DEFAULT_VERSION;
     _localContractIdentifier = localContractIdentifier;
-    _jsonMetaSchema = DEFAULT_SCHEMA;
+//    _jsonMetaSchema = DEFAULT_SCHEMA;
     _raw_contract = raw_contract;
 //    _mutableDocuments = [documents mutableCopy];
 //    _definitions = @{};
@@ -104,7 +104,11 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSMutableData *mData = [NSMutableData data];
     [mData appendUInt256:identity.uniqueID];
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:identity.wallet];
-    NSMutableData *entropyData = [self.serializedHash mutableCopy];
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.shareCore.contractsManager->obj, self.raw_contract);
+    NSData *serializedHash = NSDataFromPtr(result->ok);
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
+    NSMutableData *entropyData = [serializedHash mutableCopy];
+//    NSMutableData *entropyData = [self.serializedHash mutableCopy];
     [entropyData appendUInt256:identity.uniqueID];
     [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     [mData appendData:uint256_data([entropyData SHA256])];
@@ -122,26 +126,29 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 - (NSString *)localContractIdentifier {
     if (!_localContractIdentifier) {
-        NSData *serializedData = uint256_data([self.serialized SHA256_2]);
+        Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.shareCore.contractsManager->obj, self.raw_contract);
+        NSData *serializedData = NSDataFromPtr(result->ok);
+        Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
+//        NSData *serializedData = uint256_data([self.serialized SHA256_2]);
         _localContractIdentifier = [NSString stringWithFormat:@"%@-%@", [serializedData base58String], self.chain.uniqueID];
     }
     return _localContractIdentifier;
 }
 
-- (NSString *)jsonSchemaId {
-    return DPCONTRACT_SCHEMA_ID;
-}
-
-- (void)setVersion:(NSInteger)version {
-    _version = version;
-    [self resetSerializedValues];
-}
-
-- (void)setJsonMetaSchema:(NSString *)jsonMetaSchema {
-    _jsonMetaSchema = [jsonMetaSchema copy];
-    [self resetSerializedValues];
-}
-
+//- (NSString *)jsonSchemaId {
+//    return DPCONTRACT_SCHEMA_ID;
+//}
+//
+//- (void)setVersion:(NSInteger)version {
+//    _version = version;
+//    [self resetSerializedValues];
+//}
+//
+//- (void)setJsonMetaSchema:(NSString *)jsonMetaSchema {
+//    _jsonMetaSchema = [jsonMetaSchema copy];
+//    [self resetSerializedValues];
+//}
+//
 - (DDocumentTypes *)documents {
     return self.raw_contract->v0->document_types;
 //    return [self.mutableDocuments copy];
@@ -156,12 +163,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 //    _definitions = [definitions copy];
 //    [self resetSerializedValues];
 //}
-
-- (BOOL)isDocumentDefinedForType:(NSString *)type {
-    NSParameterAssert(type);
-    return dash_spv_platform_contract_manager_is_document_defined_for_type(self.raw_contract, (char *) [type UTF8String]);
-}
-
+//
+//- (BOOL)isDocumentDefinedForType:(NSString *)type {
+//    NSParameterAssert(type);
+//    return dash_spv_platform_contract_manager_is_document_defined_for_type(self.raw_contract, (char *) [type UTF8String]);
+//}
+//
 //- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type {
 //    NSParameterAssert(schema);
 //    NSParameterAssert(type);
@@ -216,7 +223,11 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     self.registeredIdentityUniqueID = identity ? identity.uniqueID : UINT256_ZERO;
     self.contractId = UINT256_ZERO; //will be lazy loaded
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:identity.wallet];
-    NSMutableData *entropyData = [self.serializedHash mutableCopy];
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.shareCore.contractsManager->obj, self.raw_contract);
+    NSData *serializedHash = NSDataFromPtr(result->ok);
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
+    NSMutableData *entropyData = [serializedHash mutableCopy];
+//    NSMutableData *entropyData = [self.serializedHash mutableCopy];
     [entropyData appendUInt256:identity.uniqueID];
     [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     self.entropy = [entropyData SHA256];
@@ -350,10 +361,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 //    DPContract *contract = [self contractAtPath:@"dashthumbnail-contract" ofType:@"json" identifier:DASHTHUMBNAIL_CONTRACT forChain:chain];
 //    return contract;
 //}
-
-#pragma mark - DPPSerializableObject
-
-@synthesize keyValueDictionary = _keyValueDictionary;
+//
+//#pragma mark - DPPSerializableObject
+//
+//@synthesize keyValueDictionary = _keyValueDictionary;
 //
 //- (DSMutableStringValueDictionary *)objectDictionary {
 //    if (_keyValueDictionary == nil) {
