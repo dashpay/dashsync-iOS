@@ -75,6 +75,13 @@
         }];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self reloadKeyInfo];
+    [self reloadContactInfo];
+    [self reloadRegistrationInfo];
+}
+
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self.identityNameObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.identityRegistrationStatusObserver];
@@ -112,6 +119,7 @@
         self.usernameStatusLabel.text = @"";
     } else {
         self.aboutMeLabel.text = self.identity.matchingDashpayUserInViewContext.publicMessage;
+        NSLog(@"avatarPath: %@", self.identity.matchingDashpayUserInViewContext.avatarPath);
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.identity.matchingDashpayUserInViewContext.avatarPath]];
         self.usernameStatusLabel.text = @"";
     }

@@ -132,21 +132,24 @@
         DMaybeDocumentsMapDtor(result);
         return;
     }
-    dpp_document_Document *document = result->ok->values[0];
+    DDocument *document = result->ok->values[0];
+    DSLog(@"documents for PotentialContact: ");
+    dash_spv_platform_document_print_document(document);
+
     switch (document->tag) {
         case dpp_document_Document_V0: {
             DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, document->v0->owner_id);
             if (identity_result->error) {
                 NSError *error = [NSError ffi_from_platform_error:identity_result->error];
-                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
-                Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(identity_result);
+                DMaybeIdentityDtor(identity_result);
                 DMaybeDocumentsMapDtor(result);
+                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
                 return;
             }
             dpp_identity_identity_Identity *identity = identity_result->ok;
             if (!identity) {
+                DMaybeIdentityDtor(identity_result);
                 if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MALFORMED_RESPONSE]); });
-                Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(identity_result);
                 return;
             }
             switch (identity->tag) {
@@ -251,7 +254,7 @@
     NSData *entropyData = uint256_random_data;
     u256 *identity_id = u256_ctor_u(potentialFriendship.sourceIdentity.uniqueID);
     u256 *entropy = u256_ctor(entropyData);
-    platform_value_Value *value = [potentialFriendship toValue];
+    DValue *value = [potentialFriendship toValue];
     uint32_t index = 0;
     if (!self.keysCreated) {
         [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];

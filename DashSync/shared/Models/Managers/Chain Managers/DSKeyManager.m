@@ -260,14 +260,10 @@
 
 + (NSData *)privateKeyData:(DOpaqueKey *)key {
     DMaybeKeyData *result = dash_spv_crypto_keys_key_OpaqueKey_private_key_data(key);
-//    ByteArray arr = key_private_key_data(key);
     if (result->error) {
         return NULL;
     }
-    NSData *data = nil;
-    if (result->ok) {
-        data = [NSData dataWithBytes:(const void *)result->ok->values length:result->ok->count];
-    }
+    NSData *data = NSDataFromPtr(result->ok);
     DMaybeKeyDataDtor(result);
     return data;
 }
@@ -346,8 +342,7 @@
     DMaybeKeyString *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_from_recovered_compact_sig(slice, digest, self.chain.chainType);
     NSString *addr = NULL;
     if (result) {
-        if (result->ok)
-            addr = [NSString stringWithCString:(const char *)result->ok encoding:NSUTF8StringEncoding];
+        addr = NSStringFromPtr(result->ok);
         DMaybeKeyStringDtor(result);
     }
     return addr;
@@ -377,8 +372,7 @@
     DMaybeKeyString *result = dash_spv_crypto_keys_bls_key_BLSKey_public_key_serialized(key->bls, legacy);
     NSString *keySerialized = NULL;
     if (result) {
-        if (result->ok)
-            keySerialized = [NSString stringWithCString:(const char *)result->ok encoding:NSUTF8StringEncoding];
+        keySerialized = NSStringFromPtr(result->ok);
         DMaybeKeyStringDtor(result);
     }
     return keySerialized;
@@ -390,8 +384,7 @@
     DMaybeKeyString *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_from_bip38_key((char *) [key UTF8String], (char *) [passphrase UTF8String], chainType);
     NSString *keySerialized = NULL;
     if (result) {
-        if (result->ok)
-            keySerialized = [NSString stringWithCString:(const char *)result->ok encoding:NSUTF8StringEncoding];
+        keySerialized = NSStringFromPtr(result->ok);
         DMaybeKeyStringDtor(result);
     }
     return keySerialized;
@@ -485,7 +478,7 @@
     u256 *result = dash_spv_crypto_x11(slice);
 //    slice_dtor(slice);
     NSData *hash = NSDataFromPtr(result);
-//    u256_dtor(result);
+    u256_dtor(result);
     return hash.UInt256;
 }
 
@@ -494,7 +487,7 @@
     u256 *result = dash_spv_crypto_blake3(slice);
 //    slice_dtor(slice);
     NSData *hash = NSDataFromPtr(result);
-//    u256_dtor(result);
+    u256_dtor(result);
     return hash.UInt256;
 }
 

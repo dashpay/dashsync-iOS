@@ -94,12 +94,10 @@
 
 - (void)updateAttributesFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
                                          onBlock:(DSMerkleBlockEntity *)block {
-    if (!self.verified) {
-        self.verified = (block != nil) && potentialQuorumEntry->verified;
-    }
-    if (!self.block) {
+    if (!self.verified)
+        self.verified = block != nil && potentialQuorumEntry->verified;
+    if (!self.block)
         self.block = block;
-    }
 }
 
 - (UInt256)quorumHash {

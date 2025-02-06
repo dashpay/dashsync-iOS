@@ -134,6 +134,8 @@
 - (void)dealloc {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
+    if (_masternodeList)
+        DArcMasternodeListDtor(_masternodeList);
 }
 
 - (dispatch_queue_t)networkingQueue {

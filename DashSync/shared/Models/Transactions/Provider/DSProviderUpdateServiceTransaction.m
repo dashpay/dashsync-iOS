@@ -150,7 +150,7 @@
     NSData *data = [self payloadDataForHash];
     SLICE *slice = slice_ctor(data);
     u768 *sig = dash_spv_crypto_keys_bls_key_BLSKey_sign_data(privateKey->bls, slice);
-    self.payloadSignature = [NSData dataWithBytes:sig->values length:sig->count];
+    self.payloadSignature = NSDataFromPtr(sig);
     u768_dtor(sig);
 }
 

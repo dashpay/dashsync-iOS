@@ -28,7 +28,6 @@
 #import "DSAuthenticationManager.h"
 #import "DSBlock.h"
 #import "DSIdentity+Protected.h"
-//#import "DSIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"
@@ -36,7 +35,6 @@
 #import "DSChain+Wallet.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
-//#import "DSDAPIPlatformNetworkService.h"
 #import "DSError.h"
 #import "DSEventManager.h"
 #import "DSIdentitiesManager.h"
@@ -53,7 +51,6 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionInput.h"
-//#import "DSTransition.h"
 #import "DSWallet+Identity.h"
 #import "DSWallet+Protected.h"
 #import "NSData+Dash.h"
@@ -111,6 +108,11 @@
 @end
 
 @implementation DSTransactionManager
+
+- (NSString *)logPrefix {
+    return [NSString stringWithFormat:@"[%@] [DSTransactionManager] ", self.chain.name];
+}
+
 
 - (instancetype)initWithChain:(id)chain {
     if (!(self = [super init])) return nil;
@@ -1291,19 +1293,26 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         if (registered) {
             if ([transaction isKindOfClass:[DSAssetLockTransaction class]]) {
                 DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
+                NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: Registered AssetLockTX: creditBurnPublicKeyHash: %@, txHash: %@", self.logPrefix, uint160_hex(assetLockTransaction.creditBurnPublicKeyHash), uint256_hex(assetLockTransaction.txHash)];
                 uint32_t index;
                 DSWallet *wallet = [self.chain walletHavingIdentityAssetLockRegistrationHash:assetLockTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
-                if (wallet)
-                    identity = [wallet identityForUniqueId:transaction.creditBurnIdentityIdentifier];
+                if (wallet) {
+                    identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
+                    [debugString appendFormat:@" (Found wallet: %@, identity: %@)", wallet.uniqueIDString, identity];
+                }
                 if (!identity) {
-                    [self.chain triggerUpdatesForLocalReferences:transaction];
+                    [self.chain triggerUpdatesForLocalReferences:assetLockTransaction];
                     if (wallet) {
-                        identity = [wallet identityForUniqueId:transaction.creditBurnIdentityIdentifier];
+                        identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
+                        [debugString appendFormat:@" (Found wallet after trigger updates: %@, identity: %@)", wallet.uniqueIDString, identity];
                         if (identity) isNewIdentity = TRUE;
                     }
                 } else if (identity && !identity.registrationAssetLockTransaction) {
+                    [debugString appendFormat:@" (identity: %@ is known but has no asset lock tx)", identity];
                     identity.registrationAssetLockTransactionHash = assetLockTransaction.txHash;
                 }
+                DSLog(@"%@:", debugString);
+
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
             }

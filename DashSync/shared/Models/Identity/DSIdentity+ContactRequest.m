@@ -157,12 +157,14 @@
                     self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
             if (completion) {
-                dash_spv_platform_models_contact_request_ContactRequestKind *last = documents->values[documents->count-1];
                 __block NSData * hasMoreStartAfter = nil;
-                if (last->incoming)
-                    hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
-                else if (last->outgoing)
-                    hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
+                if (documents->count > 0) {
+                    DContactRequest *last = documents->values[documents->count-1];
+                    if (last->incoming)
+                        hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
+                    else if (last->outgoing)
+                        hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
+                }
 
 //                NSData * hasMoreStartAfter = documents.lastObject[@"$id"];
                 dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
@@ -280,13 +282,14 @@
                 [self.platformContext performBlockAndWait:^{
                     self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
-            dash_spv_platform_models_contact_request_ContactRequestKind *last = documents->values[documents->count-1];
             __block NSData * hasMoreStartAfter = nil;
-            if (last->incoming)
-                hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
-            else if (last->outgoing)
-                hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
-
+            if (documents->count > 0) {
+                DContactRequest *last = documents->values[documents->count-1];
+                if (last->incoming)
+                    hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
+                else if (last->outgoing)
+                    hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
+            }
             dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
         }
                               onCompletionQueue:self.identityQueue];
@@ -343,7 +346,7 @@
     __block NSMutableArray *rErrors = [NSMutableArray array];
     [context performBlockAndWait:^{
         for (int i = 0; i < rawContactRequests->count; i++) {
-            dash_spv_platform_models_contact_request_ContactRequestKind *kind = rawContactRequests->values[i];
+            DContactRequest *kind = rawContactRequests->values[i];
             switch (kind->tag) {
                 case dash_spv_platform_models_contact_request_ContactRequestKind_Incoming: {
                     NSData *identifier = NSDataFromPtr(kind->incoming->owner_id);

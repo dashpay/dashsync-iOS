@@ -49,10 +49,11 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
 //- (DSIdentity *)foreignIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing inContext:(NSManagedObjectContext *_Nullable)context;
 
 - (NSArray *)unsyncedIdentities;
+//- (void)syncPlatformWithCompletion:(IdentitiesSuccessCompletionBlock)completion;
 
 - (void)syncIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion;
 
-- (void)retrieveAllIdentitiesChainStates;
+//- (void)retrieveAllIdentitiesChainStates:(IdentitiesSuccessCompletionBlock)completion;
 
 - (void)checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction;
 
@@ -82,28 +83,11 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
                  withCompletion:(DashpayUserInfoCompletionBlock)completion
               onCompletionQueue:(dispatch_queue_t)completionQueue;
 
-- (void)fetchProfileForIdentity:(DSIdentity *)identity
-                     retryCount:(uint32_t)retryCount
-                          delay:(uint32_t)delay
-                  delayIncrease:(uint32_t)delayIncrease
-                 withCompletion:(DashpayUserInfoCompletionBlock)completion
-              onCompletionQueue:(dispatch_queue_t)completionQueue;
-
-//- (id<DSDAPINetworkServiceRequest>)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
-//                                               withCompletion:(DashpayUserInfosCompletionBlock)completion
-//                                            onCompletionQueue:(dispatch_queue_t)completionQueue;
-//
 - (void)searchIdentitiesByDPNSRegisteredIdentityUniqueID:(NSData *)userID
                                           withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (void)retrieveIdentitiesByKeysUntilSuccessWithCompletion:(IdentitiesSuccessCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue;
 
-- (void)retrieveIdentitiesByKeysWithCompletion:(IdentitiesCompletionBlock)completion
-                               completionQueue:(dispatch_queue_t)completionQueue;
-
-- (void)fetchNeededNetworkStateInformationForIdentities:(NSArray<DSIdentity *> *)identities
-                                         withCompletion:(IdentitiesCompletionBlock)completion
-                                        completionQueue:(dispatch_queue_t)completionQueue;
+- (NSString *)logPrefix;
 
 @end
 

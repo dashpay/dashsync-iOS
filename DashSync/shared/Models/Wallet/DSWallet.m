@@ -994,8 +994,8 @@
     if (result) {
         if (result->ok) {
             char *c_string = dash_spv_crypto_keys_key_OpaqueKey_address_with_public_key_data(result->ok, self.chain.chainType);
+            keyAddress = NSStringFromPtr(c_string);
             if (c_string) {
-                keyAddress = [NSString stringWithCString:(const char *)c_string encoding:NSUTF8StringEncoding];
                 str_destroy(c_string);
             }
         }

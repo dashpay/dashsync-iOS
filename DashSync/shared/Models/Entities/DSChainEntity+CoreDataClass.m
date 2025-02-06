@@ -129,7 +129,7 @@
                           checkpoints:(NSArray *)checkpoints
                             inContext:(NSManagedObjectContext *)context {
     NSString *devnetIdentifier = [DSKeyManager devnetIdentifierFor:type];
-    int16_t *devnetVersion = dash_spv_crypto_network_chain_type_ChainType_devnet_version(type);
+    int16_t devnetVersion = dash_spv_crypto_network_chain_type_ChainType_devnet_version(type);
     NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type->tag, dash_spv_crypto_network_chain_type_ChainType_DevNet, devnetIdentifier] inContext:context];
     if (objects.count) {
         NSAssert(objects.count == 1, @"There should only ever be 1 chain for either mainnet, testnet, or a devnet Identifier");
@@ -162,7 +162,7 @@
     DSChainEntity *chainEntity = [self managedObjectInBlockedContext:context];
     chainEntity.type = (uint16_t) type->tag;
     chainEntity.devnetIdentifier = devnetIdentifier;
-    chainEntity.devnetVersion = devnetVersion ? *devnetVersion : 0;
+    chainEntity.devnetVersion = devnetVersion;
     if (checkpoints && devnetIdentifier) {
         NSError *error = nil;
         NSData *archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];

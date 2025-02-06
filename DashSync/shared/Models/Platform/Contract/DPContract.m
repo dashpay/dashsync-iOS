@@ -32,9 +32,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSInteger const DEFAULT_VERSION = 1;
-static NSString *const DEFAULT_SCHEMA = @"https://schema.dash.org/dpp-0-4-0/meta/data-contract";
-static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
+//static NSInteger const DEFAULT_VERSION = 1;
+//static NSString *const DEFAULT_SCHEMA = @"https://schema.dash.org/dpp-0-4-0/meta/data-contract";
+//static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @interface DPContract ()
 
@@ -108,7 +108,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSData *serializedHash = NSDataFromPtr(result->ok);
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
     NSMutableData *entropyData = [serializedHash mutableCopy];
-//    NSMutableData *entropyData = [self.serializedHash mutableCopy];
     [entropyData appendUInt256:identity.uniqueID];
     [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     [mData appendData:uint256_data([entropyData SHA256])];

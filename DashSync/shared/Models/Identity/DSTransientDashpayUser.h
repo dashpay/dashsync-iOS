@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSTimeInterval updatedAt;
 
 - (instancetype)initWithDashpayProfileDocument:(NSDictionary *)profileDocument;
-- (instancetype)initWithDocument:(dpp_document_Document *)document;
+- (instancetype)initWithDocument:(DDocument *)document;
 
 @end
 

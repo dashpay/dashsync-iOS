@@ -67,9 +67,8 @@
             }
         }
         
-        NSData *confirmedHashData = [NSData dataWithBytes:simplifiedMasternodeEntry->confirmed_hash->values length:32];
-//        NSData *confirmedHashData = uint256_data(simplifiedMasternodeEntry.confirmedHash);
-        bool same_confirmed_hash = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_confirmed_hash_is_equal_to(simplifiedMasternodeEntry, Arr_u8_32_ctor(32, (uint8_t *) self.confirmedHash.bytes));
+        NSData *confirmedHashData = NSDataFromPtr(simplifiedMasternodeEntry->confirmed_hash);
+        bool same_confirmed_hash = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_confirmed_hash_is_equal_to(simplifiedMasternodeEntry, u256_ctor(self.confirmedHash));
         if (!same_confirmed_hash) {
 //        if (![self.confirmedHash isEqualToData:confirmedHashData]) {
             NSAssert(self.confirmedHash == nil || uint256_is_zero(self.confirmedHash.UInt256), @"If this changes the previous should be empty");
@@ -89,17 +88,17 @@
 //        NSData *keyIDVotingData = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
         if (!same_key_id) {
 //        if (![self.keyIDVoting isEqualToData:keyIDVotingData]) {
-            self.keyIDVoting = [NSData dataWithBytes:simplifiedMasternodeEntry->key_id_voting->values length:20];
+            self.keyIDVoting = NSDataFromPtr(simplifiedMasternodeEntry->key_id_voting);
 //            DSDSMNELog(@"changing keyIDVotingData to %@", keyIDVotingData.hexString);
         }
-        bool same_operator_public_key = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_operator_pub_key_is_equal_to(simplifiedMasternodeEntry, Arr_u8_48_ctor(48, (uint8_t *) self.operatorBLSPublicKey.bytes));
+        bool same_operator_public_key = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_operator_pub_key_is_equal_to(simplifiedMasternodeEntry, u384_ctor(self.operatorBLSPublicKey));
         
 //        NSData *operatorPublicKeyData = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
         if (!same_operator_public_key) {
 //        if (![self.operatorBLSPublicKey isEqualToData:operatorPublicKeyData]) {
 //            self.operatorBLSPublicKey = operatorPublicKeyData;
 //            self.operatorPublicKeyVersion = simplifiedMasternodeEntry.operatorPublicKeyVersion;
-            self.operatorBLSPublicKey = [NSData dataWithBytes:simplifiedMasternodeEntry->operator_public_key->data->values length:48];
+            self.operatorBLSPublicKey = NSDataFromPtr(simplifiedMasternodeEntry->operator_public_key->data);
             self.operatorPublicKeyVersion = simplifiedMasternodeEntry->operator_public_key->version;
 //            DSDSMNELog(@"changing operatorBLSPublicKey to %@", operatorPublicKeyData.hexString);
         }
@@ -109,19 +108,10 @@
             self.type = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_type_uint(simplifiedMasternodeEntry);
             DSDSMNELog(@"changing type to %d", self.type);
         }
-//        if (self.type != simplifiedMasternodeEntry.type) {
-//            self.type = simplifiedMasternodeEntry.type;
-//            DSDSMNELog(@"changing type to %d", simplifiedMasternodeEntry.type);
-//        }
         u160 *platform_node_id = u160_ctor(self.platformNodeID);
         bool same_evonode_id = dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_platform_node_id_is_equal_to(simplifiedMasternodeEntry, platform_node_id);
-//        NSData *platformNodeIDData = uint160_data(simplifiedMasternodeEntry.platformNodeID);
-//        if (![self.platformNodeID isEqualToData:platformNodeIDData]) {
-//            self.platformNodeID = platformNodeIDData;
-//            DSDSMNELog(@"changing platformNodeID to %d", platformNodeIDData.hexString);
-//        }
         if (!same_evonode_id) {
-            self.platformNodeID = [NSData dataWithBytes:simplifiedMasternodeEntry->platform_node_id length:20];
+            self.platformNodeID = NSDataFromPtr(simplifiedMasternodeEntry->platform_node_id);
             DSDSMNELog(@"changing platformNodeID to %d", platformNodeIDData.hexString);
         }
         if (self.platformHTTPPort != simplifiedMasternodeEntry->platform_http_port) {
@@ -135,10 +125,10 @@
         }
 //    TODO:
 //        self.version = simplifiedMasternodeEntry->
-        self.simplifiedMasternodeEntryHash = [NSData dataWithBytes:simplifiedMasternodeEntry->entry_hash->values length:32];
+        self.simplifiedMasternodeEntryHash = NSDataFromPtr(simplifiedMasternodeEntry->entry_hash);
         
         [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:simplifiedMasternodeEntry atBlockHeight:blockHeight];
-        NSData *localNodeHash = [NSData dataWithBytes:simplifiedMasternodeEntry->provider_registration_transaction_hash->values length:32];
+        NSData *localNodeHash = NSDataFromPtr(simplifiedMasternodeEntry->provider_registration_transaction_hash);
         DSLocalMasternodeEntity *localMasternode = localMasternodes
             ? [localMasternodes objectForKey:localNodeHash]
             : [DSLocalMasternodeEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", localNodeHash];
@@ -147,9 +137,9 @@
         char *voting_address = DMasternodeEntryVotingAddress(simplifiedMasternodeEntry, chain.chainType);
         char *platform_node_address = DMasternodeEntryEvoNodeAddress(simplifiedMasternodeEntry, chain.chainType);
         
-        NSString *operatorAddress = [NSString stringWithCString:operator_address encoding:NSUTF8StringEncoding];
-        NSString *votingAddress = [NSString stringWithCString:voting_address  encoding:NSUTF8StringEncoding];
-        NSString *platformNodeAddress = [NSString stringWithCString:platform_node_address  encoding:NSUTF8StringEncoding];
+        NSString *operatorAddress = NSStringFromPtr(operator_address);
+        NSString *votingAddress = NSStringFromPtr(voting_address);
+        NSString *platformNodeAddress = NSStringFromPtr(platform_node_address);
         str_destroy(operator_address);
         str_destroy(voting_address);
         str_destroy(platform_node_address);

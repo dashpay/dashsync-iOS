@@ -1697,7 +1697,8 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)allowInsightBlocksForVerification {
-    return !self.isMainnet;
+    return NO;
+//    return !self.isMainnet;
 }
 
 - (uint32_t)quickHeightForBlockHash:(UInt256)blockhash {

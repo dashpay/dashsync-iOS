@@ -148,7 +148,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
     NSAssert(identity.wallet == self, @"the identity you are trying to remove is not in this wallet");
     [self.mIdentities removeObjectForKey:identity.uniqueIDData];
     NSError *error = nil;
-    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class], [NSString class]], &error) mutableCopy];
     if (keyChainDictionary)
         [keyChainDictionary removeObjectForKey:identity.uniqueIDData];
     else
@@ -195,7 +195,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
     if ([self.mIdentities objectForKey:identity.uniqueIDData] == nil)
         [self addIdentity:identity];
     NSError *error = nil;
-    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class], [NSString class]], &error) mutableCopy];
     if (error) return FALSE;
     if (!keyChainDictionary)
         keyChainDictionary = [NSMutableDictionary dictionary];
@@ -245,7 +245,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
 
 - (BOOL)upgradeIdentityKeyChain {
     NSError *error = nil;
-    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class], [NSString class]], &error) mutableCopy];
     NSAssert(error == nil, @"There should be no error during upgrade");
     if (error) return FALSE;
     NSMutableDictionary *updated = [NSMutableDictionary dictionary];
@@ -263,7 +263,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
     //setKeychainDict(@{}, self.walletIdentitiesKey, NO);
     if (self.mIdentities) return self.mIdentities;
     NSError *error = nil;
-    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletIdentitiesKey, @[[NSNumber class], [NSData class], [NSString class]], &error) mutableCopy];
     if (error) return nil;
     uint64_t defaultIndex = getKeychainInt(self.walletIdentitiesDefaultIndexKey, &error);
     if (error) return nil;

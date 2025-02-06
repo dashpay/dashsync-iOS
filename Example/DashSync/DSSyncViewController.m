@@ -127,7 +127,8 @@
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                              DSLogPrivate(@"background fetch sync failed");
+                                                              NSError *error = note.userInfo[@"error"];
+                                                              DSLogPrivate(@"background fetch sync failed: %@", error);
                                                               [self syncFailed];
                                                           }
                                                       }];

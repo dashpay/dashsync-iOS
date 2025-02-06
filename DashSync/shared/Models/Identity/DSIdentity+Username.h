@@ -44,7 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSIdentityUsernameStatus)statusOfUsername:(NSString *)username inDomain:(NSString *)domain;
 - (DSIdentityUsernameStatus)statusOfDashpayUsername:(NSString *)username;
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSError *error))completion;
-- (void)fetchUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSError *error))completion;
 
 - (NSArray<NSString *> *)unregisteredUsernameFullPaths;
 - (NSArray<NSString *> *)usernameFullPathsWithStatus:(DSIdentityUsernameStatus)usernameStatus;

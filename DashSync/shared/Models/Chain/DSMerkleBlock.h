@@ -52,7 +52,11 @@ typedef union _UInt256 UInt256;
 + (instancetype)merkleBlockWithMessage:(NSData *)message onChain:(DSChain *)chain;
 
 // this init is used to check that the coinbase transaction is properly in the merkle tree of a block
-- (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
+- (instancetype)initWithBlockHash:(UInt256)blockHash
+                       merkleRoot:(UInt256)merkleRoot
+                totalTransactions:(uint32_t)totalTransactions
+                           hashes:(NSData *)hashes
+                            flags:(NSData *)flags;
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
                      merkleRoot:(UInt256)merkleRoot

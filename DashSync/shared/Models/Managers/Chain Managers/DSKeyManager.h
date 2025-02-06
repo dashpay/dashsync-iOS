@@ -155,8 +155,10 @@
 #define DMasternodeEntryListCtor(count, list) Vec_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_ctor(count, list)
 #define DMasternodeEntryListDtor(ptr) Vec_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_destroy(ptr)
 #define DMasternodeEntryMap std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry
+#define DMasternodeEntryMapDtor(ptr) std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_destroy(ptr)
 #define DLLMQMap std_collections_Map_keys_dash_spv_crypto_network_llmq_type_LLMQType_values_std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
 #define DLLMQEntry dash_spv_crypto_llmq_entry_LLMQEntry
+#define DLLMQEntryDtor(ptr) dash_spv_crypto_llmq_entry_LLMQEntry_destroy(ptr)
 #define DLLMQEntrySignID(ptr, req_id, hash) dash_spv_crypto_llmq_entry_LLMQEntry_sign_id(ptr, req_id, hash)
 #define DLLMQEntryVerifySignature(ptr, sign_id, sig) dash_spv_crypto_llmq_entry_LLMQEntry_verify_signature(ptr, sign_id, sig)
 #define DLLMQEntryHashHex(ptr) dash_spv_crypto_llmq_entry_LLMQEntry_llmq_hash_hex(ptr)
@@ -167,6 +169,7 @@
 #define DLLMQType dash_spv_crypto_network_llmq_type_LLMQType
 #define DLLMQSnapshot dash_spv_masternode_processor_models_snapshot_LLMQSnapshot
 #define DKeyKind dash_spv_crypto_keys_key_KeyKind
+#define DKeyKindDtor(ptr) dash_spv_crypto_keys_key_KeyKind_destroy(ptr)
 #define DOpaqueKey dash_spv_crypto_keys_key_OpaqueKey
 #define DMaybeOpaqueKey Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError
 #define DMaybeOpaqueKeys Result_ok_Vec_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError
@@ -193,6 +196,7 @@
 #define DMNListDiffResult dash_spv_masternode_processor_processing_mn_listdiff_result_MNListDiffResult
 
 #define NSDataFromPtr(ptr) ptr ? [NSData dataWithBytes:(const void *)ptr->values length:ptr->count] : nil
+#define NSStringFromPtr(ptr) ptr ? [NSString stringWithCString:ptr encoding:NSUTF8StringEncoding] : nil
 
 #define DStoredMasternodeListsCount(proc) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_stored_masternode_lists_count(proc)
 #define DKnownMasternodeListsCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_known_masternode_lists_count(cache)
@@ -212,17 +216,20 @@
 
 
 #define DDocumentTypes std_collections_Map_keys_dpp_data_contract_DocumentName_values_dpp_data_contract_document_type_DocumentType
-
+#define DDocument dpp_document_Document
 #define DDocumentsMap indexmap_IndexMap_platform_value_types_identifier_Identifier_Option_dpp_document_Document
 #define DMaybeDocument Result_ok_Option_dpp_document_Document_err_dash_spv_platform_error_Error
 #define DMaybeDocumentDtor(ptr) Result_ok_Option_dpp_document_Document_err_dash_spv_platform_error_Error_destroy(ptr)
 
 #define DMaybeDocumentsMap Result_ok_indexmap_IndexMap_platform_value_types_identifier_Identifier_Option_dpp_document_Document_err_dash_spv_platform_error_Error
 #define DMaybeDocumentsMapDtor(ptr) Result_ok_indexmap_IndexMap_platform_value_types_identifier_Identifier_Option_dpp_document_Document_err_dash_spv_platform_error_Error_destroy(ptr)
+#define DContactRequest dash_spv_platform_models_contact_request_ContactRequestKind
 #define DContactRequests Vec_dash_spv_platform_models_contact_request_ContactRequestKind
 #define DMaybeContactRequests Result_ok_Vec_dash_spv_platform_models_contact_request_ContactRequestKind_err_dash_spv_platform_error_Error
 #define DMaybeContactRequestsDtor(ptr) Result_ok_Vec_dash_spv_platform_models_contact_request_ContactRequestKind_err_dash_spv_platform_error_Error_destroy(ptr)
 
+#define DMaybeContract Result_ok_Option_dpp_data_contract_DataContract_err_dash_spv_platform_error_Error
+#define DMaybeContractDtor(ptr) Result_ok_Option_dpp_data_contract_DataContract_err_dash_spv_platform_error_Error_destroy(ptr)
 #define DMaybeIdentity Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error
 #define DMaybeIdentityDtor(ptr) Result_ok_Option_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(ptr)
 
@@ -231,6 +238,63 @@
 
 #define DMaybeStateTransitionProofResult Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error
 #define DMaybeStateTransitionProofResultDtor(ptr) Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error_destroy(ptr)
+
+#define DGetDocProperty(document, prop) dash_spv_platform_document_get_document_property(document, (char *)[prop UTF8String])
+#define DValue platform_value_Value
+#define DValueDtor(ptr) platform_value_Value_destroy(ptr)
+#define DGetTextDocProperty(document, propertyName) ({ \
+    NSString *result = nil; \
+    DValue *value = DGetDocProperty((document), (propertyName)); \
+    if (value) { \
+        result = NSStringFromPtr(value->text); \
+        DValueDtor(value); \
+    } \
+    result; \
+})
+#define DGetBytesDocProperty(document, propertyName) ({ \
+    NSData *result = nil; \
+    DValue *value = DGetDocProperty((document), (propertyName)); \
+    if (value) { \
+        result = NSDataFromPtr(value->bytes); \
+        DValueDtor(value); \
+    } \
+    result; \
+})
+#define DGetBytes32DocProperty(document, propertyName) ({ \
+    NSData *result = nil; \
+    DValue *value = DGetDocProperty((document), (propertyName)); \
+    if (value) { \
+        result = NSDataFromPtr(value->bytes32); \
+        DValueDtor(value); \
+    } \
+    result; \
+})
+#define DGetIDDocProperty(document, propertyName) ({ \
+    NSData *result = nil; \
+    DValue *value = DGetDocProperty((document), (propertyName)); \
+    if (value) { \
+        if (value->identifier && value->identifier->_0) \
+            result = NSDataFromPtr(value->identifier->_0); \
+        DValueDtor(value); \
+    } \
+    result; \
+})
+
+#define DGetIDDocProperty(document, propertyName) ({ \
+    NSData *result = nil; \
+    DValue *value = DGetDocProperty((document), (propertyName)); \
+    if (value) { \
+        if (value->identifier && value->identifier->_0) \
+            result = NSDataFromPtr(value->identifier->_0); \
+        DValueDtor(value); \
+    } \
+    result; \
+})
+
+
+#define DKeyID dpp_identity_identity_public_key_KeyID
+#define DIdentityPublicKey dpp_identity_identity_public_key_IdentityPublicKey
+#define DIdentityPublicKeysMap std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey
 
 NS_ASSUME_NONNULL_BEGIN
 

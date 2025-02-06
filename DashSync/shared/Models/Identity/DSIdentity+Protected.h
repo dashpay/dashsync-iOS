@@ -92,8 +92,6 @@ NS_ASSUME_NONNULL_BEGIN
 //                   inWallet:(DSWallet *)wallet;
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
-//                    balance:(uint64_t)balance
-//                public_keys:(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *)public_keys
                    inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index

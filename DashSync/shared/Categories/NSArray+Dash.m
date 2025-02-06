@@ -118,6 +118,28 @@
 }
 @end
 
+@implementation NSArray (Vec_String)
+
++ (NSArray<NSString *> *)ffi_from_vec_of_string:(Vec_String *)ffi_ref {
+    NSMutableArray<NSString *> *arr = [NSMutableArray arrayWithCapacity:ffi_ref->count];
+    for (int i = 0; i < ffi_ref->count; i++) {
+        [arr addObject:[NSString stringWithUTF8String:ffi_ref->values[i]]];
+    }
+    return arr;
+}
++ (Vec_String *)ffi_to_vec_of_string:(NSArray<NSString *> *)obj {
+    NSUInteger count = obj.count;
+    char **values = malloc(count * sizeof(char *));
+    for (NSUInteger i = 0; i < count; i++) {
+        values[i] = strdup([obj[i] UTF8String]);
+    }
+    return Vec_String_ctor(count, values);
+}
++ (void)ffi_destroy_vec_of_string:(Vec_String *)ffi_ref {
+    Vec_String_destroy(ffi_ref);
+}
+@end
+
 @implementation NSArray (Vec_u8_32)
 
 + (NSArray<NSData *> *)ffi_from_vec_u256:(Vec_u8_32 *)ffi_ref {
@@ -137,6 +159,28 @@
 }
 + (void)ffi_destroy_vec_u256:(Vec_u8_32 *)ffi_ref {
     Vec_u8_32_destroy(ffi_ref);
+}
+@end
+
+@implementation NSArray (Vec_Vec_u8)
+
++ (NSArray<NSData *> *)ffi_from_vec_vec_u8:(Vec_Vec_u8 *)ffi_ref {
+    NSMutableArray<NSData *> *arr = [NSMutableArray arrayWithCapacity:ffi_ref->count];
+    for (int i = 0; i < ffi_ref->count; i++) {
+        [arr addObject:NSDataFromPtr(ffi_ref->values[i])];
+    }
+    return arr;
+}
++ (Vec_Vec_u8 *)ffi_to_vec_vec_u8:(NSArray<NSData *> *)obj {
+    NSUInteger count = obj.count;
+    Vec_u8 **values = malloc(sizeof(Vec_u8 *) * count);
+    for (int i = 0; i < count; i++) {
+        values[i] = bytes_ctor(obj[i]);
+    }
+    return Vec_Vec_u8_ctor(count, values);
+}
++ (void)ffi_destroy_vec_vec_u8:(Vec_Vec_u8 *)ffi_ref {
+    Vec_Vec_u8_destroy(ffi_ref);
 }
 @end
 

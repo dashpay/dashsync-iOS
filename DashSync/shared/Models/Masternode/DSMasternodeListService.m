@@ -272,9 +272,7 @@
 
 - (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:baseBlockHash blockHash:blockHash];
-    if (!matchedRequest) {
-        return NO;
-    }
+    if (!matchedRequest) return NO;
     @synchronized (self.requestsInRetrieval) {
         [self.requestsInRetrieval removeObject:matchedRequest];
     }

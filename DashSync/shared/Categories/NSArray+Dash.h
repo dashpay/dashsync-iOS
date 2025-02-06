@@ -32,18 +32,27 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface NSArray (_)
-
 + (NSArray<NSString *> *)ffi_from_vec:(Vec_ *)ffi_ref;
 + (Vec_ *)ffi_to_vec:(NSArray<NSString *> *)obj;
 + (void)ffi_destroy_vec:(Vec_ *)ffi_ref;
+@end
 
+@interface NSArray (Vec_String)
++ (NSArray<NSString *> *)ffi_from_vec_of_string:(Vec_String *)ffi_ref;
++ (Vec_String *)ffi_to_vec_of_string:(NSArray<NSString *> *)obj;
++ (void)ffi_destroy_vec_of_string:(Vec_String *)ffi_ref;
 @end
 
 @interface NSArray (Vec_u8_32)
-
 + (NSArray<NSData *> *)ffi_from_vec_u256:(Vec_u8_32 *)ffi_ref;
 + (Vec_u8_32 *)ffi_to_vec_u256:(NSArray<NSData *> *)obj;
 + (void)ffi_destroy_vec_u256:(Vec_u8_32 *)ffi_ref;
+@end
+
+@interface NSArray (Vec_Vec_u8)
++ (NSArray<NSData *> *)ffi_from_vec_vec_u8:(Vec_Vec_u8 *)ffi_ref;
++ (Vec_Vec_u8 *)ffi_to_vec_vec_u8:(NSArray<NSData *> *)obj;
++ (void)ffi_destroy_vec_vec_u8:(Vec_Vec_u8 *)ffi_ref;
 @end
 
 NS_ASSUME_NONNULL_END

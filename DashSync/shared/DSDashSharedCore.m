@@ -438,6 +438,7 @@ MaybeBool *save_masternode_list_into_db_caller(const void *context, DArcMasterno
     DSMasternodeManager *masternodeManager = chain.masternodeManager;
     uintptr_t count = DStoredMasternodeListsCount(core.cache->obj);
     uint32_t last_block_height = DLastMasternodeListBlockHeight(core.processor->obj);
+    uint32_t list_known_height = masternode_list->obj->known_height;
     [chain.chainManager notifyMasternodeSyncStateChange:last_block_height storedCount:count];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: chain}];
@@ -449,13 +450,15 @@ MaybeBool *save_masternode_list_into_db_caller(const void *context, DArcMasterno
     BOOL createUnknownBlocks = chain.allowInsightBlocksForVerification;
     core.masternodeListCurrentlyBeingSavedCount++;
     //This will create a queue for masternodes to be saved without blocking the networking queue
-    DSLog(@"[%@] save_masternode_list_into_db --> %d", chain.name, masternode_list->obj->known_height);
+    DSLog(@"[%@] save_masternode_list_into_db --> %d", chain.name, list_known_height);
     NSError *error = [DSMasternodeListStore saveMasternodeList:masternode_list
                                     toChain:chain
                     havingModifiedMasternodes:modified_masternodes
                         createUnknownBlocks:createUnknownBlocks
                                   inContext:chain.chainManagedObjectContext];
     core.masternodeListCurrentlyBeingSavedCount--;
+    DArcMasternodeListDtor(masternode_list);
+    DMasternodeEntryMapDtor(modified_masternodes);
     dispatch_group_leave(core.chain.masternodeManager.store.savingGroup);
     BOOL success = !error;
     DCoreProviderError *provider_err = NULL;
@@ -472,10 +475,11 @@ MaybeBool *save_masternode_list_into_db_caller(const void *context, DArcMasterno
         provider_err = DCoreProviderErrorNullResultCtor();
     }
     DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-    DSLog(@"[%@] save_masternode_list_into_db <-- %d = %d", chain.name, masternode_list->obj->known_height, success);
+    DSLog(@"[%@] save_masternode_list_into_db <-- %d = %d", chain.name, list_known_height, success);
     DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
 //    dash_spv_masternode_processor_models_masternode_list_MasternodeList_print_description(masternode_list->obj);
 //    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+    
     return Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(&success, provider_err);
 }
 void save_masternode_list_into_db_destructor(MaybeBool *result) {}

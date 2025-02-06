@@ -17,6 +17,7 @@
 
 #import "BigIntTypes.h"
 #import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import "DSDashPlatform.h"
 #import <Foundation/Foundation.h>
 
@@ -61,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
 
-- (platform_value_Value *)toValue;
+- (DValue *)toValue;
 
 @end
 

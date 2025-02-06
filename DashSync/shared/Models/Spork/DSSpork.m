@@ -150,8 +150,9 @@
     if (self.chain.sporkPrivateKeyBase58String) {
         DMaybeKeyData *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_for_private_key((char *) [self.chain.sporkPrivateKeyBase58String UTF8String], self.chain.chainType);
         if (result) {
-            if (result->ok)
-                key = [NSData dataWithBytes:(const void *)result->ok->values length:result->ok->count].hexString;
+            NSData *data = NSDataFromPtr(result->ok);
+            if (data)
+                key = data.hexString;
             DMaybeKeyDataDtor(result);
         }
     }

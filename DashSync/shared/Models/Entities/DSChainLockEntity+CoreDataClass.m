@@ -29,7 +29,7 @@
     chainLockEntity.validSignature = chainLock.signatureVerified;
     chainLockEntity.signature = [NSData dataWithUInt768:chainLock.signature];
     chainLockEntity.merkleBlock = merkleBlockEntity;
-    chainLockEntity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", NSDataFromPtr(chainLock.intendedQuorumPublicKey)];
+    chainLockEntity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", chainLock.intendedQuorumPublicKey];
 //    chainLockEntity.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
     if (chainLock.signatureVerified) {
         

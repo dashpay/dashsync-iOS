@@ -70,6 +70,8 @@ typedef NS_ENUM(NSUInteger, DSIdentityUsernameStatus)
     DSIdentityUsernameStatus_RegistrationPending = 4, //sent to DAPI, not yet confirmed
     DSIdentityUsernameStatus_Confirmed = 5,
     DSIdentityUsernameStatus_TakenOnNetwork = 6,
+    DSIdentityUsernameStatus_VotingPeriod = 7,
+    DSIdentityUsernameStatus_Locked = 8,
 };
 
 typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
@@ -81,12 +83,12 @@ typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
     DSIdentityFriendshipStatus_Friends = DSIdentityFriendshipStatus_Outgoing | DSIdentityFriendshipStatus_Incoming,
 };
 
-typedef NS_ENUM(NSUInteger, DSIdentityRetryDelayType)
-{
-    DSIdentityRetryDelayType_Linear = 0,
-    DSIdentityRetryDelayType_SlowingDown20Percent = 1,
-    DSIdentityRetryDelayType_SlowingDown50Percent = 2,
-};
+//typedef NS_ENUM(NSUInteger, DSIdentityRetryDelayType)
+//{
+//    DSIdentityRetryDelayType_Linear = 0,
+//    DSIdentityRetryDelayType_SlowingDown20Percent = 1,
+//    DSIdentityRetryDelayType_SlowingDown50Percent = 2,
+//};
 
 typedef NS_ENUM(NSUInteger, DSIdentityKeyStatus)
 {
@@ -212,15 +214,7 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
-- (void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
-//- (BOOL)signStateTransition:(DSTransition *)transition;
-//- (BOOL)signStateTransition:(DSTransition *)transition
-//                forKeyIndex:(uint32_t)keyIndex
-//                     ofType:(DKeyKind *)signingAlgorithm;
-//- (void)signMessageDigest:(UInt256)digest
-//              forKeyIndex:(uint32_t)keyIndex
-//                   ofType:(DKeyKind *)signingAlgorithm
-//               completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
+
 - (BOOL)verifySignature:(NSData *)signature
             forKeyIndex:(uint32_t)keyIndex
                  ofType:(DKeyKind *)signingAlgorithm
@@ -263,9 +257,7 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 - (BOOL)setExternalFundingPrivateKey:(DMaybeOpaqueKey *)privateKey;
 - (BOOL)hasIdentityExtendedPublicKeys;
 - (DSIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index;
-- (DKeyKind *)typeOfKeyAtIndex:(NSUInteger)index;
 - (DMaybeOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
-- (uint32_t)keyCountForKeyType:(DKeyKind *)keyType;
 + (NSString *)localizedStatusOfKeyForIdentityKeyStatus:(DSIdentityKeyStatus)status;
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index;
 - (DMaybeOpaqueKey *_Nullable)createNewKeyOfType:(DKeyKind *)type
@@ -274,15 +266,12 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 - (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type atIndex:(uint32_t)rIndex;
 + (DSAuthenticationKeysDerivationPath *_Nullable)derivationPathForType:(DKeyKind *)type
                                                              forWallet:(DSWallet *)wallet;
-+ (DMaybeOpaqueKey *_Nullable)keyFromKeyDictionary:(NSDictionary *)dictionary
-                                             rType:(uint32_t *)rType
-                                            rIndex:(uint32_t *)rIndex;
-//+ (DMaybeOpaqueKey *_Nullable)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error;
 - (BOOL)verifyKeysForWallet:(DSWallet *)wallet;
 
 
+- (NSString *)logPrefix;
 
 @end
 

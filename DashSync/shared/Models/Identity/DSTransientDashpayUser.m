@@ -35,26 +35,29 @@
     }
     return self;
 }
-- (instancetype)initWithDocument:(dpp_document_Document *)document {
+- (instancetype)initWithDocument:(DDocument *)document {
     self = [super init];
     if (self) {
+        DSLog(@"DSTransientDashpayUser: ");
+        dash_spv_platform_document_print_document(document);
         switch (document->tag) {
             case dpp_document_Document_V0: {
+//                break;
                 dpp_document_v0_DocumentV0 *v0 = document->v0;
-                self.revision = (uint32_t) v0->revision->_0;
+                self.revision = v0->revision ? (uint32_t) v0->revision->_0 : 0;
                 self.createdAt = v0->created_at->_0;
                 self.updatedAt = v0->updated_at->_0;
                 self.documentIdentifier = NSDataFromPtr(v0->id->_0->_0);
-                platform_value_Value *avatar_path_value = dash_spv_platform_document_get_document_property(document, (char *)[@"avatarUrl" UTF8String]);
-                platform_value_Value *avatar_fingerprint_value = dash_spv_platform_document_get_document_property(document, (char *)[@"avatarFingerprint" UTF8String]);
-                platform_value_Value *avatar_hash_value = dash_spv_platform_document_get_document_property(document, (char *)[@"avatarHash" UTF8String]);
-                platform_value_Value *public_message_value = dash_spv_platform_document_get_document_property(document, (char *)[@"publicMessage" UTF8String]);
-                platform_value_Value *display_name_value = dash_spv_platform_document_get_document_property(document, (char *)[@"displayName" UTF8String]);
-                self.avatarPath = [NSString stringWithCString:avatar_path_value->text encoding:NSUTF8StringEncoding];
-                self.avatarFingerprint = NSDataFromPtr(avatar_fingerprint_value->identifier->_0);
-                self.avatarHash = NSDataFromPtr(avatar_hash_value->identifier->_0);
-                self.publicMessage = [NSString stringWithCString:public_message_value->text encoding:NSUTF8StringEncoding];
-                self.displayName = [NSString stringWithCString:display_name_value->text encoding:NSUTF8StringEncoding];
+                self.avatarPath = DGetTextDocProperty(document, @"avatarUrl");
+//                v0 : id:EH766JkXC948sHdCovfMUJd1cmogZNtX5RsdzLibVEb9 owner_id:7im3W3XdyhQQ7tgaL8gwXV2HRD9UtipVRUR4KPgyWRMR
+//                    created_at:2024-10-21 18:38:20
+//                    updated_at:2025-01-28 06:53:28
+//                    avatarFingerprint:bytes 5580290000410106
+//                    avatarHash:bytes32 7bhfqnTVCmm7IVNhUpclZaBiGUgAdKakVgw+TigY+ac= avatarUrl:string https://i.imgur.com/[...(32)] displayName:string disp publicMessage:string ab
+                self.avatarFingerprint = DGetBytesDocProperty(document, @"avatarFingerprint");
+                self.avatarHash = DGetBytes32DocProperty(document, @"avatarHash");
+                self.publicMessage = DGetTextDocProperty(document, @"publicMessage");
+                self.displayName = DGetTextDocProperty(document, @"displayName");
                 break;
             }
             default:

@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL signatureVerified;
 @property (nonatomic, readonly) BOOL saved;
 //@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
-@property (nonatomic, readonly) u384 *intendedQuorumPublicKey;
+@property (nonatomic, readonly) NSData *intendedQuorumPublicKey;
 
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain;

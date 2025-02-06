@@ -48,17 +48,12 @@
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
 //@property (nonatomic, strong) DSQuorumEntry *intendedQuorum;
-@property (nonatomic, assign) u384 *intendedQuorumPublicKey;
+@property (nonatomic) NSData *intendedQuorumPublicKey;
 @property (nonatomic, assign) BOOL saved;
 
 @end
 
 @implementation DSChainLock
-- (void)dealloc {
-    if (self.intendedQuorumPublicKey) {
-        u384_dtor(self.intendedQuorumPublicKey);
-    }
-}
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain {
     return [[self alloc] initWithMessage:message onChain:chain];
@@ -139,41 +134,45 @@
 //}
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DLLMQEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
-    if (quorumEntry && quorumEntry->verified) {
+    DLLMQEntry *llmq_entry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
+    if (llmq_entry && llmq_entry->verified) {
         u256 *request_id = u256_ctor_u(self.requestID);
         u256 *block_hash = u256_ctor_u(self.blockHash);
         u768 *sig = u768_ctor_u(self.signature);
-        u256 *sign_id = DLLMQEntrySignID(quorumEntry, request_id, block_hash);
-        self.signatureVerified = DLLMQEntryVerifySignature(quorumEntry, sign_id, sig);
-
+        u256 *sign_id = DLLMQEntrySignID(llmq_entry, request_id, block_hash);
+        self.signatureVerified = DLLMQEntryVerifySignature(llmq_entry, sign_id, sig);
         if (!self.signatureVerified) {
-            DSLog(@"[%@] unable to verify signature with offset %d", self.chain.name, offset);
+            DSLog(@"[%@] unable to verify clsig at height %d with offset %d", self.chain.name, self.height, offset);
         } else {
-            DSLog(@"[%@] signature verified with offset %d", self.chain.name, offset);
+            DSLog(@"[%@] clsig at height %d verified with offset %d", self.chain.name, self.height, offset);
         }
 
-    } else if (quorumEntry) {
+    } else if (llmq_entry) {
         DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name,
-              [NSString stringWithUTF8String:DLLMQEntryHashHex(quorumEntry)]);
+              [NSString stringWithUTF8String:DLLMQEntryHashHex(llmq_entry)]);
     } else {
         DSLog(@"[%@] no quorum entry found", self.chain.name);
     }
     if (self.signatureVerified) {
-        self.intendedQuorumPublicKey = quorumEntry->public_key;
-        self.quorumVerified = quorumEntry->verified;
+        self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
+        self.quorumVerified = llmq_entry->verified;
         //We should also set the chain's last chain lock
-        if (!self.chain.lastChainLock || self.chain.lastChainLock.height < self.height) {
+        if (!self.chain.lastChainLock || self.chain.lastChainLock.height < self.height)
             self.chain.lastChainLock = self;
-        }
-    } else if (quorumEntry && quorumEntry->verified && offset == 8) {
+        if (llmq_entry)
+            DLLMQEntryDtor(llmq_entry);
+    } else if (llmq_entry && llmq_entry->verified && offset == 8) {
         //try again a few blocks more in the past
         DSLog(@"[%@] trying with offset 0", self.chain.name);
+        DLLMQEntryDtor(llmq_entry);
         return [self verifySignatureWithQuorumOffset:0];
-    } else if (quorumEntry && quorumEntry->verified && offset == 0) {
+    } else if (llmq_entry && llmq_entry->verified && offset == 0) {
         //try again a few blocks more in the future
         DSLog(@"[%@] trying with offset 16", self.chain.name);
+        DLLMQEntryDtor(llmq_entry);
         return [self verifySignatureWithQuorumOffset:16];
+    } else if (llmq_entry) {
+        DLLMQEntryDtor(llmq_entry);
     }
     DSLog(@"[%@] returning chain lock signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
     return self.signatureVerified;

@@ -87,7 +87,7 @@
 #define HEADER_LENGTH 24
 #define MAX_MSG_LENGTH 0x02000000
 #define CONNECT_TIMEOUT 3.0
-#define MEMPOOL_TIMEOUT 3.0
+#define MEMPOOL_TIMEOUT 5.0
 
 #define LOCK(lock) dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
 #define UNLOCK(lock) dispatch_semaphore_signal(lock);
@@ -1121,9 +1121,10 @@
     }
 #endif
 
+    //    [Testnet: 80.209.232.96:19999] got inv with 1 item (first item Block with hash fae11efe0d3bb7a96104e765b93251f98f3546805aae5755340b1ce4b4000000/000000b4e41c0b345557ae5a8046358ff95132b965e70461a9b73b0dfe1ee1fa)
     if (blockHashes.count == 1 && [self.lastBlockHash isEqual:blockHashes[0]]) [blockHashes removeAllObjects];
     if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];
-
+    
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
         [self dispatchAsyncInDelegateQueue:^{
             [self.knownBlockHashes unionOrderedSet:blockHashes];

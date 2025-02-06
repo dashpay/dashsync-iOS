@@ -143,7 +143,7 @@
     return dash_spv_crypto_keys_key_OpaqueKey_create_account_reference([self sourceKeyAtIndex]->ok, self.extendedPublicKey->ok, self.account.accountNumber);
 }
 
-- (platform_value_Value *)toValue {
+- (DValue *)toValue {
     uintptr_t field_count = 6;
     Tuple_platform_value_Value_platform_value_Value **values = malloc(sizeof(Tuple_platform_value_Value_platform_value_Value) * field_count);
     values[0] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"$createdAt" UTF8String]), platform_value_Value_U64_ctor(self.createdAt * 1000));

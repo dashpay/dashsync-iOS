@@ -227,6 +227,8 @@
     if (_extendedPublicKey != NULL) {
         DMaybeOpaqueKeyDtor(_extendedPublicKey);
     }
+    if (_signingAlgorithm != NULL)
+        DKeyKindDtor(_signingAlgorithm);
 
 }
 
@@ -647,7 +649,7 @@
 
 - (DMaybeOpaqueKey *_Nullable)publicKeyAtIndexPath:(NSIndexPath *)indexPath {
     NSData *publicKeyData = [self publicKeyDataAtIndexPath:indexPath];
-    NSLog(@"publicKeyDataAtIndexPath: %@: %@", indexPath, publicKeyData.hexString);
+    //NSLog(@"publicKeyDataAtIndexPath: %@: %@", indexPath, publicKeyData.hexString);
 
     return dash_spv_crypto_keys_key_KeyKind_key_with_public_key_data(self.signingAlgorithm, slice_ctor(publicKeyData));
 }

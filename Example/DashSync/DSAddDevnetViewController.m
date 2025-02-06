@@ -63,7 +63,7 @@
         self.insertedIPAddresses = [NSMutableOrderedSet orderedSet];
     } else {
         
-        int16_t *devnetVersion = dash_spv_crypto_network_chain_type_ChainType_devnet_version(self.chain.chainType);
+        int16_t devnetVersion = dash_spv_crypto_network_chain_type_ChainType_devnet_version(self.chain.chainType);
         dash_spv_crypto_network_llmq_type_LLMQType *is_llmq_type = dash_spv_crypto_network_chain_type_ChainType_is_llmq_type(self.chain.chainType);
         dash_spv_crypto_network_llmq_type_LLMQType *cl_llmq_type = dash_spv_crypto_network_chain_type_ChainType_chain_locks_type(self.chain.chainType);
         dash_spv_crypto_network_llmq_type_LLMQType *pl_llmq_type = dash_spv_crypto_network_chain_type_ChainType_platform_type(self.chain.chainType);
@@ -71,7 +71,7 @@
         DSPeerManager *peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain].peerManager;
         self.insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:peerManager.registeredDevnetPeerServices];
         self.addDevnetNameTableViewCell.valueTextField.text = [DSKeyManager devnetIdentifierFor:self.chain.chainType];
-        self.addDevnetVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", *devnetVersion];
+        self.addDevnetVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", devnetVersion];
         self.protocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.protocolVersion];
         self.minProtocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.minProtocolVersion];
         self.sporkPrivateKeyTableViewCell.valueTextField.text = self.chain.sporkPrivateKeyBase58String;

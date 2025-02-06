@@ -386,12 +386,9 @@
 }
 
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
-    [self signAndPublishProfileInContext:self.platformContext
-                          withCompletion:completion];
-}
-
-- (void)signAndPublishProfileInContext:(NSManagedObjectContext *)context
-                        withCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: Sign and publish profile", self.logPrefix];
+    DSLog(@"%@", debugInfo);
+    NSManagedObjectContext *context = self.platformContext;
     __block uint32_t profileDocumentRevision;
     [context performBlockAndWait:^{
         DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
@@ -426,6 +423,7 @@
         }];
         profile = dash_spv_platform_models_profile_Profile_ctor(updatedAt, createdAt, revision, (char *)[matchingDashpayUser.publicMessage UTF8String], (char *)[matchingDashpayUser.avatarPath UTF8String], avatarFingerprint, avatarHash, displayName);
     } else {
+        DSLog(@"%@: ERROR: No user or revision %@", debugInfo, matchingDashpayUser);
         if (completion) completion(nil, NO, ERROR_TRANSITION_NO_UPDATE);
         return;
     }
@@ -439,6 +437,7 @@
     DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
+        DSLog(@"%@: ERROR: %@", debugInfo, error);
         DMaybeStateTransitionProofResultDtor(result);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, NO, error); });
         return;
@@ -449,11 +448,10 @@
         [self matchingDashpayUserInContext:context].remoteProfileDocumentRevision = profileDocumentRevision;
         [context ds_save];
     }];
+    DSLog(@"%@: OK", debugInfo);
     if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, NO, nil); });
 
 }
-
-//
 
 // MARK: Fetching
 
@@ -481,7 +479,10 @@
     [self internalFetchProfileInContext:context
                          withCompletion:^(BOOL success, NSError *error) {
         if (!success && retryCount > 0) {
-            [self fetchUsernamesInContext:context retryCount:retryCount - 1 withCompletion:completion onCompletionQueue:completionQueue];
+            [self fetchUsernamesInContext:context
+                               retryCount:retryCount - 1
+                           withCompletion:completion
+                        onCompletionQueue:completionQueue];
         } else if (completion) {
             completion(success, error);
         }
@@ -497,50 +498,8 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DASHPAY_CONTRACT_NOT_REGISTERED); });
         return;
     }
-//    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_dashpay_profile_for_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(self.uniqueID), dashpayContract.raw_contract);
-//        
-//    if (result->error) {
-//        NSError *error = [NSError ffi_from_platform_error:result->error];
-//        DMaybeDocumentDtor(result);
-//        dispatch_async(completionQueue, ^{ completion(NO, error); });
-//        return;
-//    }
-//    if (result->ok) {
-//            
-//        
-//    }
-
-    
     [self.identitiesManager fetchProfileForIdentity:self
                                      withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
-//                                     withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
-//        if (!result) {
-//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_CONTRACT_SETUP); });
-//            return;
-//        } else if (result->error) {
-//            NSError *error = [NSError ffi_from_platform_error:result->error];
-//            DMaybeDocumentDtor(result);
-//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
-//            return;
-//        } else if (!result->ok) {
-//            DMaybeDocumentDtor(result);
-//            if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
-//            return;
-//        } else {
-//            [self applyProfileChanges:dashpayUserInfo
-//                            inContext:context
-//                          saveContext:YES
-//                           completion:^(BOOL success, NSError *_Nullable error) {
-//                if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
-//            }
-//                    onCompletionQueue:self.identityQueue];
-//        }
-        
-//        if (!result || result->error || !result->ok) {
-//            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
-//
-//        }
-////        
         if (!success || error || dashpayUserInfo == nil) {
             if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
             return;

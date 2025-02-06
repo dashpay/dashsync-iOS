@@ -29,21 +29,13 @@
 @property (nonatomic, strong) NSArray *inputOutpoints;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
-//@property (nonatomic, strong) DSQuorumEntry *intendedQuorum;
-//@property (nonatomic, assign) DLLMQEntry *intendedQuorum;
-@property (nonatomic, assign) u384 *intendedQuorumPublicKey;
+@property (nonatomic) NSData *intendedQuorumPublicKey;
 @property (nonatomic, assign) BOOL saved;
 @property (nonatomic, assign) UInt768 signature;
 
 @end
 
 @implementation DSInstantSendTransactionLock
-
-- (void)dealloc {
-    if (self.intendedQuorumPublicKey) {
-        u384_dtor(self.intendedQuorumPublicKey);
-    }
-}
 
 + (instancetype)instantSendTransactionLockWithNonDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
     return [[self alloc] initWithNonDeterministicMessage:message onChain:chain];
@@ -230,28 +222,28 @@
 //}
 //
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DLLMQEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
-    if (quorumEntry) {
-        if (quorumEntry->verified) {
-            self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
+    DLLMQEntry *llmq_entry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
+    if (llmq_entry) {
+        if (llmq_entry->verified) {
+            self.signatureVerified = [self verifySignatureAgainstQuorum:llmq_entry];
             if (!self.signatureVerified) {
                 DSLog(@"[%@] unable to verify IS signature with offset %d", self.chain.name, offset);
             } else {
                 DSLog(@"[%@] IS signature verified with offset %d", self.chain.name, offset);
             }
         } else {
-            DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, [DSKeyManager NSStringFrom:DLLMQEntryHashHex(quorumEntry)]);
+            DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, [DSKeyManager NSStringFrom:DLLMQEntryHashHex(llmq_entry)]);
         }
     } else {
         DSLog(@"[%@] no quorum entry found", self.chain.name);
     }
     if (self.signatureVerified) {
-        self.intendedQuorumPublicKey = quorumEntry->public_key;
-    } else if (quorumEntry->verified && offset == 8) {
+        self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
+    } else if (llmq_entry->verified && offset == 8) {
         //try again a few blocks more in the past
         DSLog(@"[%@] trying with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
-    } else if (quorumEntry->verified && offset == 0) {
+    } else if (llmq_entry->verified && offset == 0) {
         //try again a few blocks more in the future
         DSLog(@"[%@] trying with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];
