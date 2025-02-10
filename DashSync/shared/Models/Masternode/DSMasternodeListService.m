@@ -118,17 +118,17 @@
     [self cleanAllLists];
 }
 
-- (void)getRecentMasternodeList {
-    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
-    if (!merkleBlock) {
-        // sometimes it happens while rescan
-        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
-        return;
-    }
-    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
-    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
-    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_mn_list(self.chain.shareCore.processor->obj, block);
-}
+//- (void)getRecentMasternodeList {
+//    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
+//    if (!merkleBlock) {
+//        // sometimes it happens while rescan
+//        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
+//        return;
+//    }
+//    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
+//    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
+//    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_mn_list(self.chain.shareCore.processor->obj, block);
+//}
 
 //- (void)setCurrentMasternodeList:(Result_ok_dash_spv_masternode_processor_processing_mn_listdiff_result_MNListDiffResult_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError *_Nullable)currentMasternodeList {
 //    if (self.chain.isEvolutionEnabled) {
@@ -187,7 +187,7 @@
 }
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
-    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_mn_list_retrieval_queue(self.chain.shareCore.processor->obj, u256_ctor(masternodeBlockHashData));
+    DMnDiffQueueRemove(self.chain.shareCore.processor->obj, u256_ctor(masternodeBlockHashData));
 }
 
 - (void)cleanRequestsInRetrieval {
@@ -195,7 +195,7 @@
 }
 
 - (void)cleanListsRetrievalQueue {
-    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_mn_list_retrieval_queue(self.chain.shareCore.processor->obj);
+    DMnDiffQueueClean(self.chain.shareCore.processor->obj);
 }
 
 - (void)cleanAllLists {
@@ -221,10 +221,10 @@
 }
 
 - (NSUInteger)retrievalQueueCount {
-    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_count(self.chain.shareCore.cache->obj);
+    return DMnDiffQueueCount(self.chain.shareCore.cache->obj);
 }
 - (NSUInteger)retrievalQueueMaxAmount {
-    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_get_max_amount(self.chain.shareCore.cache->obj);
+    return DMnDiffQueueMaxAmount(self.chain.shareCore.cache->obj);
 }
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
@@ -297,7 +297,7 @@
         [self.store deleteAllOnChain];
         [self.store removeOldMasternodeLists];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-        [self getRecentMasternodeList];
+        [self.chain.masternodeManager getRecentMasternodeList];
     } else {
         if (!faultyPeers) {
             faultyPeers = @[peer.location];

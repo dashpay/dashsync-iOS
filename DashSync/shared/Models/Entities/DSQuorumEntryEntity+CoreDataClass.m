@@ -10,7 +10,6 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSKeyManager.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-//#import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -57,7 +56,7 @@
         quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", quorumHash, @(llmqType)];
     }
     if (!quorumEntryEntity) {
-        if (potentialQuorumEntry->saved && potentialQuorumEntry->verified) {
+        if (potentialQuorumEntry->saved && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(potentialQuorumEntry)) {
             return nil;
         } else {
             quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
@@ -72,7 +71,7 @@
 - (void)setAttributesFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
                                       onBlock:(DSMerkleBlockEntity *)block
                                       onChain:(DSChain *)chain {
-    self.verified = (block != nil) && potentialQuorumEntry->verified;
+    self.verified = (block != nil) && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(potentialQuorumEntry);
     self.block = block;
     self.quorumHash = u256_cast(potentialQuorumEntry->llmq_hash);
     self.quorumPublicKey = u384_cast(potentialQuorumEntry->public_key);
@@ -95,7 +94,7 @@
 - (void)updateAttributesFromPotentialQuorumEntry:(DLLMQEntry *)potentialQuorumEntry
                                          onBlock:(DSMerkleBlockEntity *)block {
     if (!self.verified)
-        self.verified = block != nil && potentialQuorumEntry->verified;
+        self.verified = block != nil && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(potentialQuorumEntry);
     if (!self.block)
         self.block = block;
 }

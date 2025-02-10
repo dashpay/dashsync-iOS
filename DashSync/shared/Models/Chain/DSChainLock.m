@@ -135,7 +135,7 @@
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
     DLLMQEntry *llmq_entry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
-    if (llmq_entry && llmq_entry->verified) {
+    if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry)) {
         u256 *request_id = u256_ctor_u(self.requestID);
         u256 *block_hash = u256_ctor_u(self.blockHash);
         u768 *sig = u768_ctor_u(self.signature);
@@ -155,18 +155,18 @@
     }
     if (self.signatureVerified) {
         self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
-        self.quorumVerified = llmq_entry->verified;
+        self.quorumVerified = dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry);
         //We should also set the chain's last chain lock
         if (!self.chain.lastChainLock || self.chain.lastChainLock.height < self.height)
             self.chain.lastChainLock = self;
         if (llmq_entry)
             DLLMQEntryDtor(llmq_entry);
-    } else if (llmq_entry && llmq_entry->verified && offset == 8) {
+    } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
         //try again a few blocks more in the past
         DSLog(@"[%@] trying with offset 0", self.chain.name);
         DLLMQEntryDtor(llmq_entry);
         return [self verifySignatureWithQuorumOffset:0];
-    } else if (llmq_entry && llmq_entry->verified && offset == 0) {
+    } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
         //try again a few blocks more in the future
         DSLog(@"[%@] trying with offset 16", self.chain.name);
         DLLMQEntryDtor(llmq_entry);

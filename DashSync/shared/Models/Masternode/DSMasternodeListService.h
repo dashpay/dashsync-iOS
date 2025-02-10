@@ -65,7 +65,7 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 //                     delegate:(id<DSMasternodeListServiceDelegate>)delegate;
 
 //- (void)populateRetrievalQueueWithBlockHashes:(NSArray *)blockHashes processor:(MasternodeProcessor *)processor;
-- (void)getRecentMasternodeList;
+//- (void)getRecentMasternodeList;
 - (void)dequeueMasternodeListRequest;
 - (void)stop;
 

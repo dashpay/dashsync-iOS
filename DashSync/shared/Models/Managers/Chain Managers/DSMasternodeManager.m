@@ -35,6 +35,7 @@
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 
 #define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
@@ -59,13 +60,15 @@
 @implementation DSMasternodeManager
 
 - (BOOL)hasCurrentMasternodeListInLast30Days {
-    DArcMasternodeList *list = self.currentMasternodeList;
-    if (list && (!list->obj->known_height || list->obj->known_height == UINT32_MAX)) {
-        list->obj->known_height = [self.chain heightForBlockHash:u256_cast(list->obj->block_hash)];
+    DMasternodeList *list = self.currentMasternodeList;
+    if (list && (!list->known_height || list->known_height == UINT32_MAX)) {
+        uint32_t new_height = [self.chain heightForBlockHash:u256_cast(list->block_hash)];
+        list->known_height = new_height;
+        dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_update_masternode_list_known_height(self.chain.shareCore.cache->obj, list->block_hash, new_height);
     }
-    BOOL has = list && [[NSDate date] timeIntervalSince1970] - [self.chain timestampForBlockHeight:list->obj->known_height] < DAY_TIME_INTERVAL * 30;
+    BOOL has = list && [[NSDate date] timeIntervalSince1970] - [self.chain timestampForBlockHeight:list->known_height] < DAY_TIME_INTERVAL * 30;
     if (list)
-        DArcMasternodeListDtor(list);
+        DMasternodeListDtor(list);
     return has;
 }
 
@@ -92,9 +95,9 @@
 
 #pragma mark - DSMasternodeListServiceDelegate
 
-- (BOOL)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
-    return [self processRequestFromFileForBlockHash:blockHash];
-}
+//- (BOOL)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
+//    return [self processRequestFromFileForBlockHash:blockHash];
+//}
 //
 //- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
 //    [self.store removeOldMasternodeLists];
@@ -103,9 +106,13 @@
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
     BOOL has_last_queried_list_at_tip = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_last_queried_qr_masternode_list_at_tip(self.chain.shareCore.cache->obj);
     DSLog(@"[%@] Masternode List Service emptied retrieval queue: mnldiff: %lu, qrinfo: %lu tip queried? %u ", self.chain.name, [self.masternodeListDiffService retrievalQueueCount], [self.quorumRotationService retrievalQueueCount], has_last_queried_list_at_tip);
-
-    if (![self.masternodeListDiffService retrievalQueueCount]) {
-        if (![self.quorumRotationService retrievalQueueCount]) {
+    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+    dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_description(self.chain.shareCore.cache->obj);
+    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+    uintptr_t mndiff_count = DMnDiffQueueCount(self.chain.shareCore.cache->obj);
+    if (!mndiff_count) {
+        uintptr_t qrinfo_count = DQrInfoQueueCount(self.chain.shareCore.cache->obj);
+        if (!qrinfo_count) {
             [self.store removeOldMasternodeLists];
         }
         if (has_last_queried_list_at_tip) {
@@ -155,9 +162,9 @@
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
     u128 *addr = u128_ctor_u(IPAddress);
-    DArcMasternodeList *list = self.currentMasternodeList;
-    BOOL result = dash_spv_masternode_processor_models_masternode_list_MasternodeList_has_masternode_at_location(list->obj, addr, (uint16_t) port);
-    DArcMasternodeListDtor(list);
+    DMasternodeList *list = self.currentMasternodeList;
+    BOOL result = dash_spv_masternode_processor_models_masternode_list_MasternodeList_has_masternode_at_location(list, addr, (uint16_t) port);
+    DMasternodeListDtor(list);
     return result;
 }
 
@@ -170,12 +177,12 @@
 }
 
 - (BOOL)currentMasternodeListIsInLast24Hours {
-    DArcMasternodeList *list = self.currentMasternodeList;
+    DMasternodeList *list = self.currentMasternodeList;
     if (!list) {
         return NO;
     }
-    DSBlock *block = [self.chain blockForBlockHash:u256_cast(list->obj->block_hash)];
-    DArcMasternodeListDtor(list);
+    DSBlock *block = [self.chain blockForBlockHash:u256_cast(list->block_hash)];
+    DMasternodeListDtor(list);
     if (!block) return FALSE;
     NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval delta = currentTimestamp - block.timestamp;
@@ -190,20 +197,20 @@
     [self loadFileDistributedMasternodeLists];
 }
 
-- (DArcMasternodeList *_Nullable)reloadMasternodeLists {
+- (DMasternodeList *_Nullable)reloadMasternodeLists {
     return [self reloadMasternodeListsWithBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return [self.chain heightForBlockHash:blockHash];
     }];
 }
 
-- (DArcMasternodeList *)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+- (DMasternodeList *)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_clear(self.chain.shareCore.cache->obj);
     [self.chain.chainManager notifyMasternodeSyncStateChange:UINT32_MAX storedCount:0];
 
     return [self.store loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
-- (DArcMasternodeList *)currentMasternodeList {
+- (DMasternodeList *)currentMasternodeList {
     return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chain.masternodeManager.processor, self.chain.isRotatedQuorumsPresented);
 }
 
@@ -212,16 +219,18 @@
     BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
     if (!syncMasternodeLists || !useCheckpointMasternodeLists)
         return;
-    DArcMasternodeList *list = self.currentMasternodeList;
-    if (!list)
+    DMasternodeList *list = self.currentMasternodeList;
+    if (list) {
+        DMasternodeListDtor(list);
         return;
-    DArcMasternodeListDtor(list);
+    }
     DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
     if (!checkpoint ||
         self.chain.lastTerminalBlockHeight < checkpoint.height ||
         [self masternodeListForBlockHash:checkpoint.blockHash withBlockHeightLookup:nil]) {
         return;
     }
+    DSLog(@"[%@] processRequestFromFileForBlockHash -> %@", self.chain.name, uint256_hex(checkpoint.blockHash));
     BOOL exist = [self processRequestFromFileForBlockHash:checkpoint.blockHash];
     if (exist) {
 //        TODO: re-implement
@@ -247,27 +256,35 @@
     [self.quorumRotationService cleanAllLists];
     [self.chain.chainManager notifyMasternodeSyncStateChange:UINT32_MAX storedCount:0];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification
+                                                            object:nil
+                                                          userInfo:@{
+            DSChainManagerNotificationChainKey: self.chain
+        }];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification
+                                                            object:nil
+                                                          userInfo:@{
+            DSChainManagerNotificationChainKey: self.chain
+        }];
     });
 }
 
 // MARK: - Masternode List Helpers
 
-- (DArcMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash {
+- (DMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash {
     return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
 }
 
-- (DArcMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash
-                             withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+- (DMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash
+                          withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     u256 *block_hash = u256_ctor_u(blockHash);
-    DArcMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_list_for_block_hash(self.processor, block_hash);
+    DMasternodeList *list = DMasternodeListForBlockHash(self.processor, block_hash);
     return list;
 }
 
-- (DArcMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash {
+- (DMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash {
     u256 *arr = u256_ctor_u(blockHash);
-    DArcMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_list_before_block_hash(self.processor, arr);
+    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_list_before_block_hash(self.processor, arr);
     return list;
 }
 
@@ -292,11 +309,17 @@
 
 - (void)getRecentMasternodeList {
     DSLog(@"[%@] getRecentMasternodeList at tip", self.chain.name);
-    [self.masternodeListDiffService getRecentMasternodeList];
-    if (self.chain.isRotatedQuorumsPresented) {
-        [self.quorumRotationService getRecentMasternodeList];
+    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
+    if (!merkleBlock) {
+        // sometimes it happens while rescan
+        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
+        return;
     }
-
+    DBlock *block = DBlockCtor(merkleBlock.height, u256_ctor_u(merkleBlock.blockHash));
+    
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_mn_list(self.chain.shareCore.processor->obj, block);
+    if (self.chain.isRotatedQuorumsPresented)
+        dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_qr_info(self.chain.shareCore.processor->obj, block);
 }
 
 // the safety delay checks to see if this was called in the last n seconds.
@@ -357,8 +380,7 @@
     if (!message)
         return NO;
     Slice_u8 *message_slice = slice_ctor(message);
-    DMnDiffResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_file(self.processor, message_slice, [checkpoint protocolVersion]);
-
+    DMnDiffResult *result = DMnDiffFromFile(self.processor, message_slice, [checkpoint protocolVersion]);
     DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
     if (result->error) {
         DSLog(@"[%@] ProcessingError while reading %@ for block at height %u with merkleRoot %@", self.chain.name, masternodeListName, block.height, uint256_hex(block.merkleRoot));
@@ -399,13 +421,12 @@
     dispatch_async(self.processingQueue, ^{
         dispatch_group_enter(self.processingGroup);
         SLICE *message_slice = slice_ctor(message);
-        DMnDiffResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_message(self.processor, message_slice, false, peer ? peer.version : self.chain.protocolVersion, false, ((__bridge void *)(peer)));
+        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, false, peer ? peer.version : self.chain.protocolVersion, false, ((__bridge void *)(peer)));
         
         if (result->error) {
-            uint8_t error_index = DProcessingErrorIndex(result->error);
-
-            DSLog(@"[%@] Processing status (mndiff): %ul", self.chain.name, error_index);
-            switch (error_index) {
+            NSError *error = [NSError ffi_from_processing_error:result->error];
+            DSLog(@"[%@] Processing status (mndiff): %@", self.chain.name, error.description);
+            switch (result->error->tag) {
                 case dash_spv_masternode_processor_processing_processing_error_ProcessingError_MissingLists:
                     break;
                 case dash_spv_masternode_processor_processing_processing_error_ProcessingError_InvalidResult:
@@ -458,13 +479,17 @@
         dispatch_group_enter(self.processingGroup);
         SLICE *slice_msg = slice_ctor(message);
         DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_qr_info_result_from_message(self.processor, slice_msg, false, protocol_version, self.chain.isRotatedQuorumsPresented, false, ((__bridge void *)(peer)));
-        if (result->error || !result->ok) {
-            uint8_t index = DProcessingErrorIndex(result->error);
-            DSLog(@"[%@] •••• Processing status (qrinfo): %u", self.chain.name, index);
-            DQRInfoResultDtor(result);
-            if (index == dash_spv_masternode_processor_processing_processing_error_ProcessingError_InvalidResult) {
-                [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
+        if (result->error) {
+            NSError *error = [NSError ffi_from_processing_error:result->error];
+            DSLog(@"[%@] •••• Processing status (qrinfo): %@", self.chain.name, error.description);
+            switch (result->error->tag) {
+                case dash_spv_masternode_processor_processing_processing_error_ProcessingError_InvalidResult:
+                    [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
+                    break;
+                default:
+                    break;
             }
+            DQRInfoResultDtor(result);
             dispatch_group_leave(self.processingGroup);
             return;
         }
@@ -484,7 +509,7 @@
     });
 }
 
-+ (void)saveMasternodeList:(DArcMasternodeList *)masternodeList
++ (void)saveMasternodeList:(DMasternodeList *)masternodeList
                    toChain:(DSChain *)chain
  havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
        createUnknownBlocks:(BOOL)createUnknownBlocks

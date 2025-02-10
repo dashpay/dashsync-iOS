@@ -182,10 +182,10 @@
 
 - (IBAction)fetchNextMasternodeList:(id)sender {
     
-    DArcMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chain.shareCore.processor->obj, self.chain.isRotatedQuorumsPresented);
+    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chain.shareCore.processor->obj, self.chain.isRotatedQuorumsPresented);
 //    int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
-    if (list->obj->known_height + 24 > self.chain.lastSyncBlock.height) return;
-    uint32_t blockHeight = list->obj->known_height + 24;
+    if (list->known_height + 24 > self.chain.lastSyncBlock.height) return;
+    uint32_t blockHeight = list->known_height + 24;
 
     NSError *error = nil;
     [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
@@ -204,15 +204,15 @@
     NSIndexPath *indexPath = [self.tableView indexPathForCell:tableViewCell];
     DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     UInt256 hash = masternodeListEntity.block.blockHash.UInt256;
-    DArcMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
-    UInt256 cachedHash = u256_cast(masternodeList->obj->masternode_merkle_root);
+    DMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
+    UInt256 cachedHash = u256_cast(masternodeList->masternode_merkle_root);
     BOOL equal = uint256_eq(masternodeListEntity.masternodeListMerkleRoot.UInt256, cachedHash);
-    [self.validMerkleRootDictionary setObject:@(equal) forKey:NSDataFromPtr(masternodeList->obj->block_hash)];
+    [self.validMerkleRootDictionary setObject:@(equal) forKey:NSDataFromPtr(masternodeList->block_hash)];
     [tableViewCell.validButton setTitle:(equal ? @"V" : @"X") forState:UIControlStateNormal];
     if (!equal) {
         DSLogPrivate(@"The merkle roots are not equal, from disk we have <%@> calculated we have <%@>", masternodeListEntity.masternodeListMerkleRoot.hexString, uint256_hex(cachedHash));
     }
-    DArcMasternodeListDtor(masternodeList);
+    DMasternodeListDtor(masternodeList);
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

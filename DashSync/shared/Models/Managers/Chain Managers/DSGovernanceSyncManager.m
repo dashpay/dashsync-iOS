@@ -41,7 +41,6 @@
 #import "DSOptionsManager.h"
 #import "DSPeer.h"
 #import "DSPeerManager+Protected.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 

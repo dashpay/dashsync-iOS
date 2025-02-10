@@ -20,7 +20,6 @@
 #import "DSOptionsManager.h"
 #import "DSPeer.h"
 #import "DSPeerManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"

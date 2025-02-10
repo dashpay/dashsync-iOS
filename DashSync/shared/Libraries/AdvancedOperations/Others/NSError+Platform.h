@@ -29,5 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSError *)ffi_from_key_error:(dash_spv_crypto_keys_KeyError *)ffi_ref;
 @end
 
+@interface NSError (dash_spv_masternode_processor_processing_core_provider_CoreProviderError)
++ (NSError *)ffi_from_core_provider_error:(dash_spv_masternode_processor_processing_core_provider_CoreProviderError *)ffi_ref;
+@end
+
+@interface NSError (dash_spv_masternode_processor_processing_processing_error_ProcessingError)
++ (NSError *)ffi_from_processing_error:(dash_spv_masternode_processor_processing_processing_error_ProcessingError *)ffi_ref;
+@end
+
 
 NS_ASSUME_NONNULL_END

@@ -35,7 +35,7 @@
         [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
     } else {
         DSLog(@"[%@] Missing block (%@)", self.chain.name, blockHashData.hexString);
-        dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(self.chain.shareCore.processor->obj, u256_ctor(blockHashData));
+        DQrInfoQueueRemove(self.chain.shareCore.processor->obj, u256_ctor(blockHashData));
     }
 }
 - (indexmap_IndexSet_u8_32 *)retrievalQueue {
@@ -43,31 +43,31 @@
 }
 
 - (NSUInteger)retrievalQueueCount {
-    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_count(self.chain.shareCore.cache->obj);
+    return DQrInfoQueueCount(self.chain.shareCore.cache->obj);
 }
 - (NSUInteger)retrievalQueueMaxAmount {
-    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_get_max_amount(self.chain.shareCore.cache->obj);
+    return DQrInfoQueueMaxAmount(self.chain.shareCore.cache->obj);
 }
 - (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
     return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_latest_block_in_qr_info_retrieval_queue_with_hash(self.chain.shareCore.cache->obj, u256_ctor_u(blockHash));
 }
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
-    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(self.chain.shareCore.processor->obj, u256_ctor(masternodeBlockHashData));
+    DQrInfoQueueRemove(self.chain.shareCore.processor->obj, u256_ctor(masternodeBlockHashData));
 }
 - (void)cleanListsRetrievalQueue {
-    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_qr_info_retrieval_queue(self.chain.shareCore.processor->obj);
+    DQrInfoQueueClean(self.chain.shareCore.processor->obj);
 }
-- (void)getRecentMasternodeList {
-    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
-    if (!merkleBlock) {
-        // sometimes it happens while rescan
-        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
-        return;
-    }
-    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
-    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
-    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_qr_info(self.chain.shareCore.processor->obj, block);
-}
+//- (void)getRecentMasternodeList {
+//    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
+//    if (!merkleBlock) {
+//        // sometimes it happens while rescan
+//        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
+//        return;
+//    }
+//    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
+//    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
+//    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_qr_info(self.chain.shareCore.processor->obj, block);
+//}
 
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
@@ -79,7 +79,9 @@
     }
     NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
     DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:YES];
-    DSLog(@"[%@] •••• requestQuorumRotationInfo: %@ .. %@", self.chain.name, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    uint32_t prev_h = DHeightForBlockHash(self.chain.shareCore.processor->obj, u256_ctor_u(previousBlockHash));
+    uint32_t h = DHeightForBlockHash(self.chain.shareCore.processor->obj, u256_ctor_u(blockHash));
+    DSLog(@"[%@] •••• requestQuorumRotationInfo: %u..%u %@ .. %@", self.chain.name, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
     [self sendMasternodeListRequest:request];
 }
 

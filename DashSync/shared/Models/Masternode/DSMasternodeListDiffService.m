@@ -19,7 +19,7 @@
 #import "DSGetMNListDiffRequest.h"
 #import "DSMasternodeListDiffService.h"
 #import "DSMasternodeListStore+Protected.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+Protected.h"
 #import "NSString+Dash.h"
 
 @implementation DSMasternodeListDiffService
@@ -31,7 +31,7 @@
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             NSUInteger pos = [list indexOfObject:blockHashData];
             UInt256 blockHash = blockHashData.UInt256;
-            BOOL success = [self.chain.masternodeManager masternodeListServiceDidRequestFileFromBlockHash:self blockHash:blockHash];
+            BOOL success = [self.chain.masternodeManager processRequestFromFileForBlockHash:blockHash];
             if (success) {
                 [self removeFromRetrievalQueue:blockHashData];
                 [self checkWaitingForQuorums];

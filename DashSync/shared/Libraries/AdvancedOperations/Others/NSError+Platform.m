@@ -15,8 +15,10 @@
 //  limitations under the License.
 //
 
+#import "NSData+Dash.h"
 #import "NSError+Dash.h"
 #import "NSError+Platform.h"
+#import "DSKeyManager.h"
 
 @implementation NSError (dash_spv_platform_error_Error)
 
@@ -62,3 +64,52 @@
 }
 
 @end
+
+@implementation NSError (dash_spv_masternode_processor_processing_core_provider_CoreProviderError)
++ (NSError *)ffi_from_core_provider_error:(dash_spv_masternode_processor_processing_core_provider_CoreProviderError *)ffi_ref {
+    switch (ffi_ref->tag) {
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_NullResult:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Core Provider Null Result", nil)];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ByteError:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Message Parse Error", nil)];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_BadBlockHash:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Bad Block Hash (%@)", nil, u256_hex(ffi_ref->bad_block_hash))];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_UnknownBlockHeightForHash:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Unknown height for Hash (%@)", nil, u256_hex(ffi_ref->unknown_block_height_for_hash))];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_BlockHashNotFoundAt:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Block hash for height %u not found", nil, ffi_ref->block_hash_not_found_at)];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_NoSnapshot:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Quorum Snapshot not found", nil)];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_HexError:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Parse Hex Error", nil)];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_MissedMasternodeListAt:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Missed Masternode List at (%@)", nil, u256_hex(ffi_ref->missed_masternode_list_at))];
+        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_QuorumValidation:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Quorum Validation Error", nil)];
+    }
+}
+@end
+
+@implementation NSError (dash_spv_masternode_processor_processing_processing_error_ProcessingError)
++ (NSError *)ffi_from_processing_error:(dash_spv_masternode_processor_processing_processing_error_ProcessingError *)ffi_ref {
+    switch (ffi_ref->tag) {
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_PersistInRetrieval:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Unexpected Diff Processing (%@..%@)", nil, u256_hex(ffi_ref->persist_in_retrieval._0), u256_hex(ffi_ref->persist_in_retrieval._1))];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_LocallyStored:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Masternode List already stored for %u: %@", nil, ffi_ref->locally_stored._0, u256_hex(ffi_ref->locally_stored._1))];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_ParseError:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Message Parse Error", nil, NSStringFromPtr(ffi_ref->parse_error))];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_HasNoBaseBlockHash:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Unknown base block hash", nil, u256_hex(ffi_ref->has_no_base_block_hash))];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_UnknownBlockHash:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Unknown block hash %@", nil, u256_hex(ffi_ref->unknown_block_hash))];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_InvalidResult:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Invalid Result", nil, NSStringFromPtr(ffi_ref->invalid_result))];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_CoreProvider:
+            return [NSError ffi_from_core_provider_error:ffi_ref->core_provider];
+        case dash_spv_masternode_processor_processing_processing_error_ProcessingError_MissingLists:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Missing Masternode Lists: %@", nil, NSStringFromPtr(ffi_ref->missing_lists))];
+    }
+}
+@end
+

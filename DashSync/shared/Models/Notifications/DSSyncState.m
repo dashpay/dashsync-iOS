@@ -34,6 +34,21 @@
             self.storedCount,
             self.lastBlockHeight];
 }
+- (void)updateWithSyncState:(DMNSyncState *)state {
+    switch (state->tag) {
+        case DMNSyncStateQueueChanged:
+            self.retrievalQueueCount = (uint32_t) state->queue_changed.count;
+            self.retrievalQueueMaxAmount = (uint32_t) state->queue_changed.max_amount;
+            break;
+        case DMNSyncStateStoreChanged:
+            self.storedCount = (uint32_t) state->store_changed.count;
+            self.lastBlockHeight = state->store_changed.last_block_height;
+            break;
+        default:
+            break;
+    }
+}
+
 @end
 
 @implementation DSSyncState

@@ -23,11 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeManager.h"
-//#import "DSMnDiffProcessingResult.h"
 #import "DSOperationQueue.h"
-//#import "DSQRInfoProcessingResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                       ownerKeyIndex:(uint32_t)ownerKeyIndex
                                                             onChain:(DSChain *)chain;
 
-+ (nullable NSError *)saveMasternodeList:(DArcMasternodeList *)masternodeList
++ (nullable NSError *)saveMasternodeList:(DMasternodeList *)masternodeList
                                  toChain:(DSChain *)chain
                havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
                      createUnknownBlocks:(BOOL)createUnknownBlocks

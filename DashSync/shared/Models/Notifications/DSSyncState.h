@@ -34,6 +34,7 @@ typedef NS_ENUM(uint16_t, DSSyncStateKind) {
 @property (nonatomic, assign) double storedCount;
 @property (nonatomic, assign) uint32_t lastBlockHeight;
 
+- (void)updateWithSyncState:(DMNSyncState *)state;
 @end
 
 

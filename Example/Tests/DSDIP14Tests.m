@@ -150,12 +150,4 @@
 }
 
 
-- (void)testAuth {
-    
-    DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:self.wallet];
-    NSData *data = [derivationPath publicKeyDataAtIndex:UINT32_MAX - 1];
-    NSLog(@"ddd: %@", data.hexString);
-    
-}
-
 @end

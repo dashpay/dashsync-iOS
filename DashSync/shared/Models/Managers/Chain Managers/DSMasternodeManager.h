@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
 @property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
 @property (nonatomic, readonly) uint32_t lastMasternodeListBlockHeight;
-@property (nonatomic, readonly) DArcMasternodeList *currentMasternodeList;
+@property (nonatomic, readonly) DMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueMaxAmount;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
@@ -72,9 +72,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (DLLMQEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash
                                                  forBlockHeight:(uint32_t)blockHeight;
 
-- (DArcMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash
+- (DMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash
                                       withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
-- (DArcMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
+- (DMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
 
 - (void)startSync;
 - (void)stopSync;
@@ -82,14 +82,14 @@ NS_ASSUME_NONNULL_BEGIN
                                       error:(NSError *_Nullable *_Nullable)error;
 
 /// Returns current masternode list
-- (DArcMasternodeList *_Nullable)reloadMasternodeLists;
-- (DArcMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (DMasternodeList *_Nullable)reloadMasternodeLists;
+- (DMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context
                                          withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 
 
-- (BOOL)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+//- (BOOL)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
 //- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
 @end

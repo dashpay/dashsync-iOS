@@ -96,7 +96,7 @@
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
 @property (nonatomic, assign) uint64_t masternodeListConnectivityNonce;
-@property (nonatomic, assign) DArcMasternodeList *masternodeList;
+@property (nonatomic, assign) DMasternodeList *masternodeList;
 @property (nonatomic, readonly) dispatch_queue_t networkingQueue;
 
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
@@ -135,7 +135,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
     if (_masternodeList)
-        DArcMasternodeListDtor(_masternodeList);
+        DMasternodeListDtor(_masternodeList);
 }
 
 - (dispatch_queue_t)networkingQueue {
@@ -256,7 +256,7 @@
 }
 - (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce {
     Vec_dash_spv_masternode_processor_common_socket_address_SocketAddress *vec =
-    dash_spv_masternode_processor_models_masternode_list_MasternodeList_peer_addresses_with_connectivity_nonce(self.masternodeList->obj, connectivityNonce, peerCount);
+    dash_spv_masternode_processor_models_masternode_list_MasternodeList_peer_addresses_with_connectivity_nonce(self.masternodeList, connectivityNonce, peerCount);
     NSMutableArray *mArray = [NSMutableArray array];
     for (int i = 0; i < vec->count; i++) {
         dash_spv_masternode_processor_common_socket_address_SocketAddress *address = vec->values[i];
@@ -665,7 +665,7 @@
 
 // MARK: - Using Masternode List for connectivitity
 
-- (void)useMasternodeList:(DArcMasternodeList *)masternodeList
+- (void)useMasternodeList:(DMasternodeList *)masternodeList
     withConnectivityNonce:(uint64_t)connectivityNonce {
     self.masternodeList = masternodeList;
     self.masternodeListConnectivityNonce = connectivityNonce;

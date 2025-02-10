@@ -20,9 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DMasternodeEntry *_Nonnull)simplifiedMasternodeEntry
                                         atBlockHeight:(uint32_t)blockHeight
-                                              onChain:(DSChain *)chain;
-- (void)updateAttributesFromSimplifiedMasternodeEntry:(DMasternodeEntry *_Nonnull)simplifiedMasternodeEntry
-                                        atBlockHeight:(uint32_t)blockHeight
                                knownOperatorAddresses:(NSDictionary<NSString *, DSAddressEntity *> *_Nullable)knownOperatorAddresses
                                  knownVotingAddresses:(NSDictionary<NSString *, DSAddressEntity *> *_Nullable)knownVotingAddresses
                                 platformNodeAddresses:(NSDictionary<NSString *, DSAddressEntity *> *_Nullable)platformNodeAddresses

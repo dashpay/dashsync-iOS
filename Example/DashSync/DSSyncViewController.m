@@ -688,11 +688,11 @@
 }
 
 - (void)updateKnownMasternodes {
-    DArcMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chainManager.chain.shareCore.processor->obj, self.chainManager.chain.isRotatedQuorumsPresented);
-    uintptr_t count = list ? dash_spv_masternode_processor_models_masternode_list_MasternodeList_masternode_count(list->obj) : 0;
+    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chainManager.chain.shareCore.processor->obj, self.chainManager.chain.isRotatedQuorumsPresented);
+    uintptr_t count = list ? dash_spv_masternode_processor_models_masternode_list_MasternodeList_masternode_count(list) : 0;
     self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)count];
     self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
-    self.masternodeListUpdatedLabel.text = [NSString stringWithFormat:@"%u", (unsigned long)list ? list->obj->known_height : 0];
+    self.masternodeListUpdatedLabel.text = [NSString stringWithFormat:@"%u", (unsigned long)list ? list->known_height : 0];
 }
 
 - (void)updateMasternodeLists {

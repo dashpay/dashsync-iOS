@@ -13,6 +13,6 @@
 @interface DSMasternodeViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, assign) DArcMasternodeList *masternodeList;
+@property (nonatomic, assign) DMasternodeList *masternodeList;
 
 @end

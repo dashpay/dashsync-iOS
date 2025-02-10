@@ -224,7 +224,7 @@
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
     DLLMQEntry *llmq_entry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
     if (llmq_entry) {
-        if (llmq_entry->verified) {
+        if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry)) {
             self.signatureVerified = [self verifySignatureAgainstQuorum:llmq_entry];
             if (!self.signatureVerified) {
                 DSLog(@"[%@] unable to verify IS signature with offset %d", self.chain.name, offset);
@@ -239,11 +239,11 @@
     }
     if (self.signatureVerified) {
         self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
-    } else if (llmq_entry->verified && offset == 8) {
+    } else if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
         //try again a few blocks more in the past
         DSLog(@"[%@] trying with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
-    } else if (llmq_entry->verified && offset == 0) {
+    } else if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
         //try again a few blocks more in the future
         DSLog(@"[%@] trying with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];

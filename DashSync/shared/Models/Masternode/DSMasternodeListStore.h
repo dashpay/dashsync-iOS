@@ -43,15 +43,15 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
 - (void)loadLocalMasternodes;
-- (DArcMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash
-                                withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-- (DArcMasternodeList *)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (DMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash
+                             withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (DMasternodeList *)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (void)removeOldMasternodeLists;
 - (void)removeOldSimplifiedMasternodeEntries;
 - (nullable NSError *)saveQuorumSnapshot:(DLLMQSnapshot *)quorumSnapshot
                             forBlockHash:(u256 *)block_hash;
 
-+ (nullable NSError *)saveMasternodeList:(DArcMasternodeList *)masternodeList
++ (nullable NSError *)saveMasternodeList:(DMasternodeList *)masternodeList
                                  toChain:(DSChain *)chain
                havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
                      createUnknownBlocks:(BOOL)createUnknownBlocks

@@ -224,11 +224,11 @@
     if (_hardenedIndexes != NULL) {
         free(_hardenedIndexes);
     }
-    if (_extendedPublicKey != NULL) {
-        DMaybeOpaqueKeyDtor(_extendedPublicKey);
-    }
     if (_signingAlgorithm != NULL)
         DKeyKindDtor(_signingAlgorithm);
+    
+    if (_extendedPublicKey != NULL)
+        DMaybeOpaqueKeyDtor(_extendedPublicKey);
 
 }
 

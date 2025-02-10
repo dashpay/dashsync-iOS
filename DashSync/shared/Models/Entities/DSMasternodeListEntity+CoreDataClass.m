@@ -17,7 +17,7 @@
 
 @implementation DSMasternodeListEntity
 
-- (DArcMasternodeList *)masternodeListWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+- (DMasternodeList *)masternodeListWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     DMasternodeEntry **masternodes = malloc(self.masternodes.count * sizeof(DMasternodeEntry *));
     DLLMQEntry **quorums = malloc(self.quorums.count * sizeof(DLLMQEntry *));
     uintptr_t masternodes_count = 0;
@@ -32,6 +32,7 @@
         int16_t llmq_type = quorumEntity.llmqType;
         int32_t llmq_index = quorumEntity.quorumIndex;
         BOOL verified = quorumEntity.verified;
+        dash_spv_crypto_llmq_entry_LLMQEntryVerificationStatus *status = verified ? dash_spv_crypto_llmq_entry_LLMQEntryVerificationStatus_Verified_ctor() : dash_spv_crypto_llmq_entry_LLMQEntryVerificationStatus_Unknown_ctor();
         u256 *llmq_hash = u256_ctor(quorumEntity.quorumHashData);
         BYTES *signers = bytes_ctor(quorumEntity.signersBitset);
         int32_t signers_count = quorumEntity.signersCount;
@@ -43,7 +44,7 @@
         u768 *all_commitment_aggregated_signature = u768_ctor(quorumEntity.allCommitmentAggregatedSignatureData);
         // yes this is crazy but this is correct (legacy)
         u256 *entry_hash = u256_ctor(quorumEntity.commitmentHashData);
-        DLLMQEntry *entry = dash_spv_crypto_llmq_entry_from_entity(version, llmq_type, llmq_hash, llmq_index, signers, signers_count, valid_members, valid_members_count, public_key, verification_vector_hash, threshold_signature, all_commitment_aggregated_signature, verified, entry_hash);
+        DLLMQEntry *entry = dash_spv_crypto_llmq_entry_from_entity(version, llmq_type, llmq_hash, llmq_index, signers, signers_count, valid_members, valid_members_count, public_key, verification_vector_hash, threshold_signature, all_commitment_aggregated_signature, status, entry_hash);
         quorums[quorums_count] = entry;
         quorums_count++;
     }
@@ -53,11 +54,11 @@
     u256 *llmq_merkle_root = u256_ctor(self.quorumListMerkleRoot);
     DMasternodeEntryList *masternodes_vec = DMasternodeEntryListCtor(masternodes_count, masternodes);
     DLLMQEntryList *quorums_vec = DLLMQEntryListCtor(quorums_count, quorums);
+//    DSLog(@"••••••••••••••••••••••••••••• masternode_list_from_entry_pool %u ••••••••••••••••••••••••••••••••••••••••• ", block_height);
+    DMasternodeList *list = DMasternodeListFromEntryPool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec);
+//    DMasternodeListPrint(list);
 //    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-    DMasternodeList *list = dash_spv_masternode_processor_models_masternode_list_from_entry_pool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-
-    return std_sync_Arc_dash_spv_masternode_processor_models_masternode_list_MasternodeList_ctor(list);
+    return list;
 }
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity {

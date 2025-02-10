@@ -11,7 +11,6 @@
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.m"
 #import "DSTxInputEntity+CoreDataClass.h"

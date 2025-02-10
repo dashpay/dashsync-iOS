@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState)
 @property (nonatomic, readonly) NSUInteger connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, readonly) NSSet *connectedPeers;
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
-@property (nonatomic, readonly) DArcMasternodeList *masternodeList;
+@property (nonatomic, readonly) DMasternodeList *masternodeList;
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString *)errorMessage;
 - (void)chainSyncStopped;
@@ -54,7 +54,7 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState)
 
 - (instancetype)initWithChain:(DSChain *)chain;
 
-- (void)useMasternodeList:(DArcMasternodeList *)masternodeList
+- (void)useMasternodeList:(DMasternodeList *)masternodeList
     withConnectivityNonce:(uint64_t)connectivityNonce;
 
 - (void)clearRegisteredPeers;

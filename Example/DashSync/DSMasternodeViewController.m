@@ -45,7 +45,7 @@
     } else {
         
         
-        NSPredicate *masternodeListPredicate = [NSPredicate predicateWithFormat:@"ANY masternodeLists.block.height == %@", @(self.masternodeList->obj->known_height)];
+        NSPredicate *masternodeListPredicate = [NSPredicate predicateWithFormat:@"ANY masternodeLists.block.height == %@", @(self.masternodeList->known_height)];
         return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self mainSearchPredicate], masternodeListPredicate]];
     }
 }

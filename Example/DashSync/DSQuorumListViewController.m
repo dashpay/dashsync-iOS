@@ -57,11 +57,11 @@
     NSSortDescriptor *quorumTypeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"llmqType" ascending:NO];
     NSSortDescriptor *quorumIndexSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumIndex" ascending:YES];
     NSSortDescriptor *quorumHeightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"block.height" ascending:NO];
-//    NSSortDescriptor *quorumHashDataSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumHashData" ascending:NO];
-    NSSortDescriptor *quorumHashDataSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"quorumHashData" ascending:NO comparator:^NSComparisonResult(NSData *obj1, NSData *obj2) {
-        return uint256_compare(obj1.UInt256, obj2.UInt256);
-    }];
-
+    NSSortDescriptor *quorumHashDataSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumHashData" ascending:NO];
+//    NSSortDescriptor *quorumHashDataSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"quorumHashData" ascending:NO comparator:^NSComparisonResult(NSData *obj1, NSData *obj2) {
+//        return uint256_compare(obj1.UInt256, obj2.UInt256);
+//    }];
+//
     
     NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumIndexSortDescriptor, quorumHeightSortDescriptor, quorumHashDataSortDescriptor];
 

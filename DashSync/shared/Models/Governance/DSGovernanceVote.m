@@ -12,7 +12,6 @@
 #import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -22,7 +21,6 @@
 @interface DSGovernanceVote ()
 
 @property (nonatomic, assign) DMasternodeEntry *masternode;
-//@property (nonatomic, strong) DSSimplifiedMasternodeEntry *masternode;
 @property (nonatomic, assign) DSGovernanceVoteOutcome outcome;
 @property (nonatomic, assign) DSGovernanceVoteSignal signal;
 @property (nonatomic, assign) NSTimeInterval createdAt;

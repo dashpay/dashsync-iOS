@@ -18,9 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListEntity : NSManagedObject
 
-- (DArcMasternodeList *)masternodeListWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (DMasternodeList *)masternodeListWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-//- (DArcMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(DMasternodeEntryMap *)simplifiedMasternodeEntries
+//- (DMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(DMasternodeEntryMap *)simplifiedMasternodeEntries
 //                                                    quorumEntryPool:(DLLMQMap *)quorumEntries
 //                                              withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 

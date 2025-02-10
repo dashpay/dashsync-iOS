@@ -1627,7 +1627,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     if (!self.chain.needsInitialTerminalHeadersSync &&
         (self.chain.earliestWalletCreationTime < block.timestamp + DAY_TIME_INTERVAL * 2) &&
         !self.chainManager.chainSynchronizationFingerprint) {
-        DSLog(@"[%@: %@:%d] ignoring header %@", self.chain.name, peer.host, peer.port, uint256_hex(block.blockHash));
+        DSLog(@"[%@: %@:%d] ignoring header %@ (%u %fl %@)", self.chain.name, peer.host, peer.port, uint256_hex(block.blockHash), self.chain.needsInitialTerminalHeadersSync, self.chain.earliestWalletCreationTime, self.chainManager.chainSynchronizationFingerprint);
         return;
     }
 
