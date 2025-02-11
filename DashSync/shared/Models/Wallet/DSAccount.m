@@ -671,7 +671,6 @@
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTransactionHashes = [NSMutableSet set];
     NSMutableDictionary *pendingCoinbaseLockedTransactionHashes = [NSMutableDictionary dictionary];
-    NSMutableArray *balanceHistory = [NSMutableArray array];
     uint32_t now = [NSDate timeIntervalSince1970];
     
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
@@ -701,7 +700,6 @@
                 if (tx.blockHeight == TX_UNCONFIRMED &&
                     ([spent intersectsSet:spentOutputs] || [inputs intersectsSet:invalidTx])) {
                     [invalidTx addObject:uint256_obj(tx.txHash)];
-                    [balanceHistory insertObject:@(balance) atIndex:0];
                     continue;
                 }
             } else {
@@ -754,7 +752,6 @@
             
             if (pending || [inputs intersectsSet:pendingTransactionHashes]) {
                 [pendingTransactionHashes addObject:uint256_obj(tx.txHash)];
-                [balanceHistory insertObject:@(balance) atIndex:0];
                 continue;
             }
             
@@ -765,7 +762,6 @@
                     pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)] = [NSMutableSet set];
                 }
                 [((NSMutableSet *)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
-                [balanceHistory insertObject:@(balance) atIndex:0];
                 continue;
             }
             
@@ -811,7 +807,6 @@
             
             if (prevBalance < balance) totalReceived += balance - prevBalance;
             if (balance < prevBalance) totalSent += prevBalance - balance;
-            [balanceHistory insertObject:@(balance) atIndex:0];
             prevBalance = balance;
 #if LOG_BALANCE_UPDATE
             DSLog(@"===UTXOS===");
@@ -835,7 +830,6 @@
     self.pendingCoinbaseLockedTransactionHashes = pendingCoinbaseLockedTransactionHashes;
     self.spentOutputs = spentOutputs;
     self.utxos = utxos;
-    self.balanceHistory = balanceHistory;
     _totalSent = totalSent;
     _totalReceived = totalReceived;
     
@@ -848,16 +842,6 @@
         });
     }
 }
-
-// historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
-- (uint64_t)balanceAfterTransaction:(DSTransaction *)transaction {
-    NSParameterAssert(transaction);
-    
-    NSUInteger i = [self.transactions indexOfObject:transaction];
-    
-    return (i < self.balanceHistory.count) ? [self.balanceHistory[i] unsignedLongLongValue] : self.balance;
-}
-
 
 - (void)postBalanceDidChangeNotification {
     [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
@@ -895,21 +879,22 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             }] != NSNotFound) return NO;
             if ([self.invalidTransactionHashes containsObject:hash1] && ![self.invalidTransactionHashes containsObject:hash2]) return YES;
             if ([self.pendingTransactionHashes containsObject:hash1] && ![self.pendingTransactionHashes containsObject:hash2]) return YES;
-            for (DSTransactionInput *input in tx1.inputs) {
-                if (_isAscending(self.allTx[uint256_obj(input.inputHash)], tx2)) return YES;
-            }
+
             return NO;
         };
+        
+        NSArray *externalAddresses = self.externalAddresses;
+        NSArray *internalAddresses = self.internalAddresses;
         
         [self.transactions sortWithOptions:NSSortStable
                            usingComparator:^NSComparisonResult(id tx1, id tx2) {
             if (isAscending(tx1, tx2)) return NSOrderedAscending;
             if (isAscending(tx2, tx1)) return NSOrderedDescending;
             
-            NSUInteger i = transactionAddressIndex(tx1, self.internalAddresses);
-            NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
+            NSUInteger i = transactionAddressIndex(tx1, internalAddresses);
+            NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? externalAddresses : internalAddresses);
             
-            if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, self.externalAddresses);
+            if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, externalAddresses);
             if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
             return (i > j) ? NSOrderedAscending : NSOrderedDescending;
         }];
