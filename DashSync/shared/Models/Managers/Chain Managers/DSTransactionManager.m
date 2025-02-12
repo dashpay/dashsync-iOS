@@ -213,6 +213,13 @@
 
     dispatch_async(self.chainManager.chain.networkingQueue, ^{
         [self performSelector:@selector(txTimeout:) withObject:hash afterDelay:PROTOCOL_TIMEOUT];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                object:nil
+                                                              userInfo:@{DSChainManagerNotificationChainKey: self.chain,
+                                                             DSTransactionManagerNotificationTransactionKey: transaction}];
+        });
 
         for (DSPeer *p in peers) {
             if (p.status != DSPeerStatus_Connected) continue;
@@ -280,7 +287,11 @@
     for (DSTransaction *transaction in transactionsSet) {
         if (transaction.blockHeight != TX_UNCONFIRMED) continue;
         hash = uint256_obj(transaction.txHash);
+#if DEBUG
+        DSLogPrivate(@"[%@] checking published callback %@ -> %@", self.chain.name, uint256_reverse_hex(transaction.txHash), self.publishedCallback[hash] ? @"OK" : @"no callback");
+#else
         DSLog(@"[%@] checking published callback -> %@", self.chain.name, self.publishedCallback[hash] ? @"OK" : @"no callback");
+#endif
         if (self.publishedCallback[hash] != NULL) continue;
         DSLog(@"[%@] transaction relays count %lu, transaction requests count %lu", self.chain.name, (unsigned long)[self.txRelays[hash] count], (unsigned long)[self.txRequests[hash] count]);
         DSAccount *account = [self.chain firstAccountThatCanContainTransaction:transaction];
@@ -292,6 +303,9 @@
             NSAssert(FALSE, @"This probably needs more implementation work, if you are here now is the time to do it.");
             continue;
         }
+        
+        BOOL updateTransaction = NO;
+        
         if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
             // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
             if (!rescan && account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
@@ -326,7 +340,7 @@
             DSLog(@"[%@] removing transaction <REDACTED>", self.chain.name);
 #endif
             [transactionsToBeRemoved addObject:transaction];
-
+            updateTransaction = YES;
         } else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
             // set timestamp 0 to mark as unverified
 #if DEBUG
@@ -337,6 +351,17 @@
             [self.chain setBlockHeight:TX_UNCONFIRMED
                           andTimestamp:0
                   forTransactionHashes:@[hash]];
+            updateTransaction = YES;
+        }
+        
+        if (updateTransaction) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                    object:nil
+                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain,
+                                                                 DSTransactionManagerNotificationTransactionKey: transaction,
+                                                          DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
+            });
         }
     }
 
@@ -1113,6 +1138,14 @@
     if (callback && !isTransactionValid) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithCode:401 localizedDescriptionKey:@"Double spend"];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                object:nil
+                                                              userInfo:@{DSChainManagerNotificationChainKey: self.chain,
+                                                             DSTransactionManagerNotificationTransactionKey: transaction,
+                                                      DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
+        });
     } else if (transaction) {
         for (DSAccount *account in accounts) {
             if (![account transactionForHash:txHash]) {

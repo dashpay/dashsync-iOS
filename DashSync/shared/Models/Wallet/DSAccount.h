@@ -289,9 +289,6 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeForTransaction:(DSTransaction *)transaction;
 
-// historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
-- (uint64_t)balanceAfterTransaction:(DSTransaction *)transaction;
-
 - (void)chainUpdatedBlockHeight:(int32_t)height;
 
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
