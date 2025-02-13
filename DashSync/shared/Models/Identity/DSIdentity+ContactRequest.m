@@ -85,127 +85,80 @@
 }
 
 - (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context
-                               withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
-                            onCompletionQueue:(dispatch_queue_t)completionQueue {
-    [self fetchIncomingContactRequestsInContext:context
-                                     startAfter:nil
-                                    retriesLeft:DEFAULT_CONTACT_REQUEST_FETCH_RETRIES
-                                 withCompletion:completion
-                              onCompletionQueue:completionQueue];
-}
-
-- (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context
                                    startAfter:(NSData*_Nullable)startAfter
-                                  retriesLeft:(int32_t)retriesLeft
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue {
     
-    [self internalFetchIncomingContactRequestsInContext:context
-                                             startAfter:startAfter
-                                         withCompletion:^(BOOL success, NSData*_Nullable hasMoreStartAfter, NSArray<NSError *> *errors) {
-        if (!success && retriesLeft > 0) {
-            [self fetchIncomingContactRequestsInContext:context startAfter:startAfter retriesLeft:retriesLeft - 1 withCompletion:completion onCompletionQueue:completionQueue];
-        } else if (success && hasMoreStartAfter) {
-            [self fetchIncomingContactRequestsInContext:context startAfter:hasMoreStartAfter retriesLeft:DEFAULT_CONTACT_REQUEST_FETCH_RETRIES withCompletion:completion onCompletionQueue:completionQueue];
-        } else if (completion) {
-            completion(success, errors);
-        }
-    }
-                                      onCompletionQueue:completionQueue];
-}
-
-- (void)internalFetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context
-                                           startAfter:(NSData*_Nullable)startAfter
-                                       withCompletion:(void (^)(BOOL success, NSData*_Nullable hasMoreStartAfter, NSArray<NSError *> *errors))completion
-                                    onCompletionQueue:(dispatch_queue_t)completionQueue {
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: fetch incoming contact requests: (startAfter: %@)", self.logPrefix, startAfter ? startAfter.hexString : @"NULL"];
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_DASHPAY_CONTRACT_IMPROPER_SETUP]); });
+        [debugInfo appendFormat:@" : ERROR: DashPay Contract State: %lu", dashpayContract.contractState];
+        DSLog(@"%@", debugInfo);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_DASHPAY_CONTRACT_IMPROPER_SETUP]); });
         return;
     }
     NSError *error = nil;
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
+        [debugInfo appendFormat:@" : ERROR: Active private keys are loaded with error: %@", error];
+        DSLog(@"%@", debugInfo);
         // The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
         return;
     }
     u256 *user_id = u256_ctor_u(self.uniqueID);
     uint64_t since = self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     BYTES *start_after = startAfter ? bytes_ctor(startAfter) : nil;
     __weak typeof(self) weakSelf = self;
-    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_incoming_contact_requests(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_incoming_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
+        [debugInfo appendFormat:@" : ERROR: %@", error];
+        DSLog(@"%@", debugInfo);
+
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error]); });
         return;
     }
-    DContactRequests *documents = result->ok;
 
     dispatch_async(self.identityQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
+            [debugInfo appendFormat:@" : ERROR: Lost self context"];
+            DSLog(@"%@", debugInfo);
+            if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_MEM_ALLOC]); });
             return;
         }
+        DContactRequests *documents = result->ok;
         [strongSelf handleContactRequestObjects:documents
                                         context:context
                                      completion:^(BOOL success, NSArray<NSError *> *errors) {
-            BOOL hasMore = result->ok->count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+            BOOL hasMore = documents->count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
             if (!hasMore)
                 [self.platformContext performBlockAndWait:^{
                     self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
-            if (completion) {
-                __block NSData * hasMoreStartAfter = nil;
-                if (documents->count > 0) {
-                    DContactRequestKind *last = documents->values[documents->count-1];
-                    if (last->incoming)
-                        hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
-                    else if (last->outgoing)
-                        hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
-                }
-
-//                NSData * hasMoreStartAfter = documents.lastObject[@"$id"];
-                dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
+            [debugInfo appendFormat:@" : OK: %u: %@", success, errors];
+            DSLog(@"%@", debugInfo);
+            __block NSData * hasMoreStartAfter = nil;
+            if (documents->count > 0) {
+                DContactRequestKind *last = documents->values[documents->count-1];
+                if (last->incoming)
+                    hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
+                else if (last->outgoing)
+                    hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
             }
+            dispatch_async(completionQueue, ^{
+                if (success && hasMoreStartAfter)
+                    [self fetchIncomingContactRequestsInContext:context
+                                                     startAfter:hasMoreStartAfter
+                                                 withCompletion:completion
+                                              onCompletionQueue:completionQueue];
+                else if (completion)
+                    completion(success, errors);
+            });
         }
                               onCompletionQueue:self.identityQueue];
     });
-
-//    __weak typeof(self) weakSelf = self;
-//    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIDData
-//                                                                  since:self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
-//                                                             startAfter:startAfter
-//                                                        completionQueue:self.identityQueue
-//                                                                success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-//        //todo chance the since parameter
-//        __strong typeof(weakSelf) strongSelf = weakSelf;
-//        if (!strongSelf) {
-//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
-//            return;
-//        }
-//        
-//        dispatch_async(self.identityQueue, ^{
-//            [strongSelf handleContactRequestObjects:documents
-//                                            context:context
-//                                         completion:^(BOOL success, NSArray<NSError *> *errors) {
-//                BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
-//                if (!hasMore)
-//                    [self.platformContext performBlockAndWait:^{
-//                        self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-//                    }];
-//                if (completion) {
-//                    NSData * hasMoreStartAfter = documents.lastObject[@"$id"];
-//                    dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
-//                }
-//            }
-//                                  onCompletionQueue:self.identityQueue];
-//        });
-//    }
-//                                                                failure:^(NSError *_Nonnull error) {
-//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
-//    }];
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
@@ -215,47 +168,23 @@
 }
 
 - (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context
-                               withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
-                            onCompletionQueue:(dispatch_queue_t)completionQueue {
-    [self fetchOutgoingContactRequestsInContext:context
-                                     startAfter:nil
-                                    retriesLeft:DEFAULT_CONTACT_REQUEST_FETCH_RETRIES
-                                 withCompletion:completion
-                              onCompletionQueue:completionQueue];
-}
-
-- (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context
                                    startAfter:(NSData*_Nullable)startAfter
-                                  retriesLeft:(int32_t)retriesLeft
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue {
-    [self internalFetchOutgoingContactRequestsInContext:context
-                                             startAfter:startAfter
-                                         withCompletion:^(BOOL success, NSData*_Nullable hasMoreStartAfter, NSArray<NSError *> *errors) {
-        if (!success && retriesLeft > 0) {
-            [self fetchOutgoingContactRequestsInContext:context startAfter:startAfter retriesLeft:retriesLeft - 1 withCompletion:completion onCompletionQueue:completionQueue];
-        } else if (success && hasMoreStartAfter) {
-            [self fetchOutgoingContactRequestsInContext:context startAfter:hasMoreStartAfter retriesLeft:DEFAULT_CONTACT_REQUEST_FETCH_RETRIES withCompletion:completion onCompletionQueue:completionQueue];
-        } else if (completion) {
-            completion(success, errors);
-        }
-    }
-                                      onCompletionQueue:completionQueue];
-}
-
-- (void)internalFetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context
-                                           startAfter:(NSData*_Nullable)startAfter
-                                       withCompletion:(void (^)(BOOL success, NSData*_Nullable hasMoreStartAfter, NSArray<NSError *> *errors))completion
-                                    onCompletionQueue:(dispatch_queue_t)completionQueue {
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: fetch outgoing contact requests: (startAfter: %@)", self.logPrefix, startAfter ? startAfter.hexString : @"NULL"];
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_DASHPAY_CONTRACT_IMPROPER_SETUP]); });
+        [debugInfo appendFormat:@" : ERROR: DashPay Contract State: %lu", dashpayContract.contractState];
+        DSLog(@"%@", debugInfo);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_DASHPAY_CONTRACT_IMPROPER_SETUP]); });
         return;
     }
     NSError *error = nil;
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
-        //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
+        [debugInfo appendFormat:@" : ERROR: Active private keys are loaded with error: %@", error];
+        DSLog(@"%@", debugInfo);
+       //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
         return;
     }
     __weak typeof(self) weakSelf = self;
@@ -263,16 +192,25 @@
     BYTES *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
     uint64_t since = self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     u256 *user_id = u256_ctor_u(self.uniqueID);
-    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_outgoing_contact_requests(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_outgoing_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
+        [debugInfo appendFormat:@" : ERROR: %@", error];
+        DSLog(@"%@", debugInfo);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error]); });
         return;
     }
     
     dispatch_async(self.identityQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            [debugInfo appendFormat:@" : ERROR: Lost self context"];
+            DSLog(@"%@", debugInfo);
+            if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_MEM_ALLOC]); });
+            return;
+        }
+
         DContactRequests *documents = result->ok;
         [strongSelf handleContactRequestObjects:documents
                                         context:context
@@ -282,6 +220,8 @@
                 [self.platformContext performBlockAndWait:^{
                     self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
+            [debugInfo appendFormat:@" : OK: %u: %@", success, errors];
+            DSLog(@"%@", debugInfo);
             __block NSData * hasMoreStartAfter = nil;
             if (documents->count > 0) {
                 DContactRequestKind *last = documents->values[documents->count-1];
@@ -290,48 +230,21 @@
                 else if (last->outgoing)
                     hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
             }
-            dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
+            dispatch_async(completionQueue, ^{
+                if (success && hasMoreStartAfter)
+                    [self fetchOutgoingContactRequestsInContext:context
+                                                     startAfter:hasMoreStartAfter
+                                                 withCompletion:completion
+                                              onCompletionQueue:completionQueue];
+                else if (completion)
+                    completion(success, errors);
+            });
         }
                               onCompletionQueue:self.identityQueue];
     });
-
-    
-//    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIDData
-//                                                                  since:self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
-//                                                             startAfter:startAfter
-//                                                        completionQueue:self.identityQueue
-//                                                                success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-//        //todo chance the since parameter
-//        __strong typeof(weakSelf) strongSelf = weakSelf;
-//        if (!strongSelf) {
-//            if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[ERROR_MEM_ALLOC]); });
-//            return;
-//        }
-//        
-//        dispatch_async(self.identityQueue, ^{
-//            [strongSelf handleContactRequestObjects:documents
-//                                            context:context
-//                                         completion:^(BOOL success, NSArray<NSError *> *errors) {
-//                BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
-//                if (!hasMore)
-//                    [self.platformContext performBlockAndWait:^{
-//                        self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-//                    }];
-//                __block NSData * hasMoreStartAfter = success?documents.lastObject[@"$id"]:nil;
-//                dispatch_async(completionQueue, ^{ completion(success, hasMoreStartAfter, errors); });
-//            }
-//                                  onCompletionQueue:self.identityQueue];
-//        });
-//    }
-//                                                                failure:^(NSError *_Nonnull error) {
-//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, @[error]); });
-//    }];
 }
 
 // MARK: Response Processing
-
-
-
 /// Handle an array of contact requests. This method will split contact requests into either incoming contact requests or outgoing contact requests and then call methods for handling them if applicable.
 /// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.
 /// @param context The managed object context in which to process results.
@@ -371,22 +284,6 @@
                 }
             }
         }
-//        for (NSDictionary *rawContact in rawContactRequests) {
-//            DSContactRequest *contactRequest = [DSContactRequest contactRequestFromDictionary:rawContact onIdentity:self];
-//            if (uint256_eq(contactRequest.recipientIdentityUniqueId, self.uniqueID)) {
-//                //we are the recipient, this is an incoming request
-//                DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderIdentityUniqueId)];
-//                if (!friendRequest)
-//                    [incomingNewRequests addObject:contactRequest];
-//            } else if (uint256_eq(contactRequest.senderIdentityUniqueId, self.uniqueID)) {
-//                //we are the sender, this is an outgoing request
-//                BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], [NSData dataWithUInt256:contactRequest.recipientIdentityUniqueId]];
-//                if (isNew) [outgoingNewRequests addObject:contactRequest];
-//            } else {
-//                //we should not have received this
-//                NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
-//            }
-//        }
     }];
     __block BOOL succeeded = YES;
     dispatch_group_t dispatchGroup = dispatch_group_create();
