@@ -238,7 +238,7 @@
         return;
     }
     
-    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(chain.shareCore.runtime, chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(chain.sharedRuntime, chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
 
     dispatch_async(completionQueue, ^{
         if (completion) completion(result);
@@ -300,7 +300,7 @@
         return;
     }
     
-    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
     dispatch_async(self.chain.chainManager.identitiesManager.identityQueue, ^{
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];

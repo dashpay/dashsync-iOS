@@ -27,8 +27,6 @@
 #import "NSManagedObject+Sugar.h"
 #import <CocoaImageHashing/CocoaImageHashing.h>
 
-#define DEFAULT_FETCH_PROFILE_RETRY_COUNT 5
-
 #define ERROR_TRANSITION_NO_UPDATE [NSError errorWithCode:500 localizedDescriptionKey:@"Transition had nothing to update"]
 #define ERROR_DASHPAY_CONTRACT_NOT_REGISTERED [NSError errorWithCode:500 localizedDescriptionKey:@"Dashpay Contract is not yet registered on network"]
 #define ERROR_IDENTITY_NO_LONGER_ACTIVE [NSError errorWithCode:410 localizedDescriptionKey:@"Identity no longer active in wallet"]
@@ -434,7 +432,7 @@
     }
     DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugInfo, error);
@@ -466,33 +464,6 @@
 - (void)fetchProfileInContext:(NSManagedObjectContext *)context
                withCompletion:(void (^)(BOOL success, NSError *error))completion
             onCompletionQueue:(dispatch_queue_t)completionQueue {
-    [self fetchProfileInContext:context
-                     retryCount:DEFAULT_FETCH_PROFILE_RETRY_COUNT
-                 withCompletion:completion
-              onCompletionQueue:completionQueue];
-}
-
-- (void)fetchProfileInContext:(NSManagedObjectContext *)context
-                   retryCount:(uint32_t)retryCount
-               withCompletion:(void (^)(BOOL success, NSError *error))completion
-            onCompletionQueue:(dispatch_queue_t)completionQueue {
-    [self internalFetchProfileInContext:context
-                         withCompletion:^(BOOL success, NSError *error) {
-        if (!success && retryCount > 0) {
-            [self fetchUsernamesInContext:context
-                               retryCount:retryCount - 1
-                           withCompletion:completion
-                        onCompletionQueue:completionQueue];
-        } else if (completion) {
-            completion(success, error);
-        }
-    }
-                      onCompletionQueue:completionQueue];
-}
-
-- (void)internalFetchProfileInContext:(NSManagedObjectContext *)context
-                       withCompletion:(void (^)(BOOL success, NSError *error))completion
-                    onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DASHPAY_CONTRACT_NOT_REGISTERED); });
@@ -508,12 +479,22 @@
                         inContext:context
                       saveContext:YES
                        completion:^(BOOL success, NSError *_Nullable error) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
+            if (!success) {
+                [self fetchUsernamesInContext:context
+                               withCompletion:completion
+                            onCompletionQueue:completionQueue];
+
+            } else if (completion) {
+                dispatch_async(completionQueue, ^{ completion(success, error); });
+            }
+            
+            
         }
                 onCompletionQueue:self.identityQueue];
     }
                                             onCompletionQueue:self.identityQueue];
 }
+
 
 - (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser
                   inContext:(NSManagedObjectContext *)context

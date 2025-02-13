@@ -39,9 +39,16 @@ NS_ASSUME_NONNULL_BEGIN
                                                    context:(NSManagedObjectContext *)context;
 
 - (void)addDashpayUsername:(NSString *)username save:(BOOL)save;
-- (void)addUsername:(NSString *)username inDomain:(NSString *)domain save:(BOOL)save;
-- (void)addUsername:(NSString *)username inDomain:(NSString *)domain status:(DSIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork;
-- (DSIdentityUsernameStatus)statusOfUsername:(NSString *)username inDomain:(NSString *)domain;
+- (void)addUsername:(NSString *)username
+           inDomain:(NSString *)domain
+               save:(BOOL)save;
+- (void)addUsername:(NSString *)username
+           inDomain:(NSString *)domain
+             status:(DSIdentityUsernameStatus)status
+               save:(BOOL)save
+  registerOnNetwork:(BOOL)registerOnNetwork;
+- (DSIdentityUsernameStatus)statusOfUsername:(NSString *)username
+                                    inDomain:(NSString *)domain;
 - (DSIdentityUsernameStatus)statusOfDashpayUsername:(NSString *)username;
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSError *error))completion;
 
@@ -49,11 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSString *> *)usernameFullPathsWithStatus:(DSIdentityUsernameStatus)usernameStatus;
 
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
-                 withCompletion:(void (^)(BOOL success, NSError *error))completion
-              onCompletionQueue:(dispatch_queue_t)completionQueue;
-
-- (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
-                     retryCount:(uint32_t)retryCount
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue;
 

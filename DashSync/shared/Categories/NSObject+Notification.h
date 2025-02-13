@@ -1,6 +1,6 @@
 //  
 //  Created by Vladimir Pirogov
-//  Copyright © 2024 Dash Core Group. All rights reserved.
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,16 +16,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSChainManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSChainManager (Transactions)
+@interface NSObject (Notification)
 
-@property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
-
-- (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
-- (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
+- (void)notify:(NSNotificationName)name
+      userInfo:(NSDictionary *_Nullable)userInfo;
 
 @end
 

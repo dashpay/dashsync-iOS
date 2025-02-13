@@ -48,7 +48,6 @@
 @property (nonatomic, strong) DSMasternodeListDiffService *masternodeListDiffService;
 @property (nonatomic, strong) DSQuorumRotationService *quorumRotationService;
 @property (nonatomic, assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
-
 @property (nonatomic, assign) uint32_t rotatedQuorumsActivationHeight;
 @property (nonatomic, strong) dispatch_group_t processingGroup;
 @property (nonatomic, strong) dispatch_queue_t processingQueue;
@@ -104,20 +103,19 @@
 //}
 //
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-    BOOL has_last_queried_list_at_tip = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_last_queried_qr_masternode_list_at_tip(self.chain.shareCore.cache->obj);
-    DSLog(@"[%@] Masternode List Service emptied retrieval queue: mnldiff: %lu, qrinfo: %lu tip queried? %u ", self.chain.name, [self.masternodeListDiffService retrievalQueueCount], [self.quorumRotationService retrievalQueueCount], has_last_queried_list_at_tip);
-    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-    dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_description(self.chain.shareCore.cache->obj);
-    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+    BOOL has_last_queried_list_at_tip = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_last_queried_qr_masternode_list_at_h(self.chain.shareCore.cache->obj);
     uintptr_t mndiff_count = DMnDiffQueueCount(self.chain.shareCore.cache->obj);
+    uintptr_t qrinfo_count = DQrInfoQueueCount(self.chain.shareCore.cache->obj);
+    DSLog(@"[%@] Masternode List Service emptied retrieval queue: mnldiff: %lu, qrinfo: %lu tip queried? %u ", self.chain.name, mndiff_count, qrinfo_count, has_last_queried_list_at_tip);
+//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+//    dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_description(self.chain.shareCore.cache->obj);
+//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
     if (!mndiff_count) {
-        uintptr_t qrinfo_count = DQrInfoQueueCount(self.chain.shareCore.cache->obj);
-        if (!qrinfo_count) {
+        if (!qrinfo_count)
             [self.store removeOldMasternodeLists];
-        }
-        if (has_last_queried_list_at_tip) {
+//        if (has_last_queried_list_at_tip) {
             [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
-        }
+//        }
     }
 }
 
@@ -308,7 +306,7 @@
 }
 
 - (void)getRecentMasternodeList {
-    DSLog(@"[%@] getRecentMasternodeList at tip", self.chain.name);
+    DSLog(@"[%@] getRecentMasternodeList at tip (qr %u)", self.chain.name, self.chain.isRotatedQuorumsPresented);
     DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
     if (!merkleBlock) {
         // sometimes it happens while rescan
@@ -485,6 +483,9 @@
             switch (result->error->tag) {
                 case dash_spv_masternode_processor_processing_processing_error_ProcessingError_InvalidResult:
                     [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
+                    break;
+                case dash_spv_masternode_processor_processing_processing_error_ProcessingError_LocallyStored:
+                    [self.quorumRotationService removeFromRetrievalQueue:NSDataFromPtr(result->error->locally_stored._1)];
                     break;
                 default:
                     break;

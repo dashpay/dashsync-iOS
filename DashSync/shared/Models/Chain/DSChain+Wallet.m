@@ -24,6 +24,7 @@
 #import "DSTransactionOutput.h"
 #import "DSWallet+Identity.h"
 #import "DSWallet+Protected.h"
+#import "NSObject+Notification.h"
 
 #define CHAIN_WALLETS_KEY @"CHAIN_WALLETS_KEY"
 

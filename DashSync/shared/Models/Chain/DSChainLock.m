@@ -108,31 +108,6 @@
     return _requestID;
 }
 
-- (BOOL)verifySignatureAgainstQuorum:(DLLMQEntry *)quorumEntry {
-    u256 *request_id = u256_ctor_u(self.requestID);
-    u256 *block_hash = u256_ctor_u(self.blockHash);
-    u768 *sig = u768_ctor_u(self.signature);
-    u256 *sign_id = DLLMQEntrySignID(quorumEntry, request_id, block_hash);
-    bool verified = DLLMQEntryVerifySignature(quorumEntry, sign_id, sig);
-    return verified;
-}
-
-//- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
-//    DSQuorumEntry *foundQuorum = nil;
-//    for (DSMasternodeList *masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
-//        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:quorum_type_for_chain_locks(self.chain.chainType)] allValues]) {
-//            BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
-//            if (signatureVerified) {
-//                foundQuorum = quorumEntry;
-//                if (returnMasternodeList) *returnMasternodeList = masternodeList;
-//                break;
-//            }
-//        }
-//        if (foundQuorum) break;
-//    }
-//    return foundQuorum;
-//}
-
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
     DLLMQEntry *llmq_entry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
     if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry)) {
@@ -148,10 +123,10 @@
         }
 
     } else if (llmq_entry) {
-        DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name,
+        DSLog(@"[%@] quorum entry %@ for clsig found but is not yet verified", self.chain.name,
               [NSString stringWithUTF8String:DLLMQEntryHashHex(llmq_entry)]);
     } else {
-        DSLog(@"[%@] no quorum entry found", self.chain.name);
+        DSLog(@"[%@] no quorum entry found for clsig at height: %d with offset %d", self.chain.name, self.height, offset);
     }
     if (self.signatureVerified) {
         self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
@@ -163,18 +138,18 @@
             DLLMQEntryDtor(llmq_entry);
     } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
         //try again a few blocks more in the past
-        DSLog(@"[%@] trying with offset 0", self.chain.name);
+        DSLog(@"[%@] trying for clsig with offset 0", self.chain.name);
         DLLMQEntryDtor(llmq_entry);
         return [self verifySignatureWithQuorumOffset:0];
     } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
         //try again a few blocks more in the future
-        DSLog(@"[%@] trying with offset 16", self.chain.name);
+        DSLog(@"[%@] trying for clsig with offset 16", self.chain.name);
         DLLMQEntryDtor(llmq_entry);
         return [self verifySignatureWithQuorumOffset:16];
     } else if (llmq_entry) {
         DLLMQEntryDtor(llmq_entry);
     }
-    DSLog(@"[%@] returning chain lock signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
+    DSLog(@"[%@] returning clsig verified %d at height %d with offset %d", self.chain.name, self.signatureVerified, self.height, offset);
     return self.signatureVerified;
 }
 

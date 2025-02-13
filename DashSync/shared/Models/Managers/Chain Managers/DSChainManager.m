@@ -50,6 +50,7 @@
 #import "NSDate+Utils.h"
 #import "NSError+Dash.h"
 #import "NSString+Bitcoin.h"
+#import "NSObject+Notification.h"
 #import "RHIntervalTree.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
@@ -105,8 +106,12 @@
     //[self loadHeightTransactionZones];
 
     self.miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
-    DSLog(@"[%@] DSChainManager.initWithChain %@", chain.name, chain);
+    DSLog(@"[%@] initWithChain %@", self.logPrefix, chain);
     return self;
+}
+
+- (NSString *)logPrefix {
+    return [NSString stringWithFormat:@"[%@] [Chain Manager] ", self.chain.name];
 }
 
 - (BOOL)isSynced {
@@ -127,12 +132,12 @@
 
 - (void)startSync {
     [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    DSLog(@"[%@] startSync -> peerManager::connect", self.chain.name);
+    DSLog(@"[%@] startSync -> peerManager::connect", self.logPrefix);
     [self.peerManager connect];
 }
 
 - (void)stopSync {
-    DSLog(@"[%@] stopSync (chain switch)", self.chain.name);
+    DSLog(@"[%@] stopSync (chain switch)", self.logPrefix);
     [self.masternodeManager stopSync];
     [self.peerManager disconnect:DSDisconnectReason_ChainSwitch];
     self.syncState.syncPhase = DSChainSyncPhase_Offline;
@@ -153,7 +158,7 @@
 
     [self removeNonMainnetTrustedPeer];
     [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    DSLog(@"[%@] disconnectedMasternodeListAndBlocksRescan -> peerManager::connect", self.chain.name);
+    DSLog(@"[%@] disconnectedMasternodeListAndBlocksRescan -> peerManager::connect", self.logPrefix);
     [self.peerManager connect];
 }
 
@@ -163,7 +168,7 @@
 
     [self removeNonMainnetTrustedPeer];
     [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    DSLog(@"[%@] disconnectedMasternodeListRescan -> peerManager::connect", self.chain.name);
+    DSLog(@"[%@] disconnectedMasternodeListRescan -> peerManager::connect", self.logPrefix);
     [self.peerManager connect];
 }
 
@@ -173,7 +178,7 @@
 
     [self removeNonMainnetTrustedPeer];
     [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    DSLog(@"[%@] disconnectedSyncBlocksRescan -> peerManager::connect", self.chain.name);
+    DSLog(@"[%@] disconnectedSyncBlocksRescan -> peerManager::connect", self.logPrefix);
     [self.peerManager connect];
 }
 
@@ -268,7 +273,7 @@
 
 - (void)chainFinishedSyncingInitialHeaders:(DSChain *)chain fromPeer:(DSPeer *)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) [self relayedNewItem];
-    
+    DSLog(@"%@ Sync Status: initial headers: OK -> sync masternode lists & quorums", self.logPrefix);
     [self.peerManager chainSyncStopped];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
@@ -278,7 +283,7 @@
 
 - (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) [self relayedNewItem];
-    DSLog(@"[%@] finished syncing", self.chain.name);
+    DSLog(@"%@ Sync Status: transactions and blocks: OK -> sync mempool, sporks & governance", self.logPrefix);
     
     self.syncState.chainSyncStartHeight = 0;
     self.syncState.syncPhase = DSChainSyncPhase_Synced;
@@ -301,13 +306,13 @@
 }
 
 - (void)syncBlockchain {
-    DSLog(@"[%@] syncBlockchain connected peers: %lu phase: %d", self.chain.name, self.peerManager.connectedPeerCount, self.syncPhase);
+    DSLog(@"[%@] syncBlockchain connected peers: %lu phase: %d", self.logPrefix, self.peerManager.connectedPeerCount, self.syncPhase);
     if (self.peerManager.connectedPeerCount == 0) {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
             self.syncState.syncPhase = DSChainSyncPhase_ChainSync;
             [self notifySyncStateChanged];
         }
-        DSLog(@"[%@] syncBlockchain -> peerManager::connect", self.chain.name);
+        DSLog(@"[%@] syncBlockchain -> peerManager::connect", self.logPrefix);
         [self.peerManager connect];
     } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
@@ -319,18 +324,19 @@
 }
 
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
-    DSLog(@"[%@] finished syncing masternode list and quorums, it should start syncing chain", self.chain.name);
     if (chain.isEvolutionEnabled) {
+        DSLog(@"%@ Sync Status: masternode list and quorums: OK -> sync identities", self.logPrefix);
         [self.identitiesManager syncIdentitiesWithCompletion:^(NSArray<DSIdentity *> *_Nullable identities) {
             [self syncBlockchain];
         }];
     } else {
+        DSLog(@"%@ Sync Status: masternode list and quorums: OK -> sync chain", self.logPrefix);
         [self syncBlockchain];
     }
 }
 
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer {
-    DSLog(@"[%@: %@:%d] peer is misbehaving", self.chain.name, peer.host, peer.port);
+    DSLog(@"[%@: %@:%d] peer is misbehaving", self.logPrefix, peer.host, peer.port);
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
 }
 
@@ -340,7 +346,7 @@
 
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
     if (self.chain.lastSyncBlockHeight >= peer.lastBlockHeight && !uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
-        DSLog(@"[%@: %@:%d] calling getblocks", self.chain.name, peer.host, peer.port);
+        DSLog(@"[%@: %@:%d] calling getblocks", self.logPrefix, peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }
@@ -359,7 +365,9 @@
     [self setCount:0 forSyncCountInfo:syncCountInfo inContext:context];
 }
 
-- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo inContext:(NSManagedObjectContext *)context {
+- (void)setCount:(uint32_t)count
+forSyncCountInfo:(DSSyncCountInfo)syncCountInfo
+       inContext:(NSManagedObjectContext *)context {
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             self.chain.totalGovernanceObjectsCount = count;
@@ -391,7 +399,7 @@
             if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 if (count == 0) {
                     //there were no votes
-                    DSLog(@"[%@: %@:%d] no votes on object, going to next object", self.chain.name, peer.host, peer.port);
+                    DSLog(@"[%@: %@:%d] no votes on object, going to next object", self.logPrefix, peer.host, peer.port);
                     peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
                 } else {
@@ -507,9 +515,4 @@
 
 }
 
-- (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:userInfo];
-    });
-}
 @end

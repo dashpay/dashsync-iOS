@@ -1,6 +1,6 @@
 //  
 //  Created by Vladimir Pirogov
-//  Copyright © 2024 Dash Core Group. All rights reserved.
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,17 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import "DSChainManager.h"
+#import "NSObject+Notification.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation NSObject (Notification)
 
-@interface DSChainManager (Transactions)
-
-@property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
-
-- (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
-- (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
+- (void)notify:(NSNotificationName)name
+      userInfo:(NSDictionary *_Nullable)userInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:name
+                                                            object:nil
+                                                          userInfo:userInfo];
+    });
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

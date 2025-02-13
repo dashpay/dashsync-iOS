@@ -63,7 +63,7 @@
 //    }];
 //
     
-    NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumIndexSortDescriptor, quorumHeightSortDescriptor, quorumHashDataSortDescriptor];
+    NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumHeightSortDescriptor, quorumIndexSortDescriptor, quorumHashDataSortDescriptor];
 
     [fetchRequest setSortDescriptors:sortDescriptors];
 

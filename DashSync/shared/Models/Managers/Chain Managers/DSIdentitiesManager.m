@@ -127,7 +127,7 @@
     NSMutableArray *unsyncedIdentities = [NSMutableArray array];
     for (DSIdentity *identity in [self.chain localIdentities]) {
         if (!identity.registrationAssetLockTransaction || (identity.registrationAssetLockTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
-            DSLog(@"%@: unsynced identity (asset lock tx unknown or has unknown height) %@", self.logPrefix, identity.registrationAssetLockTransaction);
+            DSLog(@"%@: unsynced identity (asset lock tx unknown or has unknown height) %@ %@", self.logPrefix, uint256_hex(identity.registrationAssetLockTransactionHash), identity.registrationAssetLockTransaction);
 
             [unsyncedIdentities addObject:identity];
         } else if (self.chain.lastSyncBlockHeight > identity.dashpaySyncronizationBlockHeight) {
@@ -176,9 +176,9 @@
                 [keyIndexes setObject:@(unusedIndex + i) forKey:publicKeyData];
             }
             dispatch_group_enter(keyHashesDispatchGroup);
-            dash_spv_platform_util_RetryStrategy *stragegy = dash_spv_platform_util_RetryStrategy_Linear_ctor(5);
+            DRetry *stragegy = DRetryLinear(5);
             dash_spv_platform_identity_manager_IdentityValidator *options = dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor();
-            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
+            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.shareCore.identitiesManager->obj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
                         
             if (result->error) {
                 NSError *error = [NSError ffi_from_platform_error:result->error];
@@ -211,7 +211,7 @@
             }
             Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
             BOOL success = [wallet registerIdentities:identities verify:YES];
-            DSLog(@"%@: Sync Identities: OK? %u", self.logPrefix, success);
+            DSLog(@"%@: Sync Identities: %@", self.logPrefix, DSLocalizedFormat(success ? @"OK (%lu)" :  @"Retrieved (%lu) but can't register in wallet", nil, identities.count));
             if (success) {
                 [allIdentities addObjectsFromArray:identities];
                 NSManagedObjectContext *platformContext = [NSManagedObjectContext platformContext];
@@ -252,54 +252,7 @@
 
         });
     });
-
 }
-
-//- (void)retrieveAllIdentitiesChainStates:(IdentitiesSuccessCompletionBlock)completion {
-//    dispatch_async(self.identityQueue, ^{
-//        NSArray<DSWallet *> *wallets = self.chain.wallets;
-//        
-//        __block dispatch_group_t dispatchGroup = dispatch_group_create();
-//        __block NSMutableArray *errors = [NSMutableArray array];
-//        __block NSMutableArray *allIdentitiesWithUsernames = [NSMutableArray array];
-//        
-//        for (DSWallet *wallet in wallets) {
-//            for (DSIdentity *identity in [wallet.identities allValues]) {
-//                dispatch_group_enter(dispatchGroup);
-//                if (identity.registrationStatus == DSIdentityRegistrationStatus_Unknown) {
-//                    [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {
-//                        //now lets get dpns info
-//                        if (success && found && ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS))
-//                            [identity fetchUsernamesInContext:[NSManagedObjectContext platformContext]
-//                                               withCompletion:^(BOOL success, NSError *error) {
-//                                if (success) {
-//                                    [allIdentitiesWithUsernames addObject:identity];
-//                                } else if (error) {
-//                                    [errors addObject:error];
-//                                    dispatch_group_leave(dispatchGroup);
-//                                }
-//                                
-//                                dispatch_group_notify(dispatchGroup, self.chain.networkingQueue, ^{
-//                                    if (!errors.count && completion)
-//                                        completion(allIdentitiesWithUsernames);
-//                                });
-//
-//                            }
-//                                            onCompletionQueue:dispatch_get_main_queue()];
-//
-//                    }];
-//                } else if (identity.registrationStatus == DSIdentityRegistrationStatus_Registered && !identity.currentDashpayUsername && ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
-//                    [identity fetchUsernamesInContext:[NSManagedObjectContext platformContext]
-//                                       withCompletion:^(BOOL success, NSError *error) {
-//                        
-//                    }
-//                                    onCompletionQueue:dispatch_get_main_queue()];
-//                }
-//            }
-//        }
-//    });
-//}
-//
 
 - (void)searchIdentityByDashpayUsername:(NSString *)name
                          withCompletion:(IdentityCompletionBlock)completion {
@@ -313,7 +266,7 @@
               withCompletion:(IdentityCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identity by name: %@, domain: %@", self.logPrefix, name, domain];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, (char *)[name UTF8String]);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, (char *)[name UTF8String]);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeDocumentsMapDtor(result);
@@ -357,7 +310,7 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, nil); });
         return;
     }
-    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, dash_spv_platform_util_RetryStrategy_SlowingDown20Percent_ctor(5), dash_spv_platform_document_manager_DocumentValidator_None_ctor(), 2000);
+    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugString, error);
@@ -395,7 +348,7 @@
         user_ids_values[i] = u256_ctor(userID);
     }
     Vec_u8_32 *user_ids = Vec_u8_32_ctor(user_ids_count, user_ids_values);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, user_ids, dashpayContract.raw_contract, dash_spv_platform_util_RetryStrategy_SlowingDown20Percent_ctor(5), dash_spv_platform_document_manager_DocumentValidator_None_ctor(), 2000);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, user_ids, dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugString, error);
@@ -469,7 +422,7 @@
                       withCompletion:(IdentitiesCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By Name Prefix: %@", self.logPrefix, namePrefix];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, (char *)[namePrefix UTF8String]);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, (char *)[namePrefix UTF8String]);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugString, error);
@@ -517,7 +470,7 @@
                                           withCompletion:(IdentitiesCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By DPNS identity id: %@", self.logPrefix, userID.hexString];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor(userID));
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, u256_ctor(userID));
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeDocumentsMapDtor(result);

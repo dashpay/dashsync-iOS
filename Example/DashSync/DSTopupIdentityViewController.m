@@ -8,7 +8,6 @@
 
 #import "DSTopupIdentityViewController.h"
 #import "DSAccountChooserViewController.h"
-//#import "DSIdentityRegistrationTransition.h"
 #import "DSWalletChooserViewController.h"
 #import <DashSync/DashSync.h>
 
@@ -60,6 +59,8 @@
 
 - (void)setFundingAccount:(DSAccount *)fundingAccount {
     _fundingAccount = fundingAccount;
+    self.wallet = self.fundingAccount.wallet;
+    self.usernameLabel.text = self.identity.currentDashpayUsername;
     self.fundingAccountIdentifierLabel.text = [NSString stringWithFormat:@"%@-%u", fundingAccount.wallet.uniqueIDString, fundingAccount.accountNumber];
 }
 

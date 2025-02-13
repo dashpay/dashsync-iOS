@@ -20,7 +20,6 @@
 #import "DSAssetUnlockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSIdentity+Protected.h"
-//#import "DSIdentityRegistrationTransition.h"
 #import "DSInvitation+Protected.h"
 #import "DSChain+Transaction.h"
 #import "DSChain+Wallet.h"

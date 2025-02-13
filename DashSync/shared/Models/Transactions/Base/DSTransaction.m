@@ -650,8 +650,6 @@
     BYTES *tx_input_script = bytes_ctor(inputScript);
     BYTES *tx_sig = dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key->ok, input, tx_input_script);
     NSData *result = [DSKeyManager NSDataFrom:tx_sig];
-//    bytes_dtor(tx_input_script);
-//    slice_dtor(input);
     return result;
 }
 

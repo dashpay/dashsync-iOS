@@ -420,16 +420,6 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue {
-    [self fetchUsernamesInContext:context
-                       retryCount:DEFAULT_FETCH_USERNAMES_RETRY_COUNT
-                   withCompletion:completion
-                onCompletionQueue:completionQueue];
-}
-
-- (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
-                     retryCount:(uint32_t)retryCount
-                 withCompletion:(void (^)(BOOL success, NSError *error))completion
-              onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: fetchUsernamesInContext", self.logPrefix];
     DSLog(@"%@", debugInfo);
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
@@ -439,8 +429,7 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
         return;
     }
     
-    
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dpns_documents_for_identity_with_user_id_using_contract(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(self.uniqueID), contract.raw_contract, dash_spv_platform_util_RetryStrategy_Linear_ctor(retryCount), dash_spv_platform_document_manager_DocumentValidator_None_ctor(), 1000);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dpns_documents_for_identity_with_user_id_using_contract(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(self.uniqueID), contract.raw_contract, DRetryLinear(DEFAULT_FETCH_USERNAMES_RETRY_COUNT), DNotFoundAsAnError(), 1000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeDocumentsMapDtor(result);
@@ -502,12 +491,6 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
     if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
 }
 
-//- (void)internalFetchUsernamesInContext:(NSManagedObjectContext *)context
-//                         withCompletion:(void (^)(BOOL success, NSError *error))completion
-//                      onCompletionQueue:(dispatch_queue_t)completionQueue {
-//
-//}
-
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSError *error))completion {
     [self registerUsernamesAtStage:DSIdentityUsernameStatus_Initial
                          inContext:self.platformContext completion:completion
@@ -548,7 +531,7 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
                 DSUsernameFullPathSaveContext *saveContext = [DSUsernameFullPathSaveContext contextWithUsernames:usernameFullPaths forIdentity:self inContext:context];
                 Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_ save_callback = { .caller = &usernames_save_context_caller };
                 DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
-                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hashes_for_username_full_paths(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), Vec_Vec_u8_ctor(i, salted_domain_hashes_values), u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
+                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hashes_for_username_full_paths(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), Vec_Vec_u8_ctor(i, salted_domain_hashes_values), u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
                 if (result->error) {
                     NSError *error = [NSError ffi_from_platform_error:result->error];
                     DMaybeStateTransitionProofResultDtor(result);
@@ -581,7 +564,7 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
             [debugInfo appendFormat:@" username full paths (PreorderRegistrationPending): %@, saltedDomainHashes: %@", usernameFullPaths, saltedDomainHashes];
             if (saltedDomainHashes.count) {
                 Vec_Vec_u8 *vec_hashes = [NSArray ffi_to_vec_vec_u8:[saltedDomainHashes allValues]];
-                DMaybeDocumentsMap *result = dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager_preorder_salted_domain_hashes_stream(self.chain.shareCore.runtime, self.chain.shareCore.saltedDomainHashes->obj, vec_hashes, dash_spv_platform_util_RetryStrategy_Linear_ctor(4), dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashValidator_None_ctor(), 100);
+                DMaybeDocumentsMap *result = dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashesManager_preorder_salted_domain_hashes_stream(self.chain.sharedRuntime, self.chain.shareCore.saltedDomainHashes->obj, vec_hashes, DRetryLinear(4), dash_spv_platform_document_salted_domain_hashes_SaltedDomainHashValidator_None_ctor(), 100);
                 BOOL allFound = NO;
                 if (result->error) {
                     NSError *error = [NSError ffi_from_platform_error:result->error];
@@ -671,7 +654,7 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
                 Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_ save_callback = { .caller = &usernames_save_context_caller };
                 DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
                 Vec_platform_value_Value *values = Vec_platform_value_Value_ctor(i, values_values);
-                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_username_domains_for_username_full_paths(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), values, u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
+                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_username_domains_for_username_full_paths(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), values, u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
                 if (result->error) {
                     NSError *error = [NSError ffi_from_platform_error:result->error];
                     DMaybeStateTransitionProofResultDtor(result);
@@ -720,7 +703,7 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
                     NSArray<NSString *> *usernames = domains[domain];
                     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
                     Vec_String *usernames_vec = [NSArray ffi_to_vec_of_string:usernames];
-                    DMaybeDocumentsMap *result = dash_spv_platform_document_usernames_UsernamesManager_stream_usernames_with_contract(self.chain.shareCore.runtime, self.chain.shareCore.usernames->obj, (char *)[domain UTF8String], usernames_vec, contract.raw_contract, dash_spv_platform_util_RetryStrategy_Linear_ctor(5), dash_spv_platform_document_usernames_UsernameValidator_None_ctor(), 5 * NSEC_PER_SEC);
+                    DMaybeDocumentsMap *result = dash_spv_platform_document_usernames_UsernamesManager_stream_usernames_with_contract(self.chain.sharedRuntime, self.chain.shareCore.usernames->obj, (char *)[domain UTF8String], usernames_vec, contract.raw_contract, DRetryLinear(5), dash_spv_platform_document_usernames_UsernameValidator_None_ctor(), 5 * NSEC_PER_SEC);
                     
                     if (result->error) {
                         NSError *error = [NSError ffi_from_platform_error:result->error];

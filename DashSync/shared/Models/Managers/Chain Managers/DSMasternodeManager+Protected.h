@@ -36,7 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)wipeMasternodeInfo;
 - (void)getRecentMasternodeList;
 - (void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
-//- (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message;
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message;

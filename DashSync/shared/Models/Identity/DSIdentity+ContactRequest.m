@@ -133,7 +133,7 @@
     uint64_t since = self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     BYTES *start_after = startAfter ? bytes_ctor(startAfter) : nil;
     __weak typeof(self) weakSelf = self;
-    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_incoming_contact_requests(self.chain.shareCore.runtime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_incoming_contact_requests(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
@@ -159,7 +159,7 @@
             if (completion) {
                 __block NSData * hasMoreStartAfter = nil;
                 if (documents->count > 0) {
-                    DContactRequest *last = documents->values[documents->count-1];
+                    DContactRequestKind *last = documents->values[documents->count-1];
                     if (last->incoming)
                         hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
                     else if (last->outgoing)
@@ -263,7 +263,7 @@
     BYTES *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
     uint64_t since = self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     u256 *user_id = u256_ctor_u(self.uniqueID);
-    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_outgoing_contact_requests(self.chain.shareCore.runtime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_outgoing_contact_requests(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
@@ -284,7 +284,7 @@
                 }];
             __block NSData * hasMoreStartAfter = nil;
             if (documents->count > 0) {
-                DContactRequest *last = documents->values[documents->count-1];
+                DContactRequestKind *last = documents->values[documents->count-1];
                 if (last->incoming)
                     hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
                 else if (last->outgoing)
@@ -346,7 +346,7 @@
     __block NSMutableArray *rErrors = [NSMutableArray array];
     [context performBlockAndWait:^{
         for (int i = 0; i < rawContactRequests->count; i++) {
-            DContactRequest *kind = rawContactRequests->values[i];
+            DContactRequestKind *kind = rawContactRequests->values[i];
             switch (kind->tag) {
                 case dash_spv_platform_models_contact_request_ContactRequestKind_Incoming: {
                     NSData *identifier = NSDataFromPtr(kind->incoming->owner_id);
@@ -433,7 +433,7 @@
         dispatch_group_t dispatchGroup = dispatch_group_create();
         
         for (NSValue *contactRequest in incomingRequests) {
-            dash_spv_platform_models_contact_request_ContactRequest *request = contactRequest.pointerValue;
+            DContactRequest *request = contactRequest.pointerValue;
             NSData *senderIdentityUniqueId = NSDataFromPtr(request->owner_id);
             DSBlockchainIdentityEntity *externalIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", senderIdentityUniqueId];
             if (!externalIdentityEntity) {
@@ -583,7 +583,7 @@
         __block BOOL succeeded = YES;
         dispatch_group_t dispatchGroup = dispatch_group_create();
         for (NSValue *contactRequest in outgoingRequests) {
-            dash_spv_platform_models_contact_request_ContactRequest *request = contactRequest.pointerValue;
+            DContactRequest *request = contactRequest.pointerValue;
             
             DSBlockchainIdentityEntity *recipientIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", NSDataFromPtr(request->recipient)];
             if (!recipientIdentityEntity) {

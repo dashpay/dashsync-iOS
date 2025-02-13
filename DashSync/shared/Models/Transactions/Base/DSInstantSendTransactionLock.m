@@ -232,30 +232,27 @@
                 DSLog(@"[%@] IS signature verified with offset %d", self.chain.name, offset);
             }
         } else {
-            DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, [DSKeyManager NSStringFrom:DLLMQEntryHashHex(llmq_entry)]);
+            DSLog(@"[%@] quorum entry %@ for IS lock found but is not yet verified", self.chain.name, [DSKeyManager NSStringFrom:DLLMQEntryHashHex(llmq_entry)]);
         }
     } else {
-        DSLog(@"[%@] no quorum entry found", self.chain.name);
+        DSLog(@"[%@] no quorum entry found for IS lock", self.chain.name);
     }
     if (self.signatureVerified) {
         self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
     } else if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
         //try again a few blocks more in the past
-        DSLog(@"[%@] trying with offset 0", self.chain.name);
+        DSLog(@"[%@] trying for IS lock with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
     } else if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
         //try again a few blocks more in the future
-        DSLog(@"[%@] trying with offset 16", self.chain.name);
+        DSLog(@"[%@] trying for IS lock with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];
     }
-    DSLog(@"[%@] returning signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
+    DSLog(@"[%@] returning IS lock signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
     return self.signatureVerified;
 }
 
 - (BOOL)verifySignature {
-    // TODO: Need to implement
-    return TRUE;
-    //
     return [self verifySignatureWithQuorumOffset:8];
 }
 

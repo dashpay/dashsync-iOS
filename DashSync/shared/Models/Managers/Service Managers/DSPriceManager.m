@@ -292,7 +292,7 @@
             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
             NSNumber *lastPrice = strongSelf.pricesByCode[strongSelf.localCurrencyCode].price;
             NSInteger lastRetrievalTime = [defaults integerForKey:LAST_RATES_RETRIEVAL_TIME];
-            NSInteger now = [[NSDate date] timeIntervalSince1970];
+            NSInteger now = [NSDate timeIntervalSince1970];
             
             [defaults setObject:plainPricesByCode forKey:PRICESBYCODE_KEY];
             [defaults setInteger:now forKey:LAST_RATES_RETRIEVAL_TIME];

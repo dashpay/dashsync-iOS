@@ -32,7 +32,7 @@
         int16_t llmq_type = quorumEntity.llmqType;
         int32_t llmq_index = quorumEntity.quorumIndex;
         BOOL verified = quorumEntity.verified;
-        dash_spv_crypto_llmq_entry_LLMQEntryVerificationStatus *status = verified ? dash_spv_crypto_llmq_entry_LLMQEntryVerificationStatus_Verified_ctor() : dash_spv_crypto_llmq_entry_LLMQEntryVerificationStatus_Unknown_ctor();
+        dash_spv_crypto_llmq_validation_status_LLMQEntryValidationStatus *status = verified ? dash_spv_crypto_llmq_validation_status_LLMQEntryValidationStatus_Verified_ctor() : dash_spv_crypto_llmq_validation_status_LLMQEntryValidationStatus_Unknown_ctor();
         u256 *llmq_hash = u256_ctor(quorumEntity.quorumHashData);
         BYTES *signers = bytes_ctor(quorumEntity.signersBitset);
         int32_t signers_count = quorumEntity.signersCount;

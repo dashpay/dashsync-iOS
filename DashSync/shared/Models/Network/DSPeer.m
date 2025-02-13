@@ -1151,42 +1151,32 @@
     if (instantSendLockHashes.count > 0) {
         for (NSValue *hash in instantSendLockHashes) {
             UInt256 h;
-
             if (![self.knownInstantSendLockHashes containsObject:hash]) continue;
             [hash getValue:&h];
         }
-
         [instantSendLockHashes minusOrderedSet:self.knownInstantSendLockHashes];
         [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockHashes:instantSendLockHashes];
         }];
-
         [self.knownInstantSendLockHashes unionOrderedSet:instantSendLockHashes];
     }
     
     if (instantSendLockDHashes.count > 0) {
         for (NSValue *hash in instantSendLockDHashes) {
             UInt256 h;
-
             if (![self.knownInstantSendLockDHashes containsObject:hash]) continue;
             [hash getValue:&h];
         }
-
         [instantSendLockDHashes minusOrderedSet:self.knownInstantSendLockDHashes];
-
         [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockDHashes:instantSendLockDHashes];
         }];
-
         [self.knownInstantSendLockDHashes unionOrderedSet:instantSendLockDHashes];
     }
-
-
 
     if (chainLockHashes.count > 0) {
         for (NSValue *hash in chainLockHashes) {
             UInt256 h;
-
             if (![self.knownChainLockHashes containsObject:hash]) continue;
             [hash getValue:&h];
         }
@@ -1195,7 +1185,6 @@
         [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasChainLockHashes:chainLockHashes];
         }];
-
         [self.knownChainLockHashes unionOrderedSet:chainLockHashes];
     }
 

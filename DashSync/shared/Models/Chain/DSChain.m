@@ -60,6 +60,7 @@
 #import "DSTransactionInput.h"
 #import "DSTransactionOutput.h"
 #import "NSMutableData+Dash.h"
+#import "NSObject+Notification.h"
 #import "NSString+Bitcoin.h"
 
 #define FEE_PER_BYTE_KEY @"FEE_PER_BYTE"
@@ -197,6 +198,10 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     self.minimumDifficultyBlocks = minimumDifficultyBlocks;
     self.transient = isTransient;
     return self;
+}
+
+- (Runtime *)sharedRuntime {
+    return self.shareCore.runtime;
 }
 
 + (DSChain *)mainnet {
@@ -1412,13 +1417,6 @@ static dispatch_once_t devnetToken = 0;
     return TRUE;
 }
 
-- (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:userInfo];
-    });
-}
-
-
 // MARK: Terminal Blocks
 
 - (NSMutableDictionary *)mTerminalBlocks {
@@ -1526,7 +1524,7 @@ static dispatch_once_t devnetToken = 0;
     [terminalBlock setChainLockedWithChainLock:chainLock];
     if ((terminalBlock.chainLocked) && (![self recentTerminalBlockForBlockHash:terminalBlock.blockHash])) {
         //the newly chain locked block is not in the main chain, we will need to reorg to it
-        DSLog(@"[%@] Added a chain lock for block %@ that was not on the main terminal chain ending in %@, reorginizing", self.name,  terminalBlock, self.lastSyncBlock);
+        DSLog(@"[%@] Added a chain lock for block %@ that was not on the main terminal chain ending in %@, reorginizing", self.name, terminalBlock, self.lastSyncBlock);
         //clb chain locked block
         //tbmc terminal block
         DSBlock *clb = terminalBlock, *tbmc = self.lastTerminalBlock;
@@ -2136,7 +2134,7 @@ static dispatch_once_t devnetToken = 0;
         if ([[DSOptionsManager sharedInstance] keepHeaders]) {
             //only remove orphan chains
             NSArray<DSMerkleBlockEntity *> *recentOrphans = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && (height > %u) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], startHeight, blocks.allKeys];
-            if ([recentOrphans count]) DSLog(@"%lu recent orphans will be removed from disk", (unsigned long)[recentOrphans count]);
+            if ([recentOrphans count]) DSLog(@"[%@] %lu recent orphans will be removed from disk", self.name, (unsigned long)[recentOrphans count]);
             [DSMerkleBlockEntity deleteObjects:recentOrphans inContext:self.chainManagedObjectContext];
         } else {
             //remember to not delete blocks needed for quorums

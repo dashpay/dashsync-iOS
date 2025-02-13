@@ -245,7 +245,7 @@
     Fn_ARGS_std_os_raw_c_void_bool_RTRN_ dequeue_masternode_list = {
         .caller = &dequeue_masternode_list_caller,
     };
-    Fn_ARGS_std_os_raw_c_void_dash_spv_masternode_processor_models_sync_state_SyncState_RTRN_ notify_sync_state = {
+    Fn_ARGS_std_os_raw_c_void_dash_spv_masternode_processor_models_sync_state_CacheState_RTRN_ notify_sync_state = {
         .caller = &notify_sync_state_caller,
     };
     
@@ -545,6 +545,8 @@ void notify_sync_state_caller(const void *context, DMNSyncState *state) {
             case DMNSyncStateStoreChanged:
                 DSLog(@"[%@] Masternode list store updated: %lu/%u", core.chain.name, state->store_changed.count, state->store_changed.last_block_height);
                 break;
+            case DMNSyncStateStubCount:
+                DSLog(@"[%@] Masternode list DB updated: %lu", core.chain.name, state->stub_count.count);
             default:
                 break;
         }

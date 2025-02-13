@@ -75,6 +75,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The shared core is a container for all stuff related to rust dash-shared-core.  */
 @property (nonatomic, nullable) DSDashSharedCore *shareCore;
 
+/*! @brief Tokio Runtime Reference  */
+@property (nonatomic, nullable) Runtime *sharedRuntime;
+
 /*! @brief The chain entity associated in Core Data in the required context.  */
 - (DSChainEntity *)chainEntityInContext:(NSManagedObjectContext *)context;
 

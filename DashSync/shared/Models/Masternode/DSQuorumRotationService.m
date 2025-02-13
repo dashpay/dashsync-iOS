@@ -48,26 +48,13 @@
 - (NSUInteger)retrievalQueueMaxAmount {
     return DQrInfoQueueMaxAmount(self.chain.shareCore.cache->obj);
 }
-- (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
-    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_latest_block_in_qr_info_retrieval_queue_with_hash(self.chain.shareCore.cache->obj, u256_ctor_u(blockHash));
-}
+
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
     DQrInfoQueueRemove(self.chain.shareCore.processor->obj, u256_ctor(masternodeBlockHashData));
 }
 - (void)cleanListsRetrievalQueue {
     DQrInfoQueueClean(self.chain.shareCore.processor->obj);
 }
-//- (void)getRecentMasternodeList {
-//    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
-//    if (!merkleBlock) {
-//        // sometimes it happens while rescan
-//        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
-//        return;
-//    }
-//    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
-//    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
-//    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_qr_info(self.chain.shareCore.processor->obj, block);
-//}
 
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)

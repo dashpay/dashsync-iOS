@@ -113,11 +113,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)saveBlockLocators;
 - (void)saveTerminalBlocks;
 
-// MARK: Notifications
-
-- (void)notify:(NSNotificationName)name userInfo:(NSDictionary *_Nullable)userInfo;
-
-
 - (void)resetLastSyncBlock;
 @end
 

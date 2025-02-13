@@ -24,6 +24,7 @@ typedef NS_ENUM(uint16_t, DSSyncStateKind) {
     DSSyncStateKind_Chain = 0,
     DSSyncStateKind_Headers = 1,
     DSSyncStateKind_Masternodes = 2,
+//    DSSyncStateKind_Platofrm = 3,
 };
 
 
@@ -32,10 +33,20 @@ typedef NS_ENUM(uint16_t, DSSyncStateKind) {
 @property (nonatomic, assign) uint32_t retrievalQueueCount;
 @property (nonatomic, assign) uint32_t retrievalQueueMaxAmount;
 @property (nonatomic, assign) double storedCount;
+@property (nonatomic, assign) double stubCount;
 @property (nonatomic, assign) uint32_t lastBlockHeight;
 
 - (void)updateWithSyncState:(DMNSyncState *)state;
 @end
+
+//@interface DSPlatformSyncState : NSObject <NSCopying>
+//
+//@property (nonatomic, assign) uint32_t retrievalQueueCount;
+//@property (nonatomic, assign) uint32_t retrievalQueueMaxAmount;
+//@property (nonatomic, assign) double storedCount;
+//@property (nonatomic, assign) double stubCount;
+//
+//@end
 
 
 @interface DSSyncState : NSObject <NSCopying>

@@ -64,13 +64,11 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 @property (nonatomic, readonly) DSSporkManager *sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager *masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager *governanceSyncManager;
-//@property (nonatomic, readonly) DSDAPIClient *DAPIClient;
 @property (nonatomic, readonly) DSIdentitiesManager *identitiesManager;
 @property (nonatomic, readonly) DSTransactionManager *transactionManager;
 @property (nonatomic, readonly) DSPeerManager *peerManager;
 @property (nonatomic, readonly) DSKeyManager *keyManager;
 @property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
 @property (nonatomic, readonly, getter = isSynced) BOOL synced;
 @property (nonatomic, readonly) double combinedSyncProgress;
 

@@ -26,6 +26,7 @@
 #import "DSPeerManager+Protected.h"
 #import "DSTransactionManager+Protected.h"
 #import "NSData+Dash.h"
+#import "NSObject+Notification.h"
 
 @interface DSMasternodeListService ()
 // List<UInt256> Hashes of blocks for which masternode lists are need to be requested
@@ -43,7 +44,6 @@
     if (!(self = [super init])) return nil;
     _chain = chain;
     _store = store;
-    //    _retrievalQueue = [NSMutableOrderedSet orderedSet];
     _requestsInRetrieval = [NSMutableSet set];
     _timedOutAttempt = 0;
     _timeOutObserverTry = 0;
@@ -117,66 +117,6 @@
     [self cancelTimeOutObserver];
     [self cleanAllLists];
 }
-
-//- (void)getRecentMasternodeList {
-//    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
-//    if (!merkleBlock) {
-//        // sometimes it happens while rescan
-//        DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
-//        return;
-//    }
-//    u256 *block_hash = u256_ctor_u(merkleBlock.blockHash);
-//    DBlock *block = DBlockCtor(merkleBlock.height, block_hash);
-//    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_get_recent_mn_list(self.chain.shareCore.processor->obj, block);
-//}
-
-//- (void)setCurrentMasternodeList:(Result_ok_dash_spv_masternode_processor_processing_mn_listdiff_result_MNListDiffResult_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError *_Nullable)currentMasternodeList {
-//    if (self.chain.isEvolutionEnabled) {
-//        if (!_currentMasternodeList) {
-//
-//
-//            for (DSSimplifiedMasternodeEntry *masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
-//                if (masternodeEntry.isValid) {
-//                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
-//                }
-//            }
-//        } else {
-//            NSDictionary *updates = [currentMasternodeList listOfChangedNodesComparedTo:_currentMasternodeList];
-//            NSArray *added = updates[MASTERNODE_LIST_ADDED_NODES];
-//            NSArray *removed = updates[MASTERNODE_LIST_REMOVED_NODES];
-//            NSArray *addedValidity = updates[MASTERNODE_LIST_ADDED_VALIDITY];
-//            NSArray *removedValidity = updates[MASTERNODE_LIST_REMOVED_VALIDITY];
-//            for (DSSimplifiedMasternodeEntry *masternodeEntry in added) {
-//                if (masternodeEntry.isValid) {
-//                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
-//                }
-//            }
-//            for (DSSimplifiedMasternodeEntry *masternodeEntry in addedValidity) {
-//                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
-//            }
-//            for (DSSimplifiedMasternodeEntry *masternodeEntry in removed) {
-//                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
-//            }
-//            for (DSSimplifiedMasternodeEntry *masternodeEntry in removedValidity) {
-//                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
-//            }
-//        }
-//    }
-//    bool changed = _currentMasternodeList != currentMasternodeList;
-//    _currentMasternodeList = currentMasternodeList;
-//    if (changed) {
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? [NSValue valueWithPointer:self.currentMasternodeList] : [NSNull null]}];
-//        });
-//    }
-//}
-
-//- (void)populateRetrievalQueueWithBlockHashes:(NSArray *)blockHashes processor:(MasternodeProcessor *)processor {
-//    @synchronized(self.retrievalQueue) {
-//        [self addToRetrievalQueueArray:blockHashes];
-//    }
-//    [self dequeueMasternodeListRequest];
-//}
 
 - (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer {
     
@@ -277,10 +217,6 @@
         [self.requestsInRetrieval removeObject:matchedRequest];
     }
     return YES;
-}
-
-- (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
-    return dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_latest_block_in_mn_list_retrieval_queue_with_hash(self.chain.shareCore.cache->obj, u256_ctor_u(blockHash));
 }
 
 - (void)disconnectFromDownloadPeer {

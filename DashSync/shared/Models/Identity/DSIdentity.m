@@ -35,10 +35,12 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSWallet+Identity.h"
 #import "NSData+Encryption.h"
+#import "NSDate+Utils.h"
 #import "NSError+Dash.h"
 #import "NSError+Platform.h"
 #import "NSIndexPath+Dash.h"
 #import "NSManagedObject+Sugar.h"
+#import "NSObject+Notification.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_FETCH_IDENTITY_RETRY_COUNT 5
@@ -122,7 +124,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 
 - (void)saveProfileTimestamp {
     [self.platformContext performBlockAndWait:^{
-        self.lastCheckedProfileTimestamp = [[NSDate date] timeIntervalSince1970];
+        self.lastCheckedProfileTimestamp = [NSDate timeIntervalSince1970];
         //[self saveInContext:self.platformContext];
     }];
 }
@@ -836,8 +838,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     NSMutableArray *activeKeys = [NSMutableArray array];
     for (NSNumber *index in self.keyInfoDictionaries) {
         NSDictionary *keyDictionary = self.keyInfoDictionaries[index];
-        DKeyKind *type = [keyDictionary[@(DSIdentityKeyDictionary_KeyType)] pointerValue];
-        if (dash_spv_crypto_keys_key_KeyKind_index(type) == dash_spv_crypto_keys_key_KeyKind_index(keyType))
+        if (dash_spv_crypto_keys_key_KeyKind_equal_to_kind(keyType, [keyDictionary[@(DSIdentityKeyDictionary_KeyType)] pointerValue]))
             [activeKeys addObject:keyDictionary[@(DSIdentityKeyDictionary_Key)]];
     }
     return [activeKeys copy];
@@ -849,22 +850,18 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     for (uint32_t index = 0; index < self.keyInfoDictionaries.count; index++) {
         DKeyKind *keyType = [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSIdentityKeyDictionary_KeyType)] pointerValue];
         DMaybeOpaqueKey *key = [self keyAtIndex:index];
-        NSLog(@"verifyKeysForWallet.1: %u: %p %u", dash_spv_crypto_keys_key_KeyKind_index(keyType), key->ok, key->ok->tag);
         if (!key || !key->ok) {
             self.wallet = originalWallet;
             return FALSE;
         }
-        
-        if (dash_spv_crypto_keys_key_KeyKind_index(keyType) != (int16_t) key->ok->tag) {
+        BOOL hasSameKind = dash_spv_crypto_keys_key_OpaqueKey_has_kind(key->ok, keyType);
+        if (!hasSameKind) {
             self.wallet = originalWallet;
             return FALSE;
         }
         DMaybeOpaqueKey *derivedKey = [self publicKeyAtIndex:index ofType:keyType];
         if (!derivedKey || !derivedKey->ok) return NO;
         BOOL isEqual = [DSKeyManager keysPublicKeyDataIsEqual:derivedKey->ok key2:key->ok];
-        BYTES *derived = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(derivedKey->ok);
-        BYTES *obtained = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(key->ok);
-        DSLog(@"equal ? %@ == %@", [DSKeyManager NSDataFrom:derived].hexString, [DSKeyManager NSDataFrom:obtained].hexString);
         DMaybeOpaqueKeyDtor(derivedKey);
         if (!isEqual) {
             self.wallet = originalWallet;
@@ -1021,7 +1018,12 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         ofType:(DKeyKind *)type
     withStatus:(DSIdentityKeyStatus)status
           save:(BOOL)save {
-    [self addKey:key atIndex:index ofType:type withStatus:status save:save inContext:self.platformContext];
+    [self addKey:key
+         atIndex:index
+          ofType:type
+      withStatus:status
+            save:save
+       inContext:self.platformContext];
 }
 
 - (void)addKey:(DMaybeOpaqueKey *)key
@@ -1042,8 +1044,9 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         if (self.keyInfoDictionaries[@(index)]) {
             NSDictionary *keyDictionary = self.keyInfoDictionaries[@(index)];
             NSValue *keyToCheckInDictionary = keyDictionary[@(DSIdentityKeyDictionary_Key)];
+            DMaybeOpaqueKey *maybe_opaque_key = keyToCheckInDictionary.pointerValue;
             DSIdentityKeyStatus keyToCheckInDictionaryStatus = [keyDictionary[@(DSIdentityKeyDictionary_KeyStatus)] unsignedIntegerValue];
-            if ([DSKeyManager keysPublicKeyDataIsEqual:keyToCheckInDictionary.pointerValue key2:key->ok]) {
+            if (maybe_opaque_key->ok && [DSKeyManager keysPublicKeyDataIsEqual:maybe_opaque_key->ok key2:key->ok]) {
                 if (save && status != keyToCheckInDictionaryStatus)
                     [self updateStatus:status forKeyWithIndexID:index inContext:context];
             } else {
@@ -1086,7 +1089,8 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         if (self.keyInfoDictionaries[@(index)]) {
             NSDictionary *keyDictionary = self.keyInfoDictionaries[@(index)];
             NSValue *keyToCheckInDictionaryValue = keyDictionary[@(DSIdentityKeyDictionary_Key)];
-            if ([DSKeyManager keysPublicKeyDataIsEqual:keyToCheckInDictionaryValue.pointerValue key2:key->ok]) {
+            DMaybeOpaqueKey *maybe_opaque_key = keyToCheckInDictionaryValue.pointerValue;
+            if (maybe_opaque_key->ok && [DSKeyManager keysPublicKeyDataIsEqual:maybe_opaque_key->ok key2:key->ok]) {
                 if (save) {
                     [self updateStatus:status forKeyAtPath:indexPath fromDerivationPath:derivationPath inContext:context];
                 }
@@ -1212,7 +1216,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     uint32_t index = [self firstIndexOfKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() createIfNotPresent:YES saveKey:!self.wallet.isTransient];
     DMaybeOpaqueKey *publicKey = [self keyAtIndex:index];
     NSAssert((index & ~(BIP32_HARD)) == 0, @"The index should be 0 here");
-    NSAssert(self.registrationAssetLockTransaction, @"The registration credit funding transaction must be known");
+    NSAssert(self.registrationAssetLockTransaction, @"The registration credit funding transaction must be known %@", uint256_hex(self.registrationAssetLockTransactionHash));
     if (!self.registrationAssetLockTransaction.instantSendLockAwaitingProcessing && self.registrationAssetLockTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
         if (completion) completion(nil, ERROR_FUNDING_TX_NOT_MINED);
         return;
@@ -1279,7 +1283,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         proof = dash_spv_platform_transition_chain_proof(self.registrationAssetLockTransaction.blockHeight, txid, vout);
     }
     
-    DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_identity_register_using_public_key_at_index(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, public_key, index, proof, self.internalRegistrationFundingPrivateKey->ok);
+    DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_identity_register_using_public_key_at_index(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, public_key, index, proof, self.internalRegistrationFundingPrivateKey->ok);
     if (!state_transition_result) {
         completion(NO, ERROR_REG_TRANSITION);
         return;
@@ -1291,7 +1295,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     }
     [self processStateTransitionResult:state_transition_result];
     
-    DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_with_delay(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), dash_spv_platform_util_RetryStrategy_Linear_ctor(5), dash_spv_platform_identity_manager_IdentityValidator_None_ctor(), 4);
+    DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_with_delay(self.chain.sharedRuntime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), DRetryLinear(5), dash_spv_platform_identity_manager_IdentityValidator_None_ctor(), 4);
     
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
@@ -1312,7 +1316,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: Fetch Identity State", self.logPrefix];
     DSLog(@"%@", debugString);
     dispatch_async(self.identityQueue, ^{
-        DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_id_bytes(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), dash_spv_platform_util_RetryStrategy_SlowingDown50Percent_ctor(DEFAULT_FETCH_IDENTITY_RETRY_COUNT), self.isLocal ? dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor() : dash_spv_platform_identity_manager_IdentityValidator_None_ctor());
+        DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_id_bytes(self.chain.sharedRuntime, self.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData), DRetryDown50(DEFAULT_FETCH_IDENTITY_RETRY_COUNT), self.isLocal ? dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor() : dash_spv_platform_identity_manager_IdentityValidator_None_ctor());
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];
             DSLog(@"%@: ERROR: %@", debugString, error);
@@ -1391,7 +1395,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                              inContext:(NSManagedObjectContext *)context
                         withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                      onCompletionQueue:(dispatch_queue_t)completionQueue {
-    DSLog(@"%@: Fetch L3 State (%lu)", self.logPrefix, queryStep);
+    DSLog(@"%@: Fetch L3 State (%@)", self.logPrefix, DSIdentityQueryStepsDescription(queryStep));
     if (!(queryStep & DSIdentityQueryStep_Identity) && (!self.activeKeyCount)) {
         // We need to fetch keys if we want to query other information
         if (completion) completion(DSIdentityQueryStep_BadQuery, @[ERROR_ATTEMPT_QUERY_WITHOUT_KEYS]);
@@ -1459,11 +1463,11 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     if (completion) {
         dispatch_group_notify(dispatchGroup, self.identityQueue, ^{
 #if DEBUG
-            DSLogPrivate(@"%@: Completed fetching of identity information for user %@ (query %lu - failures %lu)", self.logPrefix,
-                         self.currentDashpayUsername ? self.currentDashpayUsername : self.uniqueIdString, (unsigned long)queryStep, failureStep);
+            DSLogPrivate(@"%@: Completed fetching of identity information for user %@ (query %@ - failures %@)", self.logPrefix,
+                         self.currentDashpayUsername ? self.currentDashpayUsername : self.uniqueIdString, DSIdentityQueryStepsDescription(queryStep), DSIdentityQueryStepsDescription(failureStep));
 #else
-            DSLog(@"%@: Completed fetching of identity information for user %@ (query %lu - failures %lu)",
-                  @"<REDACTED>", self.logPrefix, (unsigned long)queryStep, failureStep);
+            DSLog(@"%@: Completed fetching of identity information for user %@ (query %@ - failures %@)",
+                  @"<REDACTED>", self.logPrefix, DSIdentityQueryStepsDescription(queryStep), DSIdentityQueryStepsDescription(failureStep));
 #endif /* DEBUG */
             if (!(failureStep & DSIdentityQueryStep_ContactRequests)) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -1488,7 +1492,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                            inContext:(NSManagedObjectContext *)context
                       withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                    onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNetworkStateInformation (%lu)", self.logPrefix, querySteps];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNetworkStateInformation (%@)", self.logPrefix, DSIdentityQueryStepsDescription(querySteps)];
     DSLog(@"%@", debugString);
     if (querySteps & DSIdentityQueryStep_Identity) {
         [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {
@@ -1533,7 +1537,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                     stepsNeeded |= DSIdentityQueryStep_Identity;
                 if (![self.dashpayUsernameFullPaths count] && self.lastCheckedUsernamesTimestamp == 0 && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS)
                     stepsNeeded |= DSIdentityQueryStep_Username;
-                if ((self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+                if ((self.lastCheckedProfileTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                     stepsNeeded |= DSIdentityQueryStep_Profile;
                 if (stepsNeeded != DSIdentityQueryStep_None) {
                     [self fetchNetworkStateInformation:stepsNeeded & querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
@@ -1550,11 +1554,11 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
             [context performBlockAndWait:^{
                 createdAt = [[self matchingDashpayUserInContext:context] createdAt];
             }];
-            if (!createdAt && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+            if (!createdAt && (self.lastCheckedProfileTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                 stepsNeeded |= DSIdentityQueryStep_Profile;
-            if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+            if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                 stepsNeeded |= DSIdentityQueryStep_IncomingContactRequests;
-            if (self.isLocal && (self.lastCheckedOutgoingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+            if (self.isLocal && (self.lastCheckedOutgoingContactsTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                 stepsNeeded |= DSIdentityQueryStep_OutgoingContactRequests;
             if (stepsNeeded != DSIdentityQueryStep_None) {
                 [self fetchNetworkStateInformation:stepsNeeded & querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
@@ -1568,7 +1572,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
 - (void)fetchNeededNetworkStateInformationInContext:(NSManagedObjectContext *)context
                                      withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNeededNetworkStateInformationInContext ", self.logPrefix];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNeededNetworkStateInformationInContext (local: %u, active keys: %u) ", self.logPrefix, self.isLocal, self.activeKeyCount];
     DSLog(@"%@", debugString);
     dispatch_async(self.identityQueue, ^{
         if (!self.activeKeyCount) {
@@ -1580,10 +1584,13 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                     stepsNeeded |= DSIdentityQueryStep_Identity;
                 if (![self.dashpayUsernameFullPaths count] && self.lastCheckedUsernamesTimestamp == 0 && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS)
                     stepsNeeded |= DSIdentityQueryStep_Username;
-                if ((self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+                if ((self.lastCheckedProfileTimestamp < [NSDate timeIntervalSince1970Minus:HOUR_TIME_INTERVAL]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                     stepsNeeded |= DSIdentityQueryStep_Profile;
                 if (stepsNeeded != DSIdentityQueryStep_None) {
-                    [self fetchNetworkStateInformation:stepsNeeded inContext:context withCompletion:completion onCompletionQueue:completionQueue];
+                    [self fetchNetworkStateInformation:stepsNeeded
+                                             inContext:context
+                                        withCompletion:completion
+                                     onCompletionQueue:completionQueue];
                 } else if (completion) {
                     completion(DSIdentityQueryStep_None, @[]);
                 }
@@ -1592,11 +1599,11 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
             DSIdentityQueryStep stepsNeeded = DSIdentityQueryStep_None;
             if (![self.dashpayUsernameFullPaths count] && self.lastCheckedUsernamesTimestamp == 0 && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS)
                 stepsNeeded |= DSIdentityQueryStep_Username;
-            if (![[self matchingDashpayUserInContext:context] createdAt] && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+            if (![[self matchingDashpayUserInContext:context] createdAt] && (self.lastCheckedProfileTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                 stepsNeeded |= DSIdentityQueryStep_Profile;
-            if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+            if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                 stepsNeeded |= DSIdentityQueryStep_IncomingContactRequests;
-            if (self.isLocal && (self.lastCheckedOutgoingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
+            if (self.isLocal && (self.lastCheckedOutgoingContactsTimestamp < [NSDate timeIntervalSince1970MinusHour]) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay)
                 stepsNeeded |= DSIdentityQueryStep_OutgoingContactRequests;
             if (stepsNeeded != DSIdentityQueryStep_None) {
                 [self fetchNetworkStateInformation:stepsNeeded
@@ -1722,13 +1729,9 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                 [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
             }
             DMaybeOpaqueKey *privateKey = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-//            dash_spv_platform_PlatformSDK_data_contract_create(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, <#struct Arr_u8_32 *owner_id#>, <#uint64_t nonce#>, struct platform_value_Value *documents, <#struct platform_value_Value *config#>, <#struct platform_value_Value *definitions#>, <#struct dash_spv_crypto_keys_key_OpaqueKey *private_key#>)
             
-            DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_data_contract_create2(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, data_contracts_SystemDataContract_DPNS_ctor(), u256_ctor_u(self.uniqueID), 0, privateKey->ok);
+            DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_data_contract_create2(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, data_contracts_SystemDataContract_DPNS_ctor(), u256_ctor_u(self.uniqueID), 0, privateKey->ok);
 
-            
-//            DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_data_contract_update(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, 0, privateKey->ok);
-            
             if (state_transition_result->error) {
                 DSLog(@"%@: ERROR: %@", debugString, [NSError ffi_from_platform_error:state_transition_result->error]);
                 DMaybeStateTransitionProofResultDtor(state_transition_result);
@@ -1742,7 +1745,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
             }
             [contract saveAndWaitInContext:context];
             
-            DMaybeContract *monitor_result = dash_spv_platform_contract_manager_ContractsManager_monitor_for_id_bytes(self.chain.shareCore.runtime, self.chain.shareCore.contractsManager->obj, u256_ctor_u(contract.contractId), dash_spv_platform_util_RetryStrategy_Linear_ctor(2), dash_spv_platform_contract_manager_ContractValidator_None_ctor());
+            DMaybeContract *monitor_result = dash_spv_platform_contract_manager_ContractsManager_monitor_for_id_bytes(self.chain.sharedRuntime, self.chain.shareCore.contractsManager->obj, u256_ctor_u(contract.contractId), DRetryLinear(2), dash_spv_platform_contract_manager_ContractValidator_None_ctor());
 
             if (monitor_result->error) {
                 DMaybeContractDtor(monitor_result);
@@ -1764,7 +1767,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
             DSLog(@"%@: Fetching contract for verification %@", self.logPrefix, contract.base58ContractId);
             DIdentifier *identifier = platform_value_types_identifier_Identifier_ctor(platform_value_types_identifier_IdentifierBytes32_ctor(u256_ctor_u(contract.contractId)));
-            DMaybeContract *result = dash_spv_platform_contract_manager_ContractsManager_fetch_contract_by_id(self.chain.shareCore.runtime, self.chain.shareCore.contractsManager->obj, identifier);
+            DMaybeContract *result = dash_spv_platform_contract_manager_ContractsManager_fetch_contract_by_id(self.chain.sharedRuntime, self.chain.shareCore.contractsManager->obj, identifier);
             if (!result) return;
             if (result->error || !result->ok->v0->document_types) {
                 DSLog(@"%@: Fetch contract error %u", self.logPrefix, result->error->tag);
@@ -1774,7 +1777,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
                 return;
             }
 
-            DMaybeContract *contract_result = dash_spv_platform_contract_manager_ContractsManager_fetch_contract_by_id_bytes(self.chain.shareCore.runtime, self.chain.shareCore.contractsManager->obj, u256_ctor_u(contract.contractId));
+            DMaybeContract *contract_result = dash_spv_platform_contract_manager_ContractsManager_fetch_contract_by_id_bytes(self.chain.sharedRuntime, self.chain.shareCore.contractsManager->obj, u256_ctor_u(contract.contractId));
 
             dispatch_async(self.identityQueue, ^{
                 __strong typeof(weakContract) strongContract = weakContract;
@@ -1804,7 +1807,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        Result_ok_Option_u64_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_balance_by_id_bytes(strongSelf.chain.shareCore.runtime, strongSelf.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData));
+        Result_ok_Option_u64_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_balance_by_id_bytes(strongSelf.chain.sharedRuntime, strongSelf.chain.shareCore.identitiesManager->obj, u256_ctor(self.uniqueIDData));
         if (!result) {
             DSLog(@"%@: updateCreditBalance: NULL RESULT", self.logPrefix);
             return;
@@ -1888,14 +1891,10 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
             self.matchingDashpayUserInPlatformContext = [[NSManagedObjectContext platformContext] objectWithID:dashpayUserEntity.objectID];
         }];
         if ([self isLocal])
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                    object:nil
-                                                                  userInfo:@{
-                    DSChainManagerNotificationChainKey: self.chain,
-                    DSIdentityKey: self
-                }];
-            });
+            [self notifyUpdate:@{
+                DSChainManagerNotificationChainKey: self.chain,
+                DSIdentityKey: self
+            }];
     }];
 }
 
@@ -1946,15 +1945,11 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         if (changeOccured) {
             [context ds_save];
             if (updateEvents.count)
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                        object:nil
-                                                                      userInfo:@{
-                        DSChainManagerNotificationChainKey: self.chain,
-                        DSIdentityKey: self,
-                        DSIdentityUpdateEvents: updateEvents
-                    }];
-                });
+                [self notifyUpdate:@{
+                    DSChainManagerNotificationChainKey: self.chain,
+                    DSIdentityKey: self,
+                    DSIdentityUpdateEvents: updateEvents
+                }];
         }
     }];
 }
@@ -1978,6 +1973,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityKeyDictionary) {
         DSBlockchainIdentityKeyPathEntity *keyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
         keyPathEntity.derivationPath = derivationPathEntity;
         // TODO: that's wrong should convert KeyType <-> KeyKind
+        
         keyPathEntity.keyType = key->ok->tag;
         keyPathEntity.keyStatus = status;
         NSData *privateKeyData = [DSKeyManager privateKeyData:key->ok];
@@ -2028,15 +2024,11 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
         DSBlockchainIdentityEntity *identityEntity = [self identityEntityInContext:context];
         if ([self createNewKey:key forIdentityEntity:identityEntity atPath:path withStatus:status fromDerivationPath:derivationPath inContext:context])
             [context ds_save];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                object:nil
-                                                              userInfo:@{
-                DSChainManagerNotificationChainKey: self.chain,
-                DSIdentityKey: self,
-                DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
-            }];
-        });
+        [self notifyUpdate:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSIdentityKey: self,
+            DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
+        }];
     }];
 }
 
@@ -2051,6 +2043,7 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
         NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && keyID == %@", identityEntity, @(keyID)];
         if (!count) {
             DSBlockchainIdentityKeyPathEntity *keyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
+            // TODO: that's wrong should convert KeyType <-> KeyKind
             keyPathEntity.keyType = key->ok->tag;
             keyPathEntity.keyStatus = status;
             keyPathEntity.keyID = keyID;
@@ -2058,15 +2051,11 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
             [identityEntity addKeyPathsObject:keyPathEntity];
             [context ds_save];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                object:nil
-                                                              userInfo:@{
-                DSChainManagerNotificationChainKey: self.chain,
-                DSIdentityKey: self,
-                DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
-            }];
-        });
+        [self notifyUpdate:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSIdentityKey: self,
+            DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
+        }];
     }];
 }
 
@@ -2085,15 +2074,11 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
             keyPathEntity.keyStatus = status;
             [context ds_save];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                object:nil
-                                                              userInfo:@{
-                DSChainManagerNotificationChainKey: self.chain,
-                DSIdentityKey: self,
-                DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
-            }];
-        });
+        [self notifyUpdate:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSIdentityKey: self,
+            DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
+        }];
     }];
 }
 
@@ -2110,15 +2095,11 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
             keyPathEntity.keyStatus = status;
             [context ds_save];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                object:nil
-                                                              userInfo:@{
-                DSChainManagerNotificationChainKey: self.chain,
-                DSIdentityKey: self,
-                DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
-            }];
-        });
+        [self notifyUpdate:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSIdentityKey: self,
+            DSIdentityUpdateEvents: @[DSIdentityUpdateEventKeyUpdate]
+        }];
     }];
 }
 
@@ -2139,14 +2120,10 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
             if (save)
                 [context ds_save];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateNotification
-                                                                object:nil
-                                                              userInfo:@{
-                DSChainManagerNotificationChainKey: self.chain,
-                DSIdentityKey: self
-            }];
-        });
+        [self notifyUpdate:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSIdentityKey: self
+        }];
     }];
 }
 
@@ -2204,6 +2181,11 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
         return dashpayUserEntity;
     }
 }
+
+- (void)notifyUpdate:(NSDictionary *_Nullable)userInfo {
+    [self notify:DSIdentityDidUpdateNotification userInfo:userInfo];
+}
+
 
 - (NSString *)debugDescription {
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@}", self.currentDashpayUsername, self.uniqueIdString]];

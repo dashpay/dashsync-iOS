@@ -35,6 +35,7 @@
 #import "DSChain+Wallet.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
+#import "DSChainManager+Transactions.h"
 #import "DSError.h"
 #import "DSEventManager.h"
 #import "DSIdentitiesManager.h"
@@ -1588,9 +1589,14 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                         object:nil
-                                                                      userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                          DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                          DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
+                                                                      userInfo:@{
+                        DSChainManagerNotificationChainKey: self.chain,
+                        DSTransactionManagerNotificationTransactionKey: transaction,
+                        DSTransactionManagerNotificationTransactionChangesKey: @{
+                            DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock,
+                            DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)
+                        }
+                    }];
                 });
             }
         } else {

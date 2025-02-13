@@ -123,9 +123,7 @@
                                     completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion {
     NSAssert(self.isLocal, @"This should not be performed on a non local blockchain identity");
     if (!self.isLocal) return;
-//    __weak typeof(self) weakSelf = self;
-//    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.shareCore.runtime, self.chain.shareCore.documentsManager->obj, (char *)[potentialContact.username UTF8String]);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, (char *)[potentialContact.username UTF8String]);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
@@ -138,7 +136,7 @@
 
     switch (document->tag) {
         case dpp_document_Document_V0: {
-            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.shareCore.runtime, self.chain.shareCore.identitiesManager->obj, document->v0->owner_id);
+            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.sharedRuntime, self.chain.shareCore.identitiesManager->obj, document->v0->owner_id);
             if (identity_result->error) {
                 NSError *error = [NSError ffi_from_platform_error:identity_result->error];
                 DMaybeIdentityDtor(identity_result);
@@ -184,51 +182,6 @@
         default:
             break;
     }
-
-    
-//    [dapiNetworkService getIdentityByName:potentialContact.username
-//                                 inDomain:@"dash"
-//                          completionQueue:self.identityQueue
-//                                  success:^(NSDictionary *_Nonnull identityVersionedDictionary) {
-//        __strong typeof(weakSelf) strongSelf = weakSelf;
-//        if (!strongSelf) {
-//            if (completion) completion(NO, @[ERROR_MEM_ALLOC]);
-//            return;
-//        }
-//        NSNumber *_Nonnull version = identityVersionedDictionary[@(DSPlatformStoredMessage_Version)];
-//        NSDictionary *_Nonnull identityDictionary = identityVersionedDictionary[@(DSPlatformStoredMessage_Item)];
-//        NSData *identityIdData = nil;
-//        if (!identityDictionary || !(identityIdData = identityDictionary[@"id"])) {
-//            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MALFORMED_RESPONSE]); });
-//            return;
-//        }
-//        UInt256 identityContactUniqueId = identityIdData.UInt256;
-//        NSAssert(uint256_is_not_zero(identityContactUniqueId), @"identityContactUniqueId should not be null");
-//        DSBlockchainIdentityEntity *potentialContactIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", uint256_data(identityContactUniqueId)];
-//        DSIdentity *potentialContactIdentity = nil;
-//        if (potentialContactIdentityEntity) {
-//            potentialContactIdentity = [self.chain identityForUniqueId:identityContactUniqueId];
-//            if (!potentialContactIdentity)
-//                potentialContactIdentity = [[DSIdentity alloc] initWithIdentityEntity:potentialContactIdentityEntity];
-//        } else {
-//            potentialContactIdentity = [self.identitiesManager foreignIdentityWithUniqueId:identityContactUniqueId
-//                                                                           createIfMissing:YES
-//                                                                                 inContext:self.platformContext];
-//        }
-//        [potentialContactIdentity applyIdentityDictionary:identityDictionary
-//                                                  version:[version intValue]
-//                                                     save:YES
-//                                                inContext:self.platformContext];
-//        [potentialContactIdentity saveInContext:self.platformContext];
-//        [self sendNewFriendRequestToIdentity:potentialContactIdentity completion:completion];
-//    }
-//                                  failure:^(NSError *_Nonnull error) {
-//        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-//            [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-//        }
-//        DSLogPrivate(@"%@", error);
-//        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
-//    }];
 }
 
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship
@@ -260,7 +213,7 @@
         [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
     }
     DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(self.chain.shareCore.runtime, self.chain.shareCore.platform->obj, contract.raw_contract, identity_id, value, entropy, private_key->ok);
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, identity_id, value, entropy, private_key->ok);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeStateTransitionProofResultDtor(result);
@@ -277,55 +230,6 @@
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, errors); });
     }
                               onCompletionQueue:completionQueue];
-
-//    
-//    
-//    
-//    [self.DAPIClient sendDocument:document
-//                      forIdentity:self
-//                         contract:contract
-//                       completion:^(NSError *_Nullable error) {
-//        __strong typeof(weakSelf) strongSelf = weakSelf;
-//        if (!strongSelf) {
-//            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MEM_ALLOC]); });
-//            return;
-//        }
-//        
-//        BOOL success = error == nil;
-//        
-//        if (!success) {
-//            dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
-//            return;
-//        }
-//        
-//        [context performBlockAndWait:^{
-//            [self addFriendship:potentialFriendship
-//                      inContext:context
-//                     completion:^(BOOL success, NSError *error){
-//                
-//            }];
-//            //            [self addFriendshipFromSourceIdentity:potentialFriendship.sourceIdentity sourceKeyIndex:potentialFriendship.so toRecipientIdentity:(DSIdentity *) recipientKeyIndex:<#(uint32_t)#> inContext:<#(NSManagedObjectContext *)#>]
-//            //             DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:potentialFriendship.destinationIdentity.matchingDashpayUser];
-//            //                   [strongSelf.matchingDashpayUser addOutgoingRequestsObject:friendRequest];
-//            //
-//            //                   if ([[friendRequest.destinationContact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",strongSelf.matchingDashpayUser]] count]) {
-//            //                       [strongSelf.matchingDashpayUser addFriendsObject:friendRequest.destinationContact];
-//            //                   }
-//            //                   [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
-//            //                   [DSFriendRequestEntity saveContext];
-//            //                   if (completion) {
-//            //                       dispatch_async(dispatch_get_main_queue(), ^{
-//            //                           completion(success,error);
-//            //                       });
-//            //                   }
-//        }];
-//        
-//        [self fetchOutgoingContactRequestsInContext:context
-//                                     withCompletion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
-//            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, errors); });
-//        }
-//                                  onCompletionQueue:completionQueue];
-//    }];
 }
 
 - (void)acceptFriendRequestFromIdentity:(DSIdentity *)otherIdentity
