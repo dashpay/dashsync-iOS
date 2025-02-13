@@ -87,13 +87,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
     DSIdentityFriendshipStatus_Friends = DSIdentityFriendshipStatus_Outgoing | DSIdentityFriendshipStatus_Incoming,
 };
 
-//typedef NS_ENUM(NSUInteger, DSIdentityRetryDelayType)
-//{
-//    DSIdentityRetryDelayType_Linear = 0,
-//    DSIdentityRetryDelayType_SlowingDown20Percent = 1,
-//    DSIdentityRetryDelayType_SlowingDown50Percent = 2,
-//};
-
 typedef NS_ENUM(NSUInteger, DSIdentityKeyStatus)
 {
     DSIdentityKeyStatus_Unknown = 0,
@@ -123,6 +116,9 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventRegistration;
 FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventCreditBalance;
 FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventType;
 FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBlockHash;
+
+NSString * DSRegistrationStepsDescription(DSIdentityRegistrationStep step);
+NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 
 @interface DSIdentity : NSObject
 
@@ -279,66 +275,5 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 
 @end
 
-NSString * DSRegistrationStepsDescription(DSIdentityRegistrationStep step) {
-    NSMutableArray<NSString *> *components = [NSMutableArray array];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_None))
-        [components addObject:@"None"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_FundingTransactionCreation))
-        [components addObject:@"FundingTransactionCreation"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_FundingTransactionAccepted))
-        [components addObject:@"FundingTransactionAccepted"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_LocalInWalletPersistence))
-        [components addObject:@"LocalInWalletPersistence"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_ProofAvailable))
-        [components addObject:@"ProofAvailable"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_L1Steps))
-        [components addObject:@"L1Steps"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_Identity))
-        [components addObject:@"Identity"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_RegistrationSteps))
-        [components addObject:@"RegistrationSteps"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_Username))
-        [components addObject:@"Username"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_RegistrationStepsWithUsername))
-        [components addObject:@"RegistrationStepsWithUsername"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_Profile))
-        [components addObject:@"Profile"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_RegistrationStepsWithUsernameAndDashpayProfile))
-        [components addObject:@"RegistrationStepsWithUsernameAndDashpayProfile"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_All))
-        [components addObject:@"All"];
-    if (FLAG_IS_SET(step, DSIdentityRegistrationStep_Cancelled))
-        [components addObject:@"Cancelled"];
-    return [components componentsJoinedByString:@" | "];
-}
-
-NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
-    NSMutableArray<NSString *> *components = [NSMutableArray array];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_None))
-        [components addObject:@"None"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_Identity))
-        [components addObject:@"Identity"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_Username))
-        [components addObject:@"Username"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_Profile))
-        [components addObject:@"Profile"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_IncomingContactRequests))
-        [components addObject:@"IncomingContactRequests"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_OutgoingContactRequests))
-        [components addObject:@"OutgoingContactRequests"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_ContactRequests))
-        [components addObject:@"ContactRequests"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_AllForForeignIdentity))
-        [components addObject:@"AllForForeignIdentity"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_AllForLocalIdentity))
-        [components addObject:@"AllForLocalIdentity"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_NoIdentity))
-        [components addObject:@"NoIdentity"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_BadQuery))
-        [components addObject:@"BadQuery"];
-    if (FLAG_IS_SET(step, DSIdentityQueryStep_Cancelled))
-        [components addObject:@"Cancelled"];
-    return [components componentsJoinedByString:@" | "];
-}
 
 NS_ASSUME_NONNULL_END
