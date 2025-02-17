@@ -97,9 +97,7 @@
 }
 
 - (BOOL)isDenominatedAmount:(uint64_t)amount {
-    @synchronized (self) {
-        return is_denominated_amount(amount);
-    }
+    return is_denominated_amount(amount);
 }
 
 - (BOOL)isFullyMixed:(DSUTXO)utxo {
@@ -203,15 +201,11 @@
 }
 
 - (uint64_t)getCollateralAmount {
-    @synchronized (self) {
-        return get_collateral_amount();
-    }
+    return get_collateral_amount();
 }
 
 - (uint64_t)getMaxCollateralAmount {
-    @synchronized (self) {
-        return get_max_collateral_amount();
-    }
+    return get_max_collateral_amount();
 }
 
 - (BOOL)hasCollateralInputs:(BOOL)onlyConfirmed {
@@ -221,9 +215,7 @@
 }
 
 - (uint32_t)amountToDenomination:(uint64_t)amount {
-    @synchronized (self) {
-        return amount_to_denomination(amount);
-    }
+    return amount_to_denomination(amount);
 }
 
 - (int32_t)getRealOutpointCoinJoinRounds:(DSUTXO)utxo {
