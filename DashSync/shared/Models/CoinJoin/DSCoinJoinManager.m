@@ -256,6 +256,7 @@ static dispatch_once_t managerChainToken = 0;
 #else
         DSLog(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, @"<REDACTED>");
 #endif
+        [self.wrapper unlockOutputs:lastTransaction];
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_Mixing];
     }
 }
