@@ -139,20 +139,20 @@
     self.quorumVerificationVectorHashData = [NSData dataWithUInt256:quorumVerificationVectorHash];
 }
 
-- (UInt256)commitmentHash {
-    return self.commitmentHashData.UInt256;
-}
+//- (UInt256)commitmentHash {
+//    return self.commitmentHashData.UInt256;
+//}
+//
+//- (void)setCommitmentHash:(UInt256)commitmentHash {
+//    self.commitmentHashData = [NSData dataWithUInt256:commitmentHash];
+//}
 
-- (void)setCommitmentHash:(UInt256)commitmentHash {
-    self.commitmentHashData = [NSData dataWithUInt256:commitmentHash];
-}
-
-+ (void)deleteHavingQuorumHashes:(NSArray *)quorumHashes onChainEntity:(DSChainEntity *)chainEntity {
-    NSArray *hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumHashData IN %@)", chainEntity, quorumHashes];
-    for (DSQuorumEntryEntity *quorumEntryEntity in hashesToDelete) {
-        [chainEntity.managedObjectContext deleteObject:quorumEntryEntity];
-    }
-}
+//+ (void)deleteHavingQuorumHashes:(NSArray *)quorumHashes onChainEntity:(DSChainEntity *)chainEntity {
+//    NSArray *hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumHashData IN %@)", chainEntity, quorumHashes];
+//    for (DSQuorumEntryEntity *quorumEntryEntity in hashesToDelete) {
+//        [chainEntity.managedObjectContext deleteObject:quorumEntryEntity];
+//    }
+//}
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity {
     NSArray *hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];
@@ -161,11 +161,11 @@
     }
 }
 
-+ (DSQuorumEntryEntity *)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity {
-    /// Seems to be unused or quorumEntryHash must be changed into commitmentHash ?
-    NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (commitmentHash == %@)", chainEntity, quorumEntryHash];
-    return [objects firstObject];
-}
+//+ (DSQuorumEntryEntity *)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity {
+//    /// Seems to be unused or quorumEntryHash must be changed into commitmentHash ?
+//    NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (commitmentHash == %@)", chainEntity, quorumEntryHash];
+//    return [objects firstObject];
+//}
 
 - (UInt256)orderingHashForRequestID:(UInt256)requestID {
     NSMutableData *data = [NSMutableData data];

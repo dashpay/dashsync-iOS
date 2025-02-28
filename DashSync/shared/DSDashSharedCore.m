@@ -18,9 +18,12 @@
 #import "DSBlock.h"
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Identity.h"
+#import "DSChain+Wallet.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
 #import "DSDashSharedCore.h"
+#import "DSIdentity+Protected.h"
 #import "DSKeyManager.h"
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListDiffService.h"
@@ -248,6 +251,10 @@
     Fn_ARGS_std_os_raw_c_void_dash_spv_masternode_processor_models_sync_state_CacheState_RTRN_ notify_sync_state = {
         .caller = &notify_sync_state_caller,
     };
+    Fn_ARGS_std_os_raw_c_void_RTRN_u32 get_tip_height = {
+        .caller = &get_tip_height_caller,
+        .destructor = &get_tip_height_dtor
+    };
     
     NSArray<NSString *> *addresses = @[@"127.0.0.1"];
     switch (chain.chainType->tag) {
@@ -268,7 +275,7 @@
     }
     Vec_ *address_list = [NSArray ffi_to_vec:addresses];
 
-    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_block_by_height_or_last_terminal, block_by_block_hash, last_block_for_block_hash, add_insight, get_cl_signature_by_block_hash, load_masternode_list_from_db, save_masternode_list_into_db, load_llmq_snapshot_from_db, save_llmq_snapshot_into_db, update_address_usage_of_masternodes, remove_request_in_retrieval, issue_with_masternode_list_from_peer, notify_sync_state, dequeue_masternode_list, context);
+    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_block_by_height_or_last_terminal, block_by_block_hash, last_block_for_block_hash, get_tip_height, add_insight, get_cl_signature_by_block_hash, load_masternode_list_from_db, save_masternode_list_into_db, load_llmq_snapshot_from_db, save_llmq_snapshot_into_db, update_address_usage_of_masternodes, remove_request_in_retrieval, issue_with_masternode_list_from_peer, notify_sync_state, dequeue_masternode_list, context);
     return self;
 }
 
@@ -309,8 +316,23 @@ MaybeDataContract *get_data_contract_caller(const void *context, DIdentifier *id
 }
 void get_data_contract_dtor(MaybeDataContract *result) {}
 
-MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key, BYTES *arr) {
-    return NULL;
+MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key, BYTES *data) {
+    DSDashSharedCore *core = AS_OBJC(context);
+    DBinaryData *ok = NULL;
+    dpp_errors_protocol_error_ProtocolError *error = NULL;
+    NSData *dataToSign = NSDataFromPtr(data);
+    DSLog(@"[SDK] callback_signer: identity_public_key: %p, data: %@", identity_public_key, dataToSign.hexString);
+    DMaybeOpaqueKey *maybe_key = [core.chain identityPrivateKeyForIdentityPublicKey:identity_public_key];
+    if (!maybe_key || maybe_key->error) {
+        error = dpp_errors_protocol_error_ProtocolError_Generic_ctor(DSLocalizedChar(@"Can't find a signer for identity public key: %p", nil, identity_public_key));
+    } else {
+        ok = DBinaryDataCtor(dash_spv_crypto_keys_key_OpaqueKey_hash_and_sign(maybe_key->ok, data));
+    }
+    DMaybeOpaqueKeyDtor(maybe_key);
+    dpp_identity_identity_public_key_IdentityPublicKey_destroy(identity_public_key);
+    bytes_dtor(data);
+    return Result_ok_platform_value_types_binary_data_BinaryData_err_dpp_errors_protocol_error_ProtocolError_ctor(ok, error);
+
 }
 void callback_signer_dtor(MaybeSignedData *result) {}
 
@@ -382,16 +404,24 @@ DMaybeMBlock *last_block_by_block_hash_caller(const void *context, u256 *block_h
     DCoreProviderError *err = NULL;
     @synchronized (context) {
         DSBlock *lastBlock = [core lastBlockForBlockHash:blockHash fromPeer:peer];
-        DSLog(@"[SDK] last_block_by_hash_caller: %@ = %@", uint256_hex(blockHash), lastBlock);
+        //DSLog(@"[SDK] last_block_by_hash_caller: %@ = %@", uint256_hex(blockHash), lastBlock);
         if (lastBlock) {
             ok = DMBlockCtor(lastBlock.height, u256_ctor_u(lastBlock.blockHash), u256_ctor_u(lastBlock.merkleRoot));
         } else {
-            err = DCoreProviderErrorNullResultCtor((char *)[DSLocalizedFormat(@"No last block for block hash %@ from peer %@", nil, uint256_hex(blockHash), peer.description) UTF8String]);
+            err = DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No last block for block hash %@ from peer %@", nil, uint256_hex(blockHash), peer.description));
         }
     }
     return DMaybeMBlockCtor(ok, err);
 }
 void last_block_by_block_hash_dtor(DMaybeMBlock *result) {}
+
+uint32_t get_tip_height_caller(const void *context) {
+    DSDashSharedCore *core = AS_OBJC(context);
+    @synchronized (context) {
+        return [core.chain chainTipHeight];
+    }
+}
+void get_tip_height_dtor(uint32_t result) {}
 
 void add_insight_caller(const void *context, u256* block_hash) {
     UInt256 blockHash = u256_cast(block_hash);
@@ -405,7 +435,7 @@ DMaybeBlock *get_block_by_height_or_last_terminal_caller(const void *context, ui
     DSDashSharedCore *core = AS_OBJC(context);
     DSBlock *b = (DSBlock *) [core.chain blockAtHeightOrLastTerminal:block_height];
     DBlock *ok = b ? DBlockCtor(b.height, u256_ctor_u(b.blockHash)) : NULL;
-    DCoreProviderError *err = b ? NULL : DCoreProviderErrorNullResultCtor((char *)[DSLocalizedFormat(@"Unknown block for block height %u", nil, block_height) UTF8String]);
+    DCoreProviderError *err = b ? NULL : DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"Unknown block for block height %u", nil, block_height));
     return DMaybeBlockCtor(ok, err);
 }
 void get_block_by_height_or_last_terminal_dtor(DMaybeBlock *result) {
@@ -416,7 +446,7 @@ DMaybeCLSignature *get_cl_signature_by_block_hash_caller(const void *context, u2
     UInt256 blockHash = u256_cast(block_hash);
     u256_dtor(block_hash);
     DSChainLock *chainLock = [core.chain.chainManager chainLockForBlockHash:blockHash];
-    return chainLock ? DMaybeCLSignatureCtor(u768_ctor_u(chainLock.signature), NULL) : DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor((char *)[DSLocalizedFormat(@"No clsig for block hash %@", nil, uint256_hex(blockHash)) UTF8String]));
+    return chainLock ? DMaybeCLSignatureCtor(u768_ctor_u(chainLock.signature), NULL) : DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No clsig for block hash %@", nil, uint256_hex(blockHash))));
 }
 void get_cl_signature_by_block_hash_dtor(DMaybeCLSignature *result) {}
 
@@ -428,7 +458,7 @@ DMaybeMasternodeList *load_masternode_list_from_db_caller(const void *context, u
         return [core.chain heightForBlockHash:blockHash];
     }];
     DSLog(@"load_masternode_list_from_db_caller (%@) %p", blockHashData.hexString, list);
-    return Result_ok_dash_spv_masternode_processor_models_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(list, list ? NULL : DCoreProviderErrorNullResultCtor((char *)[DSLocalizedFormat(@"No masternode list for block hash %@ in DB", nil, blockHashData.hexString) UTF8String]));
+    return Result_ok_dash_spv_masternode_processor_models_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(list, list ? NULL : DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No masternode list for block hash %@ in DB", nil, blockHashData.hexString)));
 }
 void load_masternode_list_from_db_dtor(DMaybeMasternodeList *result) {}
 
@@ -551,15 +581,17 @@ void notify_sync_state_caller(const void *context, DMNSyncState *state) {
                 break;
         }
         DMNSyncStateDtor(state);
+        /*dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_queue_description*/(core.chain.sharedCacheObj);
         [core.chain.chainManager notifySyncStateChanged];
     }
 }
 void dequeue_masternode_list_caller(const void *context, bool is_dip24) {
     DSDashSharedCore *core = AS_OBJC(context);
+    DSLog(@"[%@] dequeue_masternode_list_caller: qr: %u", core.chain.name, is_dip24);
     if (is_dip24) {
-        [core.chain.masternodeManager.masternodeListDiffService dequeueMasternodeListRequest];
-    } else {
         [core.chain.masternodeManager.quorumRotationService dequeueMasternodeListRequest];
+    } else {
+        [core.chain.masternodeManager.masternodeListDiffService dequeueMasternodeListRequest];
     }
 }
 

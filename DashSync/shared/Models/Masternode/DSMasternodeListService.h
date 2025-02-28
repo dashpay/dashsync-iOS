@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
 @property (nonatomic, readonly) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
-@property (nonatomic, readonly, assign) indexmap_IndexSet_u8_32 *retrievalQueue;
+@property (nonatomic, readonly) NSOrderedSet<NSData *> *retrievalQueue;
 @property (nonatomic, readonly) NSUInteger retrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger retrievalQueueMaxAmount;
 
@@ -51,6 +51,8 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 
 - (void)dequeueMasternodeListRequest;
 - (void)stop;
+
+- (BOOL)peerIsDisconnected;
 
 - (void)cleanAllLists;
 - (void)cleanListsRetrievalQueue;

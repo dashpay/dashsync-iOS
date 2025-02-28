@@ -546,8 +546,8 @@
 //
 //    XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
 //    SLICE *message_slice = slice_ctor(message);
-//    Result_ok_u8_arr_32_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_file(chain.shareCore.processor->obj, message_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
-//    DMasternodeList *list = DMasternodeListByBlockHash(chain.shareCore.cache->obj, result->ok);
+//    Result_ok_u8_arr_32_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_file(chain.sharedProcessorObj, message_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
+//    DMasternodeList *list = DMasternodeListByBlockHash(chain.sharedCacheObj, result->ok);
 //
 //    
 ////    DSMasternodeProcessorContext *mndiffContext = [[DSMasternodeProcessorContext alloc] init];
@@ -640,7 +640,7 @@ void block_height_lookup_dtor(uint32_t block_height) {}
     __block dispatch_group_t dispatch_group = dispatch_group_create();
     dispatch_group_enter(dispatch_group);
     __block BOOL stop = FALSE;
-    MasternodeProcessor *processor = chain.shareCore.processor->obj;
+    MasternodeProcessor *processor = chain.sharedProcessorObj;
     DSMasternodeManager *masternodeManager = chain.chainManager.masternodeManager;
     for (NSString *file in files) {
         NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:file];
@@ -737,7 +737,7 @@ void block_height_lookup_dtor(uint32_t block_height) {}
 
     DSChain *chain = [DSChain mainnet];
     SLICE *message_slice = slice_ctor(message);
-    DMnDiffResult *result = DMnDiffFromFile(chain.shareCore.processor->obj, message_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
+    DMnDiffResult *result = DMnDiffFromFile(chain.sharedProcessorObj, message_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
     XCTAssertTrue(result->error == NULL, @"There should not be an error");
     u256 *base_block_hash = result->ok->o_0;
     u256 *block_hash = result->ok->o_1;
@@ -884,26 +884,26 @@ void block_height_lookup_dtor(uint32_t block_height) {}
     XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
 
     SLICE *message_0_122064_slice = slice_ctor([DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_0_122064"]);
-    DMnDiffResult *result_0_122064 = DMnDiffFromFile(chain.shareCore.processor->obj, message_0_122064_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
+    DMnDiffResult *result_0_122064 = DMnDiffFromFile(chain.sharedProcessorObj, message_0_122064_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
     XCTAssertTrue(result_0_122064->error == NULL, @"There should not be an error");
     UInt256 baseBlockHash_0_122064 = u256_cast(result_0_122064->ok->o_0);
     UInt256 blockHash_0_122064 = u256_cast(result_0_122064->ok->o_1);
-    DMasternodeList *masternodeList122064 = DMasternodeListByBlockHash(chain.shareCore.cache->obj, result_0_122064->ok->o_1);
+    DMasternodeList *masternodeList122064 = DMasternodeListByBlockHash(chain.sharedCacheObj, result_0_122064->ok->o_1);
     DMnDiffResultDtor(result_0_122064);
 
     XCTAssert(uint256_eq(chain.genesisHash, baseBlockHash_0_122064) || uint256_is_zero(baseBlockHash_0_122064), @"Base block hash should be from chain origin");
     SLICE *message_122064_122088_slice = slice_ctor([DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_122064_122088"]);
-    DMnDiffResult *result_122064_122088 = DMnDiffFromFile(chain.shareCore.processor->obj, message_122064_122088_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
+    DMnDiffResult *result_122064_122088 = DMnDiffFromFile(chain.sharedProcessorObj, message_122064_122088_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
     XCTAssertTrue(result_122064_122088->error == NULL, @"There should not be an error");
     XCTAssert(uint256_eq(blockHash_0_122064, u256_cast(result_122064_122088->ok->o_0)), @"Base block hash should be from block 122064");
 
-    DMasternodeList *masternodeList122088 = DMasternodeListByBlockHash(chain.shareCore.cache->obj, result_122064_122088->ok->o_1);
+    DMasternodeList *masternodeList122088 = DMasternodeListByBlockHash(chain.sharedCacheObj, result_122064_122088->ok->o_1);
     DMnDiffResultDtor(result_122064_122088);
     NoTimeLog(@"------- RELOAD.START -------");
     [chainManager.masternodeManager reloadMasternodeLists];
     NoTimeLog(@"------- RELOAD.FINISH -------");
-    DMasternodeList *reloadedMasternodeList122088 = DMasternodeListByBlockHash(chain.shareCore.cache->obj, masternodeList122088->block_hash);
-    DMasternodeList *reloadedMasternodeList122064 = DMasternodeListByBlockHash(chain.shareCore.cache->obj, masternodeList122064->block_hash);
+    DMasternodeList *reloadedMasternodeList122088 = DMasternodeListByBlockHash(chain.sharedCacheObj, masternodeList122088->block_hash);
+    DMasternodeList *reloadedMasternodeList122064 = DMasternodeListByBlockHash(chain.sharedCacheObj, masternodeList122064->block_hash);
 
     // these are the entries that changed
     DMasternodeEntry *originalEntryFrom122088 = DMasternodeEntryByProRegTxHash(masternodeList122088, u256_ctor(@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f".hexToData.reverse));

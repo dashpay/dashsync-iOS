@@ -164,7 +164,7 @@
         
         for (DSWallet *wallet in wallets) {
             uint32_t unusedIndex = [wallet unusedIdentityIndex];
-            DSAuthenticationKeysDerivationPath *derivationPath = [DSIdentity derivationPathForType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() forWallet:wallet];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSIdentity derivationPathForType:DKeyKindECDSA() forWallet:wallet];
             const int keysToCheck = 5;
             NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionaryWithCapacity:keysToCheck];
             u160 **key_hashes = malloc(keysToCheck * sizeof(u160 *));
@@ -192,7 +192,7 @@
             NSMutableArray *identities = [NSMutableArray array];
             
             for (int j = 0; j < ok->count; j++) {
-                dpp_identity_identity_Identity *identity = ok->values[j];
+                DIdentity *identity = ok->values[j];
                 switch (identity->tag) {
                     case dpp_identity_identity_Identity_V0: {
                         dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;

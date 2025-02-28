@@ -46,6 +46,12 @@ NS_ASSUME_NONNULL_BEGIN
                                       withContractId:(UInt256)contractId
                                        foundInWallet:(DSWallet *_Nullable *_Nullable)foundInWallet;
 
+- (DSIdentity *_Nullable)identityForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key
+                                        foundInWallet:(DSWallet *_Nullable *_Nullable)foundInWallet;
+
+/*! @brief Returns a private key that is paired with this identity public key .  */
+- (DMaybeOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key;
+
 /*! @brief Returns a blockchain identity by uniqueId, if it exists. Also returns the wallet it was found in.  */
 - (DSIdentity *_Nullable)identityForUniqueId:(UInt256)uniqueId
                                foundInWallet:(DSWallet *_Nullable *_Nullable)foundInWallet;

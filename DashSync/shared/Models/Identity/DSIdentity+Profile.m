@@ -428,11 +428,11 @@
 
     if (!self.keysCreated) {
         uint32_t index;
-        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
+        [self createNewKeyOfType:DKeyKindECDSA() saveKey:!self.wallet.isTransient returnIndex:&index];
     }
     DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugInfo, error);

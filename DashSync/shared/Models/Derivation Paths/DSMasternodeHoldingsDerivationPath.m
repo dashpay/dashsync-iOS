@@ -30,7 +30,7 @@
                                   hardened:hardenedIndexes
                                     length:4
                                       type:DSDerivationPathType_ProtectedFunds
-                          signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                          signingAlgorithm:DKeyKindECDSA()
                                  reference:DSDerivationPathReference_ProviderFunds
                                    onChain:chain];
 }

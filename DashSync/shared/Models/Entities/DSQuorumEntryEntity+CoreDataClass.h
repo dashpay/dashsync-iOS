@@ -37,8 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
                                       onBlock:(DSMerkleBlockEntity *_Nullable)block
                                       onChain:(DSChain *)chain;
 
-+ (void)deleteHavingQuorumHashes:(NSArray *)quorumHashes onChainEntity:(DSChainEntity *)chainEntity;
-+ (DSQuorumEntryEntity *_Nullable)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity;
+//+ (void)deleteHavingQuorumHashes:(NSArray *)quorumHashes onChainEntity:(DSChainEntity *)chainEntity;
+//+ (DSQuorumEntryEntity *_Nullable)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity;
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity;
 

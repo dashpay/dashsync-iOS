@@ -246,6 +246,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (BOOL)isSizedForAddress;
 
 + (NSData *)scriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
++ (NSData *)creditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
++ (NSData *)assetLockOutputScript;
 
 - (uint64_t)trueBitsCount;
 

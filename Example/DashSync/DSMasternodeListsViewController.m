@@ -182,7 +182,7 @@
 
 - (IBAction)fetchNextMasternodeList:(id)sender {
     
-    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chain.shareCore.processor->obj, self.chain.isRotatedQuorumsPresented);
+    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chain.sharedProcessorObj, self.chain.isRotatedQuorumsPresented);
 //    int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
     if (list->known_height + 24 > self.chain.lastSyncBlock.height) return;
     uint32_t blockHeight = list->known_height + 24;

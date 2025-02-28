@@ -144,7 +144,7 @@
                 if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
                 return;
             }
-            dpp_identity_identity_Identity *identity = identity_result->ok;
+            DIdentity *identity = identity_result->ok;
             if (!identity) {
                 DMaybeIdentityDtor(identity_result);
                 if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_MALFORMED_RESPONSE]); });
@@ -210,10 +210,10 @@
     DValue *value = [potentialFriendship toValue];
     uint32_t index = 0;
     if (!self.keysCreated) {
-        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
+        [self createNewKeyOfType:DKeyKindECDSA() saveKey:!self.wallet.isTransient returnIndex:&index];
     }
     DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, identity_id, value, entropy, private_key->ok);
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, identity_id, value, entropy, private_key->ok);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeStateTransitionProofResultDtor(result);
@@ -226,6 +226,7 @@
                  completion:^(BOOL success, NSError *error) {}];
     }];
     [self fetchOutgoingContactRequestsInContext:context
+                                     startAfter:nil
                                  withCompletion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, errors); });
     }

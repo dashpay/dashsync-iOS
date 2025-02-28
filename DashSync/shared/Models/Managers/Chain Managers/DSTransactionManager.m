@@ -1282,38 +1282,38 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     }
 
     BOOL isNewIdentity = FALSE;
-    DSIdentity *identity = nil;
+//    DSIdentity *identity = nil;
 
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
         BOOL registered = YES; //default to yes
-        if (![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
+//        if (![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
             registered = [self.chain registerSpecialTransaction:transaction saveImmediately:!block];
-        }
+//        }
 
         if (registered) {
             if ([transaction isKindOfClass:[DSAssetLockTransaction class]]) {
-                DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
-                NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: Registered AssetLockTX: creditBurnPublicKeyHash: %@, txHash: %@", self.logPrefix, uint160_hex(assetLockTransaction.creditBurnPublicKeyHash), uint256_hex(assetLockTransaction.txHash)];
-                uint32_t index;
-                DSWallet *wallet = [self.chain walletHavingIdentityAssetLockRegistrationHash:assetLockTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
-                if (wallet) {
-                    identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
-                    [debugString appendFormat:@" (Found wallet: %@, identity: %@)", wallet.uniqueIDString, identity];
-                }
-                if (!identity) {
-                    [self.chain triggerUpdatesForLocalReferences:assetLockTransaction];
-                    if (wallet) {
-                        identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
-                        [debugString appendFormat:@" (Found wallet after trigger updates: %@, identity: %@)", wallet.uniqueIDString, identity];
-                        if (identity) isNewIdentity = TRUE;
-                    }
-                } else if (identity && !identity.registrationAssetLockTransaction) {
-                    [debugString appendFormat:@" (identity: %@ is known but has no asset lock tx)", identity];
-                    identity.registrationAssetLockTransactionHash = assetLockTransaction.txHash;
-                }
-                DSLog(@"%@:", debugString);
-
+                isNewIdentity = registered;
+//                DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
+//                NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: Registered AssetLockTX: creditBurnPublicKeyHash: %@, txHash: %@", self.logPrefix, uint160_hex(assetLockTransaction.creditBurnPublicKeyHash), uint256_hex(assetLockTransaction.txHash)];
+//                uint32_t index;
+//                DSWallet *wallet = [self.chain walletHavingIdentityAssetLockRegistrationHash:assetLockTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+//                if (wallet) {
+//                    identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
+//                    [debugString appendFormat:@" (Found wallet: %@, identity: %@)", wallet.uniqueIDString, identity];
+//                }
+//                if (!identity) {
+//                    [self.chain triggerUpdatesForLocalReferences:assetLockTransaction];
+//                    if (wallet) {
+//                        identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
+//                        [debugString appendFormat:@" (Found wallet after trigger updates: %@, identity: %@)", wallet.uniqueIDString, identity];
+//                        if (identity) isNewIdentity = TRUE;
+//                    }
+//                } else if (identity && !identity.registrationAssetLockTransaction) {
+//                    [debugString appendFormat:@" (identity: %@ is known but has no asset lock tx)", identity];
+//                    identity.registrationAssetLockTransactionHash = assetLockTransaction.txHash;
+//                }
+//                DSLog(@"%@:", debugString);
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
             }
@@ -1437,12 +1437,12 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     [self.nonFalsePositiveTransactions addObject:hash];
     if (peer)
         [self.txRequests[hash] removeObject:peer];
-    if (block && [transaction isKindOfClass:[DSAssetLockTransaction class]] && identity && isNewIdentity) {
-        NSTimeInterval walletCreationTime = [identity.wallet walletCreationTime];
-        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && identity.wallet.defaultIdentity == identity) {
-            [identity.wallet setGuessedWalletCreationTime:self.chain.lastSyncBlockTimestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
-        }
-        [self.identitiesManager checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction];
+    if (block && [transaction isKindOfClass:[DSAssetLockTransaction class]] && isNewIdentity) {
+//        NSTimeInterval walletCreationTime = [identity.wallet walletCreationTime];
+//        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && identity.wallet.defaultIdentity == identity) {
+//            [identity.wallet setGuessedWalletCreationTime:self.chain.lastSyncBlockTimestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
+//        }
+//        [self.identitiesManager checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction];
         [self destroyTransactionsBloomFilter]; //We want to destroy it temporarily, while we wait for L2, no matter what the block should not be saved and needs to be refetched
     } else if (addedNewAccount) {
         [self destroyTransactionsBloomFilter];

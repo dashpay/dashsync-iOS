@@ -33,13 +33,13 @@
     // uncompressed private key
     XCTAssertTrue([@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" isValidDashPrivateKeyOnChain:self.chain],
         @"[NSString+Base58 isValidDashPrivateKey]");
-    DMaybeOpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" ofKeyType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() forChainType:self.chain.chainType];
+    DMaybeOpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" ofKeyType:DKeyKindECDSA() forChainType:self.chain.chainType];
     NSLog(@"privKey:7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62 = %@", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType]);
     XCTAssertEqualObjects(@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType], @"[DSKey keyWithPrivateKey:]");
     DMaybeOpaqueKeyDtor(key);
 
     // compressed private key
-    key = [DSKeyManager keyWithPrivateKeyString:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" ofKeyType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() forChainType:self.chain.chainType];
+    key = [DSKeyManager keyWithPrivateKeyString:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" ofKeyType:DKeyKindECDSA() forChainType:self.chain.chainType];
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType]);
     XCTAssertEqualObjects(@"XbKPGyV1BpzzxNAggx6Q9a6o7GaBWTLhJS", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType], @"[DSKey keyWithPrivateKey:]");
     // compressed private key export
@@ -109,7 +109,7 @@
     UInt256 md;
     DMaybeOpaqueKey *key;
     for (NSArray *triple in data) {
-        key = [DSKeyManager keyWithPrivateKeyData:((NSString *)triple[0]).hexToData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
+        key = [DSKeyManager keyWithPrivateKeyData:((NSString *)triple[0]).hexToData ofType:DKeyKindECDSA()];
         md = [(NSString *) triple[1] dataUsingEncoding:NSUTF8StringEncoding].SHA256;
         SLICE *slice = slice_u256_ctor_u(md);
         Vec_u8 *vec = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_sign(key->ok->ecdsa, slice);

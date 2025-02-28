@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) DSMasternodeListStore *store;
 
+- (NSString *)logPrefix;
+
 - (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer;
 - (BOOL)shouldProcessDiffResult:(u256 *)block_hash
                         isValid:(BOOL)isValid

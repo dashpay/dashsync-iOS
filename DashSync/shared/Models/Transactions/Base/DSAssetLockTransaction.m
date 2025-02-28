@@ -16,14 +16,26 @@
 //
 
 #import "DSAssetLockTransaction.h"
-#import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSAssetLockDerivationPath.h"
+#import "DSAssetLockTransactionEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 @implementation DSAssetLockTransaction
+
+- (instancetype)initOnChain:(DSChain *)chain withCreditOutputs:(NSArray<DSTransactionOutput *> *)creditOutputs {
+    self = [super initOnChain:chain];
+    if (self) {
+        self.type = DSTransactionType_AssetLock;
+        self.version = SPECIAL_TX_VERSION;
+        self.creditOutputs = [creditOutputs mutableCopy];
+        self.specialTransactionVersion = 1;
+    }
+    return self;
+}
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
     if (!(self = [super initWithMessage:message onChain:chain]))
@@ -79,6 +91,7 @@
     return data;
 }
 
+
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
     @synchronized(self) {
         NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
@@ -88,27 +101,31 @@
     }
 }
 - (size_t)size {
-    return [super size] + [self payloadData].length;
+    @synchronized(self) {
+        if (uint256_is_not_zero(self.txHash)) return self.data.length;
+        return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length);
+    }
+}
+
+- (UInt256)creditBurnIdentityIdentifier {
+    DSUTXO outpoint = [self lockedOutpoint];
+    if (dsutxo_is_zero(outpoint)) return UINT256_ZERO;
+    return [dsutxo_data(outpoint) SHA256_2];
 }
 
 - (DSUTXO)lockedOutpoint {
-    for (int i = 0; i < self.creditOutputs.count; i++) {
-        DSTransactionOutput *output = self.outputs[i];
-        NSData *script = output.outScript;
-        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            DSUTXO outpoint = {.hash = uint256_reverse(self.txHash), .n = i}; //!OCLINT
-            return outpoint;
-        }
-    }
-    return DSUTXO_ZERO;
+    if (![self.creditOutputs count]) return DSUTXO_ZERO;
+    DSUTXO outpoint = {.hash = uint256_reverse(self.txHash), .n = 0}; //!OCLINT
+    return outpoint;
 }
 
 - (UInt160)creditBurnPublicKeyHash {
-    for (DSTransactionOutput *output in self.creditOutputs) {
-        NSData *script = output.outScript;
-        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            return [script subdataWithRange:NSMakeRange(2, 20)].UInt160;
-        }
+    DSTransactionOutput *output = self.creditOutputs.firstObject;
+    BYTES *maybe_pub_key_hash = dash_spv_crypto_util_address_address_public_key_hash_from_script(bytes_ctor(output.outScript));
+    if (maybe_pub_key_hash) {
+        NSData *result = NSDataFromPtr(maybe_pub_key_hash);
+        bytes_dtor(maybe_pub_key_hash);
+        return result.UInt160;
     }
     return UINT160_ZERO;
 }
@@ -138,6 +155,17 @@
     [path registerTransactionAddress:address];
     [path registerAddressesWithGapLimit:10 error:nil];
 }
+- (void)markTopUpAddressAsUsedInWallet:(DSWallet *)wallet {
+    DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityTopupFundingDerivationPathForWallet:wallet];
+    NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
+    [path registerTransactionAddress:address];
+    [path registerAddressesWithGapLimit:10 error:nil];
+}
+
+- (Class)entityClass {
+    return [DSAssetLockTransactionEntity class];
+}
+
 
 @end
 
@@ -146,6 +174,7 @@
     if (!transaction->special_transaction_payload) {
         return nil;
     }
+    // TODO: it's used just for ui
     switch (transaction->special_transaction_payload->tag) {
         case dashcore_blockdata_transaction_special_transaction_TransactionPayload_AssetLockPayloadType: {
             dashcore_blockdata_transaction_special_transaction_asset_lock_AssetLockPayload *payload = transaction->special_transaction_payload->asset_lock_payload_type;

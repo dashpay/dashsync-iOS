@@ -238,7 +238,7 @@
         return;
     }
     
-    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(chain.sharedRuntime, chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(chain.sharedRuntime, chain.sharedPlatformObj, u256_ctor_u(assetLockTransactionHash));
 
     dispatch_async(completionQueue, ^{
         if (completion) completion(result);
@@ -287,8 +287,7 @@
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-            fundingPrivateKey = dash_spv_crypto_keys_key_KeyKind_key_with_private_key(dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor(), (char *)[queryItem.value UTF8String], self.chain.chainType);
-//            fundingPrivateKey = [DSKeyManager keyWithPrivateKeyString:queryItem.value ofKeyType:KeyKind_ECDSA forChainType:self.chain.chainType];
+            fundingPrivateKey = dash_spv_crypto_keys_key_KeyKind_key_with_private_key(DKeyKindECDSA(), (char *)[queryItem.value UTF8String], self.chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
@@ -300,7 +299,7 @@
         return;
     }
     
-    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, u256_ctor_u(assetLockTransactionHash));
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(self.chain.sharedRuntime, self.chain.sharedPlatformObj, u256_ctor_u(assetLockTransactionHash));
     dispatch_async(self.chain.chainManager.identitiesManager.identityQueue, ^{
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];

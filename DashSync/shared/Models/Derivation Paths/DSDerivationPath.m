@@ -62,12 +62,11 @@
     //todo full uint256 derivation
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
     
-    dash_spv_crypto_keys_key_KeyKind *key_kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
     return [self derivationPathWithIndexes:indexes
                                   hardened:hardenedIndexes
                                     length:4
                                       type:DSDerivationPathType_PartialPath
-                          signingAlgorithm:key_kind
+                          signingAlgorithm:DKeyKindECDSA()
                                  reference:DSDerivationPathReference_ContactBasedFundsRoot
                                    onChain:chain];
 }
@@ -97,7 +96,7 @@
 //    BOOL hardenedIndexes[] = {};
 //    
 //    
-//    dash_spv_crypto_keys_key_KeyKind *key_kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+//    dash_spv_crypto_keys_key_KeyKind *key_kind = DKeyKindECDSA();
 //    DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes
 //                                                            hardened:hardenedIndexes
 //                                                              length:0
@@ -137,7 +136,7 @@
                                                                             rTerminalIndex:&terminalIndex];
     UInt256 indexes[] = {terminalIndex};
     BOOL hardenedIndexes[] = {terminalHardened};
-    dash_spv_crypto_keys_key_KeyKind *key_kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+    dash_spv_crypto_keys_key_KeyKind *key_kind = DKeyKindECDSA();
     DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes
                                                             hardened:hardenedIndexes
                                                               length:0
@@ -164,7 +163,7 @@
     BOOL terminalHardened = [((NSNumber *)infoDictionary[DERIVATION_PATH_STANDALONE_INFO_TERMINAL_HARDENED]) boolValue];
     UInt256 indexes[] = {terminalIndex};
     BOOL hardenedIndexes[] = {terminalHardened};
-    dash_spv_crypto_keys_key_KeyKind *key_kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+    dash_spv_crypto_keys_key_KeyKind *key_kind = DKeyKindECDSA();
     if (!(self = [self initWithIndexes:indexes
                               hardened:hardenedIndexes
                                 length:0
@@ -529,7 +528,7 @@
         [mutableString appendFormat:@"_%lu", (unsigned long)([self isHardenedAtPosition:i] ? [self indexAtPosition:i].u64[0] | BIP32_HARD : [self indexAtPosition:i].u64[0])];
     }
     char *key_storage_prefix = dash_spv_crypto_keys_key_KeyKind_key_storage_prefix(self.signingAlgorithm);
-    NSString *keyStoragePrefix = [NSString stringWithCString:key_storage_prefix encoding:NSUTF8StringEncoding];
+    NSString *keyStoragePrefix = NSStringFromPtr(key_storage_prefix);
     str_destroy(key_storage_prefix);
     return [NSString stringWithFormat:@"%@%@%@",
             [DSDerivationPathFactory walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID],
@@ -551,7 +550,7 @@
     }
     // TODO: ED25519 has own prefix
     char *key_storage_prefix = dash_spv_crypto_keys_key_KeyKind_key_storage_prefix(self.signingAlgorithm);
-    NSString *keyStoragePrefix = [NSString stringWithCString:key_storage_prefix encoding:NSUTF8StringEncoding];
+    NSString *keyStoragePrefix = NSStringFromPtr(key_storage_prefix);
     str_destroy(key_storage_prefix);
 
     return [NSString stringWithFormat:@"%@%@%@",

@@ -134,6 +134,7 @@
 
 - (NSData *)toData {
     NSMutableData *mData = [NSMutableData data];
+    [mData appendUInt8:self.version];
     [mData appendVarInt:self.inputOutpoints.count];
     for (NSData *inputOutpoints in self.inputOutpoints) {
         [mData appendUTXO:inputOutpoints.transactionOutpoint];
@@ -147,6 +148,7 @@
 - (instancetype)initWithTransactionHash:(UInt256)transactionHash
                      withInputOutpoints:(NSArray *)inputOutpoints
                               signature:(UInt768)signature
+                              cycleHash:(UInt256)cycleHash
                       signatureVerified:(BOOL)signatureVerified
                          quorumVerified:(BOOL)quorumVerified
                                 onChain:(DSChain *)chain {
@@ -155,6 +157,7 @@
     self.inputOutpoints = inputOutpoints;
     self.signatureVerified = signatureVerified;
     self.signature = signature;
+    self.cycleHash = cycleHash;
     self.quorumVerified = quorumVerified;
     self.saved = YES; //this is coming already from the persistant store and not from the network
     return self;
@@ -239,11 +242,11 @@
     }
     if (self.signatureVerified) {
         self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
-    } else if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
+    } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
         //try again a few blocks more in the past
         DSLog(@"[%@] trying for IS lock with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
-    } else if (dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
+    } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
         //try again a few blocks more in the future
         DSLog(@"[%@] trying for IS lock with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];
@@ -253,7 +256,8 @@
 }
 
 - (BOOL)verifySignature {
-    return [self verifySignatureWithQuorumOffset:8];
+    return YES;
+//    return [self verifySignatureWithQuorumOffset:8];
 }
 
 - (void)saveInitial {

@@ -244,6 +244,7 @@
         <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
     </entity>
     <entity name="DSInstantSendLockEntity" representedClassName="DSInstantSendLockEntity" syncable="YES">
+        <attribute name="cycleHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="validSignature" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="quorum" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="instantSendLocks" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>

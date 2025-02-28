@@ -47,7 +47,6 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
         case dash_spv_platform_document_usernames_UsernameStatus_Preordered:
             [saveContext setAndSaveUsernameFullPaths:DSIdentityUsernameStatus_Preordered];
             break;
-            
         case dash_spv_platform_document_usernames_UsernameStatus_RegistrationPending:
             [saveContext setAndSaveUsernameFullPaths:DSIdentityUsernameStatus_RegistrationPending];
             break;
@@ -57,8 +56,6 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
         default:
             break;
     }
-
-    
     dash_spv_platform_document_usernames_UsernameStatus_destroy(status);
 }
 
@@ -525,13 +522,13 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
                 }
                 if (!self.keysCreated) {
                     uint32_t index;
-                    [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
+                    [self createNewKeyOfType:DKeyKindECDSA() saveKey:!self.wallet.isTransient returnIndex:&index];
                 }
                 DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
                 DSUsernameFullPathSaveContext *saveContext = [DSUsernameFullPathSaveContext contextWithUsernames:usernameFullPaths forIdentity:self inContext:context];
                 Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_ save_callback = { .caller = &usernames_save_context_caller };
                 DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
-                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hashes_for_username_full_paths(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), Vec_Vec_u8_ctor(i, salted_domain_hashes_values), u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
+                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hashes_for_username_full_paths(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, u256_ctor_u(self.uniqueID), Vec_Vec_u8_ctor(i, salted_domain_hashes_values), u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
                 if (result->error) {
                     NSError *error = [NSError ffi_from_platform_error:result->error];
                     DMaybeStateTransitionProofResultDtor(result);
@@ -647,14 +644,13 @@ void usernames_save_context_caller(const void *context, dash_spv_platform_docume
                 }
                 if (!self.keysCreated) {
                     uint32_t index;
-                    [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() saveKey:!self.wallet.isTransient returnIndex:&index];
+                    [self createNewKeyOfType:DKeyKindECDSA() saveKey:!self.wallet.isTransient returnIndex:&index];
                 }
                 DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
                 DSUsernameFullPathSaveContext *saveContext = [DSUsernameFullPathSaveContext contextWithUsernames:usernameFullPaths forIdentity:self inContext:context];
                 Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_ save_callback = { .caller = &usernames_save_context_caller };
                 DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
-                Vec_platform_value_Value *values = Vec_platform_value_Value_ctor(i, values_values);
-                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_username_domains_for_username_full_paths(self.chain.sharedRuntime, self.chain.shareCore.platform->obj, contract.raw_contract, u256_ctor_u(self.uniqueID), values, u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
+                DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_register_username_domains_for_username_full_paths(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, u256_ctor_u(self.uniqueID), Vec_platform_value_Value_ctor(i, values_values), u256_ctor(entropyData), private_key->ok, ((__bridge void *)(saveContext)), save_callback);
                 if (result->error) {
                     NSError *error = [NSError ffi_from_platform_error:result->error];
                     DMaybeStateTransitionProofResultDtor(result);

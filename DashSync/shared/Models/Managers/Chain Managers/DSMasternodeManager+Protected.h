@@ -45,11 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
                                                       ownerKeyIndex:(uint32_t)ownerKeyIndex
                                                             onChain:(DSChain *)chain;
 
-+ (nullable NSError *)saveMasternodeList:(DMasternodeList *)masternodeList
-                                 toChain:(DSChain *)chain
-               havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
-                     createUnknownBlocks:(BOOL)createUnknownBlocks
-                               inContext:(NSManagedObjectContext *)context;
+//+ (nullable NSError *)saveMasternodeList:(DMasternodeList *)masternodeList
+//                                 toChain:(DSChain *)chain
+//               havingModifiedMasternodes:(DMasternodeEntryMap *)modifiedMasternodes
+//                     createUnknownBlocks:(BOOL)createUnknownBlocks
+//                               inContext:(NSManagedObjectContext *)context;
 - (BOOL)isMasternodeListOutdated;
 - (BOOL)processRequestFromFileForBlockHash:(UInt256)blockHash;
 

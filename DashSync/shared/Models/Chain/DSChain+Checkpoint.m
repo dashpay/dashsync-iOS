@@ -132,13 +132,20 @@ NSString const *syncHeadersOverrideUseCheckpointKey = @"syncHeadersOverrideUseCh
     NSMutableArray *checkpointMutableArray = [NSMutableArray array];
     for (int i = 0; i < checkpointCount; i++) {
         checkpoint cpt = checkpoints[i];
-        NSString *merkleRootString = [NSString stringWithCString:cpt.merkleRoot encoding:NSUTF8StringEncoding];
-        NSString *chainWorkString = [NSString stringWithCString:cpt.chainWork encoding:NSUTF8StringEncoding];
+        NSString *merkleRootString = NSStringFromPtr(cpt.merkleRoot);
+        NSString *chainWorkString = NSStringFromPtr(cpt.chainWork);
         uint32_t blockHeight = cpt.height;
-        UInt256 blockHash = [NSString stringWithCString:cpt.checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256;
+        NSString *blockHashHex = NSStringFromPtr(cpt.checkpointHash);
+        UInt256 blockHash = blockHashHex.hexToData.reverse.UInt256;
         UInt256 chainWork = chainWorkString.hexToData.reverse.UInt256;
         UInt256 merkleRoot = [merkleRootString isEqualToString:@""] ? UINT256_ZERO : merkleRootString.hexToData.reverse.UInt256;
-        DSCheckpoint *checkpoint = [DSCheckpoint checkpointForHeight:blockHeight blockHash:blockHash timestamp:cpt.timestamp target:cpt.target merkleRoot:merkleRoot chainWork:chainWork masternodeListName:[NSString stringWithCString:cpt.masternodeListPath encoding:NSUTF8StringEncoding]];
+        DSCheckpoint *checkpoint = [DSCheckpoint checkpointForHeight:blockHeight
+                                                           blockHash:blockHash
+                                                           timestamp:cpt.timestamp
+                                                              target:cpt.target
+                                                          merkleRoot:merkleRoot
+                                                           chainWork:chainWork
+                                                  masternodeListName:NSStringFromPtr(cpt.masternodeListPath)];
         [checkpointMutableArray addObject:checkpoint];
     }
     return [checkpointMutableArray copy];

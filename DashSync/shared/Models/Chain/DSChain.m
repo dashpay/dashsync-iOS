@@ -204,6 +204,24 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     return self.shareCore.runtime;
 }
 
+- (DArcProcessor *)sharedProcessor {
+    return self.shareCore.processor;
+}
+- (DProcessor *)sharedProcessorObj {
+    return self.sharedProcessor->obj;
+}
+- (DArcCache *)sharedCache {
+    return self.shareCore.cache;
+}
+- (DCache *)sharedCacheObj {
+    return self.sharedCache->obj;
+}
+- (DArcPlatformSDK *)sharedPlatform {
+    return self.shareCore.platform;
+}
+- (PlatformSDK *)sharedPlatformObj {
+    return self.sharedPlatform->obj;
+}
 + (DSChain *)mainnet {
     static DSChain *_mainnet = nil;
     static dispatch_once_t mainnetToken = 0;
@@ -514,6 +532,9 @@ static dispatch_once_t devnetToken = 0;
 
 - (NSString *)chainTip {
     return [NSData dataWithUInt256:self.lastTerminalBlock.blockHash].shortHexString;
+}
+- (uint32_t)chainTipHeight {
+    return self.lastTerminalBlock.height;
 }
 
 
@@ -930,6 +951,7 @@ static dispatch_once_t devnetToken = 0;
     }
     return b;
 }
+
 
 // MARK: From Insight on Testnet
 - (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash {
@@ -2139,9 +2161,9 @@ static dispatch_once_t devnetToken = 0;
         } else {
             //remember to not delete blocks needed for quorums
             NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
-            /*for (DSMerkleBlockEntity *e in oldBlockHeaders) {
-             DSLog(@"• remove Merkle block: %u: %@", e.height, e.blockHash.hexString);
-             }*/
+//            for (DSMerkleBlockEntity *e in oldBlockHeaders) {
+//                DSLog(@"[%@] remove MerkleBlockEntity: %u: %@", self.name, e.height, e.blockHash.hexString);
+//            }
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];

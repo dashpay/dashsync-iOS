@@ -25,10 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)fetchContactRequests:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 - (void)fetchOutgoingContactRequests:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 - (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context
+                                   startAfter:(NSData*_Nullable)startAfter
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue;
 - (void)fetchIncomingContactRequests:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 - (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context
+                                   startAfter:(NSData*_Nullable)startAfter
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue;
 

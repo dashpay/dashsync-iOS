@@ -96,6 +96,28 @@
     return includeForeignIdentities ? [self.chainManager.identitiesManager foreignIdentityWithUniqueId:uniqueId] : nil;
 }
 
+- (DSIdentity *)identityForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key
+                               foundInWallet:(DSWallet **)foundInWallet  {
+    for (DSWallet *wallet in self.wallets) {
+        DSIdentity *identity = [wallet identityForIdentityPublicKey:identity_public_key];
+        if (identity) {
+            if (foundInWallet)
+                *foundInWallet = wallet;
+            return identity;
+        }
+    }
+    return nil;
+}
+
+- (DMaybeOpaqueKey *)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key {
+    for (DSWallet *wallet in self.wallets) {
+        DMaybeOpaqueKey *identity_private_key = [wallet identityPrivateKeyForIdentityPublicKey:identity_public_key];
+        if (identity_private_key && identity_private_key->ok)
+            return identity_private_key;
+    }
+    return nil;
+}
+
 - (void)wipeIdentitiesPersistedDataInContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{
         NSArray *objects = [DSBlockchainIdentityEntity objectsInContext:context matching:@"chain == %@", [self chainEntityInContext:context]];

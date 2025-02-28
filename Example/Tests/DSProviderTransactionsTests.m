@@ -315,7 +315,7 @@
     DMaybeOpaqueKey *privateKey = [providerOperatorKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed]; // BLS
     NSData *operatorKeyData = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0];
     XCTAssertEqualObjects(operatorKeyData.hexString, [NSData dataWithUInt384:operatorKeyNeeded].hexString, @"operator keys don't match");
-    DMaybeOpaqueKey *operatorBLSKey = [DSKeyManager keyWithPublicKeyData:operatorKeyData ofType:dash_spv_crypto_keys_key_KeyKind_BLS_ctor()];
+    DMaybeOpaqueKey *operatorBLSKey = [DSKeyManager keyWithPublicKeyData:operatorKeyData ofType:DKeyKindBLS()];
     UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
     SLICE *payload_hash_slice = slice_u256_ctor_u(payloadHash);
     BYTES *signature_from_digest = dash_spv_crypto_keys_key_OpaqueKey_sign(privateKey->ok, payload_hash_slice);
@@ -366,17 +366,17 @@
     NSString *txIdString = @"bd98378ca37d3ae6f4850b82e77be675feb3c9bc6e33cb0c23de1b38a08034c7";
     DSUTXO input0 = (DSUTXO){.hash = @"0d262b1bb1d9946002d63ad212ad0caf8c9ce36fa0129bb4f996ddc8da76dec7".hexToData.reverse.UInt256, .n = 0};
     NSString *inputAddress0 = @"yabJKtPXkYc8ZXQNYjdKxwG7TcpdyJN1Ns";
-    DMaybeOpaqueKey *inputPrivateKey = [DSKeyManager keyWithPrivateKeyString:@"cRfAz5ZmPN9eGSkXrGk3VYjJWt8gWffLCKTy7BtAgpQZj8YPvXwU" ofKeyType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() forChainType:chain.chainType];
+    DMaybeOpaqueKey *inputPrivateKey = [DSKeyManager keyWithPrivateKeyString:@"cRfAz5ZmPN9eGSkXrGk3VYjJWt8gWffLCKTy7BtAgpQZj8YPvXwU" ofKeyType:DKeyKindECDSA() forChainType:chain.chainType];
     NSString *outputAddress0 = @"yR6MpzaykeioS25qZWrTWx2ruHCecYjMwa";
     NSString *votingAddress = @"yWEZQmGADmdSk6xCai7TPcmiSZuY65hBmo";
     NSString *payoutAddress = @"yUE5KLX1HNA4BkjN1Zgtwq6hQ16Cvo7hrX";
     NSString *privateOwnerKeyString = @"cQpV2b9hNQd5Xs7REcrkPXmuCNDVvx6mSndr2ZgXKhfAhWDUUznB";
     NSString *privateOperatorKey = @"0fc63f4e6d7572a6c33465525b5c3323f57036873dd37c98c393267c58b50533";
-    DMaybeOpaqueKey *operatorKey = [DSKeyManager keyWithPrivateKeyString:privateOperatorKey ofKeyType:dash_spv_crypto_keys_key_KeyKind_BLS_ctor() forChainType:chain.chainType];
+    DMaybeOpaqueKey *operatorKey = [DSKeyManager keyWithPrivateKeyString:privateOperatorKey ofKeyType:DKeyKindBLS() forChainType:chain.chainType];
     UInt256 providerTransactionHash = @"3dbb7de94e219e8f7eaea4f3c01cf97d77372e10152734c1959f17302369aa49".hexToData.reverse.UInt256;
     DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransactionFromMessage = [[DSProviderUpdateRegistrarTransaction alloc] initWithMessage:hexData registrationTransaction:providerRegistrationTransactionFromMessage onChain:chain];
     XCTAssertEqualObjects(providerUpdateRegistrarTransactionFromMessage.toData, hexData, @"Provider update registrar transaction does not match it's data");
-    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyString:privateOwnerKeyString ofKeyType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() forChainType:chain.chainType];
+    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyString:privateOwnerKeyString ofKeyType:DKeyKindECDSA() forChainType:chain.chainType];
     UInt256 payloadHash = providerUpdateRegistrarTransactionFromMessage.payloadHash;
     u256 *payload_hash = u256_ctor_u(payloadHash);
     Arr_u8_65 *compact_sig = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_compact_sign(privateKey->ok->ecdsa, payload_hash);

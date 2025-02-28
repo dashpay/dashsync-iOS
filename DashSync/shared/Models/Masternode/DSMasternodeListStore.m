@@ -55,7 +55,7 @@
         return [self.chain heightForBlockHash:blockHash];
     }];
     if (list) {
-        dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_set_last_queried_mn_masternode_list(self.chain.shareCore.cache->obj, list->block_hash);
+        dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_set_last_queried_mn_masternode_list(self.chain.sharedCacheObj, list->block_hash);
     }
     [self removeOldSimplifiedMasternodeEntries];
     [self loadLocalMasternodes];
@@ -73,23 +73,23 @@
 //}
 
 - (uint32_t)earliestMasternodeListBlockHeight {
-    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_earliest_masternode_list_block_height(self.chain.shareCore.processor->obj);
+    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_earliest_masternode_list_block_height(self.chain.sharedProcessorObj);
 }
 
 - (uint32_t)lastMasternodeListBlockHeight {
-    return DLastMasternodeListBlockHeight(self.chain.shareCore.processor->obj);
+    return DLastMasternodeListBlockHeight(self.chain.sharedProcessorObj);
 }
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     if (uint256_is_zero(blockhash)) return 0;
     u256 *hash = u256_ctor_u(blockhash);
-    uint32_t cachedHeight = DHeightForBlockHash(self.chain.shareCore.processor->obj, hash);
+    uint32_t cachedHeight = DHeightForBlockHash(self.chain.sharedProcessorObj, hash);
     return cachedHeight;
 }
 
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash {
     u256 *block_hash = u256_ctor_u(blockHash);
-    u256 *closest_block_hash = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_closest_known_block_hash_for_block_hash(self.chain.shareCore.processor->obj, block_hash);
+    u256 *closest_block_hash = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_closest_known_block_hash_for_block_hash(self.chain.sharedProcessorObj, block_hash);
     UInt256 known = u256_cast(closest_block_hash);
     u256_dtor(closest_block_hash);
     return known;
@@ -162,7 +162,7 @@
         DSLog(@"loadMasternodeListAtBlockHash loaded: %p", masternode_list);
         if (masternode_list)
             [self.chain.chainManager notifyMasternodeSyncStateChange:self.lastMasternodeListBlockHeight
-                                                         storedCount:DMasternodeListLoaded(self.chain.shareCore.cache->obj, u256_ctor(blockHash), masternode_list)];
+                                                         storedCount:DMasternodeListLoaded(self.chain.sharedCacheObj, u256_ctor(blockHash), masternode_list)];
     }];
     dispatch_group_leave(self.savingGroup);
     return masternode_list;
@@ -177,7 +177,7 @@
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"block.height" ascending:YES]]];
         NSArray *masternodeListEntities = [DSMasternodeListEntity fetchObjects:fetchRequest inContext:self.managedObjectContext];
         //DSLog(@"[%@] loadMasternodeListsWithBlockHeightLookup: stored count: %lu", self.chain.name, masternodeListEntities.count);
-        MasternodeProcessorCache *cache = self.chain.shareCore.cache->obj;
+        MasternodeProcessorCache *cache = self.chain.sharedCacheObj;
 
         uint32_t neededMasternodeListHeight = self.chain.lastTerminalBlockHeight - 23; //2*8+7
         DSLog(@"[%@] loadMasternodeListsWithBlockHeightLookup: needed_height: %u", self.chain.name, neededMasternodeListHeight);
@@ -218,13 +218,13 @@
 }
 
 - (void)removeOldMasternodeLists {
-    uint32_t heightToDelete = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_calculate_outdated_height(self.chain.shareCore.processor->obj);
+    uint32_t heightToDelete = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_calculate_outdated_height(self.chain.sharedProcessorObj);
     if (heightToDelete > 0 && heightToDelete != UINT32_MAX) {
         uint32_t h = heightToDelete - 50;
-        DRemoveMasternodeListsBefore(self.chain.shareCore.cache->obj, h);
+        DRemoveMasternodeListsBefore(self.chain.sharedCacheObj, h);
         dispatch_group_enter(self.savingGroup);
         [self.managedObjectContext performBlockAndWait:^{
-            DCache *cache = self.chain.shareCore.cache->obj;
+            DCache *cache = self.chain.sharedCacheObj;
             std_collections_HashSet_u8_32 *set = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_known_masternode_lists_block_hashes(cache);
             NSArray<NSData *> *masternodeListBlockHashes = [NSArray ffi_from_hash_set:set];
             [NSArray ffi_destroy_hash_set:set];
@@ -300,7 +300,7 @@
     if (!quorumSnapshot) {
         return NULL;
     }
-    uint32_t blockHeight = DHeightForBlockHash(self.chain.shareCore.processor->obj, block_hash);
+    uint32_t blockHeight = DHeightForBlockHash(self.chain.sharedProcessorObj, block_hash);
     NSData *blockHashData = NSDataFromPtr(block_hash);
     UInt256 blockHash = blockHashData.UInt256;
     dispatch_group_enter(self.savingGroup);
@@ -435,7 +435,7 @@
         DLLMQMapOfType *quorums_of_type = quorum_map->values[i];
         for (int j = 0; j < quorums_of_type->count; j++) {
             DLLMQEntry *potential_entry = quorums_of_type->values[j];
-            DSQuorumEntryEntity *entity = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntryForMerging:potential_entry inContext:context onChain:chain];
+            DSQuorumEntryEntity *entity = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntry:potential_entry inContext:context onChain:chain];
             if (entity)
                 [masternodeListEntity addQuorumsObject:entity];
         }

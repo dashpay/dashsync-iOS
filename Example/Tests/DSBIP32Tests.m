@@ -150,7 +150,7 @@
     {
         UInt256 derivationPathIndexesRoot[] = {};
         BOOL hardenedRoot[] = {};
-        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         rootDerivationPath.wallet = wallet;
         [rootDerivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         XCTAssertEqualObjects([DSDerivationPathFactory serializedExtendedPublicKey:rootDerivationPath],
@@ -184,7 +184,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1)};
         BOOL hardened[] = {YES, NO};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:2 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:2 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         XCTAssertEqualObjects([DSDerivationPathFactory serializedExtendedPublicKey:derivationPath],
@@ -201,7 +201,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1), uint256_from_long(2)};
         BOOL hardened[] = {YES, NO, YES};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:3 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:3 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         XCTAssertEqualObjects([DSDerivationPathFactory serializedExtendedPublicKey:derivationPath],
@@ -218,7 +218,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1), uint256_from_long(2), uint256_from_long(2)};
         BOOL hardened[] = {YES, NO, YES, NO};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:4 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:4 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         XCTAssertEqualObjects([DSDerivationPathFactory serializedExtendedPublicKey:derivationPath],
@@ -235,7 +235,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1), uint256_from_long(2), uint256_from_long(2), uint256_from_long(1000000000)};
         BOOL hardened[] = {YES, NO, YES, NO, NO};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:5 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:5 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         XCTAssertEqualObjects([DSDerivationPathFactory serializedExtendedPublicKey:derivationPath],
@@ -250,7 +250,6 @@
 - (void)testBIP32SerializationsAdvanced {
     NSData *seedData = @"fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542".hexToData;
     DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:seedData forChain:self.chain];
-//    DKeyKind *kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
 
     //--------------------------------------------------------------------------------------------------//
     // m //
@@ -259,7 +258,7 @@
     {
         UInt256 derivationPathIndexesRoot[] = {};
         BOOL hardenedRoot[] = {};
-        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         rootDerivationPath.wallet = wallet;
         [rootDerivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         NSString *serializedRootExtendedPublicKey = [DSDerivationPathFactory serializedExtendedPublicKey:rootDerivationPath];
@@ -278,7 +277,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0)};
         BOOL hardened[] = {NO};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:1 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:1 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         NSString *serializedRootExtendedPublicKey = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
@@ -298,7 +297,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647)};
         BOOL hardened[] = {NO, YES};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:2 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:2 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         NSString *serializedRootExtendedPublicKey = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
@@ -317,7 +316,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647), uint256_from_long(1)};
         BOOL hardened[] = {NO, YES, NO};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:3 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:3 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         NSString *serializedRootExtendedPublicKey = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
@@ -336,7 +335,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647), uint256_from_long(1), uint256_from_long(2147483646)};
         BOOL hardened[] = {NO, YES, NO, YES};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:4 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:4 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         NSString *serializedRootExtendedPublicKey = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
@@ -355,7 +354,7 @@
     {
         UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647), uint256_from_long(1), uint256_from_long(2147483646), uint256_from_long(2)};
         BOOL hardened[] = {NO, YES, NO, YES, NO};
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:5 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:5 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
         derivationPath.wallet = wallet;
         [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
         NSString *serializedRootExtendedPublicKey = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
@@ -381,7 +380,7 @@
         UInt256 derivationPathIndexesRoot[] = {};
         BOOL hardenedRoot[] = {};
 
-        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
 
         rootDerivationPath.wallet = wallet;
 
@@ -406,7 +405,7 @@
         UInt256 derivationPathIndexes[] = {uint256_from_long(0)};
         BOOL hardened[] = {YES};
 
-        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:1 type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Root onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:1 type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Root onChain:self.chain];
 
         derivationPath.wallet = wallet;
 
@@ -734,7 +733,7 @@
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:self.wallet];
     NSData *seed_data = [NSData dataWithBytes:(uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10} length:10];
     SLICE *seed_slice = slice_ctor(seed_data);
-    DKeyKind *kind = dash_spv_crypto_keys_key_KeyKind_BLS_ctor();
+    DKeyKind *kind = DKeyKindBLS();
     DMaybeOpaqueKey *bobKeyPairBLS = dash_spv_crypto_keys_key_KeyKind_key_with_seed_data(kind, seed_slice);
 //    DOpaqueKey *bobKeyPairBLS = key_with_seed_data((uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10}, 10, (int16_t) KeyKind_BLS);
     DMaybeOpaqueKey *privateKeyBLS = [derivationPath privateKeyAtIndex:0 fromSeed:self.seed];
@@ -760,7 +759,7 @@
     
     SLICE *bob_secret_slice = slice_ctor(bobSecretData);
     
-    DMaybeOpaqueKey *bobKeyPairECDSA = dash_spv_crypto_keys_key_KeyKind_key_with_private_key_data(dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor(), bob_secret_slice);
+    DMaybeOpaqueKey *bobKeyPairECDSA = dash_spv_crypto_keys_key_KeyKind_key_with_private_key_data(DKeyKindECDSA(), bob_secret_slice);
     
     DMaybeOpaqueKey *privateKeyECDSA = [derivationPath privateKeyAtIndex:0 fromSeed:self.seed];
     NSData *encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyECDSA->ok forPublicKey:bobKeyPairECDSA->ok];

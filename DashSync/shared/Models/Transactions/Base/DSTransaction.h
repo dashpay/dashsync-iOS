@@ -155,7 +155,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
 // TMP method to handle specific c structures
-- (BOOL)signWithMaybePrivateKeys:(NSArray *)keys;
+- (BOOL)signWithMaybePrivateKeySets:(NSArray *)keysSets;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;

@@ -43,8 +43,8 @@
         u768 *threshold_signature = u768_ctor(quorumEntity.quorumThresholdSignatureData);
         u768 *all_commitment_aggregated_signature = u768_ctor(quorumEntity.allCommitmentAggregatedSignatureData);
         // yes this is crazy but this is correct (legacy)
-        u256 *entry_hash = u256_ctor(quorumEntity.commitmentHashData);
-        DLLMQEntry *entry = dash_spv_crypto_llmq_entry_from_entity(version, llmq_type, llmq_hash, llmq_index, signers, signers_count, valid_members, valid_members_count, public_key, verification_vector_hash, threshold_signature, all_commitment_aggregated_signature, status, entry_hash);
+//        u256 *entry_hash = u256_ctor(quorumEntity.commitmentHashData);
+        DLLMQEntry *entry = dash_spv_crypto_llmq_entry_from_entity(version, llmq_type, llmq_hash, llmq_index, signers, signers_count, valid_members, valid_members_count, public_key, verification_vector_hash, threshold_signature, all_commitment_aggregated_signature, status, nil);
         quorums[quorums_count] = entry;
         quorums_count++;
     }

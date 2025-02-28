@@ -61,6 +61,7 @@
                     onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
     [self fetchIncomingContactRequestsInContext:context
+                                     startAfter:nil
                                  withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -72,6 +73,7 @@
             return;
         }
         [strongSelf fetchOutgoingContactRequestsInContext:context
+                                               startAfter:nil
                                            withCompletion:completion
                                         onCompletionQueue:completionQueue];
     }
@@ -80,6 +82,7 @@
 
 - (void)fetchIncomingContactRequests:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion {
     [self fetchIncomingContactRequestsInContext:self.platformContext
+                                     startAfter:nil
                                  withCompletion:completion
                               onCompletionQueue:dispatch_get_main_queue()];
 }
@@ -115,11 +118,10 @@
         DMaybeContactRequestsDtor(result);
         [debugInfo appendFormat:@" : ERROR: %@", error];
         DSLog(@"%@", debugInfo);
-
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error]); });
         return;
     }
-
+    
     dispatch_async(self.identityQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -129,40 +131,74 @@
             return;
         }
         DContactRequests *documents = result->ok;
-        [strongSelf handleContactRequestObjects:documents
-                                        context:context
-                                     completion:^(BOOL success, NSArray<NSError *> *errors) {
+        NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
+        __block NSMutableArray<NSValue *> *incomingNewRequests = [NSMutableArray array];
+        __block NSMutableArray *rErrors = [NSMutableArray array];
+        [context performBlockAndWait:^{
+            for (int i = 0; i < documents->count; i++) {
+                DContactRequestKind *kind = documents->values[i];
+                switch (kind->tag) {
+                    case dash_spv_platform_models_contact_request_ContactRequestKind_Incoming: {
+                        NSData *identifier = NSDataFromPtr(kind->incoming->owner_id);
+                        //we are the recipient, this is an incoming request
+                        DSFriendRequestEntity *exist = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], identifier];
+                        
+                        // TODO: memory
+                        if (!exist)
+                            [incomingNewRequests addObject:[NSValue valueWithPointer:dash_spv_platform_document_contact_request_as_incoming_request(kind)]];
+                        break;
+                    }
+                    default: {
+                        //we should not have received this
+                        NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
+                        break;
+                    }
+                }
+            }
+        }];
+        __block BOOL succeeded = YES;
+        dispatch_group_t dispatchGroup = dispatch_group_create();
+        if ([incomingNewRequests count]) {
+            dispatch_group_enter(dispatchGroup);
+            [self handleIncomingRequests:incomingNewRequests
+                                 context:context
+                              completion:^(BOOL success, NSArray<NSError *> *errors) {
+                if (!success) {
+                    succeeded = NO;
+                    [rErrors addObjectsFromArray:errors];
+                }
+                dispatch_group_leave(dispatchGroup);
+            }
+                       onCompletionQueue:completionQueue];
+        }
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
             BOOL hasMore = documents->count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
             if (!hasMore)
                 [self.platformContext performBlockAndWait:^{
                     self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
-            [debugInfo appendFormat:@" : OK: %u: %@", success, errors];
+            [debugInfo appendFormat:@" : OK: %u: %@", succeeded, rErrors];
             DSLog(@"%@", debugInfo);
             __block NSData * hasMoreStartAfter = nil;
             if (documents->count > 0) {
                 DContactRequestKind *last = documents->values[documents->count-1];
                 if (last->incoming)
                     hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
-                else if (last->outgoing)
-                    hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
             }
-            dispatch_async(completionQueue, ^{
-                if (success && hasMoreStartAfter)
-                    [self fetchIncomingContactRequestsInContext:context
-                                                     startAfter:hasMoreStartAfter
-                                                 withCompletion:completion
-                                              onCompletionQueue:completionQueue];
-                else if (completion)
-                    completion(success, errors);
-            });
-        }
-                              onCompletionQueue:self.identityQueue];
+            if (succeeded && hasMoreStartAfter)
+                [self fetchIncomingContactRequestsInContext:context
+                                                 startAfter:hasMoreStartAfter
+                                             withCompletion:completion
+                                          onCompletionQueue:completionQueue];
+            else if (completion)
+                completion(succeeded, [rErrors copy]);
+        });
     });
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     [self fetchOutgoingContactRequestsInContext:self.platformContext
+                                     startAfter:nil
                                  withCompletion:completion
                               onCompletionQueue:dispatch_get_main_queue()];
 }
@@ -183,7 +219,7 @@
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
         [debugInfo appendFormat:@" : ERROR: Active private keys are loaded with error: %@", error];
         DSLog(@"%@", debugInfo);
-       //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
+        //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
         return;
     }
@@ -210,110 +246,83 @@
             if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_MEM_ALLOC]); });
             return;
         }
-
         DContactRequests *documents = result->ok;
-        [strongSelf handleContactRequestObjects:documents
-                                        context:context
-                                     completion:^(BOOL success, NSArray<NSError *> *errors) {
+        NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
+        __block NSMutableArray<NSValue *> *outgoingNewRequests = [NSMutableArray array];
+        __block NSMutableArray *rErrors = [NSMutableArray array];
+        [context performBlockAndWait:^{
+            for (int i = 0; i < documents->count; i++) {
+                DContactRequestKind *kind = documents->values[i];
+                switch (kind->tag) {
+                    case dash_spv_platform_models_contact_request_ContactRequestKind_Outgoing: {
+                        NSData *identifier = NSDataFromPtr(kind->outgoing->recipient);
+                        
+                        BOOL exist = [DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], identifier];
+                        // TODO: memory
+                        if (!exist) [outgoingNewRequests addObject:[NSValue valueWithPointer:dash_spv_platform_document_contact_request_as_outgoing_request(kind)]];
+                        break;
+                    }
+                    default: {
+                        //we should not have received this
+                        NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
+                        break;
+                    }
+                }
+            }
+        }];
+        __block BOOL succeeded = YES;
+        dispatch_group_t dispatchGroup = dispatch_group_create();
+        if ([outgoingNewRequests count]) {
+            dispatch_group_enter(dispatchGroup);
+            [self handleOutgoingRequests:outgoingNewRequests
+                                 context:context
+                              completion:^(BOOL success, NSArray<NSError *> *errors) {
+                if (!success) {
+                    succeeded = NO;
+                    [rErrors addObjectsFromArray:errors];
+                }
+                dispatch_group_leave(dispatchGroup);
+            }
+                       onCompletionQueue:completionQueue];
+        }
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
             BOOL hasMore = documents->count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
             if (!hasMore)
                 [self.platformContext performBlockAndWait:^{
                     self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
-            [debugInfo appendFormat:@" : OK: %u: %@", success, errors];
+            [debugInfo appendFormat:@" : OK: %u: %@", succeeded, rErrors];
             DSLog(@"%@", debugInfo);
             __block NSData * hasMoreStartAfter = nil;
             if (documents->count > 0) {
                 DContactRequestKind *last = documents->values[documents->count-1];
-                if (last->incoming)
-                    hasMoreStartAfter = NSDataFromPtr(last->incoming->id);
-                else if (last->outgoing)
+                if (last->outgoing)
                     hasMoreStartAfter = NSDataFromPtr(last->outgoing->id);
             }
-            dispatch_async(completionQueue, ^{
-                if (success && hasMoreStartAfter)
-                    [self fetchOutgoingContactRequestsInContext:context
-                                                     startAfter:hasMoreStartAfter
-                                                 withCompletion:completion
-                                              onCompletionQueue:completionQueue];
-                else if (completion)
-                    completion(success, errors);
-            });
-        }
-                              onCompletionQueue:self.identityQueue];
+            if (succeeded && hasMoreStartAfter)
+                [self fetchOutgoingContactRequestsInContext:context
+                                                 startAfter:hasMoreStartAfter
+                                             withCompletion:completion
+                                          onCompletionQueue:completionQueue];
+            else if (completion)
+                completion(succeeded, [rErrors copy]);
+        });
     });
 }
 
-// MARK: Response Processing
-/// Handle an array of contact requests. This method will split contact requests into either incoming contact requests or outgoing contact requests and then call methods for handling them if applicable.
-/// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.
-/// @param context The managed object context in which to process results.
-/// @param completion Completion callback with success boolean.
-- (void)handleContactRequestObjects:(DContactRequests *)rawContactRequests
-                            context:(NSManagedObjectContext *)context
-                         completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
-                  onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
-    __block NSMutableArray<NSValue *> *incomingNewRequests = [NSMutableArray array];
-    __block NSMutableArray<NSValue *> *outgoingNewRequests = [NSMutableArray array];
-    __block NSMutableArray *rErrors = [NSMutableArray array];
-    [context performBlockAndWait:^{
-        for (int i = 0; i < rawContactRequests->count; i++) {
-            DContactRequestKind *kind = rawContactRequests->values[i];
-            switch (kind->tag) {
-                case dash_spv_platform_models_contact_request_ContactRequestKind_Incoming: {
-                    NSData *identifier = NSDataFromPtr(kind->incoming->owner_id);
-                    //we are the recipient, this is an incoming request
-                    DSFriendRequestEntity *exist = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], identifier];
-                    // TODO: memory
-                    if (!exist) [incomingNewRequests addObject:[NSValue valueWithPointer:kind->incoming]];
-                    break;
-                }
-                case dash_spv_platform_models_contact_request_ContactRequestKind_Outgoing: {
-                    NSData *identifier = NSDataFromPtr(kind->outgoing->recipient);
 
-                    BOOL exist = [DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], identifier];
-                    // TODO: memory
-                    if (!exist) [outgoingNewRequests addObject:[NSValue valueWithPointer:kind->outgoing]];
-                    break;
-                }
-                default: {
-                    //we should not have received this
-                    NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
-                    break;
-                }
-            }
-        }
-    }];
-    __block BOOL succeeded = YES;
-    dispatch_group_t dispatchGroup = dispatch_group_create();
-    if ([incomingNewRequests count]) {
-        dispatch_group_enter(dispatchGroup);
-        [self handleIncomingRequests:incomingNewRequests
-                             context:context
-                          completion:^(BOOL success, NSArray<NSError *> *errors) {
-            if (!success) {
-                succeeded = NO;
-                [rErrors addObjectsFromArray:errors];
-            }
-            dispatch_group_leave(dispatchGroup);
-        }
-                   onCompletionQueue:completionQueue];
-    }
-    if ([outgoingNewRequests count]) {
-        dispatch_group_enter(dispatchGroup);
-        [self handleOutgoingRequests:outgoingNewRequests
-                             context:context
-                          completion:^(BOOL success, NSArray<NSError *> *errors) {
-            if (!success) {
-                succeeded = NO;
-                [rErrors addObjectsFromArray:errors];
-            }
-            dispatch_group_leave(dispatchGroup);
-        }
-                   onCompletionQueue:completionQueue];
-    }
-    dispatch_group_notify(dispatchGroup, completionQueue, ^{ if (completion) completion(succeeded, [rErrors copy]); });
+- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key
+                                  request:(dash_spv_platform_models_contact_request_ContactRequest *)request {
+    NSParameterAssert(key);
+    DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(key);
+    uint32_t index = uint256_eq(self.uniqueID, *(UInt256 *)request->recipient) ? request->sender_key_index : request->recipient_key_index;
+    DMaybeOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
+    NSAssert(maybe_key->ok, @"Key should exist");
+    DMaybeKeyData *key_data = dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(maybe_key->ok, key, request->encrypted_public_key);
+    NSData *data = key_data->ok ? NSDataFromPtr(key_data->ok) : nil;
+    DMaybeKeyDataDtor(key_data);
+    DMaybeOpaqueKeyDtor(maybe_key);
+    return data;
 }
 
 - (void)handleIncomingRequests:(NSArray<NSValue *> *)incomingRequests
@@ -342,7 +351,7 @@
                     if (!failureStep) {
                         DMaybeOpaqueKey *senderPublicKey = [senderIdentity keyAtIndex:request->sender_key_index];
                         NSData *extendedPublicKeyData = [self decryptedPublicKeyDataWithKey:senderPublicKey->ok request:request];
-                        DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:extendedPublicKeyData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
+                        DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:extendedPublicKeyData ofType:DKeyKindECDSA()];
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
                             [errors addObject:ERROR_KEY_FORMAT_DECRYPTION];
@@ -358,7 +367,7 @@
                     }
                     dispatch_group_leave(dispatchGroup);
                 }
-                                                                    onCompletionQueue:self.identityQueue];
+                                                          onCompletionQueue:self.identityQueue];
                 
             } else {
                 if ([self.chain identityForUniqueId:externalIdentityEntity.uniqueID.UInt256]) {
@@ -397,9 +406,9 @@
                         DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
                         NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
                         NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
-                        dash_spv_crypto_keys_key_KeyKind *kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+                        dash_spv_crypto_keys_key_KeyKind *kind = DKeyKindECDSA();
                         DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:kind];
-//                        dash_spv_crypto_keys_key_KeyKind_destroy(kind);
+                        //                        dash_spv_crypto_keys_key_KeyKind_destroy(kind);
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
                             [errors addObject:ERROR_CONTACT_REQUEST_KEY_ENCRYPTION];
@@ -426,7 +435,7 @@
                                     NSAssert(key, @"key should be known");
                                     NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
                                     NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
-                                    DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
+                                    DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:DKeyKindECDSA()];
                                     NSAssert(extendedPublicKey, @"A key should be recovered");
                                     [self addIncomingRequestFromContact:externalIdentityEntity.matchingDashpayUser
                                                    forExtendedPublicKey:extendedPublicKey
@@ -443,29 +452,20 @@
                             }
                             dispatch_group_leave(dispatchGroup);
                         }
-                                                                            onCompletionQueue:self.identityQueue];
+                                                                  onCompletionQueue:self.identityQueue];
                     }
                 }
             }
         }
-        dispatch_group_notify(dispatchGroup, completionQueue, ^{ if (completion) completion(succeeded, [errors copy]); });
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
+            for (NSValue *request in incomingRequests) {
+                dash_spv_platform_models_contact_request_ContactRequest_destroy(request.pointerValue);
+            }
+
+            if (completion) completion(succeeded, [errors copy]);
+        });
     }];
 }
-
-- (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key
-                                  request:(dash_spv_platform_models_contact_request_ContactRequest *)request {
-    NSParameterAssert(key);
-    DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(key);
-    uint32_t index = uint256_eq(self.uniqueID, *(UInt256 *)request->recipient) ? request->sender_key_index : request->recipient_key_index;
-    DMaybeOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
-    NSAssert(maybe_key->ok, @"Key should exist");
-    DMaybeKeyData *key_data = dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(maybe_key->ok, key, request->encrypted_public_key);
-    NSData *data = key_data->ok ? NSDataFromPtr(key_data->ok) : nil;
-    DMaybeKeyDataDtor(key_data);
-    DMaybeOpaqueKeyDtor(maybe_key);
-    return data;
-}
-
 
 - (void)handleOutgoingRequests:(NSArray<NSValue *> *)outgoingRequests
                        context:(NSManagedObjectContext *)context
@@ -505,7 +505,7 @@
                     }
                     dispatch_group_leave(dispatchGroup);
                 }
-                                                                       onCompletionQueue:self.identityQueue];
+                                                             onCompletionQueue:self.identityQueue];
             } else {
                 //the recipient blockchain identity is already known, meaning they had made a friend request to us before, and on another device we had accepted
                 //or the recipient blockchain identity is also local to the device
@@ -537,10 +537,16 @@
                     }
                     dispatch_group_leave(dispatchGroup);
                 }
-                                                                onCompletionQueue:self.identityQueue];
+                                                      onCompletionQueue:self.identityQueue];
             }
         }
-        dispatch_group_notify(dispatchGroup, completionQueue, ^{ if (completion) completion(succeeded, [errors copy]); });
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
+            for (NSValue *request in outgoingRequests) {
+                dash_spv_platform_models_contact_request_ContactRequest_destroy(request.pointerValue);
+            }
+            if (completion) completion(succeeded, [errors copy]);
+            
+        });
     }];
 }
 
@@ -575,4 +581,5 @@
     [context ds_save];
     [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
 }
+
 @end

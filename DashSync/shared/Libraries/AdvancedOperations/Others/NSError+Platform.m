@@ -27,11 +27,12 @@
         case dash_spv_platform_error_Error_KeyError:
             return [NSError ffi_from_key_error:ffi_ref->key_error];
         case dash_spv_platform_error_Error_DashSDKError:
-            return [NSError errorWithCode:0 localizedDescriptionKey:[NSString stringWithCString:ffi_ref->dash_sdk_error encoding:NSUTF8StringEncoding]];
+            return [NSError errorWithCode:0 localizedDescriptionKey:NSStringFromPtr(ffi_ref->dash_sdk_error)];
         case dash_spv_platform_error_Error_Any:
-            return [NSError errorWithCode:ffi_ref->any._0 localizedDescriptionKey:[NSString stringWithCString:ffi_ref->any._1 encoding:NSUTF8StringEncoding]];
+            return [NSError errorWithCode:ffi_ref->any._0 localizedDescriptionKey:NSStringFromPtr(ffi_ref->any._1)];
         case dash_spv_platform_error_Error_MaxRetryExceeded:
-            return [NSError errorWithCode:0 localizedDescriptionKey:[NSString stringWithCString:ffi_ref->max_retry_exceeded encoding:NSUTF8StringEncoding]];
+        case dash_spv_platform_error_Error_InstantSendSignatureVerificationError:
+            return [NSError errorWithCode:0 localizedDescriptionKey:NSStringFromPtr(ffi_ref->instant_send_signature_verification_error)];
     }
 }
 
@@ -59,7 +60,7 @@
         case dash_spv_crypto_keys_KeyError_Product:
             return [NSError errorWithCode:0 localizedDescriptionKey:@"Can't multiple keys"];
         case dash_spv_crypto_keys_KeyError_Any:
-            return [NSError errorWithCode:0 localizedDescriptionKey:[NSString stringWithCString:ffi_ref->any encoding:NSUTF8StringEncoding]];
+            return [NSError errorWithCode:0 localizedDescriptionKey:NSStringFromPtr(ffi_ref->any)];
     }
 }
 

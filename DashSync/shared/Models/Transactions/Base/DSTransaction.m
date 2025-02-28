@@ -413,7 +413,8 @@
         NSArray<DSTransactionOutput *> *outputs = self.outputs;
         NSUInteger inputsCount = inputs.count;
         NSUInteger outputsCount = outputs.count;
-        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSAssetLockTransaction class]] || [self isMemberOfClass:[DSAssetUnlockTransaction class]]) && subscriptIndex != NSNotFound;
+        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]]) && subscriptIndex != NSNotFound;
+//        BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSAssetLockTransaction class]] || [self isMemberOfClass:[DSAssetUnlockTransaction class]]) && subscriptIndex != NSNotFound;
         NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:inputsCount] + [NSMutableData sizeOfVarInt:outputsCount] + TX_INPUT_SIZE * inputsCount + TX_OUTPUT_SIZE * outputsCount + (forSigHash ? 4 : 0);
 
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
@@ -567,7 +568,7 @@
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
 
     for (NSString *pk in privateKeys) {
-        DKeyKind *kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+        DKeyKind *kind = DKeyKindECDSA();
         DMaybeOpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:kind forChainType:self.chain.chainType];
         if (!key) continue;
         [keys addObject:[NSValue valueWithPointer:key]];
@@ -585,7 +586,8 @@
         [addresses addObject:[DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType]];
     }
     @synchronized (self) {
-        for (NSUInteger i = 0; i < self.mInputs.count; i++) {DSTransactionInput *transactionInput = self.mInputs[i];
+        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
+            DSTransactionInput *transactionInput = self.mInputs[i];
             NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
             NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
             if (keyIdx == NSNotFound) continue;
@@ -600,28 +602,23 @@
     }
 }
 
-- (BOOL)signWithMaybePrivateKeys:(NSArray *)keys {
-    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
-
-    for (NSValue *keyValue in keys) {
-        DMaybeOpaqueKeys *maybe_key_set = (DMaybeOpaqueKeys *) keyValue.pointerValue;
-        if (maybe_key_set && maybe_key_set->ok) {
-            for (int i = 0; i < maybe_key_set->ok->count; i++) {
-                DOpaqueKey *key = maybe_key_set->ok->values[i];
-                [addresses addObject:[DSKeyManager addressForKey:key forChainType:self.chain.chainType]];
-            }
-        }
-        
-    }
+- (BOOL)signWithMaybePrivateKeySets:(NSArray *)keysSets {
     @synchronized (self) {
-        for (NSUInteger i = 0; i < self.mInputs.count; i++) {DSTransactionInput *transactionInput = self.mInputs[i];
-            NSString *addr = [DSKeyManager addressWithScriptPubKey:transactionInput.inScript forChain:self.chain];
-            NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
-            if (keyIdx == NSNotFound) continue;
-            NSData *data = [self toDataWithSubscriptIndex:i];
+        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
+            DSTransactionInput *transactionInput = self.mInputs[i];
             NSData *inScript = transactionInput.inScript;
-            NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKeyValue:keys[keyIdx]];
-            transactionInput.signature = sig;
+            for (NSValue *keyValue in keysSets) {
+                DMaybeOpaqueKeys *maybe_opaque_keys = keyValue.pointerValue;
+                if (maybe_opaque_keys->ok) {
+                    DOpaqueKey *opaque_key = dash_spv_crypto_keys_key_maybe_opaque_key_used_in_tx_input_script(bytes_ctor(inScript), maybe_opaque_keys->ok, self.chain.chainType);
+                    if (opaque_key) {
+                        NSData *data = [self toDataWithSubscriptIndex:i];
+                        NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKey:opaque_key];
+                        DOpaqueKeyDtor(opaque_key);
+                        transactionInput.signature = sig;
+                    }
+                }
+            }
         }
         if (!self.isSigned) return NO;
         _txHash = self.data.SHA256_2;
@@ -646,9 +643,14 @@
           inputScript:(NSData *)inputScript
    withOpaqueKeyValue:(NSValue *)keyValue {
     DMaybeOpaqueKey *key = ((DMaybeOpaqueKey *) keyValue.pointerValue);
+    return [self signInput:data inputScript:inputScript withOpaqueKey:key->ok];
+}
++ (NSData *)signInput:(NSData *)data
+          inputScript:(NSData *)inputScript
+   withOpaqueKey:(DOpaqueKey *)key {
     SLICE *input = slice_ctor(data);
     BYTES *tx_input_script = bytes_ctor(inputScript);
-    BYTES *tx_sig = dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key->ok, input, tx_input_script);
+    BYTES *tx_sig = dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key, input, tx_input_script);
     NSData *result = [DSKeyManager NSDataFrom:tx_sig];
     return result;
 }

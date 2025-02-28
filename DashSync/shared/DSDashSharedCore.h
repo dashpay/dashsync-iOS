@@ -21,6 +21,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define DProcessor MasternodeProcessor
+#define DCache MasternodeProcessorCache
 #define DArcProcessor std_sync_Arc_dash_spv_masternode_processor_processing_processor_MasternodeProcessor
 #define DArcCache std_sync_Arc_dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache
 #define DArcPlatformSDK std_sync_Arc_dash_spv_platform_PlatformSDK

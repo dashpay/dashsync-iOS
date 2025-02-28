@@ -18,6 +18,7 @@
 #import <XCTest/XCTest.h>
 
 #import "DSAccount.h"
+#import "DSAssetLockDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
@@ -73,7 +74,7 @@
     UInt256 indexes[] = {index0, index1, index2};
     BOOL hardened1[] = {NO, YES, NO};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Unknown onChain:self.chain];
     DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     NSString *string = [DSKeyManager secretKeyHexString:key->ok];
     XCTAssertEqualObjects(string, @"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09", @"keys should match");
@@ -98,7 +99,7 @@
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(5), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(0), index0, index1};
     BOOL hardened1[] = {YES, YES, YES, YES, YES, YES};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
     DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     NSString *string = [DSKeyManager secretKeyHexString:key->ok];
@@ -113,7 +114,7 @@
     UInt256 indexes[] = {index0};
     BOOL hardened1[] = {NO};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
     [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
 
@@ -136,7 +137,7 @@
     UInt256 indexes[] = {index0, index1};
     BOOL hardened1[] = {NO, YES};
 
-    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Unknown onChain:self.chain];
+    DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
     [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
 
@@ -149,5 +150,25 @@
     XCTAssertEqualObjects(serializedExtendedPrivateKey, @"dpts1vwRsaPMQfqwp59ELpx5UeuYtdaMCJyGTwiGtr8zgf6qWPMWnhPpg8R73hwR1xLibbdKVdh17zfwMxFEMxZzBKUgPwvuosUGDKW4ayZjs3AQB9EGRcVpDoFT8V6nkcc6KzksmZxvmDcd3MqiPEu", @"serializedExtendedPrivateKey should match");
 }
 
+
+- (void)testIdentityDerivation {
+    
+    NSData *transactionData = @"03000800018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be010000006a4730440220765c83e5e908448ab2117a4abb806d21a3786d9642fc1883405c34367c1e5f3702207a0d1eae897e842b45632e57d02647ae193e8c7a247674399bc24d2d80799a88012102e25c6bbcbb1aa0a0c42283ded2d44e5c75551318a3c01d65906ac97aae1603e8ffffffff0240420f0000000000026a00c90ced02000000001976a914e97fe30aafd3666e70493b99cc35c0371d26654088ac0000000024010140420f00000000001976a91467575fc9d201b5ff36b5d8405497f1d961a56dbf88ac".hexToData;
+//    01000800018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be010000006a4730440220765c83e5e908448ab2117a4abb806d21a3786d9642fc1883405c34367c1e5f3702207a0d1eae897e842b45632e57d02647ae193e8c7a247674399bc24d2d80799a88012102e25c6bbcbb1aa0a0c42283ded2d44e5c75551318a3c01d65906ac97aae1603e8ffffffff0340420f0000000000026a00c90ced02000000001976a914e97fe30aafd3666e70493b99cc35c0371d26654088ac40420f0000000000026a0000000000020100
+    DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initWithMessage:transactionData onChain:self.chain];
+    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:self.wallet];
+
+
+    UInt160 creditBurnPublicKeyHash = [tx creditBurnPublicKeyHash];
+    NSString *address = [DSKeyManager addressFromHash160:creditBurnPublicKeyHash forChain:self.chain];
+    NSLog(@"creditBurnPublicKeyHash: %@", uint160_hex(creditBurnPublicKeyHash));
+    NSLog(@"address: %@", address);
+    for (int i = 0; i < 30; i++) {
+        NSString *address = [registrationFundingDerivationPath addressAtIndex:i];
+        NSLog(@"[%i] %@", i, address);
+    }
+    
+//    return [[registrationFundingDerivationPath addressAtIndex:0] isEqualToString:address];
+}
 
 @end

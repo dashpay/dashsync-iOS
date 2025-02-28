@@ -37,7 +37,7 @@
                                   hardened:hardenedIndexes
                                     length:1
                                       type:DSDerivationPathType_ClearFunds
-                          signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                          signingAlgorithm:DKeyKindECDSA()
                                  reference:DSDerivationPathReference_BIP32
                                    onChain:chain];
 }
@@ -48,7 +48,7 @@
                                   hardened:hardenedIndexes
                                     length:3
                                       type:DSDerivationPathType_ClearFunds
-                          signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                          signingAlgorithm:DKeyKindECDSA()
                                  reference:DSDerivationPathReference_BIP44
                                    onChain:chain];
 }

@@ -24,6 +24,10 @@
 
 @implementation DSMasternodeListDiffService
 
+- (NSString *)logPrefix {
+    return [NSString stringWithFormat:@"[%@] [MLDiffService] ", self.chain.name];
+}
+
 - (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
     for (NSData *blockHashData in list) {
         // we should check the associated block still exists
@@ -41,15 +45,16 @@
                 UInt256 prevInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
                 u256 *prev_known_block_hash = u256_ctor_u(prevKnownBlockHash);
                 u256 *prev_in_queue_block_hash = u256_ctor_u(prevInQueueBlockHash);
-                uint32_t prevKnownHeight = DHeightForBlockHash(self.chain.shareCore.processor->obj, prev_known_block_hash);
-                uint32_t prevInQueueBlockHeight = DHeightForBlockHash(self.chain.shareCore.processor->obj, prev_in_queue_block_hash);
+                uint32_t prevKnownHeight = DHeightForBlockHash(self.chain.sharedProcessorObj, prev_known_block_hash);
+                uint32_t prevInQueueBlockHeight = DHeightForBlockHash(self.chain.sharedProcessorObj, prev_in_queue_block_hash);
                 UInt256 previousBlockHash = pos ? (prevKnownHeight > prevInQueueBlockHeight ? prevKnownBlockHash : prevInQueueBlockHash) : prevKnownBlockHash;
                 // request at: every new block
 //                NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
                 [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
+//                [self requestMasternodeListDiff:@"00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6".hexToData.reverse.UInt256 forBlockHash:@"c21ff900433ace7e6b7841bdfec8c449ca06414b237167e30b00000000000000".hexToData.UInt256];
             }
         } else {
-            DSLog(@"[%@] Missing block (%@)", self.chain.name, blockHashData.hexString);
+            DSLog(@"%@ Missing block (%@)", self.logPrefix, blockHashData.hexString);
             [self removeFromRetrievalQueue:blockHashData];
         }
     }
@@ -62,9 +67,15 @@
 //        DSLog(@"[%@] •••• mnlistdiff request with such a range already in retrieval: %u..%u %@ .. %@", self.chain.name, [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
         return;
     }
-    uint32_t prev_h = DHeightForBlockHash(self.chain.shareCore.processor->obj, u256_ctor_u(previousBlockHash));
-    uint32_t h = DHeightForBlockHash(self.chain.shareCore.processor->obj, u256_ctor_u(blockHash));
-    DSLog(@"[%@] •••• requestMasternodeListDiff: %u..%u %@ .. %@", self.chain.name, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    uint32_t prev_h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(previousBlockHash));
+    uint32_t h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(blockHash));
+    DSLog(@"%@ Request: %u..%u %@ .. %@", self.logPrefix, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    if (prev_h == 0) {
+        DSLog(@"%@ Zero height", self.logPrefix);
+    }
+    if (prev_h == 530000) {
+        DSLog(@"start from checkpoint");
+    }
     [self sendMasternodeListRequest:request];
 }
 

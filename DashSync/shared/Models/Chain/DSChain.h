@@ -78,6 +78,16 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Tokio Runtime Reference  */
 @property (nonatomic, nullable) Runtime *sharedRuntime;
 
+/*! @brief Masternode Processor Reference  */
+@property (nonatomic, nullable) DArcProcessor *sharedProcessor;
+@property (nonatomic, nullable) DProcessor *sharedProcessorObj;
+/*! @brief Masternode Processor Cache Reference  */
+@property (nonatomic, nullable) DArcCache *sharedCache;
+@property (nonatomic, nullable) DCache *sharedCacheObj;
+@property (nonatomic, nullable) DArcPlatformSDK *sharedPlatform;
+@property (nonatomic, nullable) PlatformSDK *sharedPlatformObj;
+
+
 /*! @brief The chain entity associated in Core Data in the required context.  */
 - (DSChainEntity *)chainEntityInContext:(NSManagedObjectContext *)context;
 
@@ -170,6 +180,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
 - (DSMerkleBlock *_Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
+
+- (uint32_t)chainTipHeight;
 
 // MARK: Chain Sync
 

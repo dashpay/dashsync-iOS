@@ -18,17 +18,15 @@
 #import <XCTest/XCTest.h>
 #import "dash_shared_core.h"
 #import "DSAccount.h"
+#import "DSAssetLockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSIdentity+Protected.h"
-//#import "DSIdentityCloseTransition.h"
-//#import "DSIdentityRegistrationTransition.h"
-//#import "DSIdentityTopupTransition.h"
-//#import "DSIdentityUpdateTransition.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSDerivationPath.h"
 #import "DSFundsDerivationPath.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSKeyManager.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSMasternodeManager.h"
@@ -40,7 +38,6 @@
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionManager.h"
-//#import "DSTransition+Protected.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
@@ -58,72 +55,92 @@
 
 @implementation DSTransitionTests
 
-//- (void)setUp {
-//    dash_spv_crypto_network_chain_type_DevnetType *devnet_type = dash_spv_crypto_network_chain_type_DevnetType_Zero_ctor();
-//    self.chain = [DSChain setUpDevnetWithIdentifier:devnet_type
-//                                    protocolVersion:PROTOCOL_VERSION_DEVNET
-//                                 minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET
-//                                    withCheckpoints:nil
-//                        withMinimumDifficultyBlocks:0
-//                                    withDefaultPort:20001
-//                            withDefaultDapiJRPCPort:3000
-//                            withDefaultDapiGRPCPort:3010
-//                                     dpnsContractID:UINT256_ZERO
-//                                  dashpayContractID:UINT256_ZERO
-//                                        isTransient:YES];
-//    NSString *seedPhrase = @"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch";
-//    self.testWallet = [DSWallet standardWalletWithSeedPhrase:@"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch" setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
-//
-//    DSBIP39Mnemonic *mnemonic = [DSBIP39Mnemonic new];
-//    self.seedData = [mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
-//
+- (void)setUp {
+    self.chain = [DSChain testnet];
+    NSString *seedPhrase = @"birth kingdom trash renew flavor utility donkey gasp regular alert pave layer";
+    self.testWallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    self.seedData = [[DSBIP39Mnemonic new] deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+
+    NSData *transactionData = @"03000800018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be010000006a4730440220765c83e5e908448ab2117a4abb806d21a3786d9642fc1883405c34367c1e5f3702207a0d1eae897e842b45632e57d02647ae193e8c7a247674399bc24d2d80799a88012102e25c6bbcbb1aa0a0c42283ded2d44e5c75551318a3c01d65906ac97aae1603e8ffffffff0240420f0000000000026a00c90ced02000000001976a914e97fe30aafd3666e70493b99cc35c0371d26654088ac0000000024010140420f00000000001976a91467575fc9d201b5ff36b5d8405497f1d961a56dbf88ac".hexToData;
 //    NSData *transactionData = @"0300000002b74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417020000006b483045022100815b175ab1a8fde7d651d78541ba73d2e9b297e6190f5244e1957004aa89d3c902207e1b164499569c1f282fe5533154495186484f7db22dc3dc1ccbdc9b47d997250121027f69794d6c4c942392b1416566aef9eaade43fbf07b63323c721b4518127baadffffffffb74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417010000006b483045022100a7c94fe1bb6ffb66d2bb90fd8786f5bd7a0177b0f3af20342523e64291f51b3e02201f0308f1034c0f6024e368ca18949be42a896dda434520fa95b5651dc5ad3072012102009e3f2eb633ee12c0143f009bf773155a6c1d0f14271d30809b1dc06766aff0ffffffff031027000000000000166a1414ec6c36e6c39a9181f3a261a08a5171425ac5e210270000000000001976a91414ec6c36e6c39a9181f3a261a08a5171425ac5e288acc443953b000000001976a9140d1775b9ed85abeb19fd4a7d8cc88b08a29fe6de88ac00000000".hexToData;
-//    DSCreditFundingTransaction *fundingTransaction = [[DSCreditFundingTransaction alloc] initWithMessage:transactionData onChain:self.chain];
-//    fundingTransaction.instantSendLockAwaitingProcessing = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:fundingTransaction.txHash withInputOutpoints:@[] signature:UINT768_ONE signatureVerified:YES quorumVerified:YES onChain:self.chain];
-//    self.testAccount = [self.testWallet accountWithNumber:0];
-//
-//    [self.testAccount registerTransaction:fundingTransaction saveImmediately:NO];
-//
-//    NSMutableDictionary *usernameStatuses = [NSMutableDictionary dictionary];
-//    [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS: @(DSIdentityUsernameStatus_Initial)} forKey:@"Bob"];
-//
-//    self.identity = [[DSIdentity alloc] initAtIndex:0 withFundingTransaction:fundingTransaction withUsernameDictionary:usernameStatuses inWallet:self.testWallet];
-//}
+    DSAssetLockTransaction *fundingTransaction = [[DSAssetLockTransaction alloc] initWithMessage:transactionData onChain:self.chain];
+    fundingTransaction.instantSendLockAwaitingProcessing = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:fundingTransaction.txHash
+                                                                                                      withInputOutpoints:@[]
+                                                                                                               signature:UINT768_ONE
+                                                                                                               cycleHash:UINT256_ZERO
+                                                                                                       signatureVerified:YES
+                                                                                                          quorumVerified:YES
+                                                                                                                 onChain:self.chain];
+    self.testAccount = [self.testWallet accountWithNumber:0];
+    [self.testAccount registerTransaction:fundingTransaction saveImmediately:NO];
+    self.identity = [[DSIdentity alloc] initAtIndex:0
+                           withAssetLockTransaction:fundingTransaction
+                             withUsernameDictionary:@{@"Bob": @{BLOCKCHAIN_USERNAME_STATUS: @(DSIdentityUsernameStatus_Initial)}}
+                                           inWallet:self.testWallet];
+}
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 
-//- (void)testIdentityCreation {
-//    XCTestExpectation *expectation = [self expectationWithDescription:@"createFundingPrivateKeyWithSeed"];
-//    [self.identity createFundingPrivateKeyWithSeed:self.seedData
-//                                             isForInvitation:NO
-//                                                  completion:^(BOOL success) {
-//        XCTAssertTrue(success, @"No error should be produced");
-//        [self.identity registrationTransitionWithCompletion:^(DSIdentityRegistrationTransition *_Nonnull identityRegistrationTransition, NSError *_Nonnull error) {
-//            XCTAssertNil(error, @"No error should be produced");
-//            DOpaqueKey *key = [identityRegistrationTransition.publicKeys allValues][0].pointerValue;
-//            XCTAssertEqualObjects([DSKeyManager publicKeyData:key].hexString, @"02128cef3f329986c01860526499283bbd9a33af2e6747d7488c779be8ed37a409");
-//            XCTAssertEqual(key->tag, KeyKind_ECDSA);
-//            XCTAssertEqualObjects(uint256_hex(identityRegistrationTransition.identityUniqueId), @"ae99d9433fc86f8974094c6a24fcc8cc68f87510c000d714c71ee5f64ceacf4b");
-//            XCTAssertEqual(identityRegistrationTransition.type, DSTransitionType_IdentityRegistration);
-//            [expectation fulfill];
-//        }];
-//    }];
-//    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
-//}
-//
-//- (void)testIdentitySigning {
-//    UInt256 digest = uint256_random;
-//    XCTestExpectation *expectation = [self expectationWithDescription:@"signedAndVerifiedMessage"];
-//    DOpaqueKey *key = [self.identity privateKeyAtIndex:0 ofType:KeyKind_ECDSA forSeed:self.seedData];
-//    NSData *signature = [DSKeyManager signMesasageDigest:key digest:digest];
-//    XCTAssertFalse([signature isZeroBytes], "The blockchain identity should be able to sign a message digest");
-//    BOOL verified = [self.identity verifySignature:signature forKeyIndex:0 ofType:KeyKind_ECDSA forMessageDigest:digest];
-//    XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
-//    [expectation fulfill];
-//    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
-//}
+- (void)testIdentityCreationUsingInstantProof {
+    BOOL keyCreated = [self.identity createFundingPrivateKeyWithSeed:self.seedData isForInvitation:NO];
+    XCTAssertTrue(keyCreated, @"No error should be produced");
+    uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
+    DMaybeOpaqueKey *publicKey = [self.identity keyAtIndex:index];
+    NSData *publicKeyData = [DSKeyManager NSDataFrom:dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey->ok)];
+    NSLog(@"publicKeyData: %@", publicKeyData.hexString);
+    DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey->ok);
+    DMaybeOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
+    DSAssetLockTransaction *transaction = self.identity.registrationAssetLockTransaction;
+    DAssetLockProof *instant_proof = [self.identity createProof:transaction.instantSendLockAwaitingProcessing];
+    DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, instant_proof, private_key->ok);
+    #if (defined(DPP_STATE_TRANSITIONS))
+    dpp_state_transition_state_transitions_identity_identity_create_transition_v0_IdentityCreateTransitionV0 *identity_create_v0 = result->ok->identity_create->v0;
+    dpp_state_transition_state_transitions_identity_public_key_in_creation_v0_IdentityPublicKeyInCreationV0 *first_key_v0 = identity_create_v0->public_keys->values[0]->v0;
+    DKeyType key_type = first_key_v0->key_type[0];
+    NSData *keyData = NSDataFromPtr(first_key_v0->data->_0);
+    NSData *identityIdData = NSDataFromPtr(identity_create_v0->identity_id->_0->_0);
+    XCTAssertEqual(key_type, dpp_identity_identity_public_key_key_type_KeyType_ECDSA_SECP256K1);
+    XCTAssertEqualObjects(keyData.hexString, @"026ce9a9392503a57a8b4a4a16886f3cf5f5eacadbf62ca610c9d0fccc9a13eb4b");
+    XCTAssertEqualObjects(identityIdData.hexString, @"5a1f5c860287868d87ba1beec292591e4771700738aef857be6fb35171299363");
+    #endif
+}
+
+- (void)testIdentityCreationUsingChainProof {
+    BOOL keyCreated = [self.identity createFundingPrivateKeyWithSeed:self.seedData isForInvitation:NO];
+    XCTAssertTrue(keyCreated, @"No error should be produced");
+    uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
+    DMaybeOpaqueKey *publicKey = [self.identity keyAtIndex:index];
+    NSData *publicKeyData = [DSKeyManager NSDataFrom:dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey->ok)];
+    NSLog(@"publicKeyData: %@", publicKeyData.hexString);
+    DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey->ok);
+    DMaybeOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
+    DAssetLockProof *chain_proof = [self.identity createProof:nil];
+    DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, chain_proof, private_key->ok);
+    #if (defined(DPP_STATE_TRANSITIONS))
+    dpp_state_transition_state_transitions_identity_identity_create_transition_v0_IdentityCreateTransitionV0 *identity_create_v0 = result->ok->identity_create->v0;
+    dpp_state_transition_state_transitions_identity_public_key_in_creation_v0_IdentityPublicKeyInCreationV0 *first_key_v0 = identity_create_v0->public_keys->values[0]->v0;
+    DKeyType key_type = first_key_v0->key_type[0];
+    NSData *keyData = NSDataFromPtr(first_key_v0->data->_0);
+    NSData *identityIdData = NSDataFromPtr(identity_create_v0->identity_id->_0->_0);
+    XCTAssertEqual(key_type, dpp_identity_identity_public_key_key_type_KeyType_ECDSA_SECP256K1);
+    XCTAssertEqualObjects(keyData.hexString, @"026ce9a9392503a57a8b4a4a16886f3cf5f5eacadbf62ca610c9d0fccc9a13eb4b");
+    XCTAssertEqualObjects(identityIdData.hexString, @"5a1f5c860287868d87ba1beec292591e4771700738aef857be6fb35171299363");
+    #endif
+}
+
+- (void)testIdentitySigning {
+    UInt256 digest = uint256_random;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"signedAndVerifiedMessage"];
+    DMaybeOpaqueKey *key = [self.identity privateKeyAtIndex:0 ofType:DKeyKindECDSA() forSeed:self.seedData];
+    NSData *signature = [DSKeyManager signMesasageDigest:key->ok digest:digest];
+    XCTAssertFalse([signature isZeroBytes], "The blockchain identity should be able to sign a message digest");
+    BOOL verified = [self.identity verifySignature:signature forKeyIndex:0 ofType:DKeyKindECDSA() forMessageDigest:digest];
+    XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
+    [expectation fulfill];
+    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
+}
 
 - (void)testNameRegistration {
     // ToDo

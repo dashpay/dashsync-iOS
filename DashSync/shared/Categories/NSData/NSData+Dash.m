@@ -1573,6 +1573,18 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     [data appendScriptPubKeyForAddress:address forChain:chain];
     return [data copy];
 }
++ (NSData *)assetLockOutputScript {
+    NSMutableData *data = [NSMutableData data];
+    [data appendUInt8:OP_RETURN];
+    [data appendUInt8:0];
+    return [data copy];
+}
+
++ (NSData *)creditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
+    NSMutableData *script = [NSMutableData data];
+    [script appendCreditBurnScriptPubKeyForAddress:address forChain:chain];
+    return [script copy];
+}
 
 + (NSData *)merkleRootFromHashes:(NSArray *)hashes {
     NSMutableArray *higherLevel = [NSMutableArray array];

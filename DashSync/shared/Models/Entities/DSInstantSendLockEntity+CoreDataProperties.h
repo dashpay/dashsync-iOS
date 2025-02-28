@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSInstantSendLockEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *signature;
+@property (nullable, nonatomic, retain) NSData *cycleHash;
 @property (assign, nonatomic) BOOL validSignature;
 @property (nullable, nonatomic, retain) DSTransactionEntity *transaction;
 @property (nullable, nonatomic, retain) DSQuorumEntryEntity *quorum;

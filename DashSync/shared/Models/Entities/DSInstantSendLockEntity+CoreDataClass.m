@@ -24,27 +24,24 @@
     if (transactionEntity) {
         DSInstantSendLockEntity *entity = [DSInstantSendLockEntity managedObjectInContext:context];
         entity.validSignature = instantSendTransactionLock.signatureVerified;
-        entity.signature = [NSData dataWithUInt768:instantSendTransactionLock.signature];
-
+        entity.signature = uint768_data(instantSendTransactionLock.signature);
+        entity.cycleHash = uint256_data(instantSendTransactionLock.cycleHash);
         NSAssert(transactionEntity, @"transaction must exist");
         entity.transaction = transactionEntity;
-        
         entity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", instantSendTransactionLock.intendedQuorumPublicKey];
-//        entity.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
     }
-
     return nil;
 }
 
 - (instancetype)setAttributesFromInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
     [self.managedObjectContext performBlockAndWait:^{
         self.validSignature = instantSendTransactionLock.signatureVerified;
-        self.signature = [NSData dataWithUInt768:instantSendTransactionLock.signature];
+        self.signature = uint768_data(instantSendTransactionLock.signature);
+        self.cycleHash = uint256_data(instantSendTransactionLock.cycleHash);
         DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
         NSAssert(transactionEntity, @"transaction must exist");
         self.transaction = transactionEntity;
         self.quorum = [DSQuorumEntryEntity anyObjectInContext:self.managedObjectContext matching:@"quorumPublicKeyData == %@", instantSendTransactionLock.intendedQuorumPublicKey];
-//        self.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:self.managedObjectContext]; //the quorum might not yet
     }];
 
     return self;
@@ -55,7 +52,7 @@
     for (DSTxInputEntity *input in self.transaction.inputs) {
         [inputOutpoints addObject:dsutxo_data(input.outpoint)];
     }
-    DSInstantSendTransactionLock *instantSendTransactionLock = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash.UInt256 withInputOutpoints:inputOutpoints signature:self.signature.UInt768 signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
+    DSInstantSendTransactionLock *instantSendTransactionLock = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash.UInt256 withInputOutpoints:inputOutpoints signature:self.signature.UInt768 cycleHash:self.cycleHash.UInt256 signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
 
     return instantSendTransactionLock;
 }

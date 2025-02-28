@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt160 creditBurnPublicKeyHash;
 @property (nonatomic, readonly) DSUTXO lockedOutpoint;
 
+- (instancetype)initOnChain:(DSChain *)chain withCreditOutputs:(NSArray<DSTransactionOutput *> *)creditOutputs;
+
 - (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
 - (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
 

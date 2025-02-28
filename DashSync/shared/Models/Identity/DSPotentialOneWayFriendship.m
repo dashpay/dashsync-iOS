@@ -122,20 +122,11 @@
 
 - (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion {
     NSAssert(self.extendedPublicKey && self.extendedPublicKey->ok, @"Problem creating extended public key for potential contact?");
-    __weak typeof(self) weakSelf = self;
     DMaybeOpaqueKey *recipientKey = [self destinationKeyAtIndex];
-    [self.sourceIdentity encryptData:[DSKeyManager extendedPublicKeyData:self.extendedPublicKey->ok]
-                      withKeyAtIndex:self.sourceKeyIndex
-                     forRecipientKey:recipientKey->ok
-                          completion:^(NSData *_Nonnull encryptedData) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) completion(NO);
-            return;
-        }
-        strongSelf.encryptedExtendedPublicKeyData = encryptedData;
-        if (completion) completion(YES);
-    }];
+    self.encryptedExtendedPublicKeyData = [self.sourceIdentity encryptData:[DSKeyManager extendedPublicKeyData:self.extendedPublicKey->ok]
+                                                            withKeyAtIndex:self.sourceKeyIndex
+                                                           forRecipientKey:recipientKey->ok];
+    if (completion) completion(YES);
 }
 
 - (uint32_t)createAccountReference {

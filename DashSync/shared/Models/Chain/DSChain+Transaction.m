@@ -22,6 +22,7 @@
 #import "DSIdentity+Protected.h"
 #import "DSInvitation+Protected.h"
 #import "DSChain+Transaction.h"
+#import "DSChain+Params.h"
 #import "DSChain+Wallet.h"
 #import "DSChainManager.h"
 #import "DSDerivationPathFactory.h"
@@ -36,6 +37,7 @@
 #import "DSWallet.h"
 #import "DSWallet+Identity.h"
 #import "DSWallet+Invitation.h"
+#import "DSWallet+Protected.h"
 
 @implementation DSChain (Transaction)
 
@@ -85,26 +87,6 @@
     }
     return sent;
 }
-
-//- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction {
-//    const uint64_t sent = [self amountSentByTransaction:transaction];
-//    const uint64_t received = [self amountReceivedFromTransaction:transaction];
-//    const uint64_t fee = transaction.feeUsed;
-//
-//    if (sent > 0 && (received + fee) == sent) {
-//        // moved
-//        return DSTransactionDirection_Moved;
-//    } else if (sent > 0) {
-//        // sent
-//        return DSTransactionDirection_Sent;
-//    } else if (received > 0) {
-//        // received
-//        return DSTransactionDirection_Received;
-//    } else {
-//        // no funds moved on this account
-//        return DSTransactionDirection_NotAccountFunds;
-//    }
-//}
 
 // MARK: - Special Transactions
 
@@ -157,124 +139,151 @@
 // MARK: - Registering special transactions
 
 
-- (BOOL)registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)providerRegistrationTransaction
+- (BOOL)registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)transaction
                                 saveImmediately:(BOOL)saveImmediately {
-    DSWallet *ownerWallet = [self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil];
-    DSWallet *votingWallet = [self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil];
-    DSWallet *operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil];
-    DSWallet *holdingWallet = [self walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:nil];
-    DSWallet *platformNodeWallet = [self walletHavingPlatformNodeAuthenticationHash:providerRegistrationTransaction.platformNodeID foundAtIndex:nil];
-    DSAccount *account = [self accountContainingAddress:providerRegistrationTransaction.payoutAddress];
+    DSWallet *ownerWallet = [self walletHavingProviderOwnerAuthenticationHash:transaction.ownerKeyHash foundAtIndex:nil];
+    DSWallet *votingWallet = [self walletHavingProviderVotingAuthenticationHash:transaction.votingKeyHash foundAtIndex:nil];
+    DSWallet *operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:transaction.operatorKey foundAtIndex:nil];
+    DSWallet *holdingWallet = [self walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:transaction foundAtIndex:nil];
+    DSWallet *platformNodeWallet = [self walletHavingPlatformNodeAuthenticationHash:transaction.platformNodeID foundAtIndex:nil];
+    DSAccount *account = [self accountContainingAddress:transaction.payoutAddress];
     BOOL registered = NO;
-    registered |= [account registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
-    registered |= [ownerWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
-    registered |= [votingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
-    registered |= [operatorWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
-    registered |= [holdingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
-    registered |= [platformNodeWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+    registered |= [account registerTransaction:transaction saveImmediately:saveImmediately];
+    registered |= [ownerWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
+    registered |= [votingWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
+    registered |= [operatorWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
+    registered |= [holdingWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
+    registered |= [platformNodeWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
     
     if (ownerWallet) {
         DSAuthenticationKeysDerivationPath *ownerDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:ownerWallet];
-        [ownerDerivationPath registerTransactionAddress:providerRegistrationTransaction.ownerAddress];
+        [ownerDerivationPath registerTransactionAddress:transaction.ownerAddress];
     }
     
     if (votingWallet) {
         DSAuthenticationKeysDerivationPath *votingDerivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:votingWallet];
-        [votingDerivationPath registerTransactionAddress:providerRegistrationTransaction.votingAddress];
+        [votingDerivationPath registerTransactionAddress:transaction.votingAddress];
     }
     
     if (operatorWallet) {
         DSAuthenticationKeysDerivationPath *operatorDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:operatorWallet];
-        [operatorDerivationPath registerTransactionAddress:providerRegistrationTransaction.operatorAddress];
+        [operatorDerivationPath registerTransactionAddress:transaction.operatorAddress];
     }
     
     if (holdingWallet) {
         DSMasternodeHoldingsDerivationPath *holdingDerivationPath = [[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:holdingWallet];
-        [holdingDerivationPath registerTransactionAddress:providerRegistrationTransaction.holdingAddress];
+        [holdingDerivationPath registerTransactionAddress:transaction.holdingAddress];
     }
     
     if (platformNodeWallet) {
         DSAuthenticationKeysDerivationPath *platformNodeDerivationPath = [[DSDerivationPathFactory sharedInstance] platformNodeKeysDerivationPathForWallet:platformNodeWallet];
-        [platformNodeDerivationPath registerTransactionAddress:providerRegistrationTransaction.platformNodeAddress];
+        [platformNodeDerivationPath registerTransactionAddress:transaction.platformNodeAddress];
     }
     
     return registered;
 }
 
-- (BOOL)registerProviderUpdateServiceTransaction:(DSProviderUpdateServiceTransaction *)providerUpdateServiceTransaction saveImmediately:(BOOL)saveImmediately {
-    DSWallet *providerRegistrationWallet = nil;
-    DSTransaction *providerRegistrationTransaction = [self transactionForHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
-    DSAccount *account = [self accountContainingAddress:providerUpdateServiceTransaction.payoutAddress];
-    BOOL registered = [account registerTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
-    if (providerRegistrationTransaction && providerRegistrationWallet) {
-        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
+- (BOOL)registerProviderUpdateServiceTransaction:(DSProviderUpdateServiceTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
+    DSWallet *wallet = nil;
+    DSTransaction *providerRegistrationTransaction = [self transactionForHash:transaction.providerRegistrationTransactionHash returnWallet:&wallet];
+    DSAccount *account = [self accountContainingAddress:transaction.payoutAddress];
+    BOOL registered = [account registerTransaction:transaction saveImmediately:saveImmediately];
+    if (providerRegistrationTransaction && wallet) {
+        registered |= [wallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
     }
     return registered;
 }
 
 
-- (BOOL)registerProviderUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction *)providerUpdateRegistrarTransaction saveImmediately:(BOOL)saveImmediately {
-    DSWallet *votingWallet = [self walletHavingProviderVotingAuthenticationHash:providerUpdateRegistrarTransaction.votingKeyHash foundAtIndex:nil];
-    DSWallet *operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:providerUpdateRegistrarTransaction.operatorKey foundAtIndex:nil];
-    [votingWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
-    [operatorWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
+- (BOOL)registerProviderUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
+    DSWallet *votingWallet = [self walletHavingProviderVotingAuthenticationHash:transaction.votingKeyHash foundAtIndex:nil];
+    DSWallet *operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:transaction.operatorKey foundAtIndex:nil];
+    [votingWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
+    [operatorWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
     DSWallet *providerRegistrationWallet = nil;
-    DSTransaction *providerRegistrationTransaction = [self transactionForHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
-    DSAccount *account = [self accountContainingAddress:providerUpdateRegistrarTransaction.payoutAddress];
-    BOOL registered = [account registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
-    if (providerRegistrationTransaction && providerRegistrationWallet) {
-        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
-    }
-    
+    DSTransaction *providerRegistrationTransaction = [self transactionForHash:transaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
+    DSAccount *account = [self accountContainingAddress:transaction.payoutAddress];
+    BOOL registered = [account registerTransaction:transaction saveImmediately:saveImmediately];
+    if (providerRegistrationTransaction && providerRegistrationWallet)
+        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
+
     if (votingWallet) {
         DSAuthenticationKeysDerivationPath *votingDerivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:votingWallet];
-        [votingDerivationPath registerTransactionAddress:providerUpdateRegistrarTransaction.votingAddress];
+        [votingDerivationPath registerTransactionAddress:transaction.votingAddress];
     }
     
     if (operatorWallet) {
         DSAuthenticationKeysDerivationPath *operatorDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:operatorWallet];
-        [operatorDerivationPath registerTransactionAddress:providerUpdateRegistrarTransaction.operatorAddress];
+        [operatorDerivationPath registerTransactionAddress:transaction.operatorAddress];
     }
     return registered;
 }
 
-- (BOOL)registerProviderUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction *)providerUpdateRevocationTransaction saveImmediately:(BOOL)saveImmediately {
-    DSWallet *providerRegistrationWallet = nil;
-    DSTransaction *providerRegistrationTransaction = [self transactionForHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
-    if (providerRegistrationTransaction && providerRegistrationWallet) {
-        return [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRevocationTransaction saveImmediately:saveImmediately];
+- (BOOL)registerProviderUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
+    DSWallet *wallet = nil;
+    DSTransaction *providerRegistrationTransaction = [self transactionForHash:transaction.providerRegistrationTransactionHash returnWallet:&wallet];
+    if (providerRegistrationTransaction && wallet) {
+        return [wallet.specialTransactionsHolder registerTransaction:transaction saveImmediately:saveImmediately];
     } else {
         return NO;
     }
 }
-
-//-(BOOL)registerTransition:(DSTransition*)transition {
-//    DSWallet * identityRegistrationWallet = nil;
-//    DSTransaction * identityRegistrationTransaction = [self transactionForHash:transition.registrationTransactionHash returnWallet:&identityRegistrationWallet];
-//    if (identityRegistrationTransaction && identityRegistrationWallet) {
-//        return [identityRegistrationWallet.specialTransactionsHolder registerTransaction:transition];
-//    } else {
-//        return NO;
-//    }
-//}
+- (BOOL)registerAssetLockTransaction:(DSAssetLockTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
+    DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
+    UInt160 creditBurnPublicKeyHash = assetLockTransaction.creditBurnPublicKeyHash;
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"[%@] Registered AssetLockTX: creditBurnPublicKeyHash: %@, txHash: %@", self.name, uint160_hex(creditBurnPublicKeyHash), uint256_hex(assetLockTransaction.txHash)];
+    BOOL isNewIdentity = FALSE;
+    DSIdentity *identity = nil;
+    uint32_t index;
+    DSWallet *wallet = [self walletHavingIdentityAssetLockRegistrationHash:creditBurnPublicKeyHash foundAtIndex:&index];
+    if (!wallet)
+        wallet = [self walletHavingIdentityAssetLockTopupHash:creditBurnPublicKeyHash foundAtIndex:&index];
+    
+    if (wallet) {
+        identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
+        [debugString appendFormat:@" (Found wallet: %@, identity: %@)", wallet.uniqueIDString, identity];
+    }
+    
+    if (!identity) {
+        [self triggerUpdatesForLocalReferences:assetLockTransaction];
+        if (wallet) {
+            identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
+//                [debugString appendFormat:@" (Found wallet after trigger updates: %@, identity: %@)", wallet.uniqueIDString, identity];
+            if (identity) isNewIdentity = TRUE;
+        }
+    } else if (identity && !identity.registrationAssetLockTransaction) {
+//            [debugString appendFormat:@" (identity: %@ is known but has no asset lock tx)", identity];
+        identity.registrationAssetLockTransactionHash = assetLockTransaction.txHash;
+    } else if (identity && ![identity containsTopupTransaction:transaction]) {
+        // TODO: what about topup transactions? how to distinguish them from registration
+        // TODO: For now use this solution
+        [identity.topupAssetLockTransactionHashes addObject:uint256_data(transaction.txHash)];
+    }
+    DSLog(@"%@:", debugString);
+    if (!saveImmediately && identity && isNewIdentity) {
+        NSTimeInterval walletCreationTime = [identity.wallet walletCreationTime];
+        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && [identity isDefault]) {
+            [identity.wallet setGuessedWalletCreationTime:self.lastSyncBlockTimestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
+        }
+        [self.chainManager.identitiesManager checkAssetLockTransactionForPossibleNewIdentity:assetLockTransaction];
+    }
+    return isNewIdentity;
+}
 
 - (BOOL)registerSpecialTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
-        DSProviderRegistrationTransaction *providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-        return [self registerProviderRegistrationTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+        return [self registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)transaction saveImmediately:saveImmediately];
     } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
-        DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-        return [self registerProviderUpdateServiceTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
+        return [self registerProviderUpdateServiceTransaction:(DSProviderUpdateServiceTransaction *)transaction saveImmediately:saveImmediately];
     } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
-        DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
-        return [self registerProviderUpdateRegistrarTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
+        return [self registerProviderUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction *)transaction saveImmediately:saveImmediately];
     } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
-        DSProviderUpdateRevocationTransaction *providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
-        return [self registerProviderUpdateRevocationTransaction:providerUpdateRevocationTransaction saveImmediately:saveImmediately];
+        return [self registerProviderUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction *)transaction saveImmediately:saveImmediately];
+    } else if ([transaction isKindOfClass:[DSAssetLockTransaction class]]) {
+        return [self registerAssetLockTransaction:(DSAssetLockTransaction *)transaction saveImmediately:saveImmediately];
     }
     return FALSE;
 }
-
 
 
 - (void)triggerUpdatesForLocalReferences:(DSTransaction *)transaction {
@@ -300,8 +309,9 @@
         [localMasternode updateWithUpdateRevocationTransaction:tx save:TRUE];
     } else if ([transaction isKindOfClass:[DSAssetLockTransaction class]]) {
         DSAssetLockTransaction *tx = (DSAssetLockTransaction *)transaction;
+        UInt160 creditBurnPublicKeyHash = tx.creditBurnPublicKeyHash;
         uint32_t index;
-        DSWallet *wallet = [self walletHavingIdentityAssetLockRegistrationHash:tx.creditBurnPublicKeyHash foundAtIndex:&index];
+        DSWallet *wallet = [self walletHavingIdentityAssetLockRegistrationHash:creditBurnPublicKeyHash foundAtIndex:&index];
         if (wallet) {
             DSIdentity *identity = [wallet identityForUniqueId:tx.creditBurnIdentityIdentifier];
             if (!identity) {
@@ -309,16 +319,23 @@
                 [identity registerInWalletForAssetLockTransaction:tx];
             }
         } else {
-            wallet = [self walletHavingIdentityAssetLockInvitationHash:tx.creditBurnPublicKeyHash foundAtIndex:&index];
+            wallet = [self walletHavingIdentityAssetLockTopupHash:creditBurnPublicKeyHash foundAtIndex:&index];
             if (wallet) {
-                DSInvitation *invitation = [wallet invitationForUniqueId:tx.creditBurnIdentityIdentifier];
-                if (!invitation) {
-                    invitation = [[DSInvitation alloc] initAtIndex:index withAssetLockTransaction:tx inWallet:wallet];
-                    [invitation registerInWalletForAssetLockTransaction:tx];
+                DSIdentity *identity = [wallet identityForUniqueId:tx.creditBurnIdentityIdentifier];
+//                [identity r]
+                
+            } else {
+                wallet = [self walletHavingIdentityAssetLockInvitationHash:creditBurnPublicKeyHash foundAtIndex:&index];
+                if (wallet) {
+                    DSInvitation *invitation = [wallet invitationForUniqueId:tx.creditBurnIdentityIdentifier];
+                    if (!invitation) {
+                        invitation = [[DSInvitation alloc] initAtIndex:index withAssetLockTransaction:tx inWallet:wallet];
+                        [invitation registerInWalletForAssetLockTransaction:tx];
+                    }
                 }
             }
         }
-
+            
     }
 //    else if ([transaction isKindOfClass:[DSAssetUnlockTransaction class]]) {
 //        DSAssetUnlockTransaction *tx = (DSAssetUnlockTransaction *)transaction;

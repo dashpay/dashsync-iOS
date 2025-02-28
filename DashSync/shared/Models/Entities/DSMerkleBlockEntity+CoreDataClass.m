@@ -149,8 +149,7 @@
 }
 
 + (instancetype)merkleBlockEntityForBlockHash:(NSData *)blockHash inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", blockHash];
-    return merkleBlockEntity;
+    return [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", blockHash];
 }
 
 + (instancetype)merkleBlockEntityForBlockHashFromCheckpoint:(UInt256)blockHash chain:(DSChain *)chain inContext:(NSManagedObjectContext *)context {

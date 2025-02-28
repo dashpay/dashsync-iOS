@@ -18,6 +18,7 @@
 #import "DPContract.h"
 #import "DSAccount.h"
 #import "DSAccountEntity+CoreDataClass.h"
+#import "DSAssetLockTransactionEntity+CoreDataClass.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSAssetLockDerivationPath.h"
 #import "DSIdentity+Protected.h"
@@ -29,7 +30,6 @@
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSIncomingFundsDerivationPath.h"
-#import "DSTransactionEntity+CoreDataClass.h"
 #import "DSWallet+Identity.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -239,6 +239,31 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
     return foundIdentity;
 }
 
+- (DSIdentity *)identityForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key {
+    DSIdentity *foundIdentity = nil;
+    for (DSIdentity *identity in [self.mIdentities allValues]) {
+        if ([identity containsPublicKey:identity_public_key])
+            foundIdentity = identity;
+    }
+    return foundIdentity;
+}
+
+- (DMaybeOpaqueKey *)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key {
+    switch (identity_public_key->tag) {
+        case dpp_identity_identity_public_key_IdentityPublicKey_V0: {
+            dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 *v0 = identity_public_key->v0;
+            uint32_t key_index = v0->id->_0;
+            for (DSIdentity *identity in [self.mIdentities allValues]) {
+                DMaybeOpaqueKey *key = [identity keyAtIndex:key_index];
+                if (key && key->ok && dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key->ok, v0->data->_0))
+                    return [identity privateKeyAtIndex:key_index ofType:dash_spv_platform_identity_manager_key_kind_from_key_type(v0->key_type)];
+            }
+            return nil;
+        }
+        default: return nil;
+    }
+}
+
 - (uint32_t)identitiesCount {
     return (uint32_t)[self.mIdentities count];
 }
@@ -296,14 +321,15 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
                 } else if (lockedOutpointData) {
                     //No blockchain identity is known in core data
                     NSData *transactionHashData = uint256_data(uint256_reverse(lockedOutpointData.transactionOutpoint.hash));
-                    DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
+                    DSAssetLockTransactionEntity *creditRegitrationTransactionEntity = [DSAssetLockTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
                     if (creditRegitrationTransactionEntity) {
                         // The registration funding transaction exists
                         // Weird but we should recover in this situation
                         DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
                         BOOL correctIndex = [assetLockTransaction checkDerivationPathIndexForWallet:self isIndex:index];
                         if (!correctIndex) {
-                            NSAssert(FALSE, @"We should implement this");
+                            DSLog(@"%@: AssetLockTX: IncorrectIndex %u (%@)", self.chain.name, index, assetLockTransaction.toData.hexString);
+//                            NSAssert(FALSE, @"We should implement this");
                         } else {
                             identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:assetLockTransaction withUsernameDictionary:nil inWallet:self];
                             [identity registerInWallet];

@@ -500,19 +500,19 @@
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data"
                                                                 style:UIAlertActionStyleDestructive
                                                               handler:^(UIAlertAction *_Nonnull action) {
-                                                                  [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext chainContext]];
-                                                              }]];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext chainContext]];
+    }]];
 
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything"
                                                                 style:UIAlertActionStyleDestructive
                                                               handler:^(UIAlertAction *_Nonnull action) {
-                                                                  [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
-                                                                  [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
-                                                                  [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
-                                                                  [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
-                                                                  [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
-                                                                  [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext chainContext]]; //this takes care of blockchain info as well;
-                                                              }]];
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext chainContext]];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext chainContext]]; //this takes care of blockchain info as well;
+    }]];
 
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                                                 style:UIAlertActionStyleCancel
@@ -688,7 +688,7 @@
 }
 
 - (void)updateKnownMasternodes {
-    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chainManager.chain.shareCore.processor->obj, self.chainManager.chain.isRotatedQuorumsPresented);
+    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chainManager.chain.sharedProcessorObj, self.chainManager.chain.isRotatedQuorumsPresented);
     uintptr_t count = list ? dash_spv_masternode_processor_models_masternode_list_MasternodeList_masternode_count(list) : 0;
     self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)count];
     self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];

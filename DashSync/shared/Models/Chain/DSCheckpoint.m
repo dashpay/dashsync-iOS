@@ -46,7 +46,7 @@
 
 + (DSCheckpoint *)genesisDevnetCheckpoint {
     DSCheckpoint *checkpoint = [DSCheckpoint new];
-    checkpoint.blockHash = [NSString stringWithCString:"000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e" encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256;
+    checkpoint.blockHash = @"000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e".hexToData.reverse.UInt256;
     checkpoint.height = 0;
     checkpoint.timestamp = 1417713337;
     checkpoint.target = 0x207fffffu;

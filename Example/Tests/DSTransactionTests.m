@@ -8,12 +8,9 @@
 
 #import <XCTest/XCTest.h>
 
+#import "DSAssetLockTransaction.h"
 #import "DSAssetUnlockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-//#import "DSIdentityCloseTransition.h"
-//#import "DSIdentityRegistrationTransition.h"
-//#import "DSIdentityTopupTransition.h"
-//#import "DSIdentityUpdateTransition.h"
 #import "DSChain+Params.h"
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
@@ -32,7 +29,6 @@
 #import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
 #import "DSTransactionOutput.h"
-//#import "DSTransition+Protected.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
@@ -58,7 +54,7 @@
 // MARK: - testTransaction
 
 - (void)testTransaction {
-    DMaybeOpaqueKey *k = [DSKeyManager keyWithPrivateKeyData:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
+    DMaybeOpaqueKey *k = [DSKeyManager keyWithPrivateKeyData:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData ofType:DKeyKindECDSA()];
     NSValue *hash = uint256_obj(UINT256_ZERO);
     NSString *address = [DSKeyManager addressForKey:k->ok forChainType:self.chain.chainType];
     NSData *script = [DSKeyManager scriptPubKeyForAddress:address forChain:self.chain];
@@ -88,8 +84,64 @@
     tx = [DSTransaction transactionWithMessage:d onChain:self.chain];
     XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
     DMaybeOpaqueKeyDtor(k);
-//    processor_destroy_opaque_key(k);
 }
+
+- (void)testAssetLockTx1 {
+    NSData *message = @"0300080001eecf4e8f1ffd3a3a4e5033d618231fd05e5f08c1a727aac420f9a26db9bf39eb010000006a473044022026f169570532332f857cb64a0b7d9c0837d6f031633e1d6c395d7c03b799460302207eba4c4575a66803cecf50b61ff5f2efc2bd4e61dff00d9d4847aa3d8b1a5e550121036cd0b73d304bacc80fa747d254fbc5f0bf944dd8c8b925cd161bb499b790d08d0000000002317dd0be030000002321022ca85dba11c4e5a6da3a00e73a08765319a5d66c2f6434b288494337b0c9ed2dac6df29c3b00000000026a000000000046010200e1f505000000001976a9147c75beb097957cc09537b615dde9ea6807719cdf88ac6d11a735000000001976a9147c75beb097957cc09537b615dde9ea6807719cdf88ac".hexToData;
+    
+    DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initWithMessage:message onChain:[DSChain testnet]];
+    
+    DSUTXO expectedOutpoint = (DSUTXO) { .hash = @"fdb0e981c3febc6c2c032e6f51e6f063bfc6aaa9bd238985a442c93bd376fd57".hexToData.UInt256, .n = 0 };
+    XCTAssertTrue(dsutxo_eq(expectedOutpoint, tx.lockedOutpoint));
+    XCTAssertTrue(uint256_eq(tx.creditBurnIdentityIdentifier, @"0e87a5cbb231e0ccd02b16a641f600b1c104de834febe985eb3b6fa0c2d47506".hexToData.UInt256), @"Unexpected creditBurnIdentityIdentifier");
+    XCTAssertEqualObjects(uint256_reverse_hex(tx.txHash), @"fdb0e981c3febc6c2c032e6f51e6f063bfc6aaa9bd238985a442c93bd376fd57", @"Unexpected TxId");
+    XCTAssertEqual(tx.version, 3, @"Unexpected tx version");
+    XCTAssertEqual(tx.lockTime, 0, @"Unexpected tx lockTime");
+    XCTAssertEqual(tx.specialTransactionVersion, 1, @"Unexpected special tx version");
+    XCTAssertEqual(tx.size, 283, @"Unexpected size");
+    XCTAssertEqual(tx.inputs.count, 1, @"Unexpected num of inputs");
+    XCTAssertEqual(tx.outputs.count, 2, @"Unexpected num of outputs");
+    XCTAssertEqual(tx.creditOutputs.count, 2, @"Unexpected num of creditOutputs");
+    XCTAssertEqualObjects(message, tx.toData, @"Unexpected tx payload");
+    XCTAssertTrue(uint160_eq(tx.creditBurnPublicKeyHash, @"7c75beb097957cc09537b615dde9ea6807719cdf".hexToData.UInt160), @"Unexpected creditBurnPublicKeyHash");
+    XCTAssertEqualObjects(tx.outputs[0].outScript.hexString, @"21022ca85dba11c4e5a6da3a00e73a08765319a5d66c2f6434b288494337b0c9ed2dac", @"Unexpected output script at index 0");
+    XCTAssertEqualObjects(tx.outputs[1].outScript.hexString, @"6a00", @"Unexpected output script at index 1");
+    XCTAssertEqualObjects(tx.creditOutputs[0].address, @"yXfXh3jFYHHxnJZVsXnPcktCENqPaAhcX1", @"Unexpected credit output address at index 0");
+    XCTAssertEqualObjects(tx.creditOutputs[1].address, @"yXfXh3jFYHHxnJZVsXnPcktCENqPaAhcX1", @"Unexpected credit output address at index 1");
+}
+
+
+
+- (void)testAssetLockTxSigning {
+
+    NSData *transactionData = @"03000800018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be010000006a4730440220765c83e5e908448ab2117a4abb806d21a3786d9642fc1883405c34367c1e5f3702207a0d1eae897e842b45632e57d02647ae193e8c7a247674399bc24d2d80799a88012102e25c6bbcbb1aa0a0c42283ded2d44e5c75551318a3c01d65906ac97aae1603e8ffffffff0240420f0000000000026a00c90ced02000000001976a914e97fe30aafd3666e70493b99cc35c0371d26654088ac0000000024010140420f00000000001976a91467575fc9d201b5ff36b5d8405497f1d961a56dbf88ac".hexToData;
+    DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initWithMessage:transactionData onChain:[DSChain testnet]];
+    
+    
+    NSData *txData = tx.toData;
+    DSUTXO lockedOutpoint = tx.lockedOutpoint;
+    NSLog(@"transaction: %@", txData.hexString);
+    NSLog(@"outputs: %@", tx.outputs);
+    NSLog(@"creditOutputs: %@", tx.creditOutputs);
+    XCTAssertEqualObjects(transactionData, txData, @"tx payload is not equal");
+    NSLog(@"lockedOutpoint: %@: %lu", uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
+    NSLog(@"creditBurnIdentityIdentifier: %@", uint256_hex(tx.creditBurnIdentityIdentifier));
+    NSLog(@"creditBurnPublicKeyHash: %@", uint160_hex(tx.creditBurnPublicKeyHash));
+    NSLog(@"entity: %@", uint160_hex(tx.creditBurnPublicKeyHash));
+    
+    
+    UInt256 isdTxHash = @"762010d851db6807e25fb5d43ad15006f9162b29f5ec2b54148e5b169acb6fb1".hexToData.UInt256;
+
+    NSData *isdData = @"01018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be01000000b16fcb9a165b8e14542becf5292b16f90650d13ad4b55fe20768db51d81020766a93587154beb1624054fbef93d73a2403295e459e6d85c3245021487e02000094325d06a52a1f3cfaa74de4ca28f9c5b16c5ee2b472e50219cc78a111cf1c987c1d861e0a6018fdaf41960caf6ba349126e99446f00edc19856b9dab8fa15e12ae42c67d4f958a8e5fbc8af224fe4cc2c85d2e186296d7433e2fec0112a862a".hexToData;
+
+//    [Testnet] [PROC] LLMQ (1_50/60: 1199065: 74087d20ffe0c2a0aadc597c58c89e9985c569ccb8491d64a4b08426b7090000), request_id: a259e387e6189cf7c3a0ecca186fbc6a8a2f096782da2c01b33cc1465c7e34d2 = 83d720afab3bd8ff4427cb574a3629972f8b0eab68e30a50565533cf2e020000
+
+    UInt256 llmqHash = @"74087d20ffe0c2a0aadc597c58c89e9985c569ccb8491d64a4b08426b7090000".hexToData.UInt256;
+
+    UInt256 isLockRequestID = @"a259e387e6189cf7c3a0ecca186fbc6a8a2f096782da2c01b33cc1465c7e34d2".hexToData.UInt256;
+    XCTAssert(tx, @"Bad Asset Lock Tx");
+}
+
 - (void)testAssetUnlockTx {
     NSData *transactionData = @"030009000001a02ffa0d000000001976a9146641c13e0ee2ce2cdf70852bb7ae9853c01f29a988ac0000000091014e00000000000000be000000273e11004130304f40d1820b5e239baecd35249263b1206a1c76e66053ec39a04501000093d3851b6bda0518da51ff8932ef3570be20e7978369dd312947326e135004915c10b5fe0e31e572c40f41cdd941bed8115e314573faf472e1065ca370bdff486db8eaa6bbcba3943e6e5ada6a3c30dee70e39811814e59e1ffc54f3c9fca04f".hexToData;
     DSAssetUnlockTransaction *tx = [[DSAssetUnlockTransaction alloc] initWithMessage:transactionData onChain:[DSChain testnet]];
@@ -115,10 +167,10 @@
 //    NSString *identityIdentifier = [uint256_data(fundingTransaction.creditBurnIdentityIdentifier) base58String];
 //    XCTAssertEqualObjects(identityIdentifier, @"Cka1ELdpfrZhFFvKRurvPtTHurDXXnnezafNPJkxCYjc", @"Identity Identifier is incorrect");
 //    NSData *publicKeyDataOrig = @"AsPvyyh6pkxss/Fespa7HCJIY8IA6ElAf6VKuqVcnPze".base64ToData;
-//    DMaybeOpaqueKey *publicKey = [DSKeyManager keyWithPublicKeyData:publicKeyDataOrig ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
+//    DMaybeOpaqueKey *publicKey = [DSKeyManager keyWithPublicKeyData:publicKeyDataOrig ofType:DKeyKindECDSA()];
 //    DSIdentityRegistrationTransition *identityRegistrationTransition = [[DSIdentityRegistrationTransition alloc] initWithVersion:1 registeringPublicKeys:@{@(1): [NSValue valueWithPointer:publicKey]} usingCreditFundingTransaction:fundingTransaction onChain:[DSChain testnet]];
 //    // cW5w4TRjU96zVwDpy4LcwWAu7BaWJVEPbieYiEm3bM6vPbtM7hcd
-//    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyData:@"fdbca0cd2be4375f04fcaee5a61c5d170a2a46b1c0c7531f58c430734a668f32".hexToData ofType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()];
+//    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyData:@"fdbca0cd2be4375f04fcaee5a61c5d170a2a46b1c0c7531f58c430734a668f32".hexToData ofType:DKeyKindECDSA()];
 //    NSData *publicKeyData = [DSKeyManager publicKeyData:privateKey->ok];
 //    NSLog(@"publicKeyData: %@", publicKeyData.hexString);
 //    XCTAssertEqualObjects(uint160_hex([publicKeyData hash160]), uint160_hex(fundingTransaction.creditBurnPublicKeyHash), @"The private key doesn't match the funding transaction");
@@ -139,7 +191,7 @@
     UInt256 inputId = *(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.bytes;
     NSString *inputAddress = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
     NSString *inputPrivateKey = @"cNeRqjZpEEowdxMjiBa7S5uBgqweng19F1EZRFWcqE2XTpDy1Vzt";
-    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyString:inputPrivateKey ofKeyType:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() forChainType:devnetDRA.chainType];
+    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyString:inputPrivateKey ofKeyType:DKeyKindECDSA() forChainType:devnetDRA.chainType];
     NSString *checkInputAddress = [DSKeyManager addressForKey:privateKey->ok forChainType:devnetDRA.chainType];
     XCTAssertEqualObjects(checkInputAddress, inputAddress, @"Private key does not match input address");
     NSString *outputAddress0 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
@@ -400,7 +452,7 @@
     NSString *ipk3 = @"eee3e42d35d1c75ea4cf3dbc902de9619faf0cd6ba1ab178a873d80c3f7dc90c";
     NSString *ipk4 = @"19d6aba7a9fcdb627ad39a2176689c2dcca13db68415411d88b1c37c2103794a";
     NSString *ipk5 = @"b4788261554d2f74647e547ef34018c228b7869191c0dc0086d91901c515c370";
-    DKeyKind *kind = dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor();
+    DKeyKind *kind = DKeyKindECDSA();
     DMaybeOpaqueKey *pk1 = [DSKeyManager keyWithPrivateKeyString:ipk1 ofKeyType:kind forChainType:testnet.chainType];
     DMaybeOpaqueKey *pk2 = [DSKeyManager keyWithPrivateKeyString:ipk2 ofKeyType:kind forChainType:testnet.chainType];
     DMaybeOpaqueKey *pk3 = [DSKeyManager keyWithPrivateKeyString:ipk3 ofKeyType:kind forChainType:testnet.chainType];

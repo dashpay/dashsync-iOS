@@ -90,7 +90,7 @@
                                                                 hardened:hardenedIndexes
                                                                   length:4
                                                                     type:DSDerivationPathType_SingleUserAuthentication
-                                                        signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                        signingAlgorithm:DKeyKindECDSA()
                                                                reference:DSDerivationPathReference_ProviderVotingKeys
                                                                  onChain:chain];
 }
@@ -98,19 +98,19 @@
 + (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(3), uint256_from_long(2)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_ProviderOwnerKeys onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_ProviderOwnerKeys onChain:chain];
 }
 
 + (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(3), uint256_from_long(3)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_BLS_ctor() reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DKeyKindBLS() reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
 }
 
 + (instancetype)platformNodeKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(3), uint256_from_long(4)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    DSAuthenticationKeysDerivationPath *path = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ED25519_ctor() reference:DSDerivationPathReference_ProviderPlatformNodeKeys onChain:chain];
+    DSAuthenticationKeysDerivationPath *path = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DKeyKindED25519() reference:DSDerivationPathReference_ProviderPlatformNodeKeys onChain:chain];
     path.shouldStoreExtendedPrivateKey = YES;
     path.usesHardenedKeys = YES;
     return path;
@@ -119,7 +119,7 @@
 + (instancetype)identityECDSAKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES, YES};
-    DSAuthenticationKeysDerivationPath *identityECDSAKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_MultipleUserAuthentication signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor() reference:DSDerivationPathReference_Identities onChain:chain];
+    DSAuthenticationKeysDerivationPath *identityECDSAKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_MultipleUserAuthentication signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Identities onChain:chain];
     identityECDSAKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;
     identityECDSAKeysDerivationPath.usesHardenedKeys = YES;
     return identityECDSAKeysDerivationPath;
@@ -132,7 +132,7 @@
                                                                                                                                        hardened:hardenedIndexes
                                                                                                                                          length:5
                                                                                                                                            type:DSDerivationPathType_MultipleUserAuthentication
-                                                                                                                               signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_BLS_ctor()
+                                                                                                                               signingAlgorithm:DKeyKindBLS()
                                                                                                                                       reference:DSDerivationPathReference_Identities
                                                                                                                                         onChain:chain];
     identityBLSKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;

@@ -28,7 +28,6 @@
 
 #import "DSPeer.h"
 #import "DSAddrRequest.h"
-//#import "DSIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"

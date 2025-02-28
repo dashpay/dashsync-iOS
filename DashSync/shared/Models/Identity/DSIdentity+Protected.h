@@ -95,11 +95,11 @@ NS_ASSUME_NONNULL_BEGIN
      withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
                    inWallet:(DSWallet *)wallet;
 
-- (void)addKey:(DMaybeOpaqueKey *)key
-       atIndex:(uint32_t)index
-        ofType:(DKeyKind *)type
-    withStatus:(DSIdentityKeyStatus)status
-          save:(BOOL)save;
+//- (void)addKey:(DMaybeOpaqueKey *)key
+//       atIndex:(uint32_t)index
+//        ofType:(DKeyKind *)type
+//    withStatus:(DSIdentityKeyStatus)status
+//          save:(BOOL)save;
 - (void)addKey:(DMaybeOpaqueKey *)key
    atIndexPath:(NSIndexPath *)indexPath
         ofType:(DKeyKind *)type
@@ -122,9 +122,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)registerInWalletForIdentityUniqueId:(UInt256)identityUniqueId;
 
-- (void)createFundingPrivateKeyWithSeed:(NSData *)seed
-                        isForInvitation:(BOOL)isForInvitation
-                             completion:(void (^_Nullable)(BOOL success))completion;
+- (BOOL)createFundingPrivateKeyWithSeed:(NSData *)seed
+                        isForInvitation:(BOOL)isForInvitation;
 
 
 - (void)setInvitationUniqueId:(UInt256)uniqueId;
@@ -140,12 +139,14 @@ NS_ASSUME_NONNULL_BEGIN
                                      withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                                   onCompletionQueue:(dispatch_queue_t)completionQueue;
 - (void)saveInContext:(NSManagedObjectContext *)context;
-- (void)applyIdentity:(dpp_identity_identity_Identity *)identity
+- (void)applyIdentity:(DIdentity *)identity
                  save:(BOOL)save
             inContext:(NSManagedObjectContext *_Nullable)context;
 - (uint32_t)firstIndexOfKeyOfType:(DKeyKind *)type
                createIfNotPresent:(BOOL)createIfNotPresent
                           saveKey:(BOOL)saveKey;
+
+- (DAssetLockProof *)createProof:(DSInstantSendTransactionLock *_Nullable)isLock;
 
 @end
 

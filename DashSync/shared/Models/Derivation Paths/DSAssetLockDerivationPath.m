@@ -49,7 +49,7 @@
                                                            hardened:hardenedIndexes
                                                              length:4
                                                                type:DSDerivationPathType_CreditFunding
-                                                   signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                   signingAlgorithm:DKeyKindECDSA()
                                                           reference:DSDerivationPathReference_IdentityCreditRegistrationFunding
                                                             onChain:chain];
 }
@@ -66,7 +66,7 @@
                                                            hardened:hardenedIndexes
                                                              length:4
                                                                type:DSDerivationPathType_CreditFunding
-                                                   signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                   signingAlgorithm:DKeyKindECDSA()
                                                           reference:DSDerivationPathReference_IdentityCreditTopupFunding
                                                             onChain:chain];
 }
@@ -83,7 +83,7 @@
                                                            hardened:hardenedIndexes
                                                              length:4
                                                                type:DSDerivationPathType_CreditFunding
-                                                   signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                   signingAlgorithm:DKeyKindECDSA()
                                                           reference:DSDerivationPathReference_IdentityCreditInvitationFunding
                                                             onChain:chain];
 }

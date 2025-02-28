@@ -167,9 +167,11 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 /*! @brief This is the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable, nonatomic, readonly) DSAssetLockTransaction *registrationAssetLockTransaction;
+@property (nullable, nonatomic, readonly) NSArray<DSAssetLockTransaction *> *topUpAssetLockTransactions;
 /*! @brief This is the hash of the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nonatomic, readonly) UInt256 registrationAssetLockTransactionHash;
+@property (nonatomic, readonly) NSMutableArray<NSData *> *topupAssetLockTransactionHashes;
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
 @property (nonatomic, readonly) DSDashpayUserEntity *matchingDashpayUserInViewContext;
 /*! @brief This is the status of the registration of the identity. It starts off in an initial status, and ends in a confirmed status */
@@ -183,6 +185,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 /*! @brief DashpaySyncronizationBlock represents the last L1 block hash for which Dashpay would be synchronized */
 @property (nonatomic, readonly) UInt256 dashpaySyncronizationBlockHash;
 
+
+- (BOOL)isDefault;
 // MARK: - Contracts
 
 - (void)fetchAndUpdateContract:(DPContract *)contract;
@@ -228,10 +232,15 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                             completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
 - (void)createAndPublishRegistrationTransitionWithCompletion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion;
 
+- (void)createAndPublishTopUpTransitionForAmount:(uint64_t)amount
+                                 fundedByAccount:(DSAccount *)fundingAccount
+                                       pinPrompt:(NSString *)prompt
+                                  withCompletion:(void (^)(BOOL, NSError *_Nullable))completion;
 
-- (void)encryptData:(NSData *)data withKeyAtIndex:(uint32_t)index
-    forRecipientKey:(DOpaqueKey *)recipientKey
-         completion:(void (^_Nullable)(NSData *encryptedData))completion;
+
+- (NSData *)encryptData:(NSData *)data
+         withKeyAtIndex:(uint32_t)index
+        forRecipientKey:(DOpaqueKey *)recipientPublicKey;
 
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
 */
@@ -243,9 +252,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (BOOL)unregisterLocally;
 
 /*! @brief Register the blockchain identity to its wallet from a credit funding registration transaction. This should only be done once on the creation of the blockchain identity.
-    @param fundingTransaction The funding transaction used to initially fund the blockchain identity.
+    @param transaction The asset lock transaction used to initially fund the blockchain identity.
 */
-- (void)registerInWalletForAssetLockTransaction:(DSAssetLockTransaction *)fundingTransaction;
+- (void)registerInWalletForAssetLockTransaction:(DSAssetLockTransaction *)transaction;
 
 // MARK: - Keys
 
@@ -266,10 +275,12 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type atIndex:(uint32_t)rIndex;
 + (DSAuthenticationKeysDerivationPath *_Nullable)derivationPathForType:(DKeyKind *)type
                                                              forWallet:(DSWallet *)wallet;
+- (BOOL)containsPublicKey:(DIdentityPublicKey *)identity_public_key;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error;
 - (BOOL)verifyKeysForWallet:(DSWallet *)wallet;
 
+- (BOOL)containsTopupTransaction:(DSAssetLockTransaction *)transaction;
 
 - (NSString *)logPrefix;
 

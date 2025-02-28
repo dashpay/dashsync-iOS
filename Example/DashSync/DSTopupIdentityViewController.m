@@ -99,6 +99,18 @@
         [self raiseIssue:@"No funding account with balance" message:@"To topup a blockchain user you must have a wallet with enough balance to pay a credit fee"];
         return;
     }
+    
+    [self.identity createAndPublishTopUpTransitionForAmount:topupAmount fundedByAccount:self.fundingAccount pinPrompt:@"Fund Transaction" withCompletion:^(BOOL success, NSError * _Nonnull error) {
+        if (error) {
+            [self raiseIssue:@"Error" message:error.localizedDescription];
+        } else if (!success) {
+            [self raiseIssue:@"Unknown" message:@""];
+        } else {
+            [self.navigationController popViewControllerAnimated:TRUE];
+        }
+    }];
+    
+    
     //
     //    [self.identity topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSIdentityTopupTransition *identityTopupTransaction) {
     //        if (identityTopupTransaction) {
@@ -106,10 +118,10 @@
     //                if (signedTransaction) {
     //                    [self.chainManager.transactionManager publishTransaction:identityTopupTransaction completion:^(NSError * _Nullable error) {
     //                        if (error) {
-    //                            [self raiseIssue:@"Error" message:error.localizedDescription];
+//                                [self raiseIssue:@"Error" message:error.localizedDescription];
     //
     //                        } else {
-    //                            [self.navigationController popViewControllerAnimated:TRUE];
+//                                [self.navigationController popViewControllerAnimated:TRUE];
     //                        }
     //                    }];
     //                } else {

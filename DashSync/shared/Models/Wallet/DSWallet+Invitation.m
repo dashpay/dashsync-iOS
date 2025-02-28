@@ -17,7 +17,7 @@
 
 #import "DSInvitation+Protected.h"
 #import "DSChain+Params.h"
-#import "DSTransactionEntity+CoreDataClass.h"
+#import "DSAssetLockTransactionEntity+CoreDataClass.h"
 #import "DSWallet+Invitation.h"
 #import "NSManagedObject+Sugar.h"
 #import <objc/runtime.h>
@@ -85,7 +85,7 @@ NSString const *mInvitationsDictionaryKey = @"mInvitationsDictionaryKey";
                 } else {
                     //No blockchain identity is known in core data
                     NSData *transactionHashData = uint256_data(uint256_reverse(invitationLockedOutpoint.hash));
-                    DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
+                    DSAssetLockTransactionEntity *creditRegitrationTransactionEntity = [DSAssetLockTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
                     if (creditRegitrationTransactionEntity) {
                         //The registration funding transaction exists
                         //Weird but we should recover in this situation

@@ -51,7 +51,7 @@
                                                                            hardened:hardenedIndexes
                                                                              length:6
                                                                                type:DSDerivationPathType_ClearFunds
-                                                                   signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                                   signingAlgorithm:DKeyKindECDSA()
                                                                           reference:DSDerivationPathReference_ContactBasedFunds
                                                                             onChain:chain];
 
@@ -71,7 +71,7 @@
                                                                          hardened:hardenedIndexes
                                                                            length:0
                                                                              type:DSDerivationPathType_ViewOnlyFunds
-                                                                 signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                                 signingAlgorithm:DKeyKindECDSA()
                                                                         reference:DSDerivationPathReference_ContactBasedFundsExternal
                                                                           onChain:chain]; //we are going to assume this is only ecdsa for now
     derivationPath.extendedPublicKey = extendedPublicKey;
@@ -91,7 +91,7 @@
                                                                          hardened:hardenedIndexes
                                                                            length:0
                                                                              type:DSDerivationPathType_ViewOnlyFunds
-                                                                 signingAlgorithm:dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
+                                                                 signingAlgorithm:DKeyKindECDSA()
                                                                         reference:DSDerivationPathReference_ContactBasedFundsExternal
                                                                           onChain:chain]; //we are going to assume this is only ecdsa for now
     derivationPath.standaloneExtendedPublicKeyUniqueID = extendedPublicKeyUniqueId;
