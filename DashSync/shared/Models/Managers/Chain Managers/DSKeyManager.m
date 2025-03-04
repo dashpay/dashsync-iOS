@@ -192,9 +192,12 @@
 }
 
 + (NSString *_Nullable)ecdsaKeyAddressFromPublicKeyData:(NSData *)data forChainType:(ChainType)chainType {
+    if (!data || data.length == 0) {
+        return nil;
+    }
+    
     return [DSKeyManager NSStringFrom:ecdsa_address_from_public_key_data(data.bytes, data.length, chainType)];
 }
-
 
 - (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret forChainType:(ChainType)chainType {
     uint64_t unque_id = ecdsa_public_key_unique_id_from_derived_key_data(secret.u8, 32, chainType);
