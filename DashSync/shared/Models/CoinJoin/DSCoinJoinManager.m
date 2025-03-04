@@ -130,8 +130,19 @@ static dispatch_once_t managerChainToken = 0;
     }
 }
 
+- (void)updateOptionsWithSessions:(int32_t)sessions {
+    if (self.options->coinjoin_sessions != sessions) {
+        self.options->coinjoin_sessions = sessions;
+        
+        if (self.wrapper.isRegistered) {
+            [self.wrapper updateOptions:self.options];
+        }
+    }
+}
+
 - (void)configureMixingWithAmount:(uint64_t)amount rounds:(int32_t)rounds sessions:(int32_t)sessions withMultisession:(BOOL)multisession denominationGoal:(int32_t)denomGoal denominationHardCap:(int32_t)denomHardCap {
     DSLog(@"[%@] CoinJoin: mixing configuration:  { rounds: %d, sessions: %d, amount: %llu, multisession: %s, denomGoal: %d, denomHardCap: %d }", self.chain.name, rounds, sessions, amount, multisession ? "YES" : "NO", denomGoal, denomHardCap);
+    self.options->enable_coinjoin = true;
     self.options->coinjoin_amount = amount;
     self.options->coinjoin_rounds = rounds;
     self.options->coinjoin_sessions = sessions;
@@ -195,11 +206,26 @@ static dispatch_once_t managerChainToken = 0;
 
 - (BOOL)startMixing {
     self.isMixing = true;
+    self.isShuttingDown = false;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleSyncStateDidChangeNotification:)
                                                  name:DSChainManagerSyncStateDidChangeNotification
                                                object:nil];
     return [self.wrapper startMixing];
+}
+
+- (void)initiateShutdown {
+    if (self.isMixing && !self.isShuttingDown) {
+        DSLog(@"[%@] CoinJoinManager initiated shutdown", self.chain.name);
+        self.isShuttingDown = true;
+        [self updateOptionsWithSessions:0];
+        [self.wrapper initiateShutdown];
+        
+        if (self.masternodeGroup != nil && self.masternodeGroup.isRunning) {
+            [self.chain.chainManager.peerManager shouldSendDsq:false];
+            [self.masternodeGroup stopAsync];
+        }
+    }
 }
 
 - (void)stop {
@@ -211,6 +237,7 @@ static dispatch_once_t managerChainToken = 0;
         [self updateOptionsWithEnabled:NO];
         [self.wrapper stopAndResetClientManager];
         [self stopAsync];
+        self.isShuttingDown = false;
     }
 }
 
@@ -314,9 +341,15 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
+    if (!self.isMixing) {
+        return;
+    }
+    
     dispatch_async(self.processingQueue, ^{
         if ([type isEqualToString:MSG_COINJOIN_QUEUE]) {
-            [self.wrapper processDSQueueFrom:peer message:message];
+            if (!self.isShuttingDown) {
+                [self.wrapper processDSQueueFrom:peer message:message];
+            }
         } else {
             [self.wrapper processMessageFrom:peer message:message type:type];
         }
@@ -973,9 +1006,10 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)onMixingComplete:(nonnull NSArray *)statuses isInterrupted:(BOOL)isInterrupted {
-    uint32_t locked_coins_amount = has_locked_coins(self.wrapper.clientManager);
-    DSLog(@"[%@] CoinJoin: onMixingComplete, locked_coins_amount: %lu, isInterrupted: %@, statuses: %@", self.chain.name, locked_coins_amount, isInterrupted ? @"YES" : @"NO", statuses.count > 0 ? [NSString stringWithFormat:@"%@", statuses] : @"empty");
-
+    if (self.isShuttingDown) {
+        [self stop];
+    }
+    
     PoolStatus returnStatus = PoolStatus_ErrNotEnoughFunds;
     BOOL isError = YES;
     
@@ -990,10 +1024,6 @@ static dispatch_once_t managerChainToken = 0;
         if (status != PoolStatus_ErrNotEnoughFunds) {
             returnStatus = status;
         }
-    }
-    
-    if (locked_coins_amount > 0) {
-        print_locked_coins(self.wrapper.clientManager);
     }
 
     [self.managerDelegate mixingComplete:isError errorStatus:returnStatus isInterrupted:isInterrupted];

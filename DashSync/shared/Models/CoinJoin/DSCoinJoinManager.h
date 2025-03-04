@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) DSCoinJoinWrapper *wrapper;
 @property (nonatomic, readonly) BOOL isWaitingForNewBlock;
 @property (atomic) BOOL isMixing;
+@property (atomic) BOOL isShuttingDown;
 @property (readonly) BOOL isChainSynced;
 
 + (instancetype)sharedInstanceForChain:(DSChain *)chain;
@@ -90,6 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)minimumAnonymizableBalanceWithCompletion:(void (^)(uint64_t balance))completion;
 - (void)updateOptionsWithAmount:(uint64_t)amount;
 - (void)updateOptionsWithEnabled:(BOOL)isEnabled;
+- (void)initiateShutdown;
 
 // Events
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined;

@@ -91,8 +91,14 @@
 - (void)doMaintenance {
     @synchronized (self) {
         Balance *balance = [[self.manager getBalance] ffi_malloc];
-        do_maintenance(_clientManager, *balance);
+        do_maintenance(self.clientManager, *balance);
         [DSCoinJoinBalance ffi_free:balance];
+    }
+}
+
+- (void)initiateShutdown {
+    @synchronized (self) {
+        initiate_shutdown(self.clientManager);
     }
 }
 
@@ -179,9 +185,11 @@
 }
 
 - (void)unlockOutputs:(DSTransaction *)transaction {
-    Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
-    unlock_outputs(self.clientManager, tx);
-    [DSTransaction ffi_free:tx];
+    @synchronized (self) {
+        Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
+        unlock_outputs(self.clientManager, tx);
+        [DSTransaction ffi_free:tx];
+    }
 }
 
 - (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed {

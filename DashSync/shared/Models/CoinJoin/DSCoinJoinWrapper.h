@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)refreshUnusedKeys;
 - (BOOL)isDenominatedAmount:(uint64_t)amount;
 - (BOOL)isFullyMixed:(DSUTXO)utxo;
+- (void)initiateShutdown;
 + (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 + (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account;
 - (void)unlockOutputs:(DSTransaction *)transaction;
