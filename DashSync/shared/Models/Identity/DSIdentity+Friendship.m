@@ -123,7 +123,7 @@
                                     completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion {
     NSAssert(self.isLocal, @"This should not be performed on a non local blockchain identity");
     if (!self.isLocal) return;
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, (char *)[potentialContact.username UTF8String]);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(potentialContact.username));
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
@@ -136,7 +136,7 @@
 
     switch (document->tag) {
         case dpp_document_Document_V0: {
-            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.sharedRuntime, self.chain.shareCore.identitiesManager->obj, document->v0->owner_id);
+            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, document->v0->owner_id);
             if (identity_result->error) {
                 NSError *error = [NSError ffi_from_platform_error:identity_result->error];
                 DMaybeIdentityDtor(identity_result);
@@ -153,7 +153,7 @@
             switch (identity->tag) {
                 case dpp_identity_identity_Identity_V0: {
                     u256 *identity_contact_unique_id = identity->v0->id->_0->_0;
-                    UInt256 identityContactUniqueId = *(UInt256 *)identity_contact_unique_id->values;
+                    UInt256 identityContactUniqueId = u256_cast(identity_contact_unique_id);
                     DSBlockchainIdentityEntity *potentialContactIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", NSDataFromPtr(identity_contact_unique_id)];
                     DSIdentity *potentialContactIdentity = nil;
                     if (potentialContactIdentityEntity) {
@@ -210,7 +210,11 @@
     DValue *value = [potentialFriendship toValue];
     uint32_t index = 0;
     if (!self.keysCreated) {
-        [self createNewKeyOfType:DKeyKindECDSA() saveKey:!self.wallet.isTransient returnIndex:&index];
+        [self createNewKeyOfType:DKeyKindECDSA()
+                   securityLevel:DSecurityLevelMaster()
+                         purpose:DPurposeAuth()
+                         saveKey:!self.wallet.isTransient
+                     returnIndex:&index];
     }
     DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
     DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, identity_id, value, entropy, private_key->ok);

@@ -45,7 +45,7 @@
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
 //        UInt160 publicKeyHash = [DSKeyManager ecdsaKeyPublicKeyHashFromSecret:self.inputTextView.text forChainType:self.chain.chainType];
-        if (dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_key_id_matches_with_secret_key(self.masternode, (char *)[self.inputTextView.text UTF8String], self.chain.chainType)) {
+        if (dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_key_id_matches_with_secret_key(self.masternode, DChar(self.inputTextView.text), self.chain.chainType)) {
             [self.navigationController popViewControllerAnimated:TRUE];
         } else {
             UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];

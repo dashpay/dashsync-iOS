@@ -71,27 +71,21 @@
 }
 
 + (DMaybeOpaqueKey *_Nullable)keyWithPrivateKeyData:(NSData *)data ofType:(DKeyKind *)keyType {
-    // TODO: memory
     SLICE *slice = slice_ctor(data);
     DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_KeyKind_key_with_private_key_data(keyType, slice);
-//    slice_dtor(slice);
     return result;
-//    return key_create_with_private_key_data(data.bytes, data.length, (int16_t) keyType);
 }
 
 + (DMaybeOpaqueKey *_Nullable)keyWithPublicKeyData:(NSData *)data ofType:(DKeyKind *)keyType {
     SLICE *slice = slice_ctor(data);
     DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_KeyKind_key_with_public_key_data(keyType, slice);
-//    slice_dtor(slice);
     return result;
-//    return key_create_with_public_key_data(data.bytes, data.length, (int16_t) keyType);
 }
 
 + (DMaybeOpaqueKey *_Nullable)keyWithExtendedPublicKeyData:(NSData *)data ofType:(DKeyKind *)keyType {
     SLICE *slice = slice_ctor(data);
     DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_KeyKind_key_with_extended_private_key_data(keyType, slice);
     return result;
-//    return key_create_from_extended_public_key_data(data.bytes, data.length, (int16_t) keyType);
 }
 
 + (NSData *)signMesasageDigest:(DOpaqueKey *)key digest:(UInt256)digest {
@@ -107,87 +101,8 @@
     BOOL verified = result && result->ok && result->ok[0];
     Result_ok_bool_err_dash_spv_crypto_keys_KeyError_destroy(result);
     return verified;
-//    return key_verify_message_digest(key, digest.u8, signature.bytes, signature.length);
 }
-//+ (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(DKeyKind *)keyType
-//                                               path:(DIndexPathU256 *)path
-//                                         index_path:(Vec_u32 *)index_path
-//                                               seed:(NSData *)seed {
-//    SLICE *seed_slice = slice_ctor(seed);
-//    DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_KeyKind_private_key_at_index_path_wrapped(keyType, seed_slice, index_path, path);
-//    return result;
-//}
 
-//+ (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(DKeyKind *)keyType
-//                                            indexes:(UInt256 *)indexes
-//                                           hardened:(BOOL *)hardened
-//                                             length:(NSUInteger)length
-//                                          indexPath:(NSIndexPath *)indexPath
-//                                           fromSeed:(NSData *)seed {
-//    NSParameterAssert(indexPath);
-//    NSParameterAssert(seed);
-//    if (!seed || !indexPath) return nil;
-//    if (!length) return nil; //there needs to be at least 1 length
-//    SLICE *seed_slice = slice_ctor(seed);
-//    Vec_u32 *index_path = [NSIndexPath ffi_to:indexPath];
-//    u256 **ind = malloc(length * sizeof(u256 *));
-//    bool *hard = malloc(length * sizeof(bool));
-//    
-//    for (NSUInteger i = 0; i < length; i++) {
-//        ind[i] = u256_ctor_u(indexes[i]);
-//        hard[i] = hardened[i];
-//    }
-//    Vec_u8_32 *i = Vec_u8_32_ctor(length, ind);
-//    Vec_bool *h = Vec_bool_ctor(length, hard);
-//    
-//    DIndexPathU256 *path = dash_spv_crypto_keys_key_IndexPathU256_ctor(i, h);
-//    DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_KeyKind_private_key_at_index_path_wrapped(keyType, seed_slice, index_path, path);
-//
-//    [NSIndexPath ffi_destroy:index_path];
-//    slice_dtor(seed_slice);
-//    for (NSUInteger i = 0; i < length; i++) {
-//        u256_dtor(ind[i]);
-//    }
-//    free(ind);
-//    free(hard);
-//    Vec_u8_32_destroy(i);
-//    Vec_bool_destroy(h);
-//    dash_spv_crypto_keys_key_IndexPathU256_destroy(path);
-//    return result;
-//    
-//    
-//    
-////    if (!result) return nil;
-////    if (!result->ok) {
-////        DMaybeOpaqueKeyDtor(result);
-////        return nil;
-////    }
-////    return key;
-////    IndexPathData *index_path = [indexPath ffi_malloc];
-////    DOpaqueKey *key = key_private_key_at_index_path(seed.bytes, seed.length, (int16_t) keyType, index_path, (const uint8_t *) indexes, hardened, length);
-////    [NSIndexPath ffi_free:index_path];
-////    return key;
-//}
-
-//+ (DMaybeOpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath
-//                                    childIndexes:(UInt256 *)childIndexes
-//                                   childHardened:(BOOL *)childHardened
-//                                          length:(NSUInteger)length {
-//
-//    u256 **indexes = malloc(length * sizeof(u256));
-//    bool *hardened = malloc(length * sizeof(bool));
-//    for (NSUInteger i = 0; i < length; i++) {
-//        indexes[i] = Arr_u8_32_ctor(32, childIndexes[i].u8);
-//        hardened[i] = childHardened[i];
-//    }
-//    Vec_u8_32 *i = Vec_u8_32_ctor(length, indexes);
-//    Vec_bool *h = Vec_bool_ctor(length, hardened);
-//    DIndexPathU256 *path = dash_spv_crypto_keys_key_IndexPathU256_ctor(i, h);
-//    DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_OpaqueKey_public_derive_to_256_path_with_offset(parentPath.extendedPublicKey->ok, path, parentPath.length);
-////    DOpaqueKey *key = key_public_derive_to_256bit(parentPath.extendedPublicKey, (const uint8_t *) childIndexes, childHardened, length, parentPath.length);
-//    return result;
-//}
-//
 + (DMaybeOpaqueKey *_Nullable)publicKeyAtIndexPath:(DOpaqueKey *)key indexPath:(NSIndexPath *)indexPath {
     if (key == NULL) return nil;
     Vec_u32 *index_path = [NSIndexPath ffi_to:indexPath];
@@ -205,8 +120,6 @@
             data = NSDataFromPtr(maybe_data->ok);
         DMaybeKeyDataDtor(maybe_data);
     }
-//    NSLog(@"[DSKeyManager] publicKeyDataAtIndexPath: %@ = %@", indexPath, data.hexString);
-
     return data;
 }
 
@@ -224,37 +137,33 @@
 + (NSString *)addressWithPublicKeyData:(NSData *)data forChain:(nonnull DSChain *)chain {
     SLICE *slice = slice_ctor(data);
     char *c_string = dash_spv_crypto_util_address_address_with_public_key_data(slice, chain.chainType);
-//    slice_dtor(slice);
     return [DSKeyManager NSStringFrom:c_string];
 }
 
 + (NSString *)addressFromHash160:(UInt160)hash forChain:(nonnull DSChain *)chain {
     u160 *h = u160_ctor_u(hash);
     char *c_string = dash_spv_apple_bindings_address_addresses_address_from_hash160(h, chain.chainType);
-//    u160_dtor(h);
     return [DSKeyManager NSStringFrom:c_string];
 }
 
 + (NSString *_Nullable)addressWithScriptPubKey:(NSData *)script forChain:(nonnull DSChain *)chain {
     BYTES *vec = bytes_ctor(script);
     char *c_string = dash_spv_apple_bindings_address_addresses_address_with_script_pubkey(vec, chain.chainType);
-//    char *c_string = address_with_script_pubkey(script.bytes, script.length, chain.chainType);
     return [DSKeyManager NSStringFrom:c_string];
 }
 
 + (NSString *_Nullable)addressWithScriptSig:(NSData *)script forChain:(nonnull DSChain *)chain {
     BYTES *vec = bytes_ctor(script);
     char *c_string = dash_spv_apple_bindings_address_addresses_address_with_script_sig(vec, chain.chainType);
-//    char *c_string = address_with_script_sig(script.bytes, script.length, chain.chainType);
     return [DSKeyManager NSStringFrom:c_string];
 }
 
 + (BOOL)isValidDashAddress:(NSString *)address forChain:(nonnull DSChain *)chain {
-    return dash_spv_apple_bindings_address_addresses_is_valid_dash_address_for_chain((char *) [address UTF8String], chain.chainType);
+    return dash_spv_apple_bindings_address_addresses_is_valid_dash_address_for_chain(DChar(address), chain.chainType);
 }
 
 + (NSData *)scriptPubKeyForAddress:(NSString *)address forChain:(nonnull DSChain *)chain {
-    BYTES *vec = dash_spv_apple_bindings_address_addresses_script_pubkey_for_address((char *) [address UTF8String], chain.chainType);
+    BYTES *vec = dash_spv_apple_bindings_address_addresses_script_pubkey_for_address(DChar(address), chain.chainType);
     return [DSKeyManager NSDataFrom:vec];
 }
 
@@ -271,14 +180,10 @@
 + (NSData *)publicKeyData:(DOpaqueKey *)key {
     BYTES *vec = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(key);
     NSData *data = [DSKeyManager NSDataFrom:vec];
-//    ByteArray arr = key_public_key_data(key);
     return data;
 }
 
 + (NSData *)extendedPrivateKeyData:(DOpaqueKey *)key {
-//    ByteArray arr = key_extended_private_key_data(key);
-//    return [DSKeyManager NSDataFrom:arr];
-
     Result_ok_dash_spv_crypto_util_sec_vec_SecVec_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_key_OpaqueKey_extended_private_key_data(key);
     if (result->error) {
         return NULL;
@@ -298,8 +203,6 @@
         DMaybeKeyDataDtor(result);
     }
     return data;
-//    ByteArray arr = key_extended_public_key_data(key);
-//    return [DSKeyManager NSDataFrom:arr];
 }
 
 
@@ -381,7 +284,7 @@
 + (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key
                                  passphrase:(NSString *)passphrase
                                forChainType:(DChainType *)chainType {
-    DMaybeKeyString *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_from_bip38_key((char *) [key UTF8String], (char *) [passphrase UTF8String], chainType);
+    DMaybeKeyString *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_from_bip38_key(DChar(key), DChar(passphrase), chainType);
     NSString *keySerialized = NULL;
     if (result) {
         keySerialized = NSStringFromPtr(result->ok);
@@ -391,13 +294,13 @@
 }
 
 + (BOOL)isValidDashBIP38Key:(NSString *)key {
-    return dash_spv_crypto_keys_ecdsa_key_ECDSAKey_is_valid_bip38_key((char *) [key UTF8String]);
+    return dash_spv_crypto_keys_ecdsa_key_ECDSAKey_is_valid_bip38_key(DChar(key));
 }
 
 + (DMaybeOpaqueKey *_Nullable)keyWithPrivateKeyString:(NSString *)key
                                        ofKeyType:(DKeyKind *)keyType
                                     forChainType:(DChainType *)chainType {
-    return dash_spv_crypto_keys_key_KeyKind_key_with_private_key(keyType, (char *) [key UTF8String], chainType);
+    return dash_spv_crypto_keys_key_KeyKind_key_with_private_key(keyType, DChar(key), chainType);
 }
 
 //+ (DOpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed indexes:(UInt256 *)indexes hardened:(BOOL *)hardened length:(NSUInteger)length {

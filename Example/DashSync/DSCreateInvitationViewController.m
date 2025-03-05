@@ -21,6 +21,7 @@
 //#import "DSIdentityRegistrationTransition.h"
 #import "DSInvitation.h"
 #import "DSWalletChooserViewController.h"
+#import "NSError+Dash.h"
 
 @interface DSCreateInvitationViewController ()
 - (IBAction)cancel:(id)sender;
@@ -129,9 +130,9 @@
                                                   forTopupAmount:topupAmount
                                                        pinPrompt:@"Enter your PIN?"
                                                   stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
-                                                      completion:^(DSIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    if (error) {
-                        [self raiseIssue:@"Error" message:error.localizedDescription];
+                                                      completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    if ([errors count]) {
+                        [self raiseIssue:@"Error" message:[NSError errorsDescription:errors]];
                         return;
                     } else {
                         [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];

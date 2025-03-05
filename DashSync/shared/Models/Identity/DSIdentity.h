@@ -57,26 +57,26 @@ typedef NS_ENUM(NSUInteger, DSIdentityQueryStep)
     DSIdentityQueryStep_Cancelled = 1 << 30
 };
 
-typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStatus)
-{
-    DSIdentityRegistrationStatus_Unknown = 0,
-    DSIdentityRegistrationStatus_Registered = 1,
-    DSIdentityRegistrationStatus_Registering = 2,
-    DSIdentityRegistrationStatus_NotRegistered = 3, //sent to DAPI, not yet confirmed
-};
+//typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStatus)
+//{
+//    DSIdentityRegistrationStatus_Unknown = 0,
+//    DSIdentityRegistrationStatus_Registered = 1,
+//    DSIdentityRegistrationStatus_Registering = 2,
+//    DSIdentityRegistrationStatus_NotRegistered = 3, //sent to DAPI, not yet confirmed
+//};
 
-typedef NS_ENUM(NSUInteger, DSIdentityUsernameStatus)
-{
-    DSIdentityUsernameStatus_NotPresent = 0,
-    DSIdentityUsernameStatus_Initial = 1,
-    DSIdentityUsernameStatus_PreorderRegistrationPending = 2,
-    DSIdentityUsernameStatus_Preordered = 3,
-    DSIdentityUsernameStatus_RegistrationPending = 4, //sent to DAPI, not yet confirmed
-    DSIdentityUsernameStatus_Confirmed = 5,
-    DSIdentityUsernameStatus_TakenOnNetwork = 6,
-    DSIdentityUsernameStatus_VotingPeriod = 7,
-    DSIdentityUsernameStatus_Locked = 8,
-};
+//typedef NS_ENUM(NSUInteger, DSIdentityUsernameStatus)
+//{
+//    DSIdentityUsernameStatus_NotPresent = 0,
+//    DSIdentityUsernameStatus_Initial = 1,
+//    DSIdentityUsernameStatus_PreorderRegistrationPending = 2,
+//    DSIdentityUsernameStatus_Preordered = 3,
+//    DSIdentityUsernameStatus_RegistrationPending = 4, //sent to DAPI, not yet confirmed
+//    DSIdentityUsernameStatus_Confirmed = 5,
+//    DSIdentityUsernameStatus_TakenOnNetwork = 6,
+//    DSIdentityUsernameStatus_VotingPeriod = 7,
+//    DSIdentityUsernameStatus_Locked = 8,
+//};
 
 typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
 {
@@ -87,19 +87,19 @@ typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
     DSIdentityFriendshipStatus_Friends = DSIdentityFriendshipStatus_Outgoing | DSIdentityFriendshipStatus_Incoming,
 };
 
-typedef NS_ENUM(NSUInteger, DSIdentityKeyStatus)
-{
-    DSIdentityKeyStatus_Unknown = 0,
-    DSIdentityKeyStatus_Registered = 1,
-    DSIdentityKeyStatus_Registering = 2,
-    DSIdentityKeyStatus_NotRegistered = 3,
-    DSIdentityKeyStatus_Revoked = 4,
-};
+//typedef NS_ENUM(NSUInteger, DSIdentityKeyStatus)
+//{
+//    DSIdentityKeyStatus_Unknown = 0,
+//    DSIdentityKeyStatus_Registered = 1,
+//    DSIdentityKeyStatus_Registering = 2,
+//    DSIdentityKeyStatus_NotRegistered = 3,
+//    DSIdentityKeyStatus_Revoked = 4,
+//};
 
-#define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
-#define BLOCKCHAIN_USERNAME_PROPER @"BLOCKCHAIN_USERNAME_PROPER"
-#define BLOCKCHAIN_USERNAME_DOMAIN @"BLOCKCHAIN_USERNAME_DOMAIN"
-#define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
+//#define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
+//#define BLOCKCHAIN_USERNAME_PROPER @"BLOCKCHAIN_USERNAME_PROPER"
+//#define BLOCKCHAIN_USERNAME_DOMAIN @"BLOCKCHAIN_USERNAME_DOMAIN"
+//#define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
 #define ERROR_MEM_ALLOC [NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]
 #define ERROR_MALFORMED_RESPONSE [NSError errorWithCode:501 localizedDescriptionKey:@"Malformed platform response"]
@@ -175,7 +175,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
 @property (nonatomic, readonly) DSDashpayUserEntity *matchingDashpayUserInViewContext;
 /*! @brief This is the status of the registration of the identity. It starts off in an initial status, and ends in a confirmed status */
-@property (nonatomic, readonly) DSIdentityRegistrationStatus registrationStatus;
+@property (nonatomic, readonly) DIdentityRegistrationStatus *registrationStatus;
 /*! @brief This is the localized status of the registration of the identity returned as a string. It starts off in an initial status, and ends in a confirmed status */
 @property (nonatomic, readonly) NSString *localizedRegistrationStatusString;
 /*! @brief This is a convenience method that checks to see if registrationStatus is confirmed */
@@ -202,19 +202,19 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
            forTopupAmount:(uint64_t)topupDuffAmount
                 pinPrompt:(NSString *)prompt
            stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion
-               completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSError *error))completion;
+               completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors))completion;
 
 - (void)continueRegisteringOnNetwork:(DSIdentityRegistrationStep)steps
                   withFundingAccount:(DSAccount *)fundingAccount
                       forTopupAmount:(uint64_t)topupDuffAmount
                            pinPrompt:(NSString *)prompt
                       stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion
-                          completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSError *error))completion;
+                          completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors))completion;
 
 - (void)continueRegisteringIdentityOnNetwork:(DSIdentityRegistrationStep)steps
                               stepsCompleted:(DSIdentityRegistrationStep)stepsAlreadyCompleted
                               stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion
-                                  completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSError *error))completion;
+                                  completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors))completion;
 
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
@@ -265,11 +265,13 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                           completion:(void (^_Nullable)(BOOL registered))completion;
 - (BOOL)setExternalFundingPrivateKey:(DMaybeOpaqueKey *)privateKey;
 - (BOOL)hasIdentityExtendedPublicKeys;
-- (DSIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index;
+- (DIdentityKeyStatus *)statusOfKeyAtIndex:(NSUInteger)index;
 - (DMaybeOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
-+ (NSString *)localizedStatusOfKeyForIdentityKeyStatus:(DSIdentityKeyStatus)status;
++ (NSString *)localizedStatusOfKeyForIdentityKeyStatus:(DIdentityKeyStatus *)status;
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index;
 - (DMaybeOpaqueKey *_Nullable)createNewKeyOfType:(DKeyKind *)type
+                                   securityLevel:(DSecurityLevel *)security_level
+                                         purpose:(DPurpose *)purpose
                                          saveKey:(BOOL)saveKey
                                      returnIndex:(uint32_t *)rIndex;
 - (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type atIndex:(uint32_t)rIndex;

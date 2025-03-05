@@ -177,8 +177,8 @@
             }
             dispatch_group_enter(keyHashesDispatchGroup);
             DRetry *stragegy = DRetryLinear(5);
-            dash_spv_platform_identity_manager_IdentityValidator *options = dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor();
-            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.shareCore.identitiesManager->obj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
+            dash_spv_platform_identity_manager_IdentityValidator *options = DAcceptIdentityNotFound();
+            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
                         
             if (result->error) {
                 NSError *error = [NSError ffi_from_platform_error:result->error];
@@ -196,7 +196,7 @@
                 switch (identity->tag) {
                     case dpp_identity_identity_Identity_V0: {
                         dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
-                        DMaybeOpaqueKey *maybe_opaque_key = dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(identity_v0->public_keys->values[0]);
+                        DMaybeOpaqueKey *maybe_opaque_key = DOpaqueKeyFromIdentityPubKey(identity_v0->public_keys->values[0]);
                         NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
                         NSNumber *index = [keyIndexes objectForKey:publicKeyData];
                         DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
@@ -266,7 +266,7 @@
               withCompletion:(IdentityCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identity by name: %@, domain: %@", self.logPrefix, name, domain];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, (char *)[name UTF8String]);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(name));
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeDocumentsMapDtor(result);
@@ -287,7 +287,8 @@
         NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
         NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
         DIdentifier *owner_id = document->v0->owner_id;
-        DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:*(UInt256 *)owner_id->_0->_0 isTransient:TRUE onChain:self.chain];
+        
+        DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
         [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
         [rIdentities addObject:identity];
 
@@ -310,7 +311,7 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, nil); });
         return;
     }
-    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
+    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugString, error);
@@ -348,7 +349,7 @@
         user_ids_values[i] = u256_ctor(userID);
     }
     Vec_u8_32 *user_ids = Vec_u8_32_ctor(user_ids_count, user_ids_values);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, user_ids, dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, user_ids, dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugString, error);
@@ -422,7 +423,7 @@
                       withCompletion:(IdentitiesCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By Name Prefix: %@", self.logPrefix, namePrefix];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, (char *)[namePrefix UTF8String]);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(namePrefix));
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DSLog(@"%@: ERROR: %@", debugString, error);
@@ -442,7 +443,7 @@
             case dpp_document_Document_V0: {
                 u256 *owner_id = document->v0->owner_id->_0->_0;
                 NSData *userIdData = NSDataFromPtr(owner_id);
-                UInt256 uniqueId = *(UInt256 *)owner_id->values;
+                UInt256 uniqueId = u256_cast(owner_id);
                 DSIdentity *identity = [rIdentities objectForKey:userIdData];
                 if (!identity)
                     identity = [self.chain identityForUniqueId:uniqueId foundInWallet:nil includeForeignIdentities:YES];
@@ -470,7 +471,7 @@
                                           withCompletion:(IdentitiesCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By DPNS identity id: %@", self.logPrefix, userID.hexString];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.sharedRuntime, self.chain.shareCore.documentsManager->obj, u256_ctor(userID));
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor(userID));
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeDocumentsMapDtor(result);
@@ -490,7 +491,7 @@
             case dpp_document_Document_V0: {
                 NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
-                DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:*(UInt256 *)document->v0->owner_id->_0->_0 isTransient:TRUE onChain:self.chain];
+                DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(document->v0->owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
                 [identity addUsername:normalizedLabel inDomain:domain status:DSIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
                 [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
                 [rIdentities addObject:identity];

@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)errorWithCode:(NSInteger)code localizedDescriptionKey:(NSString *)localizedDescriptionKey;
 
 + (instancetype)osStatusErrorWithCode:(NSInteger)code;
++ (NSString *)errorsDescription:(NSArray<NSError *> *)errors;
 
 @end
 

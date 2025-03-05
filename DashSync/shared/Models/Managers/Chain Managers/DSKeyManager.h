@@ -126,6 +126,8 @@
 #define bitset_ctor(data, count) dash_spv_crypto_llmq_bitset_Bitset_ctor(data.length, (uint8_t *)data.bytes)
 #define bitset_dtor(ptr) dash_spv_crypto_llmq_bitset_Bitset_destroy(ptr)
 
+#define DChar(str) (char *) [str UTF8String]
+
 
 #define DMNSyncState dash_spv_masternode_processor_models_sync_state_CacheState
 #define DMNSyncStateDtor(ptr) dash_spv_masternode_processor_models_sync_state_CacheState_destroy(ptr)
@@ -288,9 +290,13 @@
 #define DMaybeDocument Result_ok_Option_dpp_document_Document_err_dash_spv_platform_error_Error
 #define DMaybeDocumentDtor(ptr) Result_ok_Option_dpp_document_Document_err_dash_spv_platform_error_Error_destroy(ptr)
 
+#define DDocumentResult Result_ok_dpp_document_Document_err_dash_spv_platform_error_Error
+#define DDocumentResultDtor(ptr) Result_ok_dpp_document_Document_err_dash_spv_platform_error_Error_destroy(ptr)
+
 #define DMaybeDocumentsMap Result_ok_indexmap_IndexMap_platform_value_types_identifier_Identifier_Option_dpp_document_Document_err_dash_spv_platform_error_Error
 #define DMaybeDocumentsMapDtor(ptr) Result_ok_indexmap_IndexMap_platform_value_types_identifier_Identifier_Option_dpp_document_Document_err_dash_spv_platform_error_Error_destroy(ptr)
 #define DContactRequest dash_spv_platform_models_contact_request_ContactRequest
+#define DContactRequestDtor(ptr) dash_spv_platform_models_contact_request_ContactRequest_destroy(ptr)
 #define DContactRequestKind dash_spv_platform_models_contact_request_ContactRequestKind
 #define DContactRequests Vec_dash_spv_platform_models_contact_request_ContactRequestKind
 #define DMaybeContactRequests Result_ok_Vec_dash_spv_platform_models_contact_request_ContactRequestKind_err_dash_spv_platform_error_Error
@@ -309,9 +315,26 @@
 #define DMaybeStateTransitionProofResult Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error
 #define DMaybeStateTransitionProofResultDtor(ptr) Result_ok_dpp_state_transition_proof_result_StateTransitionProofResult_err_dash_spv_platform_error_Error_destroy(ptr)
 
-#define DGetDocProperty(document, prop) dash_spv_platform_document_get_document_property(document, (char *)[prop UTF8String])
+#define DGetDocProperty(document, prop) dash_spv_platform_document_get_document_property(document, DChar(prop))
 #define DValue platform_value_Value
 #define DValueDtor(ptr) platform_value_Value_destroy(ptr)
+#define DValuePair Tuple_platform_value_Value_platform_value_Value
+#define DValuePairCtor(key, value) Tuple_platform_value_Value_platform_value_Value_ctor(key, value)
+#define DValuePairVec Vec_Tuple_platform_value_Value_platform_value_Value
+#define DValuePairVecCtor(count, values) Vec_Tuple_platform_value_Value_platform_value_Value_ctor(count, values)
+#define DValueMapCtor(value_pair_vec) platform_value_value_map_ValueMap_ctor(value_pair_vec)
+
+#define DValueVec Vec_platform_value_Value
+#define DValueVecCtor(count, values) Vec_platform_value_Value_ctor(count, values)
+#define DValueTextPairCtor(key, value) DValuePairCtor(platform_value_Value_Text_ctor(DChar(key)), value)
+#define DValueTextTextPairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_Text_ctor(DChar(value)))
+#define DValueTextBytesPairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_Bytes_ctor(bytes_ctor(value)))
+#define DValueTextBoolPairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_Bool_ctor(value))
+#define DValueTextMapPairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_Map_ctor(value))
+#define DValueTextU32PairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_U32_ctor(value))
+#define DValueTextU64PairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_U64_ctor(value))
+#define DValueTextIdentifierPairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_Identifier_ctor(value))
+
 #define DGetTextDocProperty(document, propertyName) ({ \
     NSString *result = nil; \
     DValue *value = DGetDocProperty((document), (propertyName)); \
@@ -365,6 +388,35 @@
 #define DKeyID dpp_identity_identity_public_key_KeyID
 #define DIdentityPublicKey dpp_identity_identity_public_key_IdentityPublicKey
 #define DIdentityPublicKeysMap std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey
+
+#define DAcceptIdentityNotFound() dash_spv_platform_identity_manager_IdentityValidator_AcceptNotFoundAsNotAnError_ctor()
+#define DRaiseIdentityNotFound() dash_spv_platform_identity_manager_IdentityValidator_None_ctor()
+
+#define DOpaqueKeyFromIdentityPubKey(key) dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(key)
+#define DOpaqueKeyKind(key) dash_spv_crypto_keys_key_OpaqueKey_kind(key)
+
+#define DDataContract dpp_data_contract_DataContract
+
+#define DPurpose dpp_identity_identity_public_key_purpose_Purpose
+#define DPurposeDtor(ptr) dpp_identity_identity_public_key_purpose_Purpose_destroy(ptr)
+#define DPurposeAuth() dpp_identity_identity_public_key_purpose_Purpose_AUTHENTICATION_ctor()
+#define DPurposeIndex(ptr) dash_spv_platform_identity_manager_purpose_to_index(ptr)
+#define DPurposeFromIndex(index) dash_spv_platform_identity_manager_purpose_from_index(index)
+
+#define DSecurityLevel dpp_identity_identity_public_key_security_level_SecurityLevel
+#define DSecurityLevelDtor(ptr) dpp_identity_identity_public_key_security_level_SecurityLevel_destroy(ptr)
+#define DSecurityLevelMaster() dpp_identity_identity_public_key_security_level_SecurityLevel_MASTER_ctor()
+#define DSecurityLevelHigh() dpp_identity_identity_public_key_security_level_SecurityLevel_HIGH_ctor()
+#define DSecurityLevelIndex(ptr) dash_spv_platform_identity_manager_security_level_to_index(ptr)
+#define DSecurityLevelFromIndex(index) dash_spv_platform_identity_manager_security_level_from_index(index)
+
+#define DCreateIdentityPubKey(index, key, security_level, purpose) dash_spv_platform_identity_manager_identity_public_key(index, key, security_level, purpose)
+#define DUsernameStatus dash_spv_platform_document_usernames_UsernameStatus
+#define DUsernameStatusDtor(ptr) dash_spv_platform_document_usernames_UsernameStatus_destroy(ptr)
+#define DUsernameStatusCallback Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_
+
+#define DIdentityKeyStatus dash_spv_platform_identity_model_IdentityKeyStatus
+#define DIdentityRegistrationStatus dash_spv_platform_identity_model_IdentityRegistrationStatus
 
 NS_ASSUME_NONNULL_BEGIN
 

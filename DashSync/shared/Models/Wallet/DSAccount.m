@@ -1900,7 +1900,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         return;
     }
     DChainType *chain_type = self.wallet.chain.chainType;
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key((char *)[privKey UTF8String], chain_type);
+    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key(DChar(privKey), chain_type);
     if (!result) {
         completion(nil, 0, ERROR_CANT_CREATE_KEY);
         return;
@@ -1917,7 +1917,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSData *publicKeyData = [DSKeyManager NSDataFrom:public_key_data];
     Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
 
-//    ECDSAKey *key = key_ecdsa_with_private_key([privKey UTF8String], chain_type);
+//    ECDSAKey *key = key_ecdsa_with_private_key(DChar(privKey), chain_type);
 //    NSString *address = [DSKeyManager NSStringFrom:address_for_ecdsa_key(key, chain_type)];
 //    NSData *publicKeyData = [DSKeyManager NSDataFrom:key_ecdsa_public_key_data(key)];
 //    processor_destroy_ecdsa_key(key);

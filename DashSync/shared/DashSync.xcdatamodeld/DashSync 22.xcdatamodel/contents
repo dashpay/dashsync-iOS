@@ -68,6 +68,8 @@
         <attribute name="keyType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="path" optional="YES" attributeType="Transformable" valueTransformerName="DSIndexPathValueTransformer" syncable="YES"/>
         <attribute name="publicKeyData" attributeType="Binary" syncable="YES"/>
+        <attribute name="purpose" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="securityLevel" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="keyPaths" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
         <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="identityKeyPaths" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
     </entity>

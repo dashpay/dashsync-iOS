@@ -222,6 +222,28 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 - (PlatformSDK *)sharedPlatformObj {
     return self.sharedPlatform->obj;
 }
+
+- (ContactRequestManager *)sharedContactsObj {
+    return self.shareCore.contactRequests->obj;
+}
+
+- (IdentitiesManager *)sharedIdentitiesObj {
+    return self.shareCore.identitiesManager->obj;
+}
+
+- (DocumentsManager *)sharedDocumentsObj {
+    return self.shareCore.documentsManager->obj;
+}
+
+- (ContractsManager *)sharedContractsObj {
+    return self.shareCore.contractsManager->obj;
+}
+
+- (SaltedDomainHashesManager *)sharedSaltedDomainHashesObj {
+    return self.shareCore.saltedDomainHashes->obj;
+}
+
+
 + (DSChain *)mainnet {
     static DSChain *_mainnet = nil;
     static dispatch_once_t mainnetToken = 0;

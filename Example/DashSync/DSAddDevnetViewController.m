@@ -286,7 +286,7 @@
         [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses minimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     } else {
         NSString *identifier = self.addDevnetNameTableViewCell.valueTextField.text;
-        dash_spv_crypto_network_chain_type_DevnetType *devnet_type = dash_spv_crypto_network_chain_type_devnet_type_from_identifier((char *)[identifier UTF8String]);
+        dash_spv_crypto_network_chain_type_DevnetType *devnet_type = dash_spv_crypto_network_chain_type_devnet_type_from_identifier(DChar(identifier));
         //uint16_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
         [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:devnet_type
                                                         forServiceLocations:self.insertedIPAddresses

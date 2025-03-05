@@ -224,8 +224,8 @@
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-//            isEmptyFundingPrivateKey = key_ecdsa_secret_key_is_empty([queryItem.value UTF8String], chain.chainType);
-            isEmptyFundingPrivateKey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_contains_secret_key((char *)[queryItem.value UTF8String], chain.chainType);
+//            isEmptyFundingPrivateKey = key_ecdsa_secret_key_is_empty(DChar(queryItem.value), chain.chainType);
+            isEmptyFundingPrivateKey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_contains_secret_key(DChar(queryItem.value), chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
@@ -276,7 +276,7 @@
                     authenticationPrompt:(NSString *)authenticationMessage
                identityRegistrationSteps:(DSIdentityRegistrationStep)identityRegistrationSteps
                           stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion
-                              completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSError *error))completion
+                              completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors))completion
                          completionQueue:(dispatch_queue_t)completionQueue {
 //    DSDAPICoreNetworkService *coreNetworkService = self.chain.chainManager.DAPIClient.DAPICoreNetworkService;
     NSURLComponents *components = [NSURLComponents componentsWithString:self.link];
@@ -287,15 +287,15 @@
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-            fundingPrivateKey = dash_spv_crypto_keys_key_KeyKind_key_with_private_key(DKeyKindECDSA(), (char *)[queryItem.value UTF8String], self.chain.chainType);
+            fundingPrivateKey = dash_spv_crypto_keys_key_KeyKind_key_with_private_key(DKeyKindECDSA(), DChar(queryItem.value), self.chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
-        if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVITATION_FORMAT);
+        if (completion) completion(DSIdentityRegistrationStep_None, @[ERROR_INVITATION_FORMAT]);
         return;
     }
     if (!fundingPrivateKey || !dash_spv_crypto_keys_key_OpaqueKey_has_private_key(fundingPrivateKey->ok)) {
-        if (completion) completion(DSIdentityRegistrationStep_None, ERROR_INVALID_FUNDING_PRV_KEY);
+        if (completion) completion(DSIdentityRegistrationStep_None, @[ERROR_INVALID_FUNDING_PRV_KEY]);
         return;
     }
     
@@ -304,7 +304,7 @@
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];
             Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
-            if (completion) completion(DSIdentityRegistrationStep_None, error);
+            if (completion) completion(DSIdentityRegistrationStep_None, @[error]);
             return;
         }
         DSAssetLockTransaction *tx = [DSAssetLockTransaction ffi_from:result->ok onChain:self.chain];
@@ -331,11 +331,11 @@
                                                          stepCompletion:stepCompletion
                                                              completion:completion];
                 } else if (completion) {
-                    completion(DSIdentityRegistrationStep_None, ERROR_GEN_IDENTITY_KEYS);
+                    completion(DSIdentityRegistrationStep_None, @[ERROR_GEN_IDENTITY_KEYS]);
                 }
             }];
         } else if (completion) {
-            completion(DSIdentityRegistrationStep_None, ERROR_SETTING_EXT_PRV_KEY);
+            completion(DSIdentityRegistrationStep_None, @[ERROR_SETTING_EXT_PRV_KEY]);
         }
         
 //                                       failure:^(NSError *_Nonnull error) {

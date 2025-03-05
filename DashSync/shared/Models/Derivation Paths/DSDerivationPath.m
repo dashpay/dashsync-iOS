@@ -76,7 +76,7 @@
                                            hardened:(const BOOL[_Nullable])hardenedIndexes
                                              length:(NSUInteger)length
                                                type:(DSDerivationPathType)type
-                                   signingAlgorithm:(dash_spv_crypto_keys_key_KeyKind *)signingAlgorithm
+                                   signingAlgorithm:(DKeyKind *)signingAlgorithm
                                           reference:(DSDerivationPathReference)reference
                                             onChain:(DSChain *)chain {
     return [[self alloc] initWithIndexes:indexes
@@ -90,13 +90,13 @@
 
 //+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString *)serializedExtendedPrivateKey
 //                                                               fundsType:(DSDerivationPathType)fundsType
-//                                                        signingAlgorithm:(dash_spv_crypto_keys_key_KeyKind *)signingAlgorithm
+//                                                        signingAlgorithm:(DKeyKind *)signingAlgorithm
 //                                                                 onChain:(DSChain *)chain {
 //    UInt256 indexes[] = {};
 //    BOOL hardenedIndexes[] = {};
 //    
 //    
-//    dash_spv_crypto_keys_key_KeyKind *key_kind = DKeyKindECDSA();
+//    DKeyKind *key_kind = DKeyKindECDSA();
 //    DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes
 //                                                            hardened:hardenedIndexes
 //                                                              length:0
@@ -136,7 +136,7 @@
                                                                             rTerminalIndex:&terminalIndex];
     UInt256 indexes[] = {terminalIndex};
     BOOL hardenedIndexes[] = {terminalHardened};
-    dash_spv_crypto_keys_key_KeyKind *key_kind = DKeyKindECDSA();
+    DKeyKind *key_kind = DKeyKindECDSA();
     DSDerivationPath *derivationPath = [[self alloc] initWithIndexes:indexes
                                                             hardened:hardenedIndexes
                                                               length:0
@@ -163,7 +163,7 @@
     BOOL terminalHardened = [((NSNumber *)infoDictionary[DERIVATION_PATH_STANDALONE_INFO_TERMINAL_HARDENED]) boolValue];
     UInt256 indexes[] = {terminalIndex};
     BOOL hardenedIndexes[] = {terminalHardened};
-    dash_spv_crypto_keys_key_KeyKind *key_kind = DKeyKindECDSA();
+    DKeyKind *key_kind = DKeyKindECDSA();
     if (!(self = [self initWithIndexes:indexes
                               hardened:hardenedIndexes
                                 length:0
@@ -186,7 +186,7 @@
                        hardened:(const BOOL[_Nullable])hardenedIndexes
                          length:(NSUInteger)length
                            type:(DSDerivationPathType)type
-               signingAlgorithm:(dash_spv_crypto_keys_key_KeyKind *)signingAlgorithm
+               signingAlgorithm:(DKeyKind *)signingAlgorithm
                       reference:(DSDerivationPathReference)reference
                         onChain:(DSChain *)chain {
     if (length) {
@@ -584,7 +584,7 @@
             DMaybeOpaqueKeyDtor(_extendedPublicKey);
         
         SLICE *slice = slice_ctor(seed);
-        dash_spv_crypto_keys_key_IndexPathU256 *path = [DSDerivationPath ffi_to:self];
+        DIndexPathU256 *path = [DSDerivationPath ffi_to:self];
         DMaybeOpaqueKey *result = dash_spv_crypto_keys_key_KeyKind_public_key_from_extended_public_key_data_at_index_path_256(self.signingAlgorithm, slice, path);
         _extendedPublicKey = result;
         NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
@@ -662,7 +662,7 @@
 
 @implementation DSDerivationPath (dash_spv_crypto_keys_key_IndexPathU256)
 
-+ (dash_spv_crypto_keys_key_IndexPathU256 *)ffi_to:(DSDerivationPath *)obj {
++ (DIndexPathU256 *)ffi_to:(DSDerivationPath *)obj {
     uintptr_t length = obj.length;
     u256 **indexes = malloc(length * sizeof(u256 *));
     bool *hardened = malloc(length * sizeof(bool));
@@ -674,7 +674,7 @@
     Vec_bool *h = Vec_bool_ctor(length, hardened);
     return dash_spv_crypto_keys_key_IndexPathU256_ctor(i, h);
 }
-+ (void)ffi_destroy:(dash_spv_crypto_keys_key_IndexPathU256 *)ffi_ref {
++ (void)ffi_destroy:(DIndexPathU256 *)ffi_ref {
     dash_spv_crypto_keys_key_IndexPathU256_destroy(ffi_ref);
 }
 @end

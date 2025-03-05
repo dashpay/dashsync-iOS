@@ -407,19 +407,19 @@
             createdAt = matchingDashpayUser.createdAt;
             revision = matchingDashpayUser.localProfileDocumentRevision;
             if (matchingDashpayUser.publicMessage)
-                publicMessage = (char *)[matchingDashpayUser.publicMessage UTF8String];
+                publicMessage = DChar(matchingDashpayUser.publicMessage);
             if (matchingDashpayUser.avatarPath)
-                avatarUrl = (char *)[matchingDashpayUser.avatarPath UTF8String];
+                avatarUrl = DChar(matchingDashpayUser.avatarPath);
             if (matchingDashpayUser.avatarFingerprint)
                 avatarFingerprint = bytes_ctor(matchingDashpayUser.avatarFingerprint);
             if (matchingDashpayUser.avatarHash)
                 avatarHash = bytes_ctor(matchingDashpayUser.avatarHash);
             if (matchingDashpayUser.displayName)
-                publicMessage = (char *)[matchingDashpayUser.displayName UTF8String];
+                publicMessage = DChar(matchingDashpayUser.displayName);
             entropyData = matchingDashpayUser.originalEntropyData;
             documentIdentifier = matchingDashpayUser.documentIdentifier;
         }];
-        profile = dash_spv_platform_models_profile_Profile_ctor(updatedAt, createdAt, revision, (char *)[matchingDashpayUser.publicMessage UTF8String], (char *)[matchingDashpayUser.avatarPath UTF8String], avatarFingerprint, avatarHash, displayName);
+        profile = dash_spv_platform_models_profile_Profile_ctor(updatedAt, createdAt, revision, publicMessage, avatarUrl, avatarFingerprint, avatarHash, displayName);
     } else {
         DSLog(@"%@: ERROR: No user or revision %@", debugInfo, matchingDashpayUser);
         if (completion) completion(nil, NO, ERROR_TRANSITION_NO_UPDATE);
@@ -428,7 +428,11 @@
 
     if (!self.keysCreated) {
         uint32_t index;
-        [self createNewKeyOfType:DKeyKindECDSA() saveKey:!self.wallet.isTransient returnIndex:&index];
+        [self createNewKeyOfType:DKeyKindECDSA()
+                   securityLevel:DSecurityLevelMaster()
+                         purpose:DPurposeAuth()
+                         saveKey:!self.wallet.isTransient
+                     returnIndex:&index];
     }
     DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;

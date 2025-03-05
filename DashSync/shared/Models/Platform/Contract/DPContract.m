@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContract ()
 
-@property (assign, nonatomic) dpp_data_contract_DataContract *raw_contract;
+@property (assign, nonatomic) DDataContract *raw_contract;
 //@property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
 @property (copy, nonatomic, null_resettable) NSString *localContractIdentifier;
 @property (assign, nonatomic) UInt256 contractId;
@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)localContractIdentifier
-                                   raw_contract:(dpp_data_contract_DataContract *)raw_contract
+                                   raw_contract:(DDataContract *)raw_contract
 //                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
                                         onChain:(DSChain *)chain {
     NSParameterAssert(localContractIdentifier);
@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableData *mData = [NSMutableData data];
     [mData appendUInt256:identity.uniqueID];
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:identity.wallet];
-    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.shareCore.contractsManager->obj, self.raw_contract);
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.sharedContractsObj, self.raw_contract);
     NSData *serializedHash = NSDataFromPtr(result->ok);
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
     NSMutableData *entropyData = [serializedHash mutableCopy];
@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)localContractIdentifier {
     if (!_localContractIdentifier) {
-        Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.shareCore.contractsManager->obj, self.raw_contract);
+        Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.sharedContractsObj, self.raw_contract);
         NSData *serializedData = NSDataFromPtr(result->ok);
         Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
 //        NSData *serializedData = uint256_data([self.serialized SHA256_2]);
@@ -165,7 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 //
 //- (BOOL)isDocumentDefinedForType:(NSString *)type {
 //    NSParameterAssert(type);
-//    return dash_spv_platform_contract_manager_is_document_defined_for_type(self.raw_contract, (char *) [type UTF8String]);
+//    return dash_spv_platform_contract_manager_is_document_defined_for_type(self.raw_contract, DChar(type));
 //}
 //
 //- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type {
@@ -222,7 +222,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.registeredIdentityUniqueID = identity ? identity.uniqueID : UINT256_ZERO;
     self.contractId = UINT256_ZERO; //will be lazy loaded
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:identity.wallet];
-    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.shareCore.contractsManager->obj, self.raw_contract);
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.sharedContractsObj, self.raw_contract);
     NSData *serializedHash = NSDataFromPtr(result->ok);
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
     NSMutableData *entropyData = [serializedHash mutableCopy];
@@ -326,7 +326,7 @@ NS_ASSUME_NONNULL_BEGIN
 //}
 
 + (DPContract *)localDashpayContractForChain:(DSChain *)chain {
-    dpp_data_contract_DataContract *raw_contract = dash_spv_platform_contract_manager_ContractsManager_load_dashpay_contract(chain.shareCore.contractsManager->obj);
+    DDataContract *raw_contract = dash_spv_platform_contract_manager_ContractsManager_load_dashpay_contract(chain.sharedContractsObj);
     DPContract *contract = [[DPContract alloc] initWithLocalContractIdentifier:[NSString stringWithFormat:@"%@-%@", DASHPAY_CONTRACT, chain.uniqueID]
                                                                   raw_contract:raw_contract
                                                                        onChain:chain];
@@ -342,7 +342,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (DPContract *)localDPNSContractForChain:(DSChain *)chain {
-    dpp_data_contract_DataContract *raw_contract = dash_spv_platform_contract_manager_ContractsManager_load_dpns_contract(chain.shareCore.contractsManager->obj);
+    DDataContract *raw_contract = dash_spv_platform_contract_manager_ContractsManager_load_dpns_contract(chain.sharedContractsObj);
     DPContract *contract = [[DPContract alloc] initWithLocalContractIdentifier:[NSString stringWithFormat:@"%@-%@", DPNS_CONTRACT, chain.uniqueID]
                                                                   raw_contract:raw_contract
                                                                        onChain:chain];

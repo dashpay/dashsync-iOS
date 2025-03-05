@@ -387,7 +387,7 @@ DMaybeMBlock *block_by_block_hash_caller(const void *context, u256 *block_hash) 
         if (block) {
             ok = DMBlockCtor(block.height, u256_ctor_u(block.blockHash), u256_ctor_u(block.merkleRoot));
         } else {
-            err = DCoreProviderErrorNullResultCtor((char *)[@"" UTF8String]);
+            err = DCoreProviderErrorNullResultCtor(DChar(@""));
         }
     }
     u256_dtor(block_hash);
@@ -507,7 +507,7 @@ MaybeBool *save_masternode_list_into_db_caller(const void *context, u256 *list_b
                 [masternodeManager getRecentMasternodeList];
             });
         }
-        provider_err = DCoreProviderErrorNullResultCtor((char *)[[error description] UTF8String]);
+        provider_err = DCoreProviderErrorNullResultCtor(DChar([error description]));
     }
     DSLog(@"[%@] ••••••••••••••••••••••••••••• save_masternode_list_into_db %u <-- •••••••••••••••••••••••••••••••••••••••••", chain.name, list_known_height);
 //    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
@@ -530,7 +530,7 @@ MaybeBool *save_llmq_snapshot_into_db_caller(const void *context, u256 *block_ha
     DSDashSharedCore *core = AS_OBJC(context);
     NSError *err = [core.chain.masternodeManager.store saveQuorumSnapshot:snapshot forBlockHash:block_hash];
     BOOL success = !err;
-    DCoreProviderError *provider_err = err ? DCoreProviderErrorNullResultCtor((char *)[err.debugDescription UTF8String]) : NULL;
+    DCoreProviderError *provider_err = err ? DCoreProviderErrorNullResultCtor(DChar(err.debugDescription)) : NULL;
     u256_dtor(block_hash);
     dash_spv_masternode_processor_models_snapshot_LLMQSnapshot_destroy(snapshot);
     return Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(&success, provider_err);

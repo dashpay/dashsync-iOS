@@ -99,7 +99,7 @@
 
     if (!url || !url.scheme) {
         
-        if (dash_spv_crypto_bip_bip38_is_valid_payment_request_address((char *)[s UTF8String], self.chain.chainType)) {
+        if (dash_spv_crypto_bip_bip38_is_valid_payment_request_address(DChar(s), self.chain.chainType)) {
 //        if ([DSKeyManager isValidDashAddress:s forChain:self.chain] ||
 //            [s isValidDashPrivateKeyOnChain:self.chain] ||
 //            [DSKeyManager isValidDashBIP38Key:s]) {

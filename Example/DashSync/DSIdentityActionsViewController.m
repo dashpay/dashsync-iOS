@@ -218,7 +218,7 @@
             if (!self.identity.registered) {
                 [self registerIdentity:self];
             } else if (self.identity.currentDashpayUsername && [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername] != DSIdentityUsernameStatus_Confirmed) {
-                [self.identity registerUsernamesWithCompletion:^(BOOL success, NSError *_Nonnull error){
+                [self.identity registerUsernamesWithCompletion:^(BOOL success, NSArray<NSError *> *errors) {
 
                 }];
             } else {

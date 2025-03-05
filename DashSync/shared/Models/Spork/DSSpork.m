@@ -148,7 +148,7 @@
     if (self.chain.sporkPublicKeyHexString) return self.chain.sporkPublicKeyHexString;
     NSString *key = NULL;
     if (self.chain.sporkPrivateKeyBase58String) {
-        DMaybeKeyData *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_for_private_key((char *) [self.chain.sporkPrivateKeyBase58String UTF8String], self.chain.chainType);
+        DMaybeKeyData *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_for_private_key(DChar(self.chain.sporkPrivateKeyBase58String), self.chain.chainType);
         if (result) {
             NSData *data = NSDataFromPtr(result->ok);
             if (data)

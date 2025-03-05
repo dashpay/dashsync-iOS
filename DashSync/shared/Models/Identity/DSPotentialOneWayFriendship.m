@@ -136,16 +136,14 @@
 
 - (DValue *)toValue {
     uintptr_t field_count = 6;
-    Tuple_platform_value_Value_platform_value_Value **values = malloc(sizeof(Tuple_platform_value_Value_platform_value_Value) * field_count);
-    values[0] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"$createdAt" UTF8String]), platform_value_Value_U64_ctor(self.createdAt * 1000));
-    values[1] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"toUserId" UTF8String]), platform_value_Value_Identifier_ctor(platform_value_Hash256_ctor(u256_ctor_u([self destinationIdentityUniqueId]))));
-    values[2] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"encryptedPublicKey" UTF8String]), platform_value_Value_Bytes_ctor(bytes_ctor(self.encryptedExtendedPublicKeyData)));
-    values[3] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"senderKeyIndex" UTF8String]), platform_value_Value_U32_ctor(self.sourceKeyIndex));
-    values[4] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"recipientKeyIndex" UTF8String]), platform_value_Value_U32_ctor(self.destinationKeyIndex));
-    values[5] = Tuple_platform_value_Value_platform_value_Value_ctor(platform_value_Value_Text_ctor((char *) [@"accountReference" UTF8String]), platform_value_Value_U32_ctor([self createAccountReference]));
-    Vec_Tuple_platform_value_Value_platform_value_Value *value_pairs = Vec_Tuple_platform_value_Value_platform_value_Value_ctor(field_count, values);
-    platform_value_value_map_ValueMap *value_map = platform_value_value_map_ValueMap_ctor(value_pairs);
-    return platform_value_Value_Map_ctor(value_map);
+    DValuePair **values = malloc(sizeof(DValuePair) * field_count);
+    values[0] = DValueTextU64PairCtor(@"$createdAt", self.createdAt * 1000);
+    values[1] = DValueTextIdentifierPairCtor(@"toUserId", platform_value_Hash256_ctor(u256_ctor_u([self destinationIdentityUniqueId])));
+    values[2] = DValueTextBytesPairCtor(@"encryptedPublicKey", self.encryptedExtendedPublicKeyData);
+    values[3] = DValueTextU32PairCtor(@"senderKeyIndex", self.sourceKeyIndex);
+    values[4] = DValueTextU32PairCtor(@"recipientKeyIndex", self.destinationKeyIndex);
+    values[5] = DValueTextU32PairCtor(@"accountReference", [self createAccountReference]);
+    return platform_value_Value_Map_ctor(DValueMapCtor(DValuePairVecCtor(field_count, values)));
 }
 
 - (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)entity

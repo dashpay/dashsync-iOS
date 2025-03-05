@@ -213,7 +213,7 @@
 }
 
 - (void)testCoinbaseTransaction {
-    DDevnetType *dev = dash_spv_crypto_network_chain_type_devnet_type_from_identifier((char *)[@"devnet-DRA" UTF8String]);
+    DDevnetType *dev = dash_spv_crypto_network_chain_type_devnet_type_from_identifier(DChar(@"devnet-DRA"));
     DSChain *devnetDRA = [DSChain recoverKnownDevnetWithIdentifier:dev withCheckpoints:@[] performSetup:false];
 //    DSChain *devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
     NSData *hexData = [NSData dataFromHexString:@"03000500010000000000000000000000000000000000000000000000000000000000000000ffffffff0502f6050105ffffffff0200c11a3d050000002321038df098a36af5f1b7271e32ad52947f64c1ad70c16a8a1a987105eaab5daa7ad2ac00c11a3d050000001976a914bfb885c89c83cd44992a8ade29b610e6ddf00c5788ac00000000260100f6050000aaaec8d6a8535a01bd844817dea1faed66f6c397b1dcaec5fe8c5af025023c35"];

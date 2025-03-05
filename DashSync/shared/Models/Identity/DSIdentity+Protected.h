@@ -95,19 +95,21 @@ NS_ASSUME_NONNULL_BEGIN
      withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
                    inWallet:(DSWallet *)wallet;
 
-//- (void)addKey:(DMaybeOpaqueKey *)key
-//       atIndex:(uint32_t)index
-//        ofType:(DKeyKind *)type
-//    withStatus:(DSIdentityKeyStatus)status
-//          save:(BOOL)save;
 - (void)addKey:(DMaybeOpaqueKey *)key
+ securityLevel:(DSecurityLevel *)securityLevel
+       purpose:(DPurpose *)purpose
    atIndexPath:(NSIndexPath *)indexPath
         ofType:(DKeyKind *)type
     withStatus:(DSIdentityKeyStatus)status
           save:(BOOL)save;
 - (BOOL)registerKeyWithStatus:(DSIdentityKeyStatus)status
+                securityLevel:(DSecurityLevel *)securityLevel
+                      purpose:(DPurpose *)purpose
                   atIndexPath:(NSIndexPath *)indexPath
                        ofType:(DKeyKind *)type;
+- (DIdentityPublicKey *_Nullable)firstIdentityPublicKeyOfSecurityLevel:(DSecurityLevel *)security_level
+                                                            andPurpose:(DPurpose *)purpose;
+
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
                                          ofType:(DKeyKind *)type;
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index

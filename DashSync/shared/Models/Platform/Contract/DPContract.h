@@ -45,19 +45,11 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 @property (readonly, copy, nonatomic) NSString *base58OwnerId;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
-//@property (readonly, copy, nonatomic) NSString *jsonSchemaId;
-//@property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
-
-//@property (assign, nonatomic) NSInteger version;
-//@property (copy, nonatomic) NSString *jsonMetaSchema;
-@property (readonly, nonatomic) dpp_data_contract_DataContract *raw_contract;
+@property (readonly, nonatomic) DDataContract *raw_contract;
 @property (readonly, nonatomic) DDocumentTypes *documents;
-//@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;
-//@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)contractID
-//                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
-                                      raw_contract:(dpp_data_contract_DataContract *)raw_contract
+                                      raw_contract:(DDataContract *)raw_contract
                                         onChain:(DSChain *)chain;
 
 - (instancetype)init NS_UNAVAILABLE;

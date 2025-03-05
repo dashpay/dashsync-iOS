@@ -69,7 +69,7 @@ FOUNDATION_EXPORT NSString *const DSInvitationUpdateEventLink;
 //+ (void)verifyInvitationLink:(NSString *)invitationLink onChain:(DSChain *)chain completion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue;
 
 /*! @brief Registers the blockchain identity if the invitation was created with an invitation link. The blockchain identity is then associated with the invitation. */
-- (void)acceptInvitationUsingWalletIndex:(uint32_t)index setDashpayUsername:(NSString *)dashpayUsername authenticationPrompt:(NSString *)authenticationMessage identityRegistrationSteps:(DSIdentityRegistrationStep)identityRegistrationSteps stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue;
+- (void)acceptInvitationUsingWalletIndex:(uint32_t)index setDashpayUsername:(NSString *)dashpayUsername authenticationPrompt:(NSString *)authenticationMessage identityRegistrationSteps:(DSIdentityRegistrationStep)identityRegistrationSteps stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors))completion completionQueue:(dispatch_queue_t)completionQueue;
 
 /*! @brief Generates blockchain invitations' extended public keys by asking the user to authentication with the prompt. */
 - (void)generateInvitationsExtendedPublicKeysWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL registered))completion;

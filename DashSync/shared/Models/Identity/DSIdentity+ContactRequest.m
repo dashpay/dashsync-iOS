@@ -112,7 +112,7 @@
     uint64_t since = self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     BYTES *start_after = startAfter ? bytes_ctor(startAfter) : nil;
     __weak typeof(self) weakSelf = self;
-    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_incoming_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_incoming_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.sharedContactsObj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
@@ -228,7 +228,7 @@
     BYTES *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
     uint64_t since = self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     u256 *user_id = u256_ctor_u(self.uniqueID);
-    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_outgoing_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.shareCore.contactRequests->obj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_outgoing_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.sharedContactsObj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
@@ -314,8 +314,8 @@
 - (NSData *)decryptedPublicKeyDataWithKey:(DOpaqueKey *)key
                                   request:(dash_spv_platform_models_contact_request_ContactRequest *)request {
     NSParameterAssert(key);
-    DKeyKind *kind = dash_spv_crypto_keys_key_OpaqueKey_kind(key);
-    uint32_t index = uint256_eq(self.uniqueID, *(UInt256 *)request->recipient) ? request->sender_key_index : request->recipient_key_index;
+    DKeyKind *kind = DOpaqueKeyKind(key);
+    uint32_t index = uint256_eq(self.uniqueID, u256_cast(request->recipient)) ? request->sender_key_index : request->recipient_key_index;
     DMaybeOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
     NSAssert(maybe_key->ok, @"Key should exist");
     DMaybeKeyData *key_data = dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(maybe_key->ok, key, request->encrypted_public_key);
@@ -406,9 +406,7 @@
                         DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
                         NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
                         NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
-                        dash_spv_crypto_keys_key_KeyKind *kind = DKeyKindECDSA();
-                        DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:kind];
-                        //                        dash_spv_crypto_keys_key_KeyKind_destroy(kind);
+                        DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:DKeyKindECDSA()];
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
                             [errors addObject:ERROR_CONTACT_REQUEST_KEY_ENCRYPTION];
@@ -459,7 +457,7 @@
         }
         dispatch_group_notify(dispatchGroup, completionQueue, ^{
             for (NSValue *request in incomingRequests) {
-                dash_spv_platform_models_contact_request_ContactRequest_destroy(request.pointerValue);
+                DContactRequestDtor(request.pointerValue);
             }
 
             if (completion) completion(succeeded, [errors copy]);
@@ -486,7 +484,7 @@
             if (!recipientIdentityEntity) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                DSIdentity *recipientIdentity = [self.identitiesManager foreignIdentityWithUniqueId:*(UInt256 *)request->recipient
+                DSIdentity *recipientIdentity = [self.identitiesManager foreignIdentityWithUniqueId:u256_cast(request->recipient)
                                                                                     createIfMissing:YES
                                                                                           inContext:context];
                 NSAssert([recipientIdentity identityEntityInContext:context], @"Entity should now exist");
@@ -542,7 +540,7 @@
         }
         dispatch_group_notify(dispatchGroup, completionQueue, ^{
             for (NSValue *request in outgoingRequests) {
-                dash_spv_platform_models_contact_request_ContactRequest_destroy(request.pointerValue);
+                DContactRequestDtor(request.pointerValue);
             }
             if (completion) completion(succeeded, [errors copy]);
             

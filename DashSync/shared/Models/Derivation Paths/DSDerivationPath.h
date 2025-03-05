@@ -93,7 +93,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 //is this an open account
 @property (nonatomic, assign, readonly) DSDerivationPathType type;
 
-@property (nonatomic, assign, readonly) dash_spv_crypto_keys_key_KeyKind *signingAlgorithm;
+@property (nonatomic, assign, readonly) DKeyKind *signingAlgorithm;
 
 // account for the derivation path
 @property (nonatomic, readonly) DSChain *chain;
@@ -153,13 +153,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
                                            hardened:(const BOOL[_Nullable])hardenedIndexes
                                              length:(NSUInteger)length
                                                type:(DSDerivationPathType)type
-                                   signingAlgorithm:(dash_spv_crypto_keys_key_KeyKind *)signingAlgorithm
+                                   signingAlgorithm:(DKeyKind *)signingAlgorithm
                                           reference:(DSDerivationPathReference)reference
                                             onChain:(DSChain *)chain;
 
 //+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString *)serializedExtendedPrivateKey
 //                                                               fundsType:(DSDerivationPathType)fundsType
-//                                                        signingAlgorithm:(dash_spv_crypto_keys_key_KeyKind *)signingAlgorithm
+//                                                        signingAlgorithm:(DKeyKind *)signingAlgorithm
 //                                                                 onChain:(DSChain *)chain;
 //
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString *)serializedExtendedPublicKey
@@ -172,7 +172,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
                                  hardened:(const BOOL[_Nullable])hardenedIndexes
                                    length:(NSUInteger)length
                                      type:(DSDerivationPathType)type
-                         signingAlgorithm:(dash_spv_crypto_keys_key_KeyKind *)signingAlgorithm
+                         signingAlgorithm:(DKeyKind *)signingAlgorithm
                                 reference:(DSDerivationPathReference)reference
                                   onChain:(DSChain *)chain;
 
@@ -237,8 +237,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 @end
 
 @interface DSDerivationPath (dash_spv_crypto_keys_key_IndexPathU256)
-+ (dash_spv_crypto_keys_key_IndexPathU256 *)ffi_to:(DSDerivationPath *)obj;
-+ (void)ffi_destroy:(dash_spv_crypto_keys_key_IndexPathU256 *)ffi_ref;
++ (DIndexPathU256 *)ffi_to:(DSDerivationPath *)obj;
++ (void)ffi_destroy:(DIndexPathU256 *)ffi_ref;
 @end
 
 NS_ASSUME_NONNULL_END

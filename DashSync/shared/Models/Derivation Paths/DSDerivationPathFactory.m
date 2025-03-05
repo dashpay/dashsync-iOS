@@ -372,7 +372,7 @@
         values[i] = [NSIndexPath ffi_to:indexPaths[i]];
     }
     Vec_Vec_u32 *index_paths = Vec_Vec_u32_ctor(count, values);
-    dash_spv_crypto_keys_key_IndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
+    DIndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
     return dash_spv_crypto_keys_key_KeyKind_private_keys_at_index_paths_wrapped(derivationPath.signingAlgorithm, seed_slice, index_paths, path);
 }
 

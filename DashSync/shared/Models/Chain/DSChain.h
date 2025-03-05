@@ -86,6 +86,11 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, nullable) DCache *sharedCacheObj;
 @property (nonatomic, nullable) DArcPlatformSDK *sharedPlatform;
 @property (nonatomic, nullable) PlatformSDK *sharedPlatformObj;
+@property (nonatomic, nullable) ContactRequestManager *sharedContactsObj;
+@property (nonatomic, nullable) IdentitiesManager *sharedIdentitiesObj;
+@property (nonatomic, nullable) DocumentsManager *sharedDocumentsObj;
+@property (nonatomic, nullable) ContractsManager *sharedContractsObj;
+@property (nonatomic, nullable) SaltedDomainHashesManager *sharedSaltedDomainHashesObj;
 
 
 /*! @brief The chain entity associated in Core Data in the required context.  */
