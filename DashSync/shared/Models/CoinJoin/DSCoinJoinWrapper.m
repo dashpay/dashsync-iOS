@@ -91,8 +91,14 @@
 - (void)doMaintenance {
     @synchronized (self) {
         Balance *balance = [[self.manager getBalance] ffi_malloc];
-        do_maintenance(_clientManager, *balance);
+        do_maintenance(self.clientManager, *balance);
         [DSCoinJoinBalance ffi_free:balance];
+    }
+}
+
+- (void)initiateShutdown {
+    @synchronized (self) {
+        initiate_shutdown(self.clientManager);
     }
 }
 
@@ -143,14 +149,14 @@
 - (void)notifyNewBestBlock:(DSBlock *)block {
     if (block) {
         @synchronized (self) {
-            notify_new_best_block(_clientManager, (uint8_t (*)[32])(block.blockHash.u8), block.height);
+            notify_new_best_block(self.clientManager, (uint8_t (*)[32])(block.blockHash.u8), block.height);
         }
     }
 }
 
 - (BOOL)isMixingFeeTx:(UInt256)txId {
     @synchronized (self) {
-        return is_mixing_fee_tx(_clientManager, (uint8_t (*)[32])(txId.u8));
+        return is_mixing_fee_tx(self.clientManager, (uint8_t (*)[32])(txId.u8));
     }
 }
 
@@ -176,9 +182,17 @@
     return type;
 }
 
+- (void)unlockOutputs:(DSTransaction *)transaction {
+    @synchronized (self) {
+        Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
+        unlock_outputs(self.clientManager, tx);
+        [DSTransaction ffi_free:tx];
+    }
+}
+
 - (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed {
     @synchronized (self) {
-        return get_anonymizable_balance(_clientManager, skipDenominated, skipUnconfirmed);
+        return get_anonymizable_balance(self.clientManager, skipDenominated, skipUnconfirmed);
     }
 }
 

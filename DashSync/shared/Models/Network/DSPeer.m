@@ -1040,7 +1040,7 @@
     if (count == 0) {
         DSLogWithLocation(self, @"Got empty Inv message");
     }
-    if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_DSTx)) {
+    if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote)) {
         DSLogWithLocation(self, @"got inv with %u item%@ (first item %@ with hash %@/%@)", (int)count, count == 1 ? @"" : @"s", [self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]], [NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString, [NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].reverse.hexString);
     }
 #endif
@@ -1063,7 +1063,7 @@
         switch (type) {
             case DSInvType_Tx: [txHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_TxLockRequest: [txHashes addObject:uint256_obj(hash)]; break;
-            case DSInvType_DSTx: break;
+            case DSInvType_DSTx: [txHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_TxLockVote: break;
             case DSInvType_InstantSendDeterministicLock: [instantSendLockDHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_InstantSendLock: [instantSendLockHashes addObject:uint256_obj(hash)]; break;
