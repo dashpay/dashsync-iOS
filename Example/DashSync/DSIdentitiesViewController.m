@@ -92,7 +92,7 @@
             }
         }
         identityCell.registrationL2StatusLabel.text = identity.localizedRegistrationStatusString;
-        identityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%u/%u", identity.activeKeyCount, identity.totalKeyCount];
+        identityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%lu/%lu", identity.activeKeyCount, identity.totalKeyCount];
     }
 }
 

@@ -3363,6 +3363,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 					"DPP_STATE_TRANSITIONS=1",
+					"DASHCORE_MESSAGE_VERIFICATION=1",
 				);
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -3386,6 +3387,7 @@
 					"$(inherited)",
 					"COCOAPODS=1",
 					"DPP_STATE_TRANSITIONS=1",
+					"DASHCORE_MESSAGE_VERIFICATION=1",
 				);
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;

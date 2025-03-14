@@ -161,9 +161,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 /*! @brief The known balance in credits of the identity */
 @property (nonatomic, readonly) uint64_t creditBalance;
 /*! @brief The number of registered active keys that the blockchain identity has */
-@property (nonatomic, readonly) uint32_t activeKeyCount;
+@property (nonatomic, readonly) uintptr_t activeKeyCount;
 /*! @brief The number of all keys that the blockchain identity has, registered, in registration, or inactive */
-@property (nonatomic, readonly) uint32_t totalKeyCount;
+@property (nonatomic, readonly) uintptr_t totalKeyCount;
 /*! @brief This is the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable, nonatomic, readonly) DSAssetLockTransaction *registrationAssetLockTransaction;
@@ -266,7 +266,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (BOOL)setExternalFundingPrivateKey:(DMaybeOpaqueKey *)privateKey;
 - (BOOL)hasIdentityExtendedPublicKeys;
 - (DIdentityKeyStatus *)statusOfKeyAtIndex:(NSUInteger)index;
-- (DMaybeOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
+- (DOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
 + (NSString *)localizedStatusOfKeyForIdentityKeyStatus:(DIdentityKeyStatus *)status;
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index;
 - (DMaybeOpaqueKey *_Nullable)createNewKeyOfType:(DKeyKind *)type

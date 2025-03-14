@@ -26,8 +26,8 @@
 @dynamic derivationPaths;
 @dynamic governanceObjectHashes;
 @dynamic peers;
-@dynamic quorums;
-@dynamic simplifiedMasternodeEntries;
+//@dynamic quorums;
+//@dynamic simplifiedMasternodeEntries;
 @dynamic sporks;
 @dynamic transactionHashes;
 @dynamic votes;

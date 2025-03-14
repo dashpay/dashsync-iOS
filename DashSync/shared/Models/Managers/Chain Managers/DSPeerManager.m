@@ -255,14 +255,14 @@
     }
 }
 - (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce {
-    Vec_dash_spv_masternode_processor_common_socket_address_SocketAddress *vec =
-    dash_spv_masternode_processor_models_masternode_list_MasternodeList_peer_addresses_with_connectivity_nonce(self.masternodeList, connectivityNonce, peerCount);
+    Vec_Tuple_Arr_u8_16_u16 *vec = dash_spv_masternode_processor_processing_peer_addresses_with_connectivity_nonce(self.masternodeList, connectivityNonce, peerCount);
+    
     NSMutableArray *mArray = [NSMutableArray array];
     for (int i = 0; i < vec->count; i++) {
-        dash_spv_masternode_processor_common_socket_address_SocketAddress *address = vec->values[i];
-        [mArray addObject:[[DSPeer alloc] initWithAddress:u128_cast(address->ip_address) andPort:address->port onChain:self.chain]];
+        Tuple_Arr_u8_16_u16 *pair = vec->values[i];
+        [mArray addObject:[[DSPeer alloc] initWithAddress:u128_cast(pair->o_0) andPort:pair->o_1 onChain:self.chain]];
     }
-    Vec_dash_spv_masternode_processor_common_socket_address_SocketAddress_destroy(vec);
+    Vec_Tuple_Arr_u8_16_u16_destroy(vec);
     return mArray;
 }
 

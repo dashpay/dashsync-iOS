@@ -90,12 +90,12 @@
     return UINT256_ZERO;
 }
 
-- (DMaybeOpaqueKey *)sourceKeyAtIndex {
+- (DOpaqueKey *)sourceKeyAtIndex {
     NSAssert(self.sourceIdentity != nil, @"The source identity should be present");
     return [self.sourceIdentity keyAtIndex:self.sourceKeyIndex];
 }
 
-- (DMaybeOpaqueKey *)destinationKeyAtIndex {
+- (DOpaqueKey *)destinationKeyAtIndex {
     if (self.destinationIdentity) {
         return [self.destinationIdentity keyAtIndex:self.destinationKeyIndex];
     } else if (self.destinationContact) {
@@ -122,16 +122,16 @@
 
 - (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion {
     NSAssert(self.extendedPublicKey && self.extendedPublicKey->ok, @"Problem creating extended public key for potential contact?");
-    DMaybeOpaqueKey *recipientKey = [self destinationKeyAtIndex];
+    DOpaqueKey *recipientKey = [self destinationKeyAtIndex];
     self.encryptedExtendedPublicKeyData = [self.sourceIdentity encryptData:[DSKeyManager extendedPublicKeyData:self.extendedPublicKey->ok]
                                                             withKeyAtIndex:self.sourceKeyIndex
-                                                           forRecipientKey:recipientKey->ok];
+                                                           forRecipientKey:recipientKey];
     if (completion) completion(YES);
 }
 
 - (uint32_t)createAccountReference {
     // TODO: make test
-    return dash_spv_crypto_keys_key_OpaqueKey_create_account_reference([self sourceKeyAtIndex]->ok, self.extendedPublicKey->ok, self.account.accountNumber);
+    return dash_spv_crypto_keys_key_OpaqueKey_create_account_reference([self sourceKeyAtIndex], self.extendedPublicKey->ok, self.account.accountNumber);
 }
 
 - (DValue *)toValue {

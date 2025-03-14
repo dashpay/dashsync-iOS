@@ -51,3 +51,27 @@
 }
 
 @end
+
+@implementation NSSet (Vec_u8_32)
+
++ (NSSet<NSData *> *)ffi_from_vec_u256:(Vec_u8_32 *)ffi_ref {
+    NSMutableSet<NSData *> *arr = [NSMutableSet set];
+    for (int i = 0; i < ffi_ref->count; i++) {
+        [arr addObject:NSDataFromPtr(ffi_ref->values[i])];
+    }
+    return arr;
+}
++ (Vec_u8_32 *)ffi_to_vec_u256:(NSSet<NSData *> *)obj {
+    NSArray<NSData *> *arr = [obj allObjects];
+    NSUInteger count = arr.count;
+    u256 **values = malloc(count * sizeof(u256 *));
+    for (NSUInteger i = 0; i < count; i++) {
+        values[i] = u256_ctor(arr[i]);
+    }
+    return Vec_u8_32_ctor(count, values);
+}
++ (void)ffi_destroy_vec_u256:(Vec_u8_32 *)ffi_ref {
+    Vec_u8_32_destroy(ffi_ref);
+}
+@end
+

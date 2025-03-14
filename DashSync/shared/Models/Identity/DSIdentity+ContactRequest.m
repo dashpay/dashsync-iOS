@@ -349,8 +349,8 @@
                 [senderIdentity fetchNeededNetworkStateInformationInContext:self.platformContext
                                                              withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
                     if (!failureStep) {
-                        DMaybeOpaqueKey *senderPublicKey = [senderIdentity keyAtIndex:request->sender_key_index];
-                        NSData *extendedPublicKeyData = [self decryptedPublicKeyDataWithKey:senderPublicKey->ok request:request];
+                        DOpaqueKey *senderPublicKey = [senderIdentity keyAtIndex:request->sender_key_index];
+                        NSData *extendedPublicKeyData = [self decryptedPublicKeyDataWithKey:senderPublicKey request:request];
                         DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:extendedPublicKeyData ofType:DKeyKindECDSA()];
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
@@ -403,8 +403,8 @@
                     NSAssert(sourceIdentity, @"This should not be null");
                     if ([sourceIdentity activeKeyCount] > 0 && [sourceIdentity keyAtIndex:request->sender_key_index]) {
                         //the contact already existed, and has an encryption public key set, create the incoming friend request, add a friendship if an outgoing friend request also exists
-                        DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
-                        NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
+                        DOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
+                        NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key request:request];
                         NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                         DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:DKeyKindECDSA()];
                         if (!extendedPublicKey) {
@@ -429,9 +429,9 @@
                                                                      withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *networkStateInformationErrors) {
                             if (!failureStep) {
                                 [context performBlockAndWait:^{
-                                    DMaybeOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
+                                    DOpaqueKey *key = [sourceIdentity keyAtIndex:request->sender_key_index];
                                     NSAssert(key, @"key should be known");
-                                    NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key->ok request:request];
+                                    NSData *decryptedExtendedPublicKeyData = [self decryptedPublicKeyDataWithKey:key request:request];
                                     NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                                     DMaybeOpaqueKey *extendedPublicKey = [DSKeyManager keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData ofType:DKeyKindECDSA()];
                                     NSAssert(extendedPublicKey, @"A key should be recovered");

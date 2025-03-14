@@ -12,7 +12,7 @@
 #import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
-#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
+//#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"

@@ -41,14 +41,16 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self loadProfileInitial];
-    if (self.identity.registered && self.identity.currentDashpayUsername && [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername] == DSIdentityUsernameStatus_Confirmed) {
+    DUsernameStatus *username_status = [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername];
+    if (self.identity.registered && self.identity.currentDashpayUsername && dash_spv_platform_document_usernames_UsernameStatus_is_confirmed(username_status)) {
         [self.identity fetchProfileWithCompletion:^(BOOL success, NSError *error) {
             if (success) {
                 [self updateProfile];
             }
         }];
     }
-
+    DUsernameStatusDtor(username_status);
+    
     [self reloadKeyInfo];
 
     __weak typeof(self) weakSelf = self;
@@ -93,26 +95,34 @@
 }
 
 - (void)reloadRegistrationInfo {
+    DUsernameStatus *username_status = [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername];
+
     if (!self.identity.registered) {
         self.aboutMeLabel.text = @"Not registered";
         self.usernameStatusLabel.text = @"";
     } else if (!self.identity.currentDashpayUsername) {
         self.aboutMeLabel.text = @"No Username";
         self.usernameStatusLabel.text = @"";
-    } else if ([self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername] != DSIdentityUsernameStatus_Confirmed) {
+    } else if (!dash_spv_platform_document_usernames_UsernameStatus_is_confirmed(username_status)) {
         self.aboutMeLabel.text = @"Username Process";
-        switch ([self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername]) {
-            case DSIdentityUsernameStatus_Initial:
+        switch (DUsernameStatusIndex(username_status)) {
+            case dash_spv_platform_document_usernames_UsernameStatus_Initial:
                 self.usernameStatusLabel.text = @"Initial";
                 break;
-            case DSIdentityUsernameStatus_PreorderRegistrationPending:
+            case dash_spv_platform_document_usernames_UsernameStatus_PreorderRegistrationPending:
                 self.usernameStatusLabel.text = @"Preorder Registration Pending";
                 break;
-            case DSIdentityUsernameStatus_Preordered:
+            case dash_spv_platform_document_usernames_UsernameStatus_Preordered:
                 self.usernameStatusLabel.text = @"Preordered";
                 break;
-            case DSIdentityUsernameStatus_RegistrationPending:
+            case dash_spv_platform_document_usernames_UsernameStatus_RegistrationPending:
                 self.usernameStatusLabel.text = @"Registration Pending";
+                break;
+            case dash_spv_platform_document_usernames_UsernameStatus_VotingPeriod:
+                self.usernameStatusLabel.text = @"Voting Period";
+                break;
+            case dash_spv_platform_document_usernames_UsernameStatus_Locked:
+                self.usernameStatusLabel.text = @"Locked";
                 break;
             default:
                 self.usernameStatusLabel.text = @"";
@@ -127,6 +137,7 @@
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.identity.matchingDashpayUserInViewContext.avatarPath]];
         self.usernameStatusLabel.text = @"";
     }
+    DUsernameStatusDtor(username_status);
 }
 
 - (void)loadProfileInitial {
@@ -156,7 +167,7 @@
 }
 
 - (void)reloadKeyInfo {
-    self.keyCountLabel.text = [NSString stringWithFormat:@"%u/%u", self.identity.activeKeyCount, self.identity.totalKeyCount];
+    self.keyCountLabel.text = [NSString stringWithFormat:@"%lu/%lu", self.identity.activeKeyCount, self.identity.totalKeyCount];
 }
 
 - (void)didReceiveMemoryWarning {

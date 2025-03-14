@@ -24,6 +24,7 @@
 #import "DSChain+Checkpoint.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSChainLock.h"
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSCheckpoint.h"
 #import "DSMerkleBlock.h"
@@ -171,6 +172,15 @@
     merkleBlockEntity.height = blockHeight;
     merkleBlockEntity.chain = chainEntity;
     return merkleBlockEntity;
+}
+
++ (BOOL)hasBlocksWithHash:(UInt256)blockHash
+                inContext:(NSManagedObjectContext *)context {
+    __block BOOL hasBlock = NO;
+    [context performBlockAndWait:^{
+        hasBlock = !![DSMerkleBlockEntity countObjectsInContext:context matching:@"blockHash == %@", uint256_data(blockHash)];
+    }];
+    return hasBlock;
 }
 
 @end

@@ -41,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t currentMainKeyIndex;
 @property (nonatomic, readonly) uint32_t keysCreated;
 
+@property (nonatomic, assign) IdentityModel *identity_model;
+
 @property (nonatomic, assign) BOOL isTransient;
 
 @property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;
@@ -89,20 +91,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
                    inWallet:(DSWallet *)wallet;
-
 - (instancetype)initAtIndex:(uint32_t)index
    withAssetLockTransaction:(DSAssetLockTransaction *)transaction
-     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
                    inWallet:(DSWallet *)wallet;
+
+//- (instancetype)initAtIndex:(uint32_t)index
+//   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
+//     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
+//                   inWallet:(DSWallet *)wallet;
 
 - (void)addKey:(DMaybeOpaqueKey *)key
  securityLevel:(DSecurityLevel *)securityLevel
        purpose:(DPurpose *)purpose
    atIndexPath:(NSIndexPath *)indexPath
         ofType:(DKeyKind *)type
-    withStatus:(DSIdentityKeyStatus)status
+    withStatus:(DIdentityKeyStatus *)status
           save:(BOOL)save;
-- (BOOL)registerKeyWithStatus:(DSIdentityKeyStatus)status
+- (BOOL)registerKeyWithStatus:(DIdentityKeyStatus *)status
                 securityLevel:(DSecurityLevel *)securityLevel
                       purpose:(DPurpose *)purpose
                   atIndexPath:(NSIndexPath *)indexPath

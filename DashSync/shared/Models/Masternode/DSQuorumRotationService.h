@@ -17,18 +17,21 @@
 
 #import <Foundation/Foundation.h>
 #import "DSMasternodeListService.h"
+#import "DSMerkleBlock.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQuorumRotationService : DSMasternodeListService
 
-//@property (nonatomic, assign, nullable) struct dash_spv_masternode_processor_processing_qr_info_result_QRInfoResult *last_result;
+@property (nonatomic, assign) NSTimeInterval lastSyncedTimestamp;
 //@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtTip;
 //@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH;
 //@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtHC;
 //@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH2C;
 //@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH3C;
 //@property (nonatomic, assign, nullable) DMasternodeList *masternodeListAtH4C;
+- (void)getRecent:(UInt256)blockHash;
+- (void)fetchMasternodeListToRetrieve:(void (^)(NSData *listsToRetrieve))completion;
 
 @end
 

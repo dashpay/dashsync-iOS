@@ -18,14 +18,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) uint8_t version;
 @property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) UInt256 transactionHash;
-@property (nonatomic, readonly) UInt768 signature;
-@property (nonatomic, readonly) NSArray *inputOutpoints;
-@property (nonatomic, readonly) UInt256 cycleHash;
+@property (nonatomic, readonly) dashcore_ephemerealdata_instant_lock_InstantLock *lock;
+
+//@property (nonatomic, readonly) dashcore_hash_types_Txid *transactionHash;
+//@property (nonatomic, readonly) dashcore_bls_sig_utils_BLSSignature *signature;
+//@property (nonatomic, readonly) Vec_dashcore_blockdata_transaction_outpoint_OutPoint *inputOutpoints;
+//@property (nonatomic, readonly) dashcore_hash_types_CycleHash *cycleHash;
+@property (nonatomic, readonly) NSData *transactionHashData;
+@property (nonatomic, readonly) NSData *signatureData;
+@property (nonatomic, readonly) NSData *cycleHashData;
+
 @property (nonatomic, readonly) BOOL signatureVerified; //verifies the signature and quorum together
-@property (nonatomic, readonly) NSData *intendedQuorumPublicKey;
+//@property (nonatomic, readonly) NSData *intendedQuorumPublicKey;
 @property (nonatomic, readonly) BOOL saved;
-@property (nonatomic, readonly) UInt256 requestID;
+//@property (nonatomic, readonly) UInt256 requestID;
 
 @property (nonatomic, readonly, getter=isDeterministic) BOOL deterministic;
 
@@ -40,10 +46,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)instantSendTransactionLockWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain;
 
-- (instancetype)initWithTransactionHash:(UInt256)transactionHash
+- (instancetype)initWithTransactionHash:(NSData *)transactionHash
                      withInputOutpoints:(NSArray *)inputOutpoints
-                              signature:(UInt768)signature
-                              cycleHash:(UInt256)cycleHash
+                                version:(uint8_t)version
+                              signature:(NSData *)signature
+                              cycleHash:(NSData *)cycleHash
                       signatureVerified:(BOOL)signatureVerified
                          quorumVerified:(BOOL)quorumVerified
                                 onChain:(DSChain *)chain;

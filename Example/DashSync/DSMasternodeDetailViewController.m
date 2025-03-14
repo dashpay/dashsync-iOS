@@ -37,19 +37,23 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    dashcore_sml_masternode_list_entry_MasternodeListEntry *entry = self.simplifiedMasternodeEntry->masternode_list_entry;
+    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(entry->service_address);
+    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(entry->service_address);
+    UInt128 ipAddress = u128_cast(ip_address);
 
     char s[INET6_ADDRSTRLEN];
+    uint32_t ipAddressu32 = ipAddress.u32[3];
     
-    uint32_t ipAddress = dash_spv_masternode_processor_common_socket_address_SocketAddress_ipv4(self.simplifiedMasternodeEntry->socket_address);
-    char *voting_address = DMasternodeEntryVotingAddress(self.simplifiedMasternodeEntry, self.chain.chainType);
-    self.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.simplifiedMasternodeEntry->socket_address->port];
+    char *voting_address = DMasternodeEntryVotingAddress(self.simplifiedMasternodeEntry->masternode_list_entry->key_id_voting, self.chain.chainType);
+    self.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddressu32, s, sizeof(s)), port];
     self.ownerKeyLabel.text = self.localMasternode.ownerKeysWallet ? @"SHOW" : @"NO";
     self.operatorKeyLabel.text = self.localMasternode.operatorKeysWallet ? @"SHOW" : @"NO";
-    self.operatorPublicKeyLabel.text = uint384_hex(u384_cast(self.simplifiedMasternodeEntry->operator_public_key->data));
+    self.operatorPublicKeyLabel.text = uint384_hex(u384_cast(self.simplifiedMasternodeEntry->masternode_list_entry->operator_public_key->_0));
     self.votingAddressLabel.text = [DSKeyManager NSStringFrom:voting_address];
     self.votingKeyLabel.text = self.localMasternode.votingKeysWallet ? @"SHOW" : @"NO";
     self.fundsInHoldingLabel.text = self.localMasternode.holdingKeysWallet ? @"YES" : @"NO";
-    self.activeLabel.text = self.simplifiedMasternodeEntry->is_valid ? @"YES" : @"NO";
+    self.activeLabel.text = self.simplifiedMasternodeEntry->masternode_list_entry->is_valid ? @"YES" : @"NO";
     self.payToAddress.text = self.localMasternode.payoutAddress ? self.localMasternode.payoutAddress : @"Unknown";
     self.proRegTxLabel.text = uint256_hex(self.localMasternode.providerRegistrationTransaction.txHash);
     self.proUpRegTxLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.localMasternode.providerUpdateRegistrarTransactions.count];
@@ -140,8 +144,10 @@
 }
 
 - (void)claimSimplifiedMasternodeEntry {
-    
-    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:uint256_reverse(u256_cast(self.simplifiedMasternodeEntry->provider_registration_transaction_hash))
+    u256 *pro_tx_hash = dashcore_hash_types_ProTxHash_inner(self.simplifiedMasternodeEntry->masternode_list_entry->pro_reg_tx_hash);
+    UInt256 reversedProTxHash = uint256_reverse(u256_cast(pro_tx_hash));
+    u256_dtor(pro_tx_hash);
+    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:reversedProTxHash
                                                                   onChain:self.chain
                                                                completion:^(DSTransaction *transaction, NSError *error) {
         if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {

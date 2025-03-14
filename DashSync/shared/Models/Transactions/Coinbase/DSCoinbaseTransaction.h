@@ -7,6 +7,9 @@
 
 #import "DSTransaction.h"
 
+#define COINBASE_TX_CORE_19 2
+#define COINBASE_TX_CORE_20 3
+
 @interface DSCoinbaseTransaction : DSTransaction
 
 @property (nonatomic, assign) uint16_t coinbaseTransactionVersion;

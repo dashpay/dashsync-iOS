@@ -10,7 +10,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
-#import "DSQuorumEntryEntity+CoreDataClass.h"
+//#import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.m"
 #import "DSTxInputEntity+CoreDataClass.h"
@@ -20,15 +20,14 @@
 @implementation DSInstantSendLockEntity
 
 + (DSInstantSendLockEntity *)instantSendLockEntityFromInstantSendLock:(DSInstantSendTransactionLock *)instantSendTransactionLock inContext:(NSManagedObjectContext *)context {
-    DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
+    DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", instantSendTransactionLock.transactionHashData];
     if (transactionEntity) {
         DSInstantSendLockEntity *entity = [DSInstantSendLockEntity managedObjectInContext:context];
         entity.validSignature = instantSendTransactionLock.signatureVerified;
-        entity.signature = uint768_data(instantSendTransactionLock.signature);
-        entity.cycleHash = uint256_data(instantSendTransactionLock.cycleHash);
+        entity.signature = instantSendTransactionLock.signatureData;
+        entity.cycleHash = instantSendTransactionLock.cycleHashData;
         NSAssert(transactionEntity, @"transaction must exist");
         entity.transaction = transactionEntity;
-        entity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", instantSendTransactionLock.intendedQuorumPublicKey];
     }
     return nil;
 }
@@ -36,12 +35,11 @@
 - (instancetype)setAttributesFromInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
     [self.managedObjectContext performBlockAndWait:^{
         self.validSignature = instantSendTransactionLock.signatureVerified;
-        self.signature = uint768_data(instantSendTransactionLock.signature);
-        self.cycleHash = uint256_data(instantSendTransactionLock.cycleHash);
-        DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
+        self.signature = instantSendTransactionLock.signatureData;
+        self.cycleHash = instantSendTransactionLock.cycleHashData;
+        DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", instantSendTransactionLock.transactionHashData];
         NSAssert(transactionEntity, @"transaction must exist");
         self.transaction = transactionEntity;
-        self.quorum = [DSQuorumEntryEntity anyObjectInContext:self.managedObjectContext matching:@"quorumPublicKeyData == %@", instantSendTransactionLock.intendedQuorumPublicKey];
     }];
 
     return self;
@@ -52,9 +50,14 @@
     for (DSTxInputEntity *input in self.transaction.inputs) {
         [inputOutpoints addObject:dsutxo_data(input.outpoint)];
     }
-    DSInstantSendTransactionLock *instantSendTransactionLock = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash.UInt256 withInputOutpoints:inputOutpoints signature:self.signature.UInt768 cycleHash:self.cycleHash.UInt256 signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
-
-    return instantSendTransactionLock;
+    return [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash
+                                                                                                          withInputOutpoints:inputOutpoints
+                                                                                                                     version:self.version
+                                                                                                                   signature:self.signature
+                                                                                                                   cycleHash:self.cycleHash
+                                                                                                           signatureVerified:TRUE
+                                                                                                              quorumVerified:TRUE
+                                                                                                                     onChain:chain];
 }
 
 @end

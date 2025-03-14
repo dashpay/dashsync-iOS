@@ -29,19 +29,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *chainWork;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSChainLockEntity *chainLock;
-@property (nullable, nonatomic, retain) DSMasternodeListEntity *masternodeList;
-@property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *usedByQuorums;
-@property (nullable, nonatomic, retain) DSQuorumSnapshotEntity *quorumSnapshot;
+//@property (nullable, nonatomic, retain) DSMasternodeListEntity *masternodeList;
+//@property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *usedByQuorums;
+//@property (nullable, nonatomic, retain) DSQuorumSnapshotEntity *quorumSnapshot;
 
 @end
 
-@interface DSMerkleBlockEntity (CoreDataGeneratedAccessors)
-
-- (void)addQuorumsObject:(DSQuorumEntryEntity *)value;
-- (void)removeQuorumsObject:(DSQuorumEntryEntity *)value;
-- (void)addQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
-- (void)removeQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
-
-@end
+//@interface DSMerkleBlockEntity (CoreDataGeneratedAccessors)
+//
+//- (void)addQuorumsObject:(DSQuorumEntryEntity *)value;
+//- (void)removeQuorumsObject:(DSQuorumEntryEntity *)value;
+//- (void)addQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
+//- (void)removeQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
+//
+//@end
 
 NS_ASSUME_NONNULL_END

@@ -27,7 +27,7 @@
     ctx.context = context;
     return ctx;
 }
-- (void)setAndSaveUsernameFullPaths:(DSIdentityUsernameStatus)status {
+- (void)setAndSaveUsernameFullPaths:(DUsernameStatus *)status {
     [self.identity setAndSaveUsernameFullPaths:self.usernames
                                       toStatus:status
                                      inContext:self.context];

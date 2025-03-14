@@ -16,7 +16,7 @@
 #import "DSGovernanceObjectListViewController.h"
 #import "DSInvitationsViewController.h"
 #import "DSLayer2ViewController.h"
-#import "DSMasternodeListStore.h"
+//#import "DSMasternodeListStore.h"
 #import "DSMasternodeListsViewController.h"
 #import "DSMasternodeViewController.h"
 #import "DSNetworkActivityView.h"
@@ -688,18 +688,18 @@
 }
 
 - (void)updateKnownMasternodes {
-    DMasternodeList *list = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.chainManager.chain.sharedProcessorObj, self.chainManager.chain.isRotatedQuorumsPresented);
-    uintptr_t count = list ? dash_spv_masternode_processor_models_masternode_list_MasternodeList_masternode_count(list) : 0;
+    DMasternodeList *list = [self.chainManager.chain.masternodeManager currentMasternodeList];
+    uintptr_t count = list ? list->masternodes->count : 0;
     self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)count];
     self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
     self.masternodeListUpdatedLabel.text = [NSString stringWithFormat:@"%u", (unsigned long)list ? list->known_height : 0];
 }
 
 - (void)updateMasternodeLists {
-    uint32_t earliestHeight = self.chainManager.masternodeManager.earliestMasternodeListBlockHeight;
+//    uint32_t earliestHeight = self.chainManager.masternodeManager.earliestMasternodeListBlockHeight;
     uint32_t lastHeight = self.chainManager.masternodeManager.lastMasternodeListBlockHeight;
     self.masternodeListsCountLabel.text = [NSString stringWithFormat:@"%lu", self.chainManager.masternodeManager.knownMasternodeListsCount];
-    self.earliestMasternodeListLabel.text = (earliestHeight != UINT32_MAX) ? [NSString stringWithFormat:@"%u", earliestHeight] : @"None";
+//    self.earliestMasternodeListLabel.text = (earliestHeight != UINT32_MAX) ? [NSString stringWithFormat:@"%u", earliestHeight] : @"None";
     self.lastMasternodeListLabel.text = (lastHeight != UINT32_MAX) ? [NSString stringWithFormat:@"%u", lastHeight] : @"None";
 }
 

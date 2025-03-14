@@ -1533,8 +1533,8 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
     DSTransaction *transaction = nil;
     DSWallet *wallet = nil;
-    DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
-
+    NSData *transactionHashData = instantSendTransactionLock.transactionHashData;
+    DSAccount *account = [self.chain firstAccountForTransactionHash:transactionHashData.UInt256 transaction:&transaction wallet:&wallet];
     if (account && transaction && transaction.instantSendReceived) {
         return; //no point to retrieve the instant send lock if we already have it
     }
@@ -1542,11 +1542,10 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     BOOL verified = [instantSendTransactionLock verifySignature];
 
 #if DEBUG
-    DSLogPrivate(@"[%@: %@:%d] relayed instant send transaction lock %@ %@", self.chain.name, peer.host, peer.port, verified ? @"Verified" : @"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+    DSLogPrivate(@"[%@: %@:%d] relayed instant send transaction lock %@ %@", self.chain.name, peer.host, peer.port, verified ? @"Verified" : @"Not Verified", transactionHashData.hexString);
 #else
     DSLog(@"[%@: %@:%d] relayed instant send transaction lock %@ %@", self.chain.name, peer.host, peer.port, verified ? @"Verified" : @"Not Verified", @"<REDACTED>");
 #endif
-
 
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
@@ -1559,12 +1558,12 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
                                                                   DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
         });
     } else {
-        [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+        [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:transactionHashData];
     }
 
-    if (!verified && !instantSendTransactionLock.intendedQuorumPublicKey) {
+    if (!verified /*&& !instantSendTransactionLock.intendedQuorumPublicKey*/) {
         //the quorum hasn't been retrieved yet
-        [self.instantSendLocksWaitingForQuorums setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+        [self.instantSendLocksWaitingForQuorums setObject:instantSendTransactionLock forKey:transactionHashData];
     }
 }
 
@@ -1574,17 +1573,19 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         if (self.instantSendLocksWaitingForTransactions[transactionHashData]) continue;
         DSInstantSendTransactionLock *instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
         BOOL verified = [instantSendTransactionLock verifySignature];
+        NSData *isTransactionHashData = instantSendTransactionLock.transactionHashData;
         if (verified) {
             DSLogPrivate(@"[%@] Verified %@", self.chain.name, instantSendTransactionLock);
             [instantSendTransactionLock saveSignatureValid];
             DSTransaction *transaction = nil;
             DSWallet *wallet = nil;
-            DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+
+            DSAccount *account = [self.chain firstAccountForTransactionHash:isTransactionHashData.UInt256 transaction:&transaction wallet:&wallet];
 
             if (account && transaction) {
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
             }
-            [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
+            [self.instantSendLocksWaitingForQuorums removeObjectForKey:isTransactionHashData];
             if (account && transaction) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
@@ -1602,24 +1603,11 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         } else {
             DSTransaction *transaction = nil;
             DSWallet *wallet = nil;
-            DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
-
+            DSAccount *account = [self.chain firstAccountForTransactionHash:isTransactionHashData.UInt256 transaction:&transaction wallet:&wallet];
             // Either there is no account or no transaction that means the transaction was not meant for our wallet or the transaction is confirmed
             // Which means the instant send lock no longer needs verification.
-            if (!account || !transaction || transaction.confirmed) {
-                [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
-            }
-//#if DEBUG
-//            DSMasternodeList *masternodeList = nil;
-//            DSQuorumEntry *quorum = [instantSendTransactionLock findSigningQuorumReturnMasternodeList:&masternodeList];
-//            if (quorum && masternodeList) {
-//                NSArray<DSQuorumEntry *> *quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[instantSendTransactionLock requestID]];
-//                NSUInteger index = [quorumEntries indexOfObject:quorum];
-//                DSLog(@"[%@] Quorum %@ found at index %lu for masternodeList at height %lu", self.chain.name, quorum, (unsigned long)index, (unsigned long)masternodeList.height);
-//                DSLog(@"[%@] Quorum entries are %@", self.chain.name, quorumEntries);
-//            }
-//            DSLog(@"[%@] Could not verify %@", self.chain.name, instantSendTransactionLock);
-//#endif
+            if (!account || !transaction || transaction.confirmed)
+                [self.instantSendLocksWaitingForQuorums removeObjectForKey:isTransactionHashData];
         }
     }
 }
@@ -1736,10 +1724,10 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
 
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
+    NSData *clBlockHashData = chainLock.blockHashData;
+    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, clBlockHashData.hexString);
 
-    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_reverse_hex(chainLock.blockHash));
-
-    DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
+    DSMerkleBlock *block = [self.chain blockForBlockHash:clBlockHashData.UInt256];
 
     if (block) {
         [self.chain addChainLock:chainLock];
@@ -1749,12 +1737,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
         });
     } else {
-        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+        DSLog(@"[%@: %@:%d] no block for chain lock %@", self.chain.name, peer.host, peer.port, clBlockHashData.hexString);
+        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:clBlockHashData];
     }
 
-    if (!verified && !chainLock.intendedQuorumPublicKey) {
+    if (!verified /*&& !chainLock.intendedQuorumPublicKey*/) {
         //the quorum hasn't been retrieved yet
-        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:clBlockHashData];
     }
 }
 
@@ -1767,7 +1756,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         if (verified) {
             DSLog(@"[%@] Verified %@", self.chain.name, chainLock);
             [chainLock saveSignatureValid];
-            DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
+            DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHashData.UInt256];
             [self.chainLocksWaitingForQuorums removeObjectForKey:chainLockHashData];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification

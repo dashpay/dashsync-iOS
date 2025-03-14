@@ -12,6 +12,7 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
+
 @implementation DSCoinbaseTransaction
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {

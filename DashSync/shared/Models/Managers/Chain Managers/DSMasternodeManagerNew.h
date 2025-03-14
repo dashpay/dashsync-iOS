@@ -1,6 +1,6 @@
 //  
 //  Created by Vladimir Pirogov
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DSQuorumSnapshotEntity+CoreDataClass.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSQuorumSnapshotEntity (CoreDataProperties)
-
-+ (NSFetchRequest<DSQuorumSnapshotEntity *> *)fetchRequest;
-
-@property (nullable, nonatomic, retain) DSMerkleBlockEntity *block;
-@property (nullable, nonatomic, retain) NSData *memberList;
-@property (nullable, retain) NSData *skipList;
-@property (nonatomic) int32_t skipListMode;
+@interface DSMasternodeManagerNew : NSObject
 
 @end
 

@@ -30,9 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief Related to DPNS. This is the list of usernames that are associated to the identity in the domain "dash". These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
 @property (nonatomic, readonly) NSArray<NSString *> *dashpayUsernames;
 
-- (void)setupUsernames;
-- (void)setupUsernames:(NSMutableDictionary *)statuses
-                 salts:(NSMutableDictionary *)salts;
+//- (void)setupUsernames;
+//- (void)setupUsernames:(NSMutableDictionary *)statuses
+//                 salts:(NSMutableDictionary *)salts;
 
 - (void)applyUsernameEntitiesFromIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity;
 - (void)collectUsernameEntitiesIntoIdentityEntityInContext:(DSBlockchainIdentityEntity *)identityEntity
@@ -44,24 +44,26 @@ NS_ASSUME_NONNULL_BEGIN
                save:(BOOL)save;
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
-             status:(DSIdentityUsernameStatus)status
+             status:(DUsernameStatus *)status
                save:(BOOL)save
   registerOnNetwork:(BOOL)registerOnNetwork;
-- (DSIdentityUsernameStatus)statusOfUsername:(NSString *)username
-                                    inDomain:(NSString *)domain;
-- (DSIdentityUsernameStatus)statusOfDashpayUsername:(NSString *)username;
+- (DUsernameStatus *)statusOfUsername:(NSString *)username
+                             inDomain:(NSString *)domain;
+- (DUsernameStatus *)statusOfDashpayUsername:(NSString *)username;
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
-- (NSArray<NSString *> *)unregisteredUsernameFullPaths;
-- (NSArray<NSString *> *)usernameFullPathsWithStatus:(DUsernameStatus *)usernameStatus;
+//- (NSArray<NSString *> *)unregisteredUsernameFullPaths;
+//- (NSArray<NSString *> *)usernameFullPathsWithStatus:(DUsernameStatus *)usernameStatus;
 
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue;
 
 - (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
-                           toStatus:(DSIdentityUsernameStatus)status
+                           toStatus:(DUsernameStatus *)status
                           inContext:(NSManagedObjectContext *)context;
+
+- (BOOL)hasDashpayUsername:(NSString *)username;
 
 @end
 

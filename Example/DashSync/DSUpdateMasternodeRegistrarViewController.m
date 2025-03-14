@@ -67,7 +67,9 @@
         DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingWallet];
         votingHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
     } else {
-        votingHash = u160_cast(self.simplifiedMasternodeEntry->key_id_voting);
+        u160 *key_id_voting = dashcore_hash_types_PubkeyHash_inner(self.simplifiedMasternodeEntry->masternode_list_entry->key_id_voting);
+        votingHash = u160_cast(key_id_voting);
+        u160_dtor(key_id_voting);
     }
     NSString *payoutAddress = (self.payoutTableViewCell.valueTextField.text && ![self.payoutTableViewCell.valueTextField.text isEqualToString:@""]) ? self.payoutTableViewCell.valueTextField.text : self.localMasternode.payoutAddress;
     [self.localMasternode updateTransactionFundedByAccount:self.account

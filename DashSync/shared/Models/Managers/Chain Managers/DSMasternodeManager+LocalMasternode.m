@@ -140,23 +140,38 @@ NSString const *localMasternodesDictionaryKey = @"localMasternodesDictionaryKey"
                                                             onChain:(DSChain *)chain {
     NSParameterAssert(simplifiedMasternodeEntry);
     NSParameterAssert(ownerWallet);
-    UInt256 proRegTxHash = u256_cast(simplifiedMasternodeEntry->provider_registration_transaction_hash);
-    DSLocalMasternode *localMasternode = [self localMasternodeHavingProviderRegistrationTransactionHash:proRegTxHash];
+    dashcore_sml_masternode_list_entry_MasternodeListEntry *entry = simplifiedMasternodeEntry->masternode_list_entry;
+    u256 *pro_reg_tx_hash = dashcore_hash_types_ProTxHash_inner(entry->pro_reg_tx_hash);
+    DSLocalMasternode *localMasternode = [self localMasternodeHavingProviderRegistrationTransactionHash:u256_cast(pro_reg_tx_hash)];
+    u256_dtor(pro_reg_tx_hash);
     if (localMasternode) return localMasternode;
-
-    UInt160 keyIDVoting = u160_cast(simplifiedMasternodeEntry->key_id_voting);
+    u160 *key_id_voting = dashcore_hash_types_PubkeyHash_inner(entry->key_id_voting);
     uint32_t votingIndex;
-    DSWallet *votingWallet = [chain walletHavingProviderVotingAuthenticationHash:keyIDVoting foundAtIndex:&votingIndex];
-    UInt384 operatorPublicKey = u384_cast(simplifiedMasternodeEntry->operator_public_key->data);
+    DSWallet *votingWallet = [chain walletHavingProviderVotingAuthenticationHash:u160_cast(key_id_voting) foundAtIndex:&votingIndex];
+    u160_dtor(key_id_voting);
+    UInt384 operatorPublicKey = u384_cast(entry->operator_public_key->_0);
     uint32_t operatorIndex;
     DSWallet *operatorWallet = [chain walletHavingProviderOperatorAuthenticationKey:operatorPublicKey foundAtIndex:&operatorIndex];
-    UInt160 platformNodeID = u160_cast(simplifiedMasternodeEntry->platform_node_id);
+    UInt160 platformNodeID = UINT160_ZERO;
+    switch (entry->mn_type->tag) {
+        case dashcore_sml_masternode_list_entry_EntryMasternodeType_HighPerformance: {
+            u160 *platform_node_id = dashcore_hash_types_PubkeyHash_inner(entry->mn_type->high_performance.platform_node_id);
+            platformNodeID = u160_cast(platform_node_id);
+            u160_dtor(platform_node_id);
+            break;
+        }
+        default:
+            break;
+    }
     uint32_t platformNodeIndex;
     DSWallet *platformNodeWallet = [chain walletHavingPlatformNodeAuthenticationHash:platformNodeID foundAtIndex:&platformNodeIndex];
-    UInt128 ipAddress = u128_cast(simplifiedMasternodeEntry->socket_address->ip_address);
+
+    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(entry->service_address);
+    UInt128 ipAddress = u128_cast(ip_address);
+    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(entry->service_address);
     return votingWallet || operatorWallet
         ? [[DSLocalMasternode alloc] initWithIPAddress:ipAddress
-                                                onPort:simplifiedMasternodeEntry->socket_address->port
+                                                onPort:port
                                          inFundsWallet:nil
                                       fundsWalletIndex:0
                                       inOperatorWallet:operatorWallet

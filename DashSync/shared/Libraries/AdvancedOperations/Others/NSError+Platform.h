@@ -17,6 +17,7 @@
 
 #import <Foundation/Foundation.h>
 #import "dash_shared_core.h"
+#import "DSKeyManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,8 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSError *)ffi_from_core_provider_error:(dash_spv_masternode_processor_processing_core_provider_CoreProviderError *)ffi_ref;
 @end
 
-@interface NSError (dash_spv_masternode_processor_processing_processing_error_ProcessingError)
-+ (NSError *)ffi_from_processing_error:(dash_spv_masternode_processor_processing_processing_error_ProcessingError *)ffi_ref;
+@interface NSError (DProcessingError)
++ (NSError *)ffi_from_processing_error:(DProcessingError *)ffi_ref;
 @end
 
 

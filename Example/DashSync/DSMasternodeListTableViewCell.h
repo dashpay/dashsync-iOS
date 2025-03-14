@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSMasternodeListTableViewCellDelegate <NSObject>
 
-- (void)masternodeListTableViewCellRequestsValidation:(DSMasternodeListTableViewCell *)tableViewCell;
+//- (void)masternodeListTableViewCellRequestsValidation:(DSMasternodeListTableViewCell *)tableViewCell;
 
 @end
 

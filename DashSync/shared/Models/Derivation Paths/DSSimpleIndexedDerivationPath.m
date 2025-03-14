@@ -240,7 +240,7 @@
                 }
                 self.mOrderedAddresses[e.index] = e.address;
                 [self.mAllAddresses addObject:e.address];
-                if ([e.usedInInputs count] || [e.usedInOutputs count] || [e.usedInSpecialTransactions count] || [e.usedInSimplifiedMasternodeEntries count]) {
+                if ([e.usedInInputs count] || [e.usedInOutputs count] || [e.usedInSpecialTransactions count] /*|| [e.usedInSimplifiedMasternodeEntries count]*/) {
                     [self.mUsedAddresses addObject:e.address];
                 }
             }

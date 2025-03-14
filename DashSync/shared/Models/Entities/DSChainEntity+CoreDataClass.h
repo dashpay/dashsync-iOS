@@ -27,7 +27,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSAccountEntity, DSBlockchainIdentityEntity, DSBlockchainInvitationEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSSporkHashEntity, DSTransactionHashEntity, DSChainLockEntity;
+@class DSAccountEntity, DSBlockchainIdentityEntity, DSBlockchainInvitationEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSSporkHashEntity, DSTransactionHashEntity, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

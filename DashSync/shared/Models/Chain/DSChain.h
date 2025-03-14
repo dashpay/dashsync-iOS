@@ -82,8 +82,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, nullable) DArcProcessor *sharedProcessor;
 @property (nonatomic, nullable) DProcessor *sharedProcessorObj;
 /*! @brief Masternode Processor Cache Reference  */
-@property (nonatomic, nullable) DArcCache *sharedCache;
-@property (nonatomic, nullable) DCache *sharedCacheObj;
+//@property (nonatomic, nullable) DArcCache *sharedCache;
+//@property (nonatomic, nullable) DCache *sharedCacheObj;
 @property (nonatomic, nullable) DArcPlatformSDK *sharedPlatform;
 @property (nonatomic, nullable) PlatformSDK *sharedPlatformObj;
 @property (nonatomic, nullable) ContactRequestManager *sharedContactsObj;
@@ -315,6 +315,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (void)chain:(DSChain *)chain receivedOrphanBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer;
 - (void)chain:(DSChain *)chain wasExtendedWithBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer;
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer;
+- (void)chain:(DSChain *)chain badMasternodeListReceivedFromPeer:(DSPeer *)peer;
 
 @end
 

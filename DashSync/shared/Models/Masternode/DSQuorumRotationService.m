@@ -21,7 +21,13 @@
 #import "DSGetQRInfoRequest.h"
 #import "DSQuorumRotationService.h"
 #import "DSMasternodeListService+Protected.h"
-#import "DSMasternodeListStore+Protected.h"
+#import "DSMasternodeManager.h"
+
+@interface DSQuorumRotationService ()
+
+@property (nonatomic, strong) NSData *retrievalBlockHash;
+
+@end
 
 @implementation DSQuorumRotationService
 
@@ -29,23 +35,37 @@
     return [NSString stringWithFormat:@"[%@] [QRInfoService] ", self.chain.name];
 }
 
-- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
-    NSData *blockHashData = [list lastObject];
+- (BOOL)hasRecentQrInfoSync {
+    return ([[NSDate date] timeIntervalSince1970] - self.lastSyncedTimestamp < 30);
+}
+
+
+- (void)composeMasternodeListRequest:(NSData *)blockHashData {
     if (!blockHashData) {
         return;
     }
-    if ([self.store hasBlockForBlockHash:blockHashData]) {
+    if ([self.chain.masternodeManager hasBlockForBlockHash:blockHashData]) {
         UInt256 blockHash = blockHashData.UInt256;
-        UInt256 previousBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
+        uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
+        UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHeight:blockHeight];
 //        NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
         [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
     } else {
         DSLog(@"%@ Missing block: %@ (%@)", self.logPrefix, blockHashData.hexString, blockHashData.reverse.hexString);
-        DQrInfoQueueRemove(self.chain.sharedProcessorObj, u256_ctor(blockHashData));
+        self.retrievalBlockHash = nil;
     }
 }
 
-- (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
+- (void)dequeueMasternodeListRequest {
+    [self fetchMasternodeListToRetrieve:^(NSData *blockHashData) {
+        [self composeMasternodeListRequest:blockHashData];
+        [self startTimeOutObserver];
+    }];
+}
+
+- (NSUInteger)retrievalQueueMaxAmount { return 1; }
+
+- (void)fetchMasternodeListToRetrieve:(void (^)(NSData *listsToRetrieve))completion {
     if ([self.requestsInRetrieval count]) {
         DSLog(@"%@ A masternode list is already in retrieval", self.logPrefix);
         return;
@@ -53,36 +73,28 @@
     if ([self peerIsDisconnected]) {
         if (self.chain.chainManager.syncPhase != DSChainSyncPhase_Offline) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
-                [self fetchMasternodeListsToRetrieve:completion];
+                [self fetchMasternodeListToRetrieve:completion];
             });
         }
         return;
     }
-    completion([self retrievalQueue]);
+    completion([self.retrievalBlockHash copy]);
 }
 
-- (NSOrderedSet<NSData *> *)retrievalQueue {
-    indexmap_IndexSet_u8_32 *queue = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue(self.chain.sharedCacheObj);
-    NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:queue->count];
-    for (int i = 0; i < queue->count; i++) {
-        [set addObject:NSDataFromPtr(queue->values[i])];
-    }
-    indexmap_IndexSet_u8_32_destroy(queue);
-    return [set copy];
+- (void)getRecent:(UInt256)blockHash {
+//    if (self.retrievalBlockHash)
+//    BOOL hasLatestBlockWithHash = uint256_eq(self.retrievalBlockHash.UInt256, blockHash);
+//    if (hasLatestBlockWithHash || [self hasRecentQrInfoSync])
+//        return;
+    self.retrievalBlockHash = uint256_data(blockHash);
+    [self dequeueMasternodeListRequest];
+//    NSUInteger newCount = [self addToRetrievalQueue:uint256_data(blockHash)];
+//    if (newCount == 1) {
+//    }
 }
 
-- (NSUInteger)retrievalQueueCount {
-    return DQrInfoQueueCount(self.chain.sharedCacheObj);
-}
-- (NSUInteger)retrievalQueueMaxAmount {
-    return DQrInfoQueueMaxAmount(self.chain.sharedCacheObj);
-}
-
-- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
-    DQrInfoQueueRemove(self.chain.sharedProcessorObj, u256_ctor(masternodeBlockHashData));
-}
 - (void)cleanListsRetrievalQueue {
-    DQrInfoQueueClean(self.chain.sharedProcessorObj);
+    self.retrievalBlockHash = nil;
 }
 
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
@@ -95,8 +107,11 @@
     }
     NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
     DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:YES];
-    uint32_t prev_h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(previousBlockHash));
-    uint32_t h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(blockHash));
+    uint32_t prev_h = [self.chain heightForBlockHash:previousBlockHash];
+    uint32_t h = [self.chain heightForBlockHash:blockHash];
+    
+//    uint32_t prev_h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(previousBlockHash));
+//    uint32_t h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(blockHash));
     DSLog(@"%@ Request: %u..%u %@ .. %@", self.logPrefix, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
     [self sendMasternodeListRequest:request];
 }

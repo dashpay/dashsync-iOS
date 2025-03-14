@@ -108,13 +108,31 @@
     return self;
 }
 
-+ (instancetype)checkpointForHeight:(uint32_t)height blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp target:(uint32_t)target merkleRoot:(UInt256)merkleRoot chainWork:(UInt256)chainWork masternodeListName:(NSString *_Nullable)masternodeListName {
-    return [[self alloc] initWithHeight:height blockHash:blockHash timestamp:timestamp target:target merkleRoot:merkleRoot chainWork:chainWork masternodeListName:masternodeListName];
++ (instancetype)checkpointForHeight:(uint32_t)height
+                          blockHash:(UInt256)blockHash
+                          timestamp:(uint32_t)timestamp
+                             target:(uint32_t)target
+                         merkleRoot:(UInt256)merkleRoot
+                          chainWork:(UInt256)chainWork
+                 masternodeListName:(NSString *_Nullable)masternodeListName {
+    return [[self alloc] initWithHeight:height
+                              blockHash:blockHash
+                              timestamp:timestamp
+                                 target:target
+                             merkleRoot:merkleRoot
+                              chainWork:chainWork
+                     masternodeListName:masternodeListName];
 }
 
 + (instancetype)checkpointFromBlock:(DSBlock *)block options:(uint8_t)options {
     NSAssert(block.height != BLOCK_UNKNOWN_HEIGHT, @"Block height must be known");
-    return [[self alloc] initWithHeight:block.height blockHash:block.blockHash timestamp:block.timestamp target:block.target merkleRoot:(options & DSCheckpointOptions_SaveMerkleRoot) ? block.merkleRoot : UINT256_ZERO chainWork:block.chainWork masternodeListName:nil];
+    return [[self alloc] initWithHeight:block.height
+                              blockHash:block.blockHash
+                              timestamp:block.timestamp
+                                 target:block.target
+                             merkleRoot:(options & DSCheckpointOptions_SaveMerkleRoot) ? block.merkleRoot : UINT256_ZERO
+                              chainWork:block.chainWork
+                     masternodeListName:nil];
 }
 
 - (uint8_t)chainWorkSize {

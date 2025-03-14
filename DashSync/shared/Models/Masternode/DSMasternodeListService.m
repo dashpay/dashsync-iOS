@@ -24,14 +24,10 @@
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSPeerManager+Protected.h"
-#import "DSTransactionManager+Protected.h"
 #import "NSData+Dash.h"
-#import "NSObject+Notification.h"
 
 @interface DSMasternodeListService ()
-// List<UInt256> Hashes of blocks for which masternode lists are need to be requested
-@property (nonatomic) DSMasternodeListStore *store;
-// List<UInt512>: list of block ranges baseBlockHash + blockHash
+
 @property (nonatomic, strong) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
 @property (nonatomic, strong) dispatch_source_t timeoutTimer;
 
@@ -39,22 +35,28 @@
 
 @implementation DSMasternodeListService
 
-- (instancetype)initWithChain:(DSChain *)chain store:(DSMasternodeListStore *)store {
+- (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
     if (!(self = [super init])) return nil;
     _chain = chain;
-    _store = store;
     _requestsInRetrieval = [NSMutableSet set];
     _timedOutAttempt = 0;
     _timeOutObserverTry = 0;
     return self;
 }
 
+- (UInt256)closestKnownBlockHashForBlockHeight:(uint32_t)blockHeight {
+    u256 *closest_block_hash = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_closest_known_masternode_list_block_hash(self.chain.sharedProcessorObj, blockHeight);
+    UInt256 known = u256_cast(closest_block_hash);
+    u256_dtor(closest_block_hash);
+    return known;
+}
+
 - (void)startTimeOutObserver {
     [self cancelTimeOutObserver];
     @synchronized (self) {
         NSSet *requestsInRetrieval = [self.requestsInRetrieval copy];
-        uintptr_t masternodeListCount = DKnownMasternodeListsCount(self.chain.sharedCacheObj);
+//        uintptr_t masternodeListCount = DKnownMasternodeListsCount(self.chain.sharedCacheObj);
         self.timeOutObserverTry++;
         uint16_t timeOutObserverTry = self.timeOutObserverTry;
         dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC));
@@ -69,9 +71,9 @@
                     NSSet *requestsInRetrieval2 = [self.requestsInRetrieval copy];
                     NSMutableSet *leftToGet = [requestsInRetrieval mutableCopy];
                     [leftToGet intersectSet:requestsInRetrieval2];
-                    uintptr_t count = DKnownMasternodeListsCount(self.chain.sharedCacheObj);
+//                    uintptr_t count = DKnownMasternodeListsCount(self.chain.sharedCacheObj);
                     
-                    if ((masternodeListCount == count) && [requestsInRetrieval isEqualToSet:leftToGet]) {
+                    if (/*(masternodeListCount == count) &&*/ [requestsInRetrieval isEqualToSet:leftToGet]) {
                         DSLog(@"%@ TimedOut -> dequeueMasternodeListRequest", self.logPrefix);
                         self.timedOutAttempt++;
                         [self disconnectFromDownloadPeer];
@@ -96,21 +98,21 @@
     }
 }
 
-- (void)checkWaitingForQuorums {
-    if (![self retrievalQueueCount]) {
-        [self.chain.chainManager.transactionManager checkWaitingForQuorums];
-    }
-}
+//- (void)checkWaitingForQuorums {
+//    if (![self retrievalQueueCount]) {
+//        [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+//    }
+//}
 
-- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
-    /* Should be overriden */
-}
-
+//- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
+//    /* Should be overriden */
+//}
+//
 - (void)dequeueMasternodeListRequest {
-    [self fetchMasternodeListsToRetrieve:^(NSOrderedSet<NSData *> *list) {
-        [self composeMasternodeListRequest:list];
-        [self startTimeOutObserver];
-    }];
+//    [self fetchMasternodeListsToRetrieve:^(NSOrderedSet<NSData *> *list) {
+//        [self composeMasternodeListRequest:list];
+//        [self startTimeOutObserver];
+//    }];
 }
 
 - (void)stop {
@@ -118,26 +120,42 @@
     [self cleanAllLists];
 }
 
-- (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer {
-    
-    [self removeFromRetrievalQueue:blockHashData];
-    DSLog(@"%@ updateAfterProcessingMasternodeListWithBlockHash %@ -> dequeueMasternodeListRequest (mn)", self.logPrefix, blockHashData.hexString);
-    [self dequeueMasternodeListRequest];
-    [self checkWaitingForQuorums];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-}
+//- (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer {
+//    
+//    [self removeFromRetrievalQueue:blockHashData];
+//    DSLog(@"%@ updateAfterProcessingMasternodeListWithBlockHash %@ -> dequeueMasternodeListRequest (mn)", self.logPrefix, blockHashData.hexString);
+//    [self dequeueMasternodeListRequest];
+//    [self checkWaitingForQuorums];
+//    [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+//}
 
-- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
-    DMnDiffQueueRemove(self.chain.sharedProcessorObj, u256_ctor(masternodeBlockHashData));
-}
+//- (NSUInteger)addToRetrievalQueue:(NSData *)masternodeBlockHashData {
+//    @synchronized (_retrievalQueue) {
+//        [_retrievalQueue addObject:uint256_data(masternodeBlockHashData.UInt256)];
+//        NSUInteger newCount = [_retrievalQueue count];
+//        _retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, newCount);
+//        [_retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *obj1, NSData *obj2) {
+//            if ([self.chain heightForBlockHash:obj1.UInt256] < [self.chain heightForBlockHash:obj2.UInt256]) {
+//                return NSOrderedAscending;
+//            } else {
+//                return NSOrderedDescending;
+//            }
+//        }];
+//        return newCount;
+//    }
+//}
+//
+//- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
+//    [_retrievalQueue removeObject:masternodeBlockHashData];
+////    [self.retrievalQueue ]
+////    DMnDiffQueueRemove(self.chain.sharedProcessorObj, u256_ctor(masternodeBlockHashData));
+//}
 
 - (void)cleanRequestsInRetrieval {
     [self.requestsInRetrieval removeAllObjects];
 }
 
-- (void)cleanListsRetrievalQueue {
-    DMnDiffQueueClean(self.chain.sharedProcessorObj);
-}
+- (void)cleanListsRetrievalQueue {}
 
 - (void)cleanAllLists {
     [self cleanListsRetrievalQueue];
@@ -157,22 +175,29 @@
     return self.chain.chainManager.peerManager;
 }
 
-- (NSOrderedSet<NSData *> *)retrievalQueue {
-    indexmap_IndexSet_u8_32 *queue = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue(self.chain.sharedCacheObj);
-    NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:queue->count];
-    for (int i = 0; i < queue->count; i++) {
-        [set addObject:NSDataFromPtr(queue->values[i])];
-    }
-    indexmap_IndexSet_u8_32_destroy(queue);
-    return [set copy];
-}
-
-- (NSUInteger)retrievalQueueCount {
-    return DMnDiffQueueCount(self.chain.sharedCacheObj);
-}
-- (NSUInteger)retrievalQueueMaxAmount {
-    return DMnDiffQueueMaxAmount(self.chain.sharedCacheObj);
-}
+//- (NSOrderedSet<NSData *> *)retrievalQueue {
+//    @synchronized (_retrievalQueue) {
+//        return [_retrievalQueue copy];
+//    }
+//    
+////    indexmap_IndexSet_u8_32 *queue = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue(self.chain.sharedCacheObj);
+////    NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:queue->count];
+////    for (int i = 0; i < queue->count; i++) {
+////        [set addObject:NSDataFromPtr(queue->values[i])];
+////    }
+////    indexmap_IndexSet_u8_32_destroy(queue);
+////    return [_retrievalQueue copy];
+//}
+//
+//- (NSUInteger)retrievalQueueCount {
+//    @synchronized (_retrievalQueue) {
+//        return [_retrievalQueue count];
+//    }
+////    return DMnDiffQueueCount(self.chain.sharedCacheObj);
+//}
+//- (NSUInteger)retrievalQueueMaxAmount {
+//    return DMnDiffQueueMaxAmount(self.chain.sharedCacheObj);
+//}
 
 - (BOOL)peerIsDisconnected {
     BOOL peerIsDisconnected;
@@ -183,26 +208,6 @@
 }
 
 
-- (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
-    if (![self retrievalQueueCount]) {
-        DSLog(@"%@ No masternode lists in retrieval", self.logPrefix);
-        [self.chain.masternodeManager masternodeListServiceEmptiedRetrievalQueue:self];
-        return;
-    }
-    if ([self.requestsInRetrieval count]) {
-        DSLog(@"%@ Already in retrieval", self.logPrefix);
-        return;
-    }
-    if ([self peerIsDisconnected]) {
-        if (self.chain.chainManager.syncPhase != DSChainSyncPhase_Offline) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
-                [self fetchMasternodeListsToRetrieve:completion];
-            });
-        }
-        return;
-    }
-    completion([self retrievalQueue]);
-}
 
 - (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
     DSMasternodeListRequest *matchedRequest = nil;
@@ -228,29 +233,29 @@
     [self.peerManager.downloadPeer disconnect];
 }
 
-- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
-    [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
-    NSArray *faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-    if (faultyPeers.count >= MAX_FAULTY_DML_PEERS) {
-        DSLog(@"%@ Exceeded max failures for masternode list, starting from scratch", self.logPrefix);
-        //no need to remove local masternodes
-        [self cleanListsRetrievalQueue];
-        [self.store deleteAllOnChain];
-        [self.store removeOldMasternodeLists];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-        [self.chain.masternodeManager getRecentMasternodeList];
-    } else {
-        if (!faultyPeers) {
-            faultyPeers = @[peer.location];
-        } else if (![faultyPeers containsObject:peer.location]) {
-            faultyPeers = [faultyPeers arrayByAddingObject:peer.location];
-        }
-        [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-        DSLog(@"%@ Failure %lu for masternode list from peer: %@", self.logPrefix, (unsigned long)faultyPeers.count, peer);
-        [self dequeueMasternodeListRequest];
-    }
-    [self.chain.chainManager notify:DSMasternodeListDiffValidationErrorNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-}
+//- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
+//    [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
+//    NSArray *faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+//    if (faultyPeers.count >= MAX_FAULTY_DML_PEERS) {
+//        DSLog(@"%@ Exceeded max failures for masternode list, starting from scratch", self.logPrefix);
+//        //no need to remove local masternodes
+//        [self cleanListsRetrievalQueue];
+////        [self.store deleteAllOnChain];
+////        [self.store removeOldMasternodeLists];
+//        [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+//        [self.chain.masternodeManager getRecentMasternodeList];
+//    } else {
+//        if (!faultyPeers) {
+//            faultyPeers = @[peer.location];
+//        } else if (![faultyPeers containsObject:peer.location]) {
+//            faultyPeers = [faultyPeers arrayByAddingObject:peer.location];
+//        }
+//        [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+//        DSLog(@"%@ Failure %lu for masternode list from peer: %@", self.logPrefix, (unsigned long)faultyPeers.count, peer);
+//        [self dequeueMasternodeListRequest];
+//    }
+//    [self.chain.chainManager notify:DSMasternodeListDiffValidationErrorNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+//}
 
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request {
     //    DSLog(@"•••• sendMasternodeListRequest: %@", [request toData].hexString);

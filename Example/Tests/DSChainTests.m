@@ -475,7 +475,12 @@
     DSMerkleBlock *merkleBlockFork108 = [DSMerkleBlock merkleBlockWithMessage:header108Data onChain:self.chain];
     [self.chain addBlock:merkleBlockFork108 receivedAsHeader:YES fromPeer:nil];
 
-    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork108.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork108.blockHash)
+                                                             height:merkleBlockFork108.height
+                                                          signature:uint768_data(UINT768_ZERO)
+                                                  signatureVerified:YES
+                                                     quorumVerified:YES
+                                                            onChain:self.chain];
 
     [self.chain addChainLock:chainLock];
 
@@ -797,7 +802,12 @@
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 150);
 
-    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork108.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork108.blockHash)
+                                                             height:merkleBlockFork108.height
+                                                          signature:uint768_data(UINT768_ZERO)
+                                                  signatureVerified:YES
+                                                     quorumVerified:YES
+                                                            onChain:self.chain];
 
     [self.chain addChainLock:chainLock];
 
@@ -1299,15 +1309,30 @@
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 150);
 
-    DSChainLock *chainLock106 = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork106.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock106 = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork106.blockHash)
+                                                                height:merkleBlockFork106.height
+                                                             signature:uint768_data(UINT768_ZERO)
+                                                     signatureVerified:YES
+                                                        quorumVerified:YES
+                                                               onChain:self.chain];
 
     [self.chain addChainLock:chainLock106];
 
-    DSChainLock *chainLock110 = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork110.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock110 = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork110.blockHash)
+                                                                height:merkleBlockFork110.height
+                                                             signature:uint768_data(UINT768_ZERO)
+                                                     signatureVerified:YES
+                                                        quorumVerified:YES
+                                                               onChain:self.chain];
 
     [self.chain addChainLock:chainLock110];
 
-    DSChainLock *chainLock109 = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork109.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock109 = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork109.blockHash)
+                                                                height:merkleBlockFork109.height
+                                                             signature:uint768_data(UINT768_ZERO)
+                                                     signatureVerified:YES
+                                                        quorumVerified:YES
+                                                               onChain:self.chain];
 
     [self.chain addChainLock:chainLock109];
 

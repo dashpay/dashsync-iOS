@@ -39,21 +39,22 @@
 
 @interface DSChainLock ()
 
-@property (nonatomic, assign) uint32_t height;
-@property (nonatomic, assign) UInt256 blockHash;
-@property (nonatomic, assign) UInt768 signature;
+@property (nonatomic, assign) dashcore_ephemerealdata_chain_lock_ChainLock *lock;
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, assign) UInt256 requestID;
-@property (nonatomic, strong) NSArray *inputOutpoints;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
-//@property (nonatomic, strong) DSQuorumEntry *intendedQuorum;
-@property (nonatomic) NSData *intendedQuorumPublicKey;
 @property (nonatomic, assign) BOOL saved;
 
 @end
 
 @implementation DSChainLock
+- (void)dealloc {
+    if (_lock != NULL) {
+        dashcore_ephemerealdata_chain_lock_ChainLock_destroy(_lock);
+        _lock = NULL;
+    }
+}
+
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain {
     return [[self alloc] initWithMessage:message onChain:chain];
@@ -61,19 +62,9 @@
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
     if (!(self = [self init])) return nil;
-    if (message.length < 132) return nil;
-    NSUInteger off = 0;
-
-    _height = [message UInt32AtOffset:off];
-    off += sizeof(uint32_t);
-    _blockHash = [message UInt256AtOffset:off];
-    off += sizeof(UInt256);
-    _signature = [message UInt768AtOffset:off];
-    off += sizeof(UInt768);
+    self.lock = dash_spv_masternode_processor_processing_chain_lock_from_message(slice_ctor(message));
     self.chain = chain;
-
-    DSLog(@"[%@] the chain lock signature received for height %d (sig %@) (blockhash %@)", chain.name, self.height, uint768_hex(_signature), uint256_hex(_blockHash));
-
+    //DSLog(@"[%@] the chain lock signature received for height %d (sig %@) (blockhash %@)", chain.name, self.height, uint768_hex(self.signature), uint256_hex(_blockHash));
     return self;
 }
 
@@ -85,76 +76,67 @@
     return self;
 }
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash
-                        signature:(UInt768)signature
+- (instancetype)initWithBlockHash:(NSData *)blockHash
+                           height:(uint32_t)height
+                        signature:(NSData *)signature
                 signatureVerified:(BOOL)signatureVerified
                    quorumVerified:(BOOL)quorumVerified
                           onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
-    self.blockHash = blockHash;
+    u256 *hash = blockHash ? u256_ctor(blockHash) : u256_ctor_u(UINT256_ZERO);
+    u768 *sig = signature ? u768_ctor(signature) : u768_ctor_u(UINT768_ZERO);
+    dashcore_hash_types_BlockHash *block_hash = dashcore_hash_types_BlockHash_ctor(hash);
+    dashcore_bls_sig_utils_BLSSignature *bls_signature = dashcore_bls_sig_utils_BLSSignature_ctor(sig);
+    self.lock = dashcore_ephemerealdata_chain_lock_ChainLock_ctor(height, block_hash, bls_signature);
     self.signatureVerified = signatureVerified;
     self.quorumVerified = quorumVerified;
     self.saved = YES; //this is coming already from the persistant store and not from the network
     return self;
 }
 
-- (UInt256)requestID {
-    if (uint256_is_not_zero(_requestID)) return _requestID;
-    NSMutableData *data = [NSMutableData data];
-    [data appendString:@"clsig"];
-    [data appendUInt32:self.height];
-    _requestID = [data SHA256_2];
-    DSLog(@"[%@] the chain lock request ID is %@ for height %d", self.chain.name, uint256_hex(_requestID), self.height);
-    return _requestID;
+- (UInt256)blockHash {
+    u256 *block_hash = dash_spv_masternode_processor_processing_chain_lock_block_hash(self.lock);
+    UInt256 data = u256_cast(block_hash);
+    u256_dtor(block_hash);
+    return data;
+}
+- (NSData *)blockHashData {
+    u256 *block_hash = dash_spv_masternode_processor_processing_chain_lock_block_hash(self.lock);
+    NSData *data = NSDataFromPtr(block_hash);
+    u256_dtor(block_hash);
+    return data;
 }
 
-- (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DLLMQEntry *llmq_entry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
-    if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry)) {
-        u256 *request_id = u256_ctor_u(self.requestID);
-        u256 *block_hash = u256_ctor_u(self.blockHash);
-        u768 *sig = u768_ctor_u(self.signature);
-        u256 *sign_id = DLLMQEntrySignID(llmq_entry, request_id, block_hash);
-        self.signatureVerified = DLLMQEntryVerifySignature(llmq_entry, sign_id, sig);
-        if (!self.signatureVerified) {
-            DSLog(@"[%@] unable to verify clsig at height %d with offset %d", self.chain.name, self.height, offset);
-        } else {
-            DSLog(@"[%@] clsig at height %d verified with offset %d", self.chain.name, self.height, offset);
-        }
-
-    } else if (llmq_entry) {
-        DSLog(@"[%@] quorum entry %@ for clsig found but is not yet verified", self.chain.name,
-              [NSString stringWithUTF8String:DLLMQEntryHashHex(llmq_entry)]);
-    } else {
-        DSLog(@"[%@] no quorum entry found for clsig at height: %d with offset %d", self.chain.name, self.height, offset);
-    }
-    if (self.signatureVerified) {
-        self.intendedQuorumPublicKey = NSDataFromPtr(llmq_entry->public_key);
-        self.quorumVerified = dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry);
-        //We should also set the chain's last chain lock
-        if (!self.chain.lastChainLock || self.chain.lastChainLock.height < self.height)
-            self.chain.lastChainLock = self;
-        if (llmq_entry)
-            DLLMQEntryDtor(llmq_entry);
-    } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 8) {
-        //try again a few blocks more in the past
-        DSLog(@"[%@] trying for clsig with offset 0", self.chain.name);
-        DLLMQEntryDtor(llmq_entry);
-        return [self verifySignatureWithQuorumOffset:0];
-    } else if (llmq_entry && dash_spv_crypto_llmq_entry_LLMQEntry_is_verified(llmq_entry) && offset == 0) {
-        //try again a few blocks more in the future
-        DSLog(@"[%@] trying for clsig with offset 16", self.chain.name);
-        DLLMQEntryDtor(llmq_entry);
-        return [self verifySignatureWithQuorumOffset:16];
-    } else if (llmq_entry) {
-        DLLMQEntryDtor(llmq_entry);
-    }
-    DSLog(@"[%@] returning clsig verified %d at height %d with offset %d", self.chain.name, self.signatureVerified, self.height, offset);
-    return self.signatureVerified;
+- (UInt768)signature {
+    u768 *sig = dash_spv_masternode_processor_processing_chain_lock_signature(self.lock);
+    UInt768 data = u768_cast(sig);
+    u768_dtor(sig);
+    return data;
 }
+
+- (NSData *)signatureData {
+    u768 *sig = dash_spv_masternode_processor_processing_chain_lock_signature(self.lock);
+    NSData *data = NSDataFromPtr(sig);
+    u768_dtor(sig);
+    return data;
+}
+
+
 
 - (BOOL)verifySignature {
-    return [self verifySignatureWithQuorumOffset:8];
+    if (self.lock) {
+#if defined(DASHCORE_MESSAGE_VERIFICATION)
+        DMessageVerificationResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_verify_is_lock(self.chain.sharedProcessorObj, self.lock);
+        BOOL verified = result->ok;
+        DMessageVerificationResultDtor(result);
+        return verified;
+#else
+        return YES;
+#endif
+    } else {
+        return NO;
+    }
+    //return [self verifySignatureWithQuorumOffset:8];
 }
 
 - (void)saveInitial {
@@ -162,7 +144,7 @@
     //saving here will only create, not update.
     NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     [context performBlockAndWait:^{ // add the transaction to core data
-        if ([DSChainLockEntity countObjectsInContext:context matching:@"merkleBlock.blockHash == %@", uint256_data(self.blockHash)] == 0) {
+        if ([DSChainLockEntity countObjectsInContext:context matching:@"merkleBlock.blockHash == %@", self.blockHashData] == 0) {
             DSChainLockEntity *chainLockEntity = [DSChainLockEntity chainLockEntityForChainLock:self inContext:context];
             if (chainLockEntity) {
                 [context ds_save];
@@ -179,7 +161,7 @@
     };
     NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     [context performBlockAndWait:^{ // add the transaction to core data
-        NSArray *chainLocks = [DSChainLockEntity objectsInContext:context matching:@"merkleBlock.blockHash == %@", uint256_data(self.blockHash)];
+        NSArray *chainLocks = [DSChainLockEntity objectsInContext:context matching:@"merkleBlock.blockHash == %@", self.blockHashData];
 
         DSChainLockEntity *chainLockEntity = [chainLocks firstObject];
         if (chainLockEntity) {
@@ -190,7 +172,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<DSChainLock:%@:%u:%@>", self.chain.name, self.height, self.signatureVerified ? @"Verified" : @"Not Verified"];
+    return [NSString stringWithFormat:@"<DSChainLock:%@:%u:%@>", self.chain.name, dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(self.lock), self.signatureVerified ? @"Verified" : @"Not Verified"];
 }
 
 

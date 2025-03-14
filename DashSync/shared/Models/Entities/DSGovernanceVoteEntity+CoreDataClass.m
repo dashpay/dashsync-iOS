@@ -12,7 +12,7 @@
 #import "DSGovernanceVote.h"
 #import "DSGovernanceVoteEntity+CoreDataClass.h"
 #import "DSGovernanceVoteHashEntity+CoreDataClass.h"
-#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
+//#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -29,10 +29,10 @@
         self.masternodeHash = masternodeHashData;
         self.masternodeIndex = (uint32_t)governanceVote.masternodeUTXO.n;
         /// WTF? old fields ?
-        NSArray *matchingMasternodeEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:self.managedObjectContext matching:@"utxoHash == %@ && utxoIndex == %@", masternodeHashData, @(governanceVote.masternodeUTXO.n)];
-        if ([matchingMasternodeEntities count]) {
-            self.masternode = [matchingMasternodeEntities firstObject];
-        }
+//        NSArray *matchingMasternodeEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:self.managedObjectContext matching:@"utxoHash == %@ && utxoIndex == %@", masternodeHashData, @(governanceVote.masternodeUTXO.n)];
+//        if ([matchingMasternodeEntities count]) {
+//            self.masternode = [matchingMasternodeEntities firstObject];
+//        }
     }];
 }
 

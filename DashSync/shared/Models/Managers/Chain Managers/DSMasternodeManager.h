@@ -25,14 +25,19 @@
 
 #import "DSChain.h"
 #import "DSKeyManager.h"
-#import "DSMasternodeListStore.h"
+//#import "DSMasternodeListStore.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString *const DSCurrentMasternodeListDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSMasternodeListDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSMasternodeManagerNotificationMasternodeListKey;
+FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 #define MASTERNODE_COST 100000000000
+#define CHAINLOCK_ACTIVATION_HEIGHT 1088640
 
 @class DSChain, DSWallet, DSLocalMasternode, DSProviderRegistrationTransaction, DSInstantSendTransactionLock, DSMasternodeListService, DSQuorumRotationService, DSMasternodeListDiffService, DSPeer;
 
@@ -42,14 +47,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic, readonly) NSUInteger activeQuorumsCount;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
-@property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
+//@property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
 @property (nonatomic, readonly) uint32_t lastMasternodeListBlockHeight;
 @property (nonatomic, readonly) DMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueMaxAmount;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
-@property (nonatomic, readonly) DSMasternodeListStore *store;
+//@property (nonatomic, readonly) DSMasternodeListStore *store;
 @property (nonatomic, readonly) DSMasternodeListDiffService *masternodeListDiffService;
 @property (nonatomic, readonly) DSQuorumRotationService *quorumRotationService;
 @property (nonatomic, assign, readonly) uint32_t rotatedQuorumsActivationHeight;
@@ -63,14 +68,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
-- (DLLMQEntry *_Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID
-                                      withBlockHeightOffset:(uint32_t)blockHeightOffset;
-- (DLLMQEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID
-                                    withBlockHeightOffset:(uint32_t)blockHeightOffset;
-- (DLLMQEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID
-                                           forBlockHeight:(uint32_t)blockHeight;
-- (DLLMQEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash
-                                                 forBlockHeight:(uint32_t)blockHeight;
+//- (DLLMQEntry *_Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID
+//                                      withBlockHeightOffset:(uint32_t)blockHeightOffset;
+//- (DLLMQEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID
+//                                    withBlockHeightOffset:(uint32_t)blockHeightOffset;
+//- (DLLMQEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID
+//                                           forBlockHeight:(uint32_t)blockHeight;
+//- (DLLMQEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash
+//                                                 forBlockHeight:(uint32_t)blockHeight;
 
 - (DMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash
                                       withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
@@ -78,20 +83,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)startSync;
 - (void)stopSync;
-- (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight
-                                      error:(NSError *_Nullable *_Nullable)error;
+//- (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight
+//                                      error:(NSError *_Nullable *_Nullable)error;
 
 /// Returns current masternode list
-- (DMasternodeList *_Nullable)reloadMasternodeLists;
-- (DMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (void)reloadMasternodeLists;
+//- (DMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context
                                          withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 
 
-//- (BOOL)masternodeListServiceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-//- (void)masternodeListServiceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
+
+- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData;
+
+- (NSSet<NSData *> *)blockHashesUsedByMasternodeLists;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -22,9 +22,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define DProcessor MasternodeProcessor
-#define DCache MasternodeProcessorCache
+//#define DCache MasternodeProcessorCache
 #define DArcProcessor std_sync_Arc_dash_spv_masternode_processor_processing_processor_MasternodeProcessor
-#define DArcCache std_sync_Arc_dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache
+//#define DArcCache std_sync_Arc_dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache
 #define DArcPlatformSDK std_sync_Arc_dash_spv_platform_PlatformSDK
 #define DArcIdentitiesManager std_sync_Arc_dash_spv_platform_identity_manager_IdentitiesManager
 #define DArcContractsManager std_sync_Arc_dash_spv_platform_contract_manager_ContractsManager
@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initOnChain:(DSChain *)chain;
 
 - (DArcProcessor *)processor;
-- (DArcCache *)cache;
+//- (DArcCache *)cache;
 - (DArcPlatformSDK *)platform;
 - (Runtime *)runtime;
 - (DArcIdentitiesManager *)identitiesManager;

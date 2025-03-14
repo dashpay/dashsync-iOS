@@ -69,32 +69,32 @@
 
 @end
 
-@implementation NSArray (HashSet_u8_32)
-
-+ (NSArray<NSData *> *)ffi_from_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref {
-    NSMutableArray<NSData *> *arr = [NSMutableArray arrayWithCapacity:ffi_ref->count];
-    for (int i = 0; i < ffi_ref->count; i++) {
-        u256 *chunk = ffi_ref->values[i];
-        NSData *data = NSDataFromPtr(chunk);
-        [arr addObject:data];
-    }
-    return arr;
-}
-+ (std_collections_HashSet_u8_32 *)ffi_to_hash_set:(NSArray<NSData *> *)obj {
-    std_collections_HashSet_u8_32 *set = malloc(sizeof(std_collections_HashSet_u8_32));
-    u256 **values = malloc(obj.count * sizeof(u256 *));
-    for (NSUInteger i = 0; i < obj.count; i++) {
-        NSData *data = obj[i];
-        values[i] = u256_ctor(data);
-    }
-    set->count = obj.count;
-    set->values = values;
-    return set;
-}
-+ (void)ffi_destroy_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref {
-    std_collections_HashSet_u8_32_destroy(ffi_ref);
-}
-@end
+//@implementation NSArray (HashSet_u8_32)
+//
+//+ (NSArray<NSData *> *)ffi_from_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref {
+//    NSMutableArray<NSData *> *arr = [NSMutableArray arrayWithCapacity:ffi_ref->count];
+//    for (int i = 0; i < ffi_ref->count; i++) {
+//        u256 *chunk = ffi_ref->values[i];
+//        NSData *data = NSDataFromPtr(chunk);
+//        [arr addObject:data];
+//    }
+//    return arr;
+//}
+//+ (std_collections_HashSet_u8_32 *)ffi_to_hash_set:(NSArray<NSData *> *)obj {
+//    std_collections_HashSet_u8_32 *set = malloc(sizeof(std_collections_HashSet_u8_32));
+//    u256 **values = malloc(obj.count * sizeof(u256 *));
+//    for (NSUInteger i = 0; i < obj.count; i++) {
+//        NSData *data = obj[i];
+//        values[i] = u256_ctor(data);
+//    }
+//    set->count = obj.count;
+//    set->values = values;
+//    return set;
+//}
+//+ (void)ffi_destroy_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref {
+//    std_collections_HashSet_u8_32_destroy(ffi_ref);
+//}
+//@end
 
 @implementation NSArray (_)
 
@@ -181,6 +181,31 @@
 }
 + (void)ffi_destroy_vec_vec_u8:(Vec_Vec_u8 *)ffi_ref {
     Vec_Vec_u8_destroy(ffi_ref);
+}
+@end
+
+@implementation NSArray (std_collections_BTreeSet_dashcore_hash_types_BlockHash)
+
++ (NSArray<NSData *> *)ffi_from_block_hash_btree_set:(std_collections_BTreeSet_dashcore_hash_types_BlockHash *)ffi_ref {
+    NSMutableArray<NSData *> *arr = [NSMutableArray arrayWithCapacity:ffi_ref->count];
+    for (int i = 0; i < ffi_ref->count; i++) {
+        u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->values[i]);
+        NSData *blockHashData = NSDataFromPtr(block_hash);
+        u256_dtor(block_hash);
+        [arr addObject:blockHashData];
+    }
+    return arr;
+}
++ (std_collections_BTreeSet_dashcore_hash_types_BlockHash *)ffi_to_block_hash_btree_set:(NSArray<NSData *> *)obj {
+    NSUInteger count = obj.count;
+    dashcore_hash_types_BlockHash **values = malloc(sizeof(dashcore_hash_types_BlockHash *) * count);
+    for (int i = 0; i < count; i++) {
+        values[i] = dashcore_hash_types_BlockHash_ctor(u256_ctor(obj[i]));
+    }
+    return std_collections_BTreeSet_dashcore_hash_types_BlockHash_ctor(count, values);
+}
++ (void)ffi_destroy_block_hash_btree_set:(std_collections_BTreeSet_dashcore_hash_types_BlockHash *)ffi_ref {
+    std_collections_BTreeSet_dashcore_hash_types_BlockHash_destroy(ffi_ref);
 }
 @end
 

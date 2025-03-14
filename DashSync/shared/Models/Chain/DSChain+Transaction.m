@@ -315,7 +315,7 @@
         if (wallet) {
             DSIdentity *identity = [wallet identityForUniqueId:tx.creditBurnIdentityIdentifier];
             if (!identity) {
-                identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:tx withUsernameDictionary:nil inWallet:wallet];
+                identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:tx inWallet:wallet];
                 [identity registerInWalletForAssetLockTransaction:tx];
             }
         } else {

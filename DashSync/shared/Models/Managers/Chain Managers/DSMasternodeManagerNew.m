@@ -1,6 +1,6 @@
 //  
 //  Created by Vladimir Pirogov
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,17 +15,8 @@
 //  limitations under the License.
 //
 
-#import "DSQuorumSnapshotEntity+CoreDataProperties.h"
+#import "DSMasternodeManagerNew.h"
 
-@implementation DSQuorumSnapshotEntity (CoreDataProperties)
-
-+ (NSFetchRequest<DSQuorumSnapshotEntity *> *)fetchRequest {
-    return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumSnapshotEntity"];
-}
-
-@dynamic block;
-@dynamic memberList;
-@dynamic skipList;
-@dynamic skipListMode;
+@implementation DSMasternodeManagerNew
 
 @end

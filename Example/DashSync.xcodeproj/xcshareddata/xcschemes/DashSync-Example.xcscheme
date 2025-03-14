@@ -164,7 +164,17 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "RUST_BACKTRACE"
-            value = "1"
+            value = "FULL"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "MALLOC_CONF"
+            value = "abort:hard,malloc_check:3"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "ASAN_OPTIONS"
+            value = "detect_invalid_free=1,strict_string_checks=1,alloc_dealloc_mismatch=1"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

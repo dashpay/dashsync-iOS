@@ -48,7 +48,13 @@ typedef NS_ENUM(uint8_t, DSCheckpointOptions)
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) UInt256 chainWork;
 
-+ (instancetype)checkpointForHeight:(uint32_t)height blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp target:(uint32_t)target merkleRoot:(UInt256)merkleRoot chainWork:(UInt256)chainWork masternodeListName:(NSString *_Nullable)masternodeListName;
++ (instancetype)checkpointForHeight:(uint32_t)height
+                          blockHash:(UInt256)blockHash
+                          timestamp:(uint32_t)timestamp
+                             target:(uint32_t)target
+                         merkleRoot:(UInt256)merkleRoot
+                          chainWork:(UInt256)chainWork
+                 masternodeListName:(NSString *_Nullable)masternodeListName;
 
 + (instancetype)checkpointFromBlock:(DSBlock *)block options:(uint8_t)options;
 

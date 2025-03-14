@@ -44,7 +44,7 @@
 #define CanSign Fn_ARGS_std_os_raw_c_void_dpp_identity_identity_public_key_IdentityPublicKey_RTRN_bool
 
 #define GetBlockHeightByHash Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_u32
-#define GetBlockHashByHeight Fn_ARGS_std_os_raw_c_void_u32_RTRN_Arr_u8_32
+#define GetBlockHashByHeight Fn_ARGS_std_os_raw_c_void_u32_RTRN_Option_u8_32
 
 #define MerkleBlockByBlockHash Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dash_spv_masternode_processor_common_block_MBlock_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 #define LastMerkleBlockByBlockHashForPeer Fn_ARGS_std_os_raw_c_void_Arr_u8_32_std_os_raw_c_void_RTRN_Result_ok_dash_spv_masternode_processor_common_block_MBlock_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
@@ -55,15 +55,15 @@
 #define HasPersistInRetrieval Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_bool
 #define GetBlockHeightOrLastTerminal Fn_ARGS_std_os_raw_c_void_u32_RTRN_Result_ok_dash_spv_masternode_processor_common_block_Block_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 
-#define FnMaybeCLSignature Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_u8_arr_96_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define DMaybeCLSignature Result_ok_u8_arr_96_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define DMaybeCLSignatureCtor(ok, err) Result_ok_u8_arr_96_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(ok, err)
-#define LoadMasternodeList Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dash_spv_masternode_processor_models_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define SaveMasternodeList Fn_ARGS_std_os_raw_c_void_Arr_u8_32_std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_RTRN_Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define LoadLLMQSnapshot Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dash_spv_masternode_processor_models_snapshot_LLMQSnapshot_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define SaveLLMQSnapshot Fn_ARGS_std_os_raw_c_void_Arr_u8_32_dash_spv_masternode_processor_models_snapshot_LLMQSnapshot_RTRN_Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define FnMaybeCLSignature Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dashcore_bls_sig_utils_BLSSignature_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define DMaybeCLSignature Result_ok_dashcore_bls_sig_utils_BLSSignature_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define DMaybeCLSignatureCtor(ok, err) Result_ok_dashcore_bls_sig_utils_BLSSignature_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(ok, err)
+#define LoadMasternodeList Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dashcore_sml_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define SaveMasternodeList Fn_ARGS_std_os_raw_c_void_Arr_u8_32_std_collections_Map_keys_u8_arr_32_values_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_RTRN_Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define LoadLLMQSnapshot Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dashcore_network_message_qrinfo_QuorumSnapshot_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define SaveLLMQSnapshot Fn_ARGS_std_os_raw_c_void_Arr_u8_32_dashcore_network_message_qrinfo_QuorumSnapshot_RTRN_Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 
-#define UpdateMasternodesAddressUsage Fn_ARGS_std_os_raw_c_void_Vec_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_RTRN_
+#define UpdateMasternodesAddressUsage Fn_ARGS_std_os_raw_c_void_Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_RTRN_
 
 
 @interface DSDashSharedCore ()
@@ -129,9 +129,7 @@
 - (DArcProcessor *)processor {
     return dash_spv_apple_bindings_DashSPVCore_processor(self.core);
 }
-- (DArcCache *)cache {
-    return dash_spv_apple_bindings_DashSPVCore_cache(self.core);
-}
+
 - (DArcPlatformSDK *)platform {
     return dash_spv_apple_bindings_DashSPVCore_platform(self.core);
 }
@@ -192,51 +190,24 @@
         .caller = &get_block_hash_by_height_caller,
         .destructor = &get_block_hash_by_height_dtor
     };
-    MerkleBlockByBlockHash block_by_block_hash = {
-        .caller = &block_by_block_hash_caller,
-        .destructor = &block_by_block_hash_dtor
-    };
-    LastMerkleBlockByBlockHashForPeer last_block_for_block_hash = {
-        .caller = &last_block_by_block_hash_caller,
-        .destructor = &last_block_by_block_hash_dtor
-    };
-    
-    AddInsight add_insight = {
-        .caller = &add_insight_caller
-    };
-    
-    GetBlockHeightOrLastTerminal get_block_by_height_or_last_terminal = {
-        .caller = &get_block_by_height_or_last_terminal_caller,
-        .destructor = &get_block_by_height_or_last_terminal_dtor
-    };
-    
-    LoadMasternodeList load_masternode_list_from_db = {
-        .caller = &load_masternode_list_from_db_caller,
-        .destructor = &load_masternode_list_from_db_dtor
-    };
-    
-    SaveMasternodeList save_masternode_list_into_db = {
-        .caller = &save_masternode_list_into_db_caller,
-        .destructor = &save_masternode_list_into_db_destructor
-    };
-    
-    LoadLLMQSnapshot load_llmq_snapshot_from_db = {
-        .caller = &load_llmq_snapshot_from_db_caller,
-        .destructor = &load_llmq_snapshot_from_db_dtor
-    };
-    SaveLLMQSnapshot save_llmq_snapshot_into_db = {
-        .caller = &save_llmq_snapshot_into_db_caller,
-        .destructor = &save_llmq_snapshot_into_db_dtor
-    };
+//    MerkleBlockByBlockHash block_by_block_hash = {
+//        .caller = &block_by_block_hash_caller,
+//        .destructor = &block_by_block_hash_dtor
+//    };
+//    LastMerkleBlockByBlockHashForPeer last_block_for_block_hash = {
+//        .caller = &last_block_by_block_hash_caller,
+//        .destructor = &last_block_by_block_hash_dtor
+//    };
+//    
+//    GetBlockHeightOrLastTerminal get_block_by_height_or_last_terminal = {
+//        .caller = &get_block_by_height_or_last_terminal_caller,
+//        .destructor = &get_block_by_height_or_last_terminal_dtor
+//    };
     
     UpdateMasternodesAddressUsage update_address_usage_of_masternodes = {
         .caller = &update_address_usage_of_masternodes_caller
     };
-    Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_Arr_u8_32_RTRN_bool remove_request_in_retrieval = {
-        .caller = &remove_request_in_retrieval_caller,
-        .destructor = &remove_request_in_retrieval_dtor
-    };
-    
+
     Fn_ARGS_std_os_raw_c_void_bool_std_os_raw_c_void_RTRN_ issue_with_masternode_list_from_peer = {
         .caller = &issue_with_masternode_list_from_peer_caller
     };
@@ -245,16 +216,16 @@
         .destructor = &get_cl_signature_by_block_hash_dtor
     };
     
-    Fn_ARGS_std_os_raw_c_void_bool_RTRN_ dequeue_masternode_list = {
-        .caller = &dequeue_masternode_list_caller,
-    };
+//    Fn_ARGS_std_os_raw_c_void_bool_RTRN_ dequeue_masternode_list = {
+//        .caller = &dequeue_masternode_list_caller,
+//    };
     Fn_ARGS_std_os_raw_c_void_dash_spv_masternode_processor_models_sync_state_CacheState_RTRN_ notify_sync_state = {
         .caller = &notify_sync_state_caller,
     };
-    Fn_ARGS_std_os_raw_c_void_RTRN_u32 get_tip_height = {
-        .caller = &get_tip_height_caller,
-        .destructor = &get_tip_height_dtor
-    };
+//    Fn_ARGS_std_os_raw_c_void_RTRN_u32 get_tip_height = {
+//        .caller = &get_tip_height_caller,
+//        .destructor = &get_tip_height_dtor
+//    };
     
     NSArray<NSString *> *addresses = @[@"127.0.0.1"];
     switch (chain.chainType->tag) {
@@ -275,17 +246,17 @@
     }
     Vec_ *address_list = [NSArray ffi_to_vec:addresses];
 
-    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_block_by_height_or_last_terminal, block_by_block_hash, last_block_for_block_hash, get_tip_height, add_insight, get_cl_signature_by_block_hash, load_masternode_list_from_db, save_masternode_list_into_db, load_llmq_snapshot_from_db, save_llmq_snapshot_into_db, update_address_usage_of_masternodes, remove_request_in_retrieval, issue_with_masternode_list_from_peer, notify_sync_state, dequeue_masternode_list, context);
+    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_cl_signature_by_block_hash, update_address_usage_of_masternodes, issue_with_masternode_list_from_peer, notify_sync_state, context);
     return self;
 }
 
 
 
 - (void)dealloc {
-//    DashSPVCore_
-//    if (self.core) {
-//        dash_spv_apple_bindings_DashSPVCore_destroy(self.core);
-//    }
+    if (_core != NULL) {
+        dash_spv_apple_bindings_DashSPVCore_destroy(_core);
+        _core = NULL;
+    }
 }
 
 
@@ -350,13 +321,16 @@ void callback_can_sign_dtor(bool result) {}
 uint32_t get_block_height_by_hash_caller(const void *context, u256 *block_hash) {
     DSDashSharedCore *core = AS_OBJC(context);
     UInt256 blockHash = u256_cast(block_hash);
+//    UInt256 revBlockHash = uint256_reverse(blockHash);
     uint32_t height = [core.chain heightForBlockHash:blockHash];
+//    uint32_t rev_height = [core.chain heightForBlockHash:revBlockHash];
+    
     if (height == UINT32_MAX && core.chain.allowInsightBlocksForVerification) {
         [core.chain blockUntilGetInsightForBlockHash:blockHash];
         height = [[core.chain insightVerifiedBlocksByHashDictionary] objectForKey:NSDataFromPtr(block_hash)].height;
     }
     u256_dtor(block_hash);
-//    DSLog(@"[SDK] get_block_height_by_hash_caller: %@ = %u", uint256_hex(blockHash), height);
+    DSLog(@"[SDK] get_block_height_by_hash_caller: %@ = %u", uint256_hex(blockHash), height);
     return height;
 }
 void get_block_height_by_hash_dtor(uint32_t result) {}
@@ -376,166 +350,159 @@ u256 *get_block_hash_by_height_caller(const void *context, uint32_t block_height
 
 void get_block_hash_by_height_dtor(u256 *result) {}
 
-DMaybeMBlock *block_by_block_hash_caller(const void *context, u256 *block_hash) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    UInt256 blockHash = u256_cast(block_hash);
-    DMBlock *ok = NULL;
-    DCoreProviderError *err = NULL;
-    @synchronized (context) {
-        DSBlock *block = (DSBlock *) [core.chain blockForBlockHash:blockHash];
-        DSLog(@"[SDK] block_by_hash_caller: %@ [%d] merkle_root: %@", uint256_hex(blockHash), block.height, uint256_hex(block.merkleRoot));
-        if (block) {
-            ok = DMBlockCtor(block.height, u256_ctor_u(block.blockHash), u256_ctor_u(block.merkleRoot));
-        } else {
-            err = DCoreProviderErrorNullResultCtor(DChar(@""));
-        }
-    }
-    u256_dtor(block_hash);
-    return DMaybeMBlockCtor(ok, err);
-}
-void block_by_block_hash_dtor(DMaybeMBlock *result) {}
+//DMaybeMBlock *block_by_block_hash_caller(const void *context, u256 *block_hash) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    UInt256 blockHash = u256_cast(block_hash);
+//    DMBlock *ok = NULL;
+//    DCoreProviderError *err = NULL;
+//    @synchronized (context) {
+//        DSBlock *block = (DSBlock *) [core.chain blockForBlockHash:blockHash];
+//        DSLog(@"[SDK] block_by_hash_caller: %@ [%d] merkle_root: %@", uint256_hex(blockHash), block.height, uint256_hex(block.merkleRoot));
+//        if (block) {
+//            ok = DMBlockCtor(block.height, u256_ctor_u(block.blockHash), u256_ctor_u(block.merkleRoot));
+//        } else {
+//            err = DCoreProviderErrorNullResultCtor(DChar(@""));
+//        }
+//    }
+//    u256_dtor(block_hash);
+//    return DMaybeMBlockCtor(ok, err);
+//}
+//void block_by_block_hash_dtor(DMaybeMBlock *result) {}
+//
+//DMaybeMBlock *last_block_by_block_hash_caller(const void *context, u256 *block_hash, const void *peer_context) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    DSPeer *peer = ((__bridge DSPeer *)(peer_context));
+//    UInt256 blockHash = u256_cast(block_hash);
+//    u256_dtor(block_hash);
+//    DMBlock *ok = NULL;
+//    DCoreProviderError *err = NULL;
+//    @synchronized (context) {
+//        DSBlock *lastBlock = [core lastBlockForBlockHash:blockHash fromPeer:peer];
+//        //DSLog(@"[SDK] last_block_by_hash_caller: %@ = %@", uint256_hex(blockHash), lastBlock);
+//        if (lastBlock) {
+//            ok = DMBlockCtor(lastBlock.height, u256_ctor_u(lastBlock.blockHash), u256_ctor_u(lastBlock.merkleRoot));
+//        } else {
+//            err = DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No last block for block hash %@ from peer %@", nil, uint256_hex(blockHash), peer.description));
+//        }
+//    }
+//    return DMaybeMBlockCtor(ok, err);
+//}
+//void last_block_by_block_hash_dtor(DMaybeMBlock *result) {}
+//
+//uint32_t get_tip_height_caller(const void *context) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    @synchronized (context) {
+//        return [core.chain chainTipHeight];
+//    }
+//}
+//void get_tip_height_dtor(uint32_t result) {}
 
-DMaybeMBlock *last_block_by_block_hash_caller(const void *context, u256 *block_hash, const void *peer_context) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    DSPeer *peer = ((__bridge DSPeer *)(peer_context));
-    UInt256 blockHash = u256_cast(block_hash);
-    u256_dtor(block_hash);
-    DMBlock *ok = NULL;
-    DCoreProviderError *err = NULL;
-    @synchronized (context) {
-        DSBlock *lastBlock = [core lastBlockForBlockHash:blockHash fromPeer:peer];
-        //DSLog(@"[SDK] last_block_by_hash_caller: %@ = %@", uint256_hex(blockHash), lastBlock);
-        if (lastBlock) {
-            ok = DMBlockCtor(lastBlock.height, u256_ctor_u(lastBlock.blockHash), u256_ctor_u(lastBlock.merkleRoot));
-        } else {
-            err = DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No last block for block hash %@ from peer %@", nil, uint256_hex(blockHash), peer.description));
-        }
-    }
-    return DMaybeMBlockCtor(ok, err);
-}
-void last_block_by_block_hash_dtor(DMaybeMBlock *result) {}
 
-uint32_t get_tip_height_caller(const void *context) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    @synchronized (context) {
-        return [core.chain chainTipHeight];
-    }
-}
-void get_tip_height_dtor(uint32_t result) {}
-
-void add_insight_caller(const void *context, u256* block_hash) {
-    UInt256 blockHash = u256_cast(block_hash);
-    @synchronized (context) {
-        [AS_OBJC(context).chain blockUntilGetInsightForBlockHash:blockHash];
-    }
-    u256_dtor(block_hash);
-}
-
-DMaybeBlock *get_block_by_height_or_last_terminal_caller(const void *context, uint32_t block_height) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    DSBlock *b = (DSBlock *) [core.chain blockAtHeightOrLastTerminal:block_height];
-    DBlock *ok = b ? DBlockCtor(b.height, u256_ctor_u(b.blockHash)) : NULL;
-    DCoreProviderError *err = b ? NULL : DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"Unknown block for block height %u", nil, block_height));
-    return DMaybeBlockCtor(ok, err);
-}
-void get_block_by_height_or_last_terminal_dtor(DMaybeBlock *result) {
-    DMaybeBlockDtor(result);
-}
+//DMaybeBlock *get_block_by_height_or_last_terminal_caller(const void *context, uint32_t block_height) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    DSBlock *b = (DSBlock *) [core.chain blockAtHeightOrLastTerminal:block_height];
+//    DBlock *ok = b ? DBlockCtor(b.height, u256_ctor_u(b.blockHash)) : NULL;
+//    DCoreProviderError *err = b ? NULL : DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"Unknown block for block height %u", nil, block_height));
+//    return DMaybeBlockCtor(ok, err);
+//}
+//void get_block_by_height_or_last_terminal_dtor(DMaybeBlock *result) {
+//    DMaybeBlockDtor(result);
+//}
 DMaybeCLSignature *get_cl_signature_by_block_hash_caller(const void *context, u256 *block_hash) {
     DSDashSharedCore *core = AS_OBJC(context);
-    UInt256 blockHash = u256_cast(block_hash);
+    UInt256 blockHash = uint256_reverse(u256_cast(block_hash));
     u256_dtor(block_hash);
     DSChainLock *chainLock = [core.chain.chainManager chainLockForBlockHash:blockHash];
-    return chainLock ? DMaybeCLSignatureCtor(u768_ctor_u(chainLock.signature), NULL) : DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No clsig for block hash %@", nil, uint256_hex(blockHash))));
+    return chainLock ? DMaybeCLSignatureCtor(dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(chainLock.lock), NULL) : DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No clsig for block hash %@", nil, uint256_hex(blockHash))));
 }
 void get_cl_signature_by_block_hash_dtor(DMaybeCLSignature *result) {}
 
 
-DMaybeMasternodeList *load_masternode_list_from_db_caller(const void *context, u256 *block_hash) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    NSData *blockHashData = [DSKeyManager NSDataFromArr_u8_32:block_hash];
-    DMasternodeList *list = [core.chain.masternodeManager.store loadMasternodeListAtBlockHash:blockHashData withBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return [core.chain heightForBlockHash:blockHash];
-    }];
-    DSLog(@"load_masternode_list_from_db_caller (%@) %p", blockHashData.hexString, list);
-    return Result_ok_dash_spv_masternode_processor_models_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(list, list ? NULL : DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No masternode list for block hash %@ in DB", nil, blockHashData.hexString)));
-}
-void load_masternode_list_from_db_dtor(DMaybeMasternodeList *result) {}
+//DMaybeMasternodeList *load_masternode_list_from_db_caller(const void *context, u256 *block_hash) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    NSData *blockHashData = [DSKeyManager NSDataFromArr_u8_32:block_hash];
+//    DMasternodeList *list = [core.chain.masternodeManager.store loadMasternodeListAtBlockHash:blockHashData withBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+//        return [core.chain heightForBlockHash:blockHash];
+//    }];
+//    DSLog(@"load_masternode_list_from_db_caller (%@) %p", blockHashData.hexString, list);
+//    return Result_ok_dashcore_sml_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(list, list ? NULL : DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No masternode list for block hash %@ in DB", nil, blockHashData.hexString)));
+//}
+//void load_masternode_list_from_db_dtor(DMaybeMasternodeList *result) {}
 
-MaybeBool *save_masternode_list_into_db_caller(const void *context, u256 *list_block_hash, DMasternodeEntryMap *modified_masternodes) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    DSChain *chain = core.chain;
-    DSMasternodeManager *masternodeManager = chain.masternodeManager;
-    uintptr_t count = DStoredMasternodeListsCount(core.cache->obj);
-    uint32_t last_block_height = DLastMasternodeListBlockHeight(core.processor->obj);
-    DMasternodeList *masternode_list = DMasternodeListForBlockHash(core.processor->obj, list_block_hash);
-    uint32_t list_known_height = masternode_list->known_height;
-    [chain.chainManager notifyMasternodeSyncStateChange:last_block_height storedCount:count];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: chain}];
-    });
+//MaybeBool *save_masternode_list_into_db_caller(const void *context, u256 *list_block_hash, DMasternodeEntryMap *modified_masternodes) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    DSChain *chain = core.chain;
+//    DSMasternodeManager *masternodeManager = chain.masternodeManager;
+//    uintptr_t count = DStoredMasternodeListsCount(core.cache->obj);
+//    uint32_t last_block_height = DLastMasternodeListBlockHeight(core.processor->obj);
+//    DMasternodeList *masternode_list = DMasternodeListForBlockHash(core.processor->obj, list_block_hash);
+//    uint32_t list_known_height = masternode_list->known_height;
+//    [chain.chainManager notifyMasternodeSyncStateChange:last_block_height storedCount:count];
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: chain}];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: chain}];
+//    });
+//
+//    dispatch_group_enter(core.chain.masternodeManager.store.savingGroup);
+//    //We will want to create unknown blocks if they came from insight
+//    BOOL createUnknownBlocks = chain.allowInsightBlocksForVerification;
+//    core.masternodeListCurrentlyBeingSavedCount++;
+//    //This will create a queue for masternodes to be saved without blocking the networking queue
+//    DSLog(@"[%@] ••••••••••••••••••••••••••••• save_masternode_list_into_db %u --> •••••••••••••••••••••••••••••••••••••••••", chain.name, list_known_height);
+////    DMasternodeListPrint(masternode_list->obj);
+////    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+//
+//    NSError *error = [DSMasternodeListStore saveMasternodeList:masternode_list
+//                                    toChain:chain
+//                    havingModifiedMasternodes:modified_masternodes
+//                        createUnknownBlocks:createUnknownBlocks
+//                                  inContext:chain.chainManagedObjectContext];
+//    core.masternodeListCurrentlyBeingSavedCount--;
+//    DMasternodeListDtor(masternode_list);
+//    DMasternodeEntryMapDtor(modified_masternodes);
+//    dispatch_group_leave(core.chain.masternodeManager.store.savingGroup);
+//    BOOL success = !error;
+//    DCoreProviderError *provider_err = NULL;
+//    if (error) {
+//        uintptr_t mn_list_count = DMnDiffQueueCount(core.cache->obj);
+//        uintptr_t qr_info_count = DQrInfoQueueCount(core.cache->obj);
+//        BOOL isEmptyQueue = !(mn_list_count + qr_info_count);
+//        DSLog(@"[%@] Finished saving MNL with error: %@", chain.name, error.description);
+//        if (!isEmptyQueue && masternodeManager.isSyncing) {
+//            dispatch_async(chain.networkingQueue, ^{
+//                [masternodeManager wipeMasternodeInfo];
+//                [masternodeManager getRecentMasternodeList];
+//            });
+//        }
+//        provider_err = DCoreProviderErrorNullResultCtor(DChar([error description]));
+//    }
+//    DSLog(@"[%@] ••••••••••••••••••••••••••••• save_masternode_list_into_db %u <-- •••••••••••••••••••••••••••••••••••••••••", chain.name, list_known_height);
+////    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+////    DSLog(@"[%@] save_masternode_list_into_db <-- %d = %d", chain.name, list_known_height, success);
+////    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+////    DMasternodeListPrint(masternode_list->obj);
+////    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+//    
+//    return Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(&success, provider_err);
+//}
+//void save_masternode_list_into_db_destructor(MaybeBool *result) {}
 
-    dispatch_group_enter(core.chain.masternodeManager.store.savingGroup);
-    //We will want to create unknown blocks if they came from insight
-    BOOL createUnknownBlocks = chain.allowInsightBlocksForVerification;
-    core.masternodeListCurrentlyBeingSavedCount++;
-    //This will create a queue for masternodes to be saved without blocking the networking queue
-    DSLog(@"[%@] ••••••••••••••••••••••••••••• save_masternode_list_into_db %u --> •••••••••••••••••••••••••••••••••••••••••", chain.name, list_known_height);
-//    DMasternodeListPrint(masternode_list->obj);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-
-    NSError *error = [DSMasternodeListStore saveMasternodeList:masternode_list
-                                    toChain:chain
-                    havingModifiedMasternodes:modified_masternodes
-                        createUnknownBlocks:createUnknownBlocks
-                                  inContext:chain.chainManagedObjectContext];
-    core.masternodeListCurrentlyBeingSavedCount--;
-    DMasternodeListDtor(masternode_list);
-    DMasternodeEntryMapDtor(modified_masternodes);
-    dispatch_group_leave(core.chain.masternodeManager.store.savingGroup);
-    BOOL success = !error;
-    DCoreProviderError *provider_err = NULL;
-    if (error) {
-        uintptr_t mn_list_count = DMnDiffQueueCount(core.cache->obj);
-        uintptr_t qr_info_count = DQrInfoQueueCount(core.cache->obj);
-        BOOL isEmptyQueue = !(mn_list_count + qr_info_count);
-        DSLog(@"[%@] Finished saving MNL with error: %@", chain.name, error.description);
-        if (!isEmptyQueue && masternodeManager.isSyncing) {
-            dispatch_async(chain.networkingQueue, ^{
-                [masternodeManager wipeMasternodeInfo];
-                [masternodeManager getRecentMasternodeList];
-            });
-        }
-        provider_err = DCoreProviderErrorNullResultCtor(DChar([error description]));
-    }
-    DSLog(@"[%@] ••••••••••••••••••••••••••••• save_masternode_list_into_db %u <-- •••••••••••••••••••••••••••••••••••••••••", chain.name, list_known_height);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-//    DSLog(@"[%@] save_masternode_list_into_db <-- %d = %d", chain.name, list_known_height, success);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-//    DMasternodeListPrint(masternode_list->obj);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-    
-    return Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(&success, provider_err);
-}
-void save_masternode_list_into_db_destructor(MaybeBool *result) {}
-
-MaybeLLMQSnapshot *load_llmq_snapshot_from_db_caller(const void *context, u256 *block_hash) {
-    return NULL;
-}
-
-void load_llmq_snapshot_from_db_dtor(MaybeLLMQSnapshot *result) {}
-
-MaybeBool *save_llmq_snapshot_into_db_caller(const void *context, u256 *block_hash, DLLMQSnapshot *snapshot) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    NSError *err = [core.chain.masternodeManager.store saveQuorumSnapshot:snapshot forBlockHash:block_hash];
-    BOOL success = !err;
-    DCoreProviderError *provider_err = err ? DCoreProviderErrorNullResultCtor(DChar(err.debugDescription)) : NULL;
-    u256_dtor(block_hash);
-    dash_spv_masternode_processor_models_snapshot_LLMQSnapshot_destroy(snapshot);
-    return Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(&success, provider_err);
-}
-void save_llmq_snapshot_into_db_dtor(MaybeBool *result) {}
+//MaybeLLMQSnapshot *load_llmq_snapshot_from_db_caller(const void *context, u256 *block_hash) {
+//    return NULL;
+//}
+//
+//void load_llmq_snapshot_from_db_dtor(MaybeLLMQSnapshot *result) {}
+//
+//MaybeBool *save_llmq_snapshot_into_db_caller(const void *context, u256 *block_hash, DLLMQSnapshot *snapshot) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    NSError *err = [core.chain.masternodeManager.store saveQuorumSnapshot:snapshot forBlockHash:block_hash];
+//    BOOL success = !err;
+//    DCoreProviderError *provider_err = err ? DCoreProviderErrorNullResultCtor(DChar(err.debugDescription)) : NULL;
+//    u256_dtor(block_hash);
+//    dash_spv_masternode_processor_models_snapshot_LLMQSnapshot_destroy(snapshot);
+//    return Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(&success, provider_err);
+//}
+//void save_llmq_snapshot_into_db_dtor(MaybeBool *result) {}
 
 void update_address_usage_of_masternodes_caller(const void *context, DMasternodeEntryList *masternodes) {
     DSDashSharedCore *core = AS_OBJC(context);
@@ -543,24 +510,20 @@ void update_address_usage_of_masternodes_caller(const void *context, DMasternode
     DMasternodeEntryListDtor(masternodes);
 }
 
-bool remove_request_in_retrieval_caller(const void *context, bool is_dip24, u256 *base_block_hash, u256 *block_hash) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    DSMasternodeListService *service = is_dip24 ? core.chain.masternodeManager.quorumRotationService : core.chain.masternodeManager.masternodeListDiffService;
-    BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:u256_cast(base_block_hash) blockHash:u256_cast(block_hash)];
-    u256_dtor(base_block_hash);
-    u256_dtor(block_hash);
-    return hasRemovedFromRetrieval;
-}
-void remove_request_in_retrieval_dtor(bool result) {}
+//bool remove_request_in_retrieval_caller(const void *context, bool is_dip24, u256 *base_block_hash, u256 *block_hash) {
+//    DSDashSharedCore *core = AS_OBJC(context);
+//    DSMasternodeListService *service = is_dip24 ? core.chain.masternodeManager.quorumRotationService : core.chain.masternodeManager.masternodeListDiffService;
+//    BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:u256_cast(base_block_hash) blockHash:u256_cast(block_hash)];
+//    u256_dtor(base_block_hash);
+//    u256_dtor(block_hash);
+//    return hasRemovedFromRetrieval;
+//}
+//void remove_request_in_retrieval_dtor(bool result) {}
 
 void issue_with_masternode_list_from_peer_caller(const void *context, bool is_dip24, const void *peer_context) {
     DSDashSharedCore *core = AS_OBJC(context);
     DSPeer *peer = ((__bridge DSPeer *)(peer_context));
-    if (is_dip24) {
-        [core.chain.masternodeManager.quorumRotationService issueWithMasternodeListFromPeer:peer];
-    } else {
-        [core.chain.masternodeManager.masternodeListDiffService issueWithMasternodeListFromPeer:peer];
-    }
+    [core.chain.masternodeManager issueWithMasternodeListFromPeer:peer];
 }
 
 void notify_sync_state_caller(const void *context, DMNSyncState *state) {
@@ -581,7 +544,7 @@ void notify_sync_state_caller(const void *context, DMNSyncState *state) {
                 break;
         }
         DMNSyncStateDtor(state);
-        /*dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_queue_description*/(core.chain.sharedCacheObj);
+//        /*dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_queue_description*/(core.chain.sharedCacheObj);
         [core.chain.chainManager notifySyncStateChanged];
     }
 }

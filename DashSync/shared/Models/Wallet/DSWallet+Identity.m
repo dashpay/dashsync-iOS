@@ -254,8 +254,8 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
             dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 *v0 = identity_public_key->v0;
             uint32_t key_index = v0->id->_0;
             for (DSIdentity *identity in [self.mIdentities allValues]) {
-                DMaybeOpaqueKey *key = [identity keyAtIndex:key_index];
-                if (key && key->ok && dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key->ok, v0->data->_0))
+                DOpaqueKey *key = [identity keyAtIndex:key_index];
+                if (key && dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key, v0->data->_0))
                     return [identity privateKeyAtIndex:key_index ofType:dash_spv_platform_identity_manager_key_kind_from_key_type(v0->key_type)];
             }
             return nil;
@@ -331,7 +331,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
                             DSLog(@"%@: AssetLockTX: IncorrectIndex %u (%@)", self.chain.name, index, assetLockTransaction.toData.hexString);
 //                            NSAssert(FALSE, @"We should implement this");
                         } else {
-                            identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:assetLockTransaction withUsernameDictionary:nil inWallet:self];
+                            identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:assetLockTransaction inWallet:self];
                             [identity registerInWallet];
                         }
                     } else {

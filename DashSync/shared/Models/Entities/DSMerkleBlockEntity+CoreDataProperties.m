@@ -26,9 +26,9 @@
 @dynamic totalTransactions;
 @dynamic version;
 @dynamic chain;
-@dynamic masternodeList;
-@dynamic usedByQuorums;
-@dynamic quorumSnapshot;
+//@dynamic masternodeList;
+//@dynamic usedByQuorums;
+//@dynamic quorumSnapshot;
 @dynamic chainLock;
 @dynamic chainWork;
 

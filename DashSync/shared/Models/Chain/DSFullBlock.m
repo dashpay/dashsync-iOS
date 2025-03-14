@@ -20,6 +20,7 @@
 #import "DSChain.h"
 #import "DSChain+Params.h"
 #import "DSChainLock.h"
+#import "DSCoinbaseTransaction.h"
 #import "DSKeyManager.h"
 #import "DSTransactionFactory.h"
 #import "NSData+DSHash.h"
@@ -98,7 +99,6 @@
 
     return self;
 }
-
 - (instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction *)coinbaseTransaction transactions:(NSSet<DSTransaction *> *)transactions previousBlockHash:(UInt256)previousBlockHash previousBlocks:(NSDictionary *)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain {
     if (!(self = [super initWithVersion:COINBASE_TX_CORE_19 timestamp:timestamp height:height onChain:chain])) return nil;
     NSMutableSet *totalTransactionsSet = [transactions mutableCopy];

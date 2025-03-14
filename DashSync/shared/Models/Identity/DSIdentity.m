@@ -135,12 +135,12 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 @property (nonatomic, assign) DSUTXO lockedOutpoint;
 @property (nonatomic, assign) uint32_t index;
 
-//@property (nonatomic, assign) DSIdentityRegistrationStatus registrationStatus;
+//@property (nonatomic, assign) DIdentityRegistrationStatus *registrationStatus;
 @property (nonatomic, assign) uint64_t creditBalance;
 //@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSDictionary *> *keyInfoDictionaries;
 @property (nonatomic, strong) DSDashpayUserEntity *matchingDashpayUserInViewContext;
 @property (nonatomic, strong) DSDashpayUserEntity *matchingDashpayUserInPlatformContext;
-@property (nonatomic, assign) IdentityModel *identity_model;
+//@property (nonatomic, assign) IdentityModel *identity_model;
 @property (nonatomic, assign) DMaybeOpaqueKey *internalRegistrationFundingPrivateKey;
 @property (nonatomic, assign) DMaybeOpaqueKey *internalTopupFundingPrivateKey;
 @property (nonatomic, assign) UInt256 dashpaySyncronizationBlockHash;
@@ -176,7 +176,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     _keysCreated = 0;
     _currentMainKeyIndex = 0;
     _currentMainKeyType = DKeyKindECDSA();
-    [self setupUsernames];
+//    [self setupUsernames];
+    
     self.identity_model = dash_spv_platform_identity_model_IdentityModel_new(dash_spv_platform_identity_model_IdentityRegistrationStatus_Registered_ctor());
 //    self.keyInfoDictionaries = [NSMutableDictionary dictionary];
 //    _registrationStatus = DSIdentityRegistrationStatus_Registered;
@@ -203,13 +204,18 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     DMaybeOpaqueKey *key = dash_spv_crypto_keys_key_KeyKind_key_with_public_key_data(keyType, slice_ctor(entity.publicKeyData));
     DSecurityLevel *level = DSecurityLevelFromIndex(entity.securityLevel);
     DPurpose *purpose = DPurposeFromIndex(entity.purpose);
-    [self registerKey:key withSecurityLevel:level withPurpose:purpose atIndex:entity.keyID withStatus:entity.keyStatus ofType:keyType];
+    [self registerKey:key
+    withSecurityLevel:level
+          withPurpose:purpose
+              atIndex:entity.keyID
+           withStatus:DIdentityKeyStatusFromIndex(entity.keyStatus)
+               ofType:keyType];
 
 }
 - (void)applyIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity {
     [self applyUsernameEntitiesFromIdentityEntity:identityEntity];
     _creditBalance = identityEntity.creditBalance;
-    _registrationStatus = identityEntity.registrationStatus;
+    dash_spv_platform_identity_model_IdentityModel_set_registration_status(self.identity_model, dash_spv_platform_identity_model_IdentityRegistrationStatus_from_index(identityEntity.registrationStatus));
     _lastCheckedProfileTimestamp = identityEntity.lastCheckedProfileTimestamp;
     _lastCheckedUsernamesTimestamp = identityEntity.lastCheckedUsernamesTimestamp;
     _lastCheckedIncomingContactsTimestamp = identityEntity.lastCheckedIncomingContactsTimestamp;
@@ -223,7 +229,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         if (keyIndexPath) {
             DSecurityLevel *level = DSecurityLevelFromIndex(keyPathEntity.securityLevel);
             DPurpose *purpose = DPurposeFromIndex(keyPathEntity.purpose);
-            BOOL success = [self registerKeyWithStatus:keyPathEntity.keyStatus
+            BOOL success = [self registerKeyWithStatus:DIdentityKeyStatusFromIndex(keyPathEntity.keyStatus)
                                          securityLevel:level
                                                purpose:purpose
                                            atIndexPath:[keyIndexPath softenAllItems]
@@ -311,7 +317,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 //    self.registrationStatus = DSIdentityRegistrationStatus_Unknown;
     self.identity_model = dash_spv_platform_identity_model_IdentityModel_new(dash_spv_platform_identity_model_IdentityRegistrationStatus_Unknown_ctor());
 
-    [self setupUsernames];
+//    [self setupUsernames];
     self.chain = wallet.chain;
     return self;
 }
@@ -361,23 +367,23 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     return self;
 }
 
-- (instancetype)initAtIndex:(uint32_t)index
-   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
-     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *)usernameDictionary
-                   inWallet:(DSWallet *)wallet {
-    NSAssert(index != UINT32_MAX, @"index must be found");
-    if (!(self = [self initAtIndex:index withAssetLockTransaction:transaction inWallet:wallet])) return nil;
-    if (usernameDictionary) {
-        NSMutableDictionary *usernameSalts = [NSMutableDictionary dictionary];
-        for (NSString *username in usernameDictionary) {
-            NSData *salt = usernameDictionary[username][BLOCKCHAIN_USERNAME_SALT];
-            if (salt)
-                usernameSalts[username] = salt;
-        }
-        [self setupUsernames:[usernameDictionary mutableCopy] salts:usernameSalts];
-    }
-    return self;
-}
+//- (instancetype)initAtIndex:(uint32_t)index
+//   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
+//     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *)usernameDictionary
+//                   inWallet:(DSWallet *)wallet {
+//    NSAssert(index != UINT32_MAX, @"index must be found");
+//    if (!(self = [self initAtIndex:index withAssetLockTransaction:transaction inWallet:wallet])) return nil;
+//    if (usernameDictionary) {
+//        NSMutableDictionary *usernameSalts = [NSMutableDictionary dictionary];
+//        for (NSString *username in usernameDictionary) {
+//            NSData *salt = usernameDictionary[username][BLOCKCHAIN_USERNAME_SALT];
+//            if (salt)
+//                usernameSalts[username] = salt;
+//        }
+//        [self setupUsernames:[usernameDictionary mutableCopy] salts:usernameSalts];
+//    }
+//    return self;
+//}
 
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
@@ -396,7 +402,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 //    self.registrationStatus = DSIdentityRegistrationStatus_Registered;
     self.identity_model = dash_spv_platform_identity_model_IdentityModel_new(dash_spv_platform_identity_model_IdentityRegistrationStatus_Registered_ctor());
 
-    [self setupUsernames];
+//    [self setupUsernames];
     self.chain = wallet.chain;
     self.index = index;
     return self;
@@ -414,7 +420,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     DSIdentityRegistrationStep stepsCompleted = DSIdentityRegistrationStep_None;
     if (self.isRegistered) {
         stepsCompleted = DSIdentityRegistrationStep_RegistrationSteps;
-        if ([self usernameFullPathsWithStatus:DSIdentityUsernameStatus_Confirmed].count)
+        if (dash_spv_platform_identity_model_IdentityModel_confirmed_username_full_paths_count(self.identity_model))
             stepsCompleted |= DSIdentityRegistrationStep_Username;
     } else if (self.registrationAssetLockTransaction) {
         stepsCompleted |= DSIdentityRegistrationStep_FundingTransactionCreation;
@@ -517,12 +523,12 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                       pinPrompt:prompt
                  stepCompletion:stepCompletion
                      completion:completion];
-    } else if (self.registrationStatus != DSIdentityRegistrationStatus_Registered) {
+    } else if (dash_spv_platform_identity_model_IdentityModel_is_registered(self.identity_model)) {
         [self continueRegisteringIdentityOnNetwork:steps
                                     stepsCompleted:DSIdentityRegistrationStep_L1Steps
                                     stepCompletion:stepCompletion
                                         completion:completion];
-    } else if ([self.unregisteredUsernameFullPaths count]) {
+    } else if (dash_spv_platform_identity_model_IdentityModel_unregistered_username_full_paths_count(self.identity_model)) {
         [self continueRegisteringUsernamesOnNetwork:steps
                                      stepsCompleted:DSIdentityRegistrationStep_L1Steps | DSIdentityRegistrationStep_Identity
                                      stepCompletion:stepCompletion
@@ -944,16 +950,22 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 }
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error {
-    BOOL loaded = TRUE;
-    for (NSNumber *index in self.keyInfoDictionaries) {
-        NSDictionary *keyDictionary = self.keyInfoDictionaries[index];
-        DSIdentityKeyStatus status = [keyDictionary[@(DSIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
-        DKeyKind *keyType = [keyDictionary[@(DSIdentityKeyDictionary_KeyType)] pointerValue];
-        if (status == DSIdentityKeyStatus_Registered) {
-            loaded &= [self hasPrivateKeyAtIndex:[index unsignedIntValue] ofType:keyType error:error];
-            if (*error) return FALSE;
+    BOOL loaded = YES;
+    DKeyInfoDictionaries *key_info_dictionaries = dash_spv_platform_identity_model_IdentityModel_key_info_dictionaries(self.identity_model);
+    for (uint32_t index = 0; index < key_info_dictionaries->count; index++) {
+        uint32_t key_info_index = key_info_dictionaries->keys[index];
+        DKeyInfo *key_info = key_info_dictionaries->values[index];
+        DIdentityKeyStatus *status = key_info->key_status;
+        DKeyKind *key_type = key_info->key_type;
+        if (dash_spv_platform_identity_model_IdentityKeyStatus_is_registered(status)) {
+            loaded &= [self hasPrivateKeyAtIndex:key_info_index ofType:key_type error:error];
+            if (*error) {
+                DKeyInfoDictionariesDtor(key_info_dictionaries);
+                return NO;
+            }
         }
     }
+    DKeyInfoDictionariesDtor(key_info_dictionaries);
     return loaded;
 }
 
@@ -978,37 +990,48 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 - (BOOL)verifyKeysForWallet:(DSWallet *)wallet {
     DSWallet *originalWallet = self.wallet;
     self.wallet = wallet;
-    for (uint32_t index = 0; index < self.keyInfoDictionaries.count; index++) {
-        DKeyKind *keyType = [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSIdentityKeyDictionary_KeyType)] pointerValue];
-        DMaybeOpaqueKey *key = [self keyAtIndex:index];
-        if (!key || !key->ok) {
+    DKeyInfoDictionaries *key_info_dictionaries = dash_spv_platform_identity_model_IdentityModel_key_info_dictionaries(self.identity_model);
+    for (uint32_t index = 0; index < key_info_dictionaries->count; index++) {
+        DKeyInfo *key_info = key_info_dictionaries->values[index];
+        if (!key_info->key) {
             self.wallet = originalWallet;
-            return FALSE;
+            DKeyInfoDictionariesDtor(key_info_dictionaries);
+            return NO;
         }
-        BOOL hasSameKind = dash_spv_crypto_keys_key_OpaqueKey_has_kind(key->ok, keyType);
+        DOpaqueKey *key = [self keyAtIndex:index];
+        DKeyKind *key_kind = key_info->key_type;
+        BOOL hasSameKind = dash_spv_crypto_keys_key_OpaqueKey_has_kind(key, key_kind);
         if (!hasSameKind) {
             self.wallet = originalWallet;
-            return FALSE;
+            DKeyInfoDictionariesDtor(key_info_dictionaries);
+            return NO;
         }
-        DMaybeOpaqueKey *derivedKey = [self publicKeyAtIndex:index ofType:keyType];
-        if (!derivedKey || !derivedKey->ok) return NO;
-        BOOL isEqual = [DSKeyManager keysPublicKeyDataIsEqual:derivedKey->ok key2:key->ok];
+        DMaybeOpaqueKey *derivedKey = [self publicKeyAtIndex:index ofType:key_kind];
+        if (!derivedKey || !derivedKey->ok) {
+            DKeyInfoDictionariesDtor(key_info_dictionaries);
+            return NO;
+        }
+        BOOL isEqual = [DSKeyManager keysPublicKeyDataIsEqual:derivedKey->ok key2:key];
         DMaybeOpaqueKeyDtor(derivedKey);
         if (!isEqual) {
             self.wallet = originalWallet;
-            return FALSE;
+            DKeyInfoDictionariesDtor(key_info_dictionaries);
+            return NO;
         }
     }
+    DKeyInfoDictionariesDtor(key_info_dictionaries);
     return TRUE;
 }
 
 - (DIdentityKeyStatus *)statusOfKeyAtIndex:(NSUInteger)index {
-    return [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
+    return dash_spv_platform_identity_model_IdentityModel_status_of_key_at_index(self.identity_model, (uint32_t) index);
+//    return [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
 }
 
-- (DMaybeOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index {
-    NSValue *keyValue = (NSValue *)[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSIdentityKeyDictionary_Key)];
-    return keyValue.pointerValue;
+- (DOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index {
+    return dash_spv_platform_identity_model_IdentityModel_key_at_index(self.identity_model, (uint32_t) index);
+//    NSValue *keyValue = (NSValue *)[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSIdentityKeyDictionary_Key)];
+//    return keyValue.pointerValue;
 }
 
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index {
@@ -1108,7 +1131,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
               status:dash_spv_platform_identity_model_IdentityKeyStatus_Registering_ctor()
                index:keyIndex];
     if (saveKey)
-        [self saveNewKey:publicKey
+        [self saveNewKey:publicKey->ok
                   atPath:hardenedIndexPath
               withStatus:dash_spv_platform_identity_model_IdentityKeyStatus_Registering_ctor()
        withSecurityLevel:security_level
@@ -1122,12 +1145,17 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 - (uint32_t)firstIndexOfKeyOfType:(DKeyKind *)type
                createIfNotPresent:(BOOL)createIfNotPresent
                           saveKey:(BOOL)saveKey {
-    for (NSNumber *indexNumber in self.keyInfoDictionaries) {
-        NSDictionary *keyDictionary = self.keyInfoDictionaries[indexNumber];
-        DKeyKind *keyType = [keyDictionary[@(DSIdentityKeyDictionary_KeyType)] pointerValue];
-        if (dash_spv_crypto_keys_key_KeyKind_index(keyType) == dash_spv_crypto_keys_key_KeyKind_index(type))
-            return [indexNumber unsignedIntValue];
+    DKeyInfoDictionaries *key_info_dictionaries = dash_spv_platform_identity_model_IdentityModel_key_info_dictionaries(self.identity_model);
+    for (uint32_t index = 0; index < key_info_dictionaries->count; index++) {
+        uint32_t key_info_index = key_info_dictionaries->keys[index];
+        DKeyInfo *key_info = key_info_dictionaries->values[index];
+        DKeyKind *key_type = key_info->key_type;
+        if (dash_spv_crypto_keys_key_KeyKind_index(key_type) == dash_spv_crypto_keys_key_KeyKind_index(type)) {
+            DKeyInfoDictionariesDtor(key_info_dictionaries);
+            return key_info_index;
+        }
     }
+    DKeyInfoDictionariesDtor(key_info_dictionaries);
     if (_isLocal && createIfNotPresent) {
         uint32_t rIndex;
         [self createNewKeyOfType:type
@@ -1143,16 +1171,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 
 - (DIdentityPublicKey *_Nullable)firstIdentityPublicKeyOfSecurityLevel:(DSecurityLevel *)security_level
                                                             andPurpose:(DPurpose *)purpose {
-    __block DIdentityPublicKey *maybe_identity_public_key = NULL;
-    [self.keyInfoDictionaries enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull index, NSDictionary * _Nonnull keyDictionary, BOOL * _Nonnull stop) {
-        DSecurityLevel *level = [keyDictionary[@(DSIdentityKeyDictionary_KeyLevel)] pointerValue];
-        if (DSecurityLevelIndex(level) == DSecurityLevelIndex(security_level)) {
-            DMaybeOpaqueKey *maybe_key = [keyDictionary[@(DSIdentityKeyDictionary_Key)] pointerValue];
-            maybe_identity_public_key = DCreateIdentityPubKey(index.unsignedIntValue, maybe_key->ok, security_level, purpose);
-            *stop = YES;
-        }
-    }];
-    return maybe_identity_public_key;
+    return dash_spv_platform_identity_model_IdentityModel_first_identity_public_key(self.identity_model, security_level, purpose);
 }
 
 - (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type
@@ -1195,17 +1214,17 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                 save:save
            inContext:context];
     } else {
-        if (self.keyInfoDictionaries[@(index)]) {
-            NSDictionary *keyDictionary = self.keyInfoDictionaries[@(index)];
-            NSValue *keyToCheckInDictionary = keyDictionary[@(DSIdentityKeyDictionary_Key)];
-            DMaybeOpaqueKey *maybe_opaque_key = keyToCheckInDictionary.pointerValue;
-            DSIdentityKeyStatus keyToCheckInDictionaryStatus = [keyDictionary[@(DSIdentityKeyDictionary_KeyStatus)] unsignedIntegerValue];
-            if (maybe_opaque_key->ok && [DSKeyManager keysPublicKeyDataIsEqual:maybe_opaque_key->ok key2:key->ok]) {
+        DKeyInfo *key_info = dash_spv_platform_identity_model_IdentityModel_key_info_at_index(self.identity_model, index);
+        if (key_info) {
+            DOpaqueKey *maybe_opaque_key = key_info->key;
+            DIdentityKeyStatus *keyToCheckInDictionaryStatus = key_info->key_status;
+            if (maybe_opaque_key && [DSKeyManager keysPublicKeyDataIsEqual:maybe_opaque_key key2:key->ok]) {
                 if (save && status != keyToCheckInDictionaryStatus)
                     [self updateStatus:status forKeyWithIndexID:index inContext:context];
             } else {
                 NSAssert(FALSE, @"these should really match up");
                 DSLog(@"these should really match up");
+                DKeyInfoDtor(key_info);
                 return;
             }
         } else {
@@ -1219,6 +1238,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                                      inContext:context];
         }
         [self addKeyInfo:key type:type securityLevel:security_level purpose:purpose status:status index:index];
+        if (key_info)
+            DKeyInfoDtor(key_info);
     }
 }
 
@@ -1249,22 +1270,23 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     NSAssert(keyToCheck != nil && keyToCheck->ok, @"This key should be found");
     if ([DSKeyManager keysPublicKeyDataIsEqual:keyToCheck->ok key2:key->ok]) { //if it isn't local we shouldn't verify
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
-        if (self.keyInfoDictionaries[@(index)]) {
-            NSDictionary *keyDictionary = self.keyInfoDictionaries[@(index)];
-            NSValue *keyToCheckInDictionaryValue = keyDictionary[@(DSIdentityKeyDictionary_Key)];
-            DMaybeOpaqueKey *maybe_opaque_key = keyToCheckInDictionaryValue.pointerValue;
-            if (maybe_opaque_key->ok && [DSKeyManager keysPublicKeyDataIsEqual:maybe_opaque_key->ok key2:key->ok]) {
+        DKeyInfo *key_info = dash_spv_platform_identity_model_IdentityModel_key_info_at_index(self.identity_model, index);
+
+        if (key_info) {
+            DOpaqueKey *maybe_opaque_key = key_info->key;
+            if (maybe_opaque_key && [DSKeyManager keysPublicKeyDataIsEqual:maybe_opaque_key key2:key->ok]) {
                 if (save)
                     [self updateStatus:status forKeyAtPath:indexPath fromDerivationPath:derivationPath inContext:context];
             } else {
                 NSAssert(FALSE, @"these should really match up");
                 DSLog(@"these should really match up");
+                DKeyInfoDtor(key_info);
                 return;
             }
         } else {
             _keysCreated = MAX(self.keysCreated, index + 1);
             if (save)
-                [self saveNewKey:key
+                [self saveNewKey:key->ok
                           atPath:indexPath
                       withStatus:status
                withSecurityLevel:security_level
@@ -1273,6 +1295,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                        inContext:context];
         }
         [self addKeyInfo:key type:type securityLevel:security_level purpose:purpose status:status index:index];
+        if (key_info)
+            DKeyInfoDtor(key_info);
     } else {
         DSLog(@"these should really match up");
     }
@@ -1308,15 +1332,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
            purpose:(DPurpose *)purpose
             status:(DIdentityKeyStatus *)status
              index:(uint32_t)index {
-    DSLogPrivate(@"%@: addKeyInfo: %p %u %lu %u", self.logPrefix, key, dash_spv_crypto_keys_key_KeyKind_index(type), status, index);
-//    add_key_i
-    [self.keyInfoDictionaries setObject:@{
-        @(DSIdentityKeyDictionary_Key): [NSValue valueWithPointer:key],
-        @(DSIdentityKeyDictionary_KeyType): [NSValue valueWithPointer:type],
-        @(DSIdentityKeyDictionary_KeyLevel): [NSValue valueWithPointer:security_level],
-        @(DSIdentityKeyDictionary_KeyPurpose): [NSValue valueWithPointer:purpose],
-        @(DSIdentityKeyDictionary_KeyStatus): @(status),
-    } forKey:@(index)];
+    DSLogPrivate(@"%@: addKeyInfo: %p %u %hhu %u", self.logPrefix, key, dash_spv_crypto_keys_key_KeyKind_index(type), dash_spv_platform_identity_manager_security_level_to_index(security_level), index);
+    DKeyInfo *key_info = dash_spv_platform_identity_model_KeyInfo_ctor(key->ok, type, status, security_level, purpose);
+    dash_spv_platform_identity_model_IdentityModel_add_key_info(self.identity_model, index, key_info);
 }
 
 
@@ -1337,23 +1355,28 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 // MARK: Helpers
 
 - (BOOL)isRegistered {
-    return self.registrationStatus == DSIdentityRegistrationStatus_Registered;
+    return dash_spv_platform_identity_model_IdentityModel_is_registered(self.identity_model);
 }
 
 - (NSString *)localizedRegistrationStatusString {
-    switch (self.registrationStatus) {
-        case DSIdentityRegistrationStatus_Registered:
-            return DSLocalizedString(@"Registered", @"The Dash Identity is registered");
-        case DSIdentityRegistrationStatus_Unknown:
-            return DSLocalizedString(@"Unknown", @"It is Unknown if the Dash Identity is registered");
-        case DSIdentityRegistrationStatus_Registering:
-            return DSLocalizedString(@"Registering", @"The Dash Identity is being registered");
-        case DSIdentityRegistrationStatus_NotRegistered:
-            return DSLocalizedString(@"Not Registered", @"The Dash Identity is not registered");
-        default:
-            break;
-    }
-    return @"";
+    char *status_string = dash_spv_platform_identity_model_IdentityRegistrationStatus_string(self.registrationStatus);
+    NSString *status = NSStringFromPtr(status_string);
+    str_destroy(status_string);
+    return status;
+//    IdentityRegistrationStatus_str
+//    switch (self.registrationStatus) {
+//        case DSIdentityRegistrationStatus_Registered:
+//            return DSLocalizedString(@"Registered", @"The Dash Identity is registered");
+//        case DSIdentityRegistrationStatus_Unknown:
+//            return DSLocalizedString(@"Unknown", @"It is Unknown if the Dash Identity is registered");
+//        case DSIdentityRegistrationStatus_Registering:
+//            return DSLocalizedString(@"Registering", @"The Dash Identity is being registered");
+//        case DSIdentityRegistrationStatus_NotRegistered:
+//            return DSLocalizedString(@"Not Registered", @"The Dash Identity is not registered");
+//        default:
+//            break;
+//    }
+//    return @"";
 }
 
 - (void)applyIdentity:(DIdentity *)identity
@@ -1373,7 +1396,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                      purpose:public_key->v0->purpose
                      atIndex:key_id->_0
                       ofType:DKeyKindECDSA()
-                  withStatus:DSIdentityKeyStatus_Registered
+                  withStatus:dash_spv_platform_identity_model_IdentityKeyStatus_Registered_ctor()
                         save:save
                    inContext:context];
             }
@@ -1390,21 +1413,10 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 /// instant lock verification will work for recently signed instant locks.
 /// we expect clients to use ChainAssetLockProof.
 - (DAssetLockProof *)createProof:(DSInstantSendTransactionLock *_Nullable)isLock {
-    return isLock ? [self createInstantProof:isLock] : [self createChainProof];
+    return isLock ? [self createInstantProof:isLock.lock] : [self createChainProof];
 }
 
-- (DAssetLockProof *)createInstantProof:(DSInstantSendTransactionLock *)isLock {
-    uint8_t version = isLock.version;
-    NSArray<NSData *> *outpoints = isLock.inputOutpoints;
-    Arr_u8_36 **values = malloc(sizeof(Arr_u8_36 *) * outpoints.count);
-    for (int i = 0; i < outpoints.count; i++) {
-        NSData *o = outpoints[i];
-        values[i] = Arr_u8_36_ctor(o.length, (uint8_t *) o.bytes);
-    }
-    Vec_u8_36 *lock_inputs = Vec_u8_36_ctor(outpoints.count, values);
-    u256 *txid = u256_ctor_u(isLock.transactionHash);
-    u256 *cycle_hash = u256_ctor_u(isLock.cycleHash);
-    u768 *signature = u768_ctor_u(isLock.signature);
+- (DAssetLockProof *)createInstantProof:(dashcore_ephemerealdata_instant_lock_InstantLock *)isLock {
     uint16_t tx_version = self.registrationAssetLockTransaction.version;
     uint32_t lock_time = self.registrationAssetLockTransaction.lockTime;
     NSArray *inputs = self.registrationAssetLockTransaction.inputs;
@@ -1440,7 +1452,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     Vec_dash_spv_crypto_tx_output_TransactionOutput *credit_output_vec = Vec_dash_spv_crypto_tx_output_TransactionOutput_ctor(creditOutputsCount, credit_outputs);
     uint32_t output_index = (uint32_t ) self.registrationAssetLockTransaction.lockedOutpoint.n;
     
-    return dash_spv_platform_transition_instant_proof(output_index, version, lock_inputs, txid, cycle_hash, signature, tx_version, lock_time, input_vec, output_vec, asset_lock_payload_version, credit_output_vec);
+    return dash_spv_platform_transition_instant_proof(output_index, isLock, tx_version, lock_time, input_vec, output_vec, asset_lock_payload_version, credit_output_vec);
 
 }
 
@@ -1499,9 +1511,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 }
 
 - (BOOL)containsPublicKey:(DIdentityPublicKey *)identity_public_key {
-    DMaybeOpaqueKey *key = [self keyAtIndex:identity_public_key->v0->id->_0];
-    if (!key || !key->ok) return NO;
-    return dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key->ok, identity_public_key->v0->data->_0);
+    DOpaqueKey *key = [self keyAtIndex:identity_public_key->v0->id->_0];
+    return key ? dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key, identity_public_key->v0->data->_0) : NO;
 }
 
 - (BOOL)containsTopupTransaction:(DSAssetLockTransaction *)transaction {
@@ -1635,7 +1646,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
             }
             uint32_t index = [self firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.wallet.isTransient];
             [debugInfo appendFormat:@", index: %u", index];
-            DMaybeOpaqueKey *publicKey = [self keyAtIndex:index];
+            DOpaqueKey *publicKey = [self keyAtIndex:index];
             [debugInfo appendFormat:@", public_key: %p", publicKey];
             DSInstantSendTransactionLock *isLock = assetLockTransaction.instantSendLockAwaitingProcessing;
             [debugInfo appendFormat:@", is_lock: %p", isLock];
@@ -1644,7 +1655,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                 if (completion) completion(nil, ERROR_FUNDING_TX_NOT_MINED);
                 return;
             }
-            DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey->ok);
+            DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey);
             DAssetLockProof *proof = [self createProof:isLock];
             DSLog(@"%@ Proof: %u: %p", debugInfo, proof->tag, proof);
             [self topupIdentityWithProof:proof public_key:public_key atIndex:index completion:completion];
@@ -1663,7 +1674,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     }
     uint32_t index = [self firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.wallet.isTransient];
     [debugInfo appendFormat:@", index: %u", index];
-    DMaybeOpaqueKey *publicKey = [self keyAtIndex:index];
+    DOpaqueKey *publicKey = [self keyAtIndex:index];
     [debugInfo appendFormat:@", public_key: %p", publicKey];
     NSAssert((index & ~(BIP32_HARD)) == 0, @"The index should be 0 here");
     NSAssert(self.registrationAssetLockTransaction, @"The registration credit funding transaction must be known %@", uint256_hex(self.registrationAssetLockTransactionHash));
@@ -1674,7 +1685,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         if (completion) completion(nil, ERROR_FUNDING_TX_NOT_MINED);
         return;
     }
-    DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey->ok);
+    DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey);
     DAssetLockProof *proof = [self createProof:isLock];
     DSLog(@"%@ Proof: %u: %p", debugInfo, proof->tag, proof);
     [self registerIdentityWithProof2:proof public_key:public_key atIndex:index completion:completion];
@@ -1714,11 +1725,11 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                          purpose:key->v0->purpose
                          atIndex:i
                           ofType:DOpaqueKeyKind(maybe_key->ok)
-                      withStatus:DSIdentityKeyStatus_Registered
+                      withStatus:dash_spv_platform_identity_model_IdentityKeyStatus_Registered_ctor()
                             save:!self.isTransient
                        inContext:self.platformContext];
                 }
-                self.registrationStatus = DSIdentityRegistrationStatus_Registered;
+                dash_spv_platform_identity_model_IdentityModel_set_registration_status(self.identity_model, dash_spv_platform_identity_model_IdentityRegistrationStatus_Registered_ctor());
                 break;
             }
             default:
@@ -1951,7 +1962,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 - (void)fetchNeededNetworkStateInformationInContext:(NSManagedObjectContext *)context
                                      withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNeededNetworkStateInformationInContext (local: %u, active keys: %u) ", self.logPrefix, self.isLocal, self.activeKeyCount];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNeededNetworkStateInformationInContext (local: %u, active keys: %lu) ", self.logPrefix, self.isLocal, self.activeKeyCount];
     DSLog(@"%@", debugString);
     dispatch_async(self.identityQueue, ^{
         if (!self.activeKeyCount) {
@@ -2195,7 +2206,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     return self.activeKeyCount > 0 && self.isRegistered;
 }
 
-
+- (DIdentityRegistrationStatus *)registrationStatus {
+    return dash_spv_platform_identity_model_IdentityModel_registration_status(self.identity_model);
+}
 
 // MARK: - Persistence
 
@@ -2210,21 +2223,24 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
     entity.uniqueID = uint256_data(self.uniqueID);
     entity.isLocal = self.isLocal;
-    entity.registrationStatus = self.registrationStatus;
+    entity.registrationStatus = dash_spv_platform_identity_model_IdentityModel_registration_status_index(self.identity_model);
     if (self.isLocal) {
         entity.registrationFundingTransaction = [DSAssetLockTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.registrationAssetLockTransaction.txHash)];
     }
     entity.chain = chainEntity;
     [self collectUsernameEntitiesIntoIdentityEntityInContext:entity context:context];
-    for (NSNumber *index in self.keyInfoDictionaries) {
-        NSDictionary *keyDictionary = self.keyInfoDictionaries[index];
-        DSIdentityKeyStatus status = [keyDictionary[@(DSIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
-        DKeyKind *keyType = [keyDictionary[@(DSIdentityKeyDictionary_KeyType)] pointerValue];
-        DMaybeOpaqueKey *key = [keyDictionary[@(DSIdentityKeyDictionary_Key)] pointerValue];
-        DSecurityLevel *level = [keyDictionary[@(DSIdentityKeyDictionary_KeyLevel)] pointerValue];
-        DPurpose *purpose = [keyDictionary[@(DSIdentityKeyDictionary_KeyPurpose)] pointerValue];
-        DSAuthenticationKeysDerivationPath *derivationPath = [self derivationPathForType:keyType];
-        const NSUInteger indexes[] = {_index, index.unsignedIntegerValue};
+    DKeyInfoDictionaries *key_info_dictionaries = dash_spv_platform_identity_model_IdentityModel_key_info_dictionaries(self.identity_model);
+    
+    for (uint32_t index = 0; index < key_info_dictionaries->count; index++) {
+        uint32_t key_info_index = key_info_dictionaries->keys[index];
+        DKeyInfo *key_info = key_info_dictionaries->values[index];
+        DIdentityKeyStatus *status = key_info->key_status;
+        DKeyKind *key_type = key_info->key_type;
+        DOpaqueKey *key = key_info->key;
+        DSecurityLevel *level = key_info->security_level;
+        DPurpose *purpose = key_info->purpose;
+        DSAuthenticationKeysDerivationPath *derivationPath = [self derivationPathForType:key_type];
+        const NSUInteger indexes[] = {_index, key_info_index};
         [self createNewKey:key
          forIdentityEntity:entity
                     atPath:[NSIndexPath indexPathWithIndexes:indexes length:2]
@@ -2234,6 +2250,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         fromDerivationPath:derivationPath
                  inContext:context];
     }
+    DKeyInfoDictionariesDtor(key_info_dictionaries);
     DSDashpayUserEntity *dashpayUserEntity = [DSDashpayUserEntity managedObjectInBlockedContext:context];
     dashpayUserEntity.chain = chainEntity;
     entity.matchingDashpayUser = dashpayUserEntity;
@@ -2278,8 +2295,10 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
             changeOccured = YES;
             [updateEvents addObject:DSIdentityUpdateEventCreditBalance];
         }
-        if (entity.registrationStatus != self.registrationStatus) {
-            entity.registrationStatus = self.registrationStatus;
+        
+        uint16_t registrationStatus = dash_spv_platform_identity_model_IdentityModel_registration_status_index(self.identity_model);
+        if (entity.registrationStatus != registrationStatus) {
+            entity.registrationStatus = registrationStatus;
             changeOccured = YES;
             [updateEvents addObject:DSIdentityUpdateEventRegistration];
         }
@@ -2327,7 +2346,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     return [NSString stringWithFormat:@"%@-%@-%@", self.uniqueIdString, derivationPath.standaloneExtendedPublicKeyUniqueID, [[path softenAllItems] indexPathString]];
 }
 
-- (BOOL)createNewKey:(DMaybeOpaqueKey *)key
+- (BOOL)createNewKey:(DOpaqueKey *)key
    forIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity
               atPath:(NSIndexPath *)path
           withStatus:(DIdentityKeyStatus *)status
@@ -2343,9 +2362,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         DSBlockchainIdentityKeyPathEntity *keyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
         keyPathEntity.derivationPath = derivationPathEntity;
         // TODO: that's wrong should convert KeyType <-> KeyKind
-        keyPathEntity.keyType = dash_spv_platform_identity_manager_opaque_key_to_key_type_index(key->ok);
-        keyPathEntity.keyStatus = status;
-        NSData *privateKeyData = [DSKeyManager privateKeyData:key->ok];
+        keyPathEntity.keyType = dash_spv_platform_identity_manager_opaque_key_to_key_type_index(key);
+        keyPathEntity.keyStatus = DIdentityKeyStatusToIndex(status);
+        NSData *privateKeyData = [DSKeyManager privateKeyData:key];
         if (privateKeyData) {
             setKeychainData(privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
 #if DEBUG
@@ -2354,9 +2373,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
             DSLog(@"Saving key at %@ for user %@", @"<REDACTED>", @"<REDACTED>");
 #endif
         } else {
-            DKeyKind *kind = DOpaqueKeyKind(key->ok);
+            DKeyKind *kind = DOpaqueKeyKind(key);
             DMaybeOpaqueKey *privateKey = [self derivePrivateKeyAtIndexPath:path ofType:kind];
-            NSAssert([DSKeyManager keysPublicKeyDataIsEqual:privateKey->ok key2:key->ok], @"The keys don't seem to match up");
+            NSAssert([DSKeyManager keysPublicKeyDataIsEqual:privateKey->ok key2:key], @"The keys don't seem to match up");
             NSData *privateKeyData = [DSKeyManager privateKeyData:privateKey->ok];
             NSAssert(privateKeyData, @"Private key data should exist");
             setKeychainData(privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
@@ -2368,7 +2387,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         }
         
         keyPathEntity.path = path;
-        keyPathEntity.publicKeyData = [DSKeyManager publicKeyData:key->ok];
+        keyPathEntity.publicKeyData = [DSKeyManager publicKeyData:key];
         keyPathEntity.keyID = (uint32_t)[path indexAtPosition:path.length - 1];
         keyPathEntity.securityLevel = DSecurityLevelIndex(security_level);
         keyPathEntity.purpose = DPurposeIndex(purpose);
@@ -2384,7 +2403,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     }
 }
 
-- (void)saveNewKey:(DMaybeOpaqueKey *)key
+- (void)saveNewKey:(DOpaqueKey *)key
             atPath:(NSIndexPath *)path
         withStatus:(DIdentityKeyStatus *)status
  withSecurityLevel:(DSecurityLevel *)security_level
@@ -2420,7 +2439,7 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
             DSBlockchainIdentityKeyPathEntity *keyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
             // TODO: migrate OpaqueKey/KeyKind to KeyType
             keyPathEntity.keyType = dash_spv_platform_identity_manager_opaque_key_to_key_type_index(key->ok);
-            keyPathEntity.keyStatus = status;
+            keyPathEntity.keyStatus = DIdentityKeyStatusToIndex(status);
             keyPathEntity.keyID = keyID;
             keyPathEntity.publicKeyData = [DSKeyManager publicKeyData:key->ok];
             keyPathEntity.securityLevel = DSecurityLevelIndex(security_level);
@@ -2447,8 +2466,9 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
         DSBlockchainIdentityEntity *identityEntity = [self identityEntityInContext:context];
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath inContext:context];
         DSBlockchainIdentityKeyPathEntity *keyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@", identityEntity, derivationPathEntity, path] firstObject];
-        if (keyPathEntity && (keyPathEntity.keyStatus != status)) {
-            keyPathEntity.keyStatus = status;
+        uint16_t keyStatus = DIdentityKeyStatusToIndex(status);
+        if (keyPathEntity && (keyPathEntity.keyStatus != keyStatus)) {
+            keyPathEntity.keyStatus = keyStatus;
             [context ds_save];
         }
         [self notifyUpdate:@{
@@ -2469,7 +2489,7 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
         DSBlockchainIdentityKeyPathEntity *keyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == NULL && keyID == %@", identityEntity, @(keyID)] firstObject];
         if (keyPathEntity) {
             DSBlockchainIdentityKeyPathEntity *keyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
-            keyPathEntity.keyStatus = status;
+            keyPathEntity.keyStatus = dash_spv_platform_identity_model_IdentityKeyStatus_to_index(status);
             [context ds_save];
         }
         [self notifyUpdate:@{

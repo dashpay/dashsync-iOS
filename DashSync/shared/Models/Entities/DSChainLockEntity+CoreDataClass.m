@@ -13,7 +13,7 @@
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSQuorumEntryEntity+CoreDataClass.h"
+//#import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -21,21 +21,21 @@
 
 + (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock
                                   inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:uint256_data(chainLock.blockHash) inContext:context];
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:chainLock.blockHashData inContext:context];
     if (!merkleBlockEntity) {
         return nil;
     }
     DSChainLockEntity *chainLockEntity = [DSChainLockEntity managedObjectInBlockedContext:context];
     chainLockEntity.validSignature = chainLock.signatureVerified;
-    chainLockEntity.signature = [NSData dataWithUInt768:chainLock.signature];
+    chainLockEntity.signature = chainLock.signatureData;
     chainLockEntity.merkleBlock = merkleBlockEntity;
-    chainLockEntity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", chainLock.intendedQuorumPublicKey];
+//    chainLockEntity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", chainLock.intendedQuorumPublicKey];
 //    chainLockEntity.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
     if (chainLock.signatureVerified) {
         
 //        DSChainEntity *chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:context];
         DSChainEntity *chainEntity = [chainLock.chain chainEntityInContext:context];
-        if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < chainLock.height) {
+        if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(chainLock.lock)) {
             chainEntity.lastChainLock = chainLockEntity;
         }
     }
@@ -44,9 +44,12 @@
 }
 
 - (DSChainLock *)chainLockForChain:(DSChain *)chain {
-    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:self.merkleBlock.blockHash.UInt256 signature:self.signature.UInt768 signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
-
-    return chainLock;
+    return [[DSChainLock alloc] initWithBlockHash:self.merkleBlock.blockHash
+                                           height:self.merkleBlock.height
+                                        signature:self.signature
+                                signatureVerified:TRUE
+                                   quorumVerified:TRUE
+                                          onChain:chain];
 }
 
 @end

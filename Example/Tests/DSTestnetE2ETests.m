@@ -281,8 +281,8 @@
                                          forTopupAmount:10000
                                               pinPrompt:@"PIN?"
                                          stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
-                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    XCTAssertNil(error, @"There should not be an error");
+                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    XCTAssertTrue(![errors count], @"There should not be an error");
                     XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [identityRegistrationFinishedExpectation1a fulfill];
@@ -301,8 +301,8 @@
                                          forTopupAmount:10000
                                               pinPrompt:@"PIN?"
                                          stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
-                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    XCTAssertNil(error, @"There should not be an error");
+                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    XCTAssertTrue(![errors count], @"There should not be an error");
                     XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [identityRegistrationFinishedExpectation1b fulfill];
@@ -321,8 +321,8 @@
                                          forTopupAmount:10000
                                               pinPrompt:@"PIN?"
                                          stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
-                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    XCTAssertNil(error, @"There should not be an error");
+                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    XCTAssertTrue(![errors count], @"There should not be an error");
                     XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [identityRegistrationFinishedExpectation2a fulfill];

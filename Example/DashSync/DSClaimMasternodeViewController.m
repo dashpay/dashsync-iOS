@@ -45,37 +45,33 @@
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
 //        UInt160 publicKeyHash = [DSKeyManager ecdsaKeyPublicKeyHashFromSecret:self.inputTextView.text forChainType:self.chain.chainType];
-        if (dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_key_id_matches_with_secret_key(self.masternode, DChar(self.inputTextView.text), self.chain.chainType)) {
+        NSString *seckeyStr = self.inputTextView.text;
+        
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key(DChar(seckeyStr), self.chain.chainType);
+        BOOL valid = NO;
+        if (result->ok) {
+            u160 *pub_key_hash = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_hash160(result->ok);
+            dashcore_hash_types_PubkeyHash *key_id_voting = self.masternode->masternode_list_entry->key_id_voting;
+            u160 *key_id = dashcore_hash_types_PubkeyHash_inner(key_id_voting);
+            UInt160 pubKeyHash = u160_cast(pub_key_hash);
+            UInt160 keyID = u160_cast(key_id);
+            valid = uint160_eq(pubKeyHash, keyID);
+            u160_dtor(key_id);
+        }
+        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+        if (valid) {
             [self.navigationController popViewControllerAnimated:TRUE];
         } else {
-            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key"
+                                                                                     message:@"This private key is valid but does not correspond to this masternode"
+                                                                              preferredStyle:UIAlertControllerStyleAlert];
             [alertController addAction:[UIAlertAction actionWithTitle:@"Ok"
                                                                 style:UIAlertActionStyleCancel
-                                                              handler:^(UIAlertAction *_Nonnull action){
-
-                                                              }]];
+                                                              handler:^(UIAlertAction *_Nonnull action) {}]];
             [self presentViewController:alertController
                                animated:TRUE
-                             completion:^{
-
-                             }];
+                             completion:^{}];
         }
-//        if (uint160_eq(publicKeyHash, self.masternode.keyIDVoting)) {
-//            //[self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
-//            [self.navigationController popViewControllerAnimated:TRUE];
-//        } else {
-//            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
-//            [alertController addAction:[UIAlertAction actionWithTitle:@"Ok"
-//                                                                style:UIAlertActionStyleCancel
-//                                                              handler:^(UIAlertAction *_Nonnull action){
-//
-//                                                              }]];
-//            [self presentViewController:alertController
-//                               animated:TRUE
-//                             completion:^{
-//
-//                             }];
-//        }
     }
 }
 

@@ -47,18 +47,20 @@
 #import "DSInsightManager.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
-#import "DSMasternodeListEntity+CoreDataProperties.h"
+//#import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSOptionsManager.h"
 #import "DSPeerManager.h"
-#import "DSQuorumEntryEntity+CoreDataProperties.h"
-#import "DSQuorumSnapshotEntity+CoreDataClass.h"
-#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
+//#import "DSQuorumEntryEntity+CoreDataProperties.h"
+//#import "DSQuorumSnapshotEntity+CoreDataClass.h"
+//#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSTransactionHashEntity+CoreDataProperties.h"
 #import "DSTransactionInput.h"
 #import "DSTransactionOutput.h"
+#import "NSManagedObjectContext+DSSugar.h"
+#import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSObject+Notification.h"
 #import "NSString+Bitcoin.h"
@@ -210,12 +212,12 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 - (DProcessor *)sharedProcessorObj {
     return self.sharedProcessor->obj;
 }
-- (DArcCache *)sharedCache {
-    return self.shareCore.cache;
-}
-- (DCache *)sharedCacheObj {
-    return self.sharedCache->obj;
-}
+//- (DArcCache *)sharedCache {
+//    return self.shareCore.cache;
+//}
+//- (DCache *)sharedCacheObj {
+//    return self.sharedCache->obj;
+//}
 - (DArcPlatformSDK *)sharedPlatform {
     return self.shareCore.platform;
 }
@@ -1054,13 +1056,13 @@ static dispatch_once_t devnetToken = 0;
         DSLog(@"%@ Block was received from peer after reset, ignoring it", prefix);
         return FALSE;
     }
-    //DSLog(@"a block %@",uint256_hex(block.blockHash));
     //All blocks will be added from same delegateQueue
     NSArray *txHashes = block.transactionHashes;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
     DSBlock *prev = nil;
-    
+    DSLog(@"[%@] + block (asHeader: %u) %@ prev: %@", self.name, isHeaderOnly, uint256_hex(block.blockHash), uint256_hex(block.prevBlock));
+
     DSBlockPosition blockPosition = DSBlockPosition_Orphan;
     DSChainSyncPhase phase = self.chainManager.syncPhase;
     if (phase == DSChainSyncPhase_InitialTerminalBlocks) {
@@ -1303,7 +1305,7 @@ static dispatch_once_t devnetToken = 0;
             return TRUE;
         }
         
-        if (h <= self.lastChainLock.height) {
+        if (h <= dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(self.lastChainLock.lock)) {
             DSLog(@"%@ ignoring block on fork when main chain is chainlocked: %d, blockHash: %@", prefix, h, blockHash);
             return TRUE;
         }
@@ -1410,7 +1412,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if ((blockPosition & DSBlockPosition_Terminal) && checkpoint && checkpoint == [self lastCheckpointHavingMasternodeList]) {
-        [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
+        [self.chainManager.masternodeManager restoreState];
     }
     
     BOOL savedBlockLocators = NO;
@@ -1564,7 +1566,7 @@ static dispatch_once_t devnetToken = 0;
 // MARK: Chain Locks
 
 - (BOOL)addChainLock:(DSChainLock *)chainLock {
-    DSBlock *terminalBlock = self.mTerminalBlocks[uint256_obj(chainLock.blockHash)];
+    DSBlock *terminalBlock = self.mTerminalBlocks[uint256_obj(chainLock.blockHashData.UInt256)];
     [terminalBlock setChainLockedWithChainLock:chainLock];
     if ((terminalBlock.chainLocked) && (![self recentTerminalBlockForBlockHash:terminalBlock.blockHash])) {
         //the newly chain locked block is not in the main chain, we will need to reorg to it
@@ -1618,7 +1620,7 @@ static dispatch_once_t devnetToken = 0;
             }
         }
     }
-    DSBlock *syncBlock = self.mSyncBlocks[uint256_obj(chainLock.blockHash)];
+    DSBlock *syncBlock = self.mSyncBlocks[uint256_obj(chainLock.blockHashData.UInt256)];
     [syncBlock setChainLockedWithChainLock:chainLock];
     DSBlock *sbmc = self.lastSyncBlockDontUseCheckpoints;
     if (sbmc && (syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) { //!OCLINT
@@ -2030,10 +2032,10 @@ static dispatch_once_t devnetToken = 0;
     DSLog(@"[%@] Wiping Masternode Info", self.name);
     DSChainEntity *chainEntity = [self chainEntityInContext:context];
     [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
-    [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
-    [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-    [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-    [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
+//    [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+//    [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+//    [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+//    [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
     [self.chainManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", self.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
 }
@@ -2053,9 +2055,16 @@ static dispatch_once_t devnetToken = 0;
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(DMasternodeEntryList *)simplifiedMasternodeEntries {
     for (int i = 0; i < simplifiedMasternodeEntries->count; i++) {
         DMasternodeEntry *entry = simplifiedMasternodeEntries->values[i];
-        NSString *votingAddress = [DSKeyManager NSStringFrom:DMasternodeEntryVotingAddress(entry, self.chainType)];
-        NSString *operatorAddress = [DSKeyManager NSStringFrom:DMasternodeEntryOperatorPublicKeyAddress(entry, self.chainType)];
-        NSString *platformNodeAddress = [DSKeyManager NSStringFrom:DMasternodeEntryEvoNodeAddress(entry, self.chainType)];
+        NSString *votingAddress = [DSKeyManager NSStringFrom:DMasternodeEntryVotingAddress(entry->masternode_list_entry->key_id_voting, self.chainType)];
+        NSString *operatorAddress = [DSKeyManager NSStringFrom:DMasternodeEntryOperatorPublicKeyAddress(entry->masternode_list_entry->operator_public_key, self.chainType)];
+        NSString *platformNodeAddress = nil;
+        switch (entry->masternode_list_entry->mn_type->tag) {
+            case dashcore_sml_masternode_list_entry_EntryMasternodeType_Regular:
+                break;
+            case dashcore_sml_masternode_list_entry_EntryMasternodeType_HighPerformance:
+                platformNodeAddress = [DSKeyManager NSStringFrom:DMasternodeEntryEvoNodeAddress(entry->masternode_list_entry->mn_type->high_performance.platform_node_id, self.chainType)];
+                break;
+        }
         for (DSWallet *wallet in self.wallets) {
             DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
             if ([providerOperatorKeysDerivationPath containsAddress:operatorAddress]) {
@@ -2179,13 +2188,20 @@ static dispatch_once_t devnetToken = 0;
             //only remove orphan chains
             NSArray<DSMerkleBlockEntity *> *recentOrphans = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && (height > %u) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], startHeight, blocks.allKeys];
             if ([recentOrphans count]) DSLog(@"[%@] %lu recent orphans will be removed from disk", self.name, (unsigned long)[recentOrphans count]);
+            for (DSMerkleBlockEntity *e in recentOrphans) {
+                DSLog(@"[%@] remove orphan MerkleBlockEntity: %u: %@", self.name, e.height, e.blockHash.hexString);
+            }
             [DSMerkleBlockEntity deleteObjects:recentOrphans inContext:self.chainManagedObjectContext];
         } else {
+
             //remember to not delete blocks needed for quorums
-            NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
-//            for (DSMerkleBlockEntity *e in oldBlockHeaders) {
-//                DSLog(@"[%@] remove MerkleBlockEntity: %u: %@", self.name, e.height, e.blockHash.hexString);
-//            }
+            // TODO: check how this change really affects in runtime
+            NSSet<NSData *> *blockSet = [[self.masternodeManager blockHashesUsedByMasternodeLists] setByAddingObjectsFromArray:blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blockSet];
+//            NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
+            for (DSMerkleBlockEntity *e in oldBlockHeaders) {
+                DSLog(@"[%@] remove MerkleBlockEntity: %u: %@", self.name, e.height, e.blockHash.hexString);
+            }
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];

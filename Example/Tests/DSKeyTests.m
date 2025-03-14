@@ -166,7 +166,7 @@
 
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3kq9e842BzkMfbPSbhKVwGZgspDSkz4YfqjdBYQPWDzqd77gPgR1zq4XG7KtAL5DZTcfFFs2iph4urNyXeBkXsEYY".base58ToData;
-    sign = Arr_u8_65_ctor(65, (uint8_t *) sig.bytes);
+    sign = Arr_u8_65_ctor(65, NSDataToHeap(sig));
     digest = u256_ctor_u(md);
     reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
     rec_pub_key_data =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(reckey->ok);
@@ -178,7 +178,7 @@
     sig = @"3qECEYmb6x4X22sH98Aer68SdfrLwtqvb5Ncv7EqKmzbxeYYJ1hU9irP6R5PeCctCPYo5KQiWFgoJ3H5MkuX18gHu".base58ToData;
 
     digest = u256_ctor_u(md);
-    sign = Arr_u8_65_ctor(65, (uint8_t *) sig.bytes);
+    sign = Arr_u8_65_ctor(65, NSDataToHeap(sig));
     sig = NSDataFromPtr(sign);
     NSLog(@"sig: %@", sig.hexString);
     reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
@@ -189,7 +189,7 @@
 
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3oHQhxq5eW8dnp7DquTCbA5tECoNx7ubyiubw4kiFm7wXJF916SZVykFzb8rB1K6dEu7mLspBWbBEJyYk79jAosVR".base58ToData;
-    sign = Arr_u8_65_ctor(65, (uint8_t *) sig.bytes);
+    sign = Arr_u8_65_ctor(65, NSDataToHeap(sig));
     sig = NSDataFromPtr(sign);
     digest = u256_ctor_u(md);
     reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);

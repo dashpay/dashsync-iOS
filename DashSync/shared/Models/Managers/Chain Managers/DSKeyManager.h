@@ -20,6 +20,17 @@
 #import "DSChain.h"
 #import "NSIndexPath+FFI.h"
 
+#define NSDataToHeap(data) (^{ \
+    uint8_t *ffi_ref = malloc(data.length); \
+    memcpy(ffi_ref, data.bytes, data.length); \
+    return ffi_ref; \
+}())
+
+//static uint8_t * _Nonnull NSDataToHeap(NSData * _Nonnull data) {
+//    uint8_t *heapBuffer = malloc(data.length);
+//    memcpy(heapBuffer, data.bytes, data.length);
+//    return heapBuffer;
+//}
 #define u128 Arr_u8_16
 #define u160 Arr_u8_20
 #define u256 Arr_u8_32
@@ -32,13 +43,29 @@
 #define BYTES Vec_u8
 #define BITSET dash_spv_crypto_llmq_bitset_Bitset
 
-#define u128_ctor(data) Arr_u8_16_ctor(data.length, (uint8_t *) data.bytes)
-#define u160_ctor(data) Arr_u8_20_ctor(data.length, (uint8_t *) data.bytes)
-#define u256_ctor(data) Arr_u8_32_ctor(data.length, (uint8_t *) data.bytes)
-#define u264_ctor(data) Arr_u8_33_ctor(data.length, (uint8_t *) data.bytes)
-#define u384_ctor(data) Arr_u8_48_ctor(data.length, (uint8_t *) data.bytes)
-#define u512_ctor(data) Arr_u8_64_ctor(data.length, (uint8_t *) data.bytes)
-#define u768_ctor(data) Arr_u8_96_ctor(data.length, (uint8_t *) data.bytes)
+//#define u128_ctor(data) Arr_u8_16_ctor(data.length, (uint8_t *) data.bytes)
+//#define u160_ctor(data) Arr_u8_20_ctor(data.length, (uint8_t *) data.bytes)
+//#define u256_ctor(data) Arr_u8_32_ctor(data.length, (uint8_t *) data.bytes)
+//#define u264_ctor(data) Arr_u8_33_ctor(data.length, (uint8_t *) data.bytes)
+//#define u384_ctor(data) Arr_u8_48_ctor(data.length, (uint8_t *) data.bytes)
+//#define u512_ctor(data) Arr_u8_64_ctor(data.length, (uint8_t *) data.bytes)
+//#define u768_ctor(data) Arr_u8_96_ctor(data.length, (uint8_t *) data.bytes)
+
+#define u128_ctor(data) Arr_u8_16_ctor(data.length, NSDataToHeap(data))
+#define u160_ctor(data) Arr_u8_20_ctor(data.length, NSDataToHeap(data))
+#define u256_ctor(data) Arr_u8_32_ctor(data.length, NSDataToHeap(data))
+#define u264_ctor(data) Arr_u8_33_ctor(data.length, NSDataToHeap(data))
+#define u384_ctor(data) Arr_u8_48_ctor(data.length, NSDataToHeap(data))
+#define u512_ctor(data) Arr_u8_64_ctor(data.length, NSDataToHeap(data))
+#define u768_ctor(data) Arr_u8_96_ctor(data.length, NSDataToHeap(data))
+
+//#define u128_ctor_hash(data) Arr_u8_16_ctor(data.length, (uint8_t *) data.bytes)
+//#define u160_ctor_hash(data) Arr_u8_20_ctor(data.length, (uint8_t *) data.bytes)
+//#define u256_ctor_hash(data) Arr_u8_32_ctor(data.length, (uint8_t *) data.bytes)
+//#define u264_ctor_hash(data) Arr_u8_33_ctor(data.length, (uint8_t *) data.bytes)
+//#define u384_ctor_hash(data) Arr_u8_48_ctor(data.length, (uint8_t *) data.bytes)
+//#define u512_ctor_hash(data) Arr_u8_64_ctor(data.length, (uint8_t *) data.bytes)
+//#define u768_ctor_hash(data) Arr_u8_96_ctor(data.length, (uint8_t *) data.bytes)
 
 #define u128_cast(u) *((UInt128 *)u->values)
 #define u160_cast(u) *((UInt160 *)u->values)
@@ -47,6 +74,13 @@
 #define u512_cast(u) *((UInt512 *)u->values)
 #define u768_cast(u) *((UInt768 *)u->values)
 
+//#define u128_hash_cast(u) *((UInt128 *)u)
+//#define u160_hash_cast(u) *((UInt160 *)u)
+//#define u256_hash_cast(u) *((UInt256 *)u)
+//#define u384_hash_cast(u) *((UInt384 *)u)
+//#define u512_hash_cast(u) *((UInt512 *)u)
+//#define u768_hash_cast(u) *((UInt768 *)u)
+//
 #define u128_hex(u) uint128_hex(*((UInt128 *)u->values))
 #define u160_hex(u) uint160_hex(*((UInt160 *)u->values))
 #define u256_hex(u) uint256_hex(*((UInt256 *)u->values))
@@ -54,36 +88,117 @@
 #define u512_hex(u) uint512_hex(*((UInt512 *)u->values))
 #define u768_hex(u) uint768_hex(*((UInt768 *)u->values))
 
+#define u128_reversed_hex(u) uint128_hex(uint128_reverse(*((UInt128 *)u->values)))
+#define u160_reversed_hex(u) uint160_hex(uint160_reverse(*((UInt160 *)u->values)))
+#define u256_reversed_hex(u) uint256_hex(uint256_reverse(*((UInt256 *)u->values)))
+#define u384_reversed_hex(u) uint384_hex(uint384_reverse(*((UInt384 *)u->values)))
+#define u512_reversed_hex(u) uint512_hex(uint512_reverse(*((UInt512 *)u->values)))
+#define u768_reversed_hex(u) uint768_hex(uint768_reverse(*((UInt768 *)u->values)))
 
-#define u128_ctor_u(u) (^{ \
-    uint8_t *hash = malloc(16 * sizeof(uint8_t)); \
-    memcpy(hash, u.u8, 16); \
-    return Arr_u8_16_ctor(16, hash); \
+//#define u128_hash_hex(u) uint128_hex(*((UInt128 *)u))
+//#define u160_hash_hex(u) uint160_hex(*((UInt160 *)u))
+//#define u256_hash_hex(u) uint256_hex(*((UInt256 *)u))
+//#define u384_hash_hex(u) uint384_hex(*((UInt384 *)u))
+//#define u512_hash_hex(u) uint512_hex(*((UInt512 *)u))
+//#define u768_hash_hex(u) uint768_hex(*((UInt768 *)u))
+
+#define u8_16_ctor_u(u) (^{ \
+    uint8_t (*ffi_ref)[16] = malloc(16 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 16); \
+    return ffi_ref; \
 }())
 
+#define u8_20_ctor_u(u) (^{ \
+    uint8_t (*ffi_ref)[20] = malloc(20 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 20); \
+    return ffi_ref; \
+}())
+#define u8_32_ctor_u(u) (^{ \
+    uint8_t (*ffi_ref)[32] = malloc(32 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 32); \
+    return ffi_ref; \
+}())
+
+#define u8_48_ctor_u(u) (^{ \
+    uint8_t (*ffi_ref)[48] = malloc(48 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 48); \
+    return ffi_ref; \
+}())
+
+#define u8_64_ctor_u(u) (^{ \
+    uint8_t (*ffi_ref)[64] = malloc(64 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 64); \
+    return ffi_ref; \
+}())
+
+#define u8_96_ctor_u(u) (^{ \
+    uint8_t (*ffi_ref)[96] = malloc(96 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 96); \
+    return ffi_ref; \
+}())
+
+
+//
+//#define u128_ctor_u_hash(u) (^{ \
+//    uint8_t (*ffi_ref)[16] = malloc(16 * sizeof(uint8_t)); \
+//    memcpy(ffi_ref, u.u8, 16); \
+//    return ffi_ref; \
+//}())
+//
+//#define u160_ctor_u_hash(u) (^{ \
+//    uint8_t (*ffi_ref)[20] = malloc(20 * sizeof(uint8_t)); \
+//    memcpy(ffi_ref, u.u8, 20); \
+//    return ffi_ref; \
+//}())
+//#define u256_ctor_u_hash(u) (^{ \
+//    uint8_t (*ffi_ref)[32] = malloc(32 * sizeof(uint8_t)); \
+//    memcpy(ffi_ref, u.u8, 32); \
+//    return ffi_ref; \
+//}())
+//
+//#define u384_ctor_u_hash(u) (^{ \
+//    uint8_t (*ffi_ref)[48] = malloc(48 * sizeof(uint8_t)); \
+//    memcpy(ffi_ref, u.u8, 48); \
+//    return ffi_ref; \
+//}())
+//
+//#define u512_ctor_u_hash(u) (^{ \
+//    uint8_t (*ffi_ref)[64] = malloc(64 * sizeof(uint8_t)); \
+//    memcpy(ffi_ref, u.u8, 64); \
+//    return ffi_ref; \
+//}())
+//
+//#define u768_ctor_u_hash(u) (^{ \
+//    uint8_t (*ffi_ref)[96] = malloc(96 * sizeof(uint8_t)); \
+//    memcpy(ffi_ref, u.u8, 96); \
+//    return ffi_ref; \
+//}())
+
+#define u128_ctor_u(u) (^{ \
+    uint8_t *ffi_ref = malloc(16 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 16); \
+    return Arr_u8_16_ctor(16, ffi_ref); \
+}())
 #define u160_ctor_u(u) (^{ \
-    uint8_t *ffi = malloc(20 * sizeof(uint8_t)); \
-    memcpy(ffi, u.u8, 20); \
-    return Arr_u8_20_ctor(20, ffi); \
+    uint8_t *ffi_ref = malloc(20 * sizeof(uint8_t)); \
+    memcpy(ffi_ref, u.u8, 20); \
+    return Arr_u8_20_ctor(20, ffi_ref); \
 }())
 #define u256_ctor_u(u) (^{ \
     uint8_t *ffi_ref = malloc(32 * sizeof(uint8_t)); \
     memcpy(ffi_ref, u.u8, 32); \
     return Arr_u8_32_ctor(32, ffi_ref); \
 }())
-
 #define u384_ctor_u(u) (^{ \
     uint8_t *ffi_ref = malloc(48 * sizeof(uint8_t)); \
     memcpy(ffi_ref, u.u8, 48); \
     return Arr_u8_48_ctor(48, ffi_ref); \
 }())
-
 #define u512_ctor_u(u) (^{ \
     uint8_t *ffi_ref = malloc(64 * sizeof(uint8_t)); \
     memcpy(ffi_ref, u.u8, 64); \
-    return Arr_u8_64_ctor(64, ffi_ref); \
+   return Arr_u8_64_ctor(64, ffi_ref); \
 }())
-
 #define u768_ctor_u(u) (^{ \
     uint8_t *ffi_ref = malloc(96 * sizeof(uint8_t)); \
     memcpy(ffi_ref, u.u8, 96); \
@@ -110,7 +225,8 @@
     result;                                                    \
 })
 
-#define slice_ctor(data) Slice_u8_ctor(data.length, (uint8_t *) data.bytes)
+#define slice_ctor(data) Slice_u8_ctor(data.length, NSDataToHeap(data))
+//#define slice_ctor(data) Slice_u8_ctor(data.length, (uint8_t *) data.bytes)
 #define slice_u128_ctor_u(u) Slice_u8_ctor(16, u.u8)
 #define slice_u160_ctor_u(u) Slice_u8_ctor(20, u.u8)
 #define slice_u256_ctor_u(u) Slice_u8_ctor(32, u.u8)
@@ -120,10 +236,11 @@
 
 #define slice_dtor(ptr) Slice_u8_destroy(ptr)
 
-#define bytes_ctor(data) Vec_u8_ctor(data.length, (uint8_t *)data.bytes)
+#define bytes_ctor(data) Vec_u8_ctor(data.length, NSDataToHeap(data))
+//#define bytes_ctor(data) Vec_u8_ctor(data.length, (uint8_t *)data.bytes)
 #define bytes_dtor(ptr) Vec_u8_destroy(ptr)
 
-#define bitset_ctor(data, count) dash_spv_crypto_llmq_bitset_Bitset_ctor(data.length, (uint8_t *)data.bytes)
+#define bitset_ctor(data, count) dash_spv_crypto_llmq_bitset_Bitset_ctor(data.length, NSDataToHeap(data))
 #define bitset_dtor(ptr) dash_spv_crypto_llmq_bitset_Bitset_destroy(ptr)
 
 #define DChar(str) (char *) [str UTF8String]
@@ -161,27 +278,27 @@
 #define DMaybeMBlock Result_ok_dash_spv_masternode_processor_common_block_MBlock_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 #define DMaybeMBlockCtor(ok, err) Result_ok_dash_spv_masternode_processor_common_block_MBlock_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(ok, err)
 
-#define DMasternodeList dash_spv_masternode_processor_models_masternode_list_MasternodeList
-#define DMasternodeListDtor(ptr) dash_spv_masternode_processor_models_masternode_list_MasternodeList_destroy(ptr)
+#define DMasternodeList dashcore_sml_masternode_list_MasternodeList
+#define DMasternodeListDtor(ptr) dashcore_sml_masternode_list_MasternodeList_destroy(ptr)
 //#define DArcMasternodeList std_sync_Arc_dash_spv_masternode_processor_models_masternode_list_MasternodeList
 //#define DArcMasternodeListDtor(ptr) std_sync_Arc_dash_spv_masternode_processor_models_masternode_list_MasternodeList_destroy(ptr)
-#define DMaybeMasternodeList Result_ok_dash_spv_masternode_processor_models_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
+#define DMaybeMasternodeList Result_ok_dashcore_sml_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 
-#define DMasternodeListFromEntryPool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec) dash_spv_masternode_processor_models_masternode_list_from_entry_pool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec)
-#define DMasternodeEntry dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry
-#define DMasternodeEntryDtor(ptr) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_destroy(ptr)
-#define DMasternodeEntryList Vec_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry
-#define DMasternodeEntryListCtor(count, list) Vec_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_ctor(count, list)
-#define DMasternodeEntryListDtor(ptr) Vec_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_destroy(ptr)
-#define DMasternodeEntryMap std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry
-#define DMasternodeEntryMapDtor(ptr) std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_destroy(ptr)
-#define DLLMQMap std_collections_Map_keys_dash_spv_crypto_network_llmq_type_LLMQType_values_std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
-#define DLLMQMapOfType std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
-#define DLLMQEntry dash_spv_crypto_llmq_entry_LLMQEntry
-#define DLLMQEntryDtor(ptr) dash_spv_crypto_llmq_entry_LLMQEntry_destroy(ptr)
-#define DLLMQEntrySignID(ptr, req_id, hash) dash_spv_crypto_llmq_entry_LLMQEntry_sign_id(ptr, req_id, hash)
-#define DLLMQEntryVerifySignature(ptr, sign_id, sig) dash_spv_crypto_llmq_entry_LLMQEntry_verify_signature(ptr, sign_id, sig)
-#define DLLMQEntryHashHex(ptr) dash_spv_crypto_llmq_entry_LLMQEntry_llmq_hash_hex(ptr)
+//#define DMasternodeListFromEntryPool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec) dash_spv_masternode_processor_models_masternode_list_from_entry_pool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec)
+#define DMasternodeEntry dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry
+#define DMasternodeEntryDtor(ptr) dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_destroy(ptr)
+#define DMasternodeEntryList Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry
+#define DMasternodeEntryListCtor(count, list) Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_ctor(count, list)
+#define DMasternodeEntryListDtor(ptr) Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_destroy(ptr)
+//#define DMasternodeEntryMap std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry
+#define DMasternodeEntryMapDtor(ptr) std_collections_Map_keys_u8_arr_32_values_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_destroy(ptr)
+//#define DLLMQMap std_collections_Map_keys_dash_spv_crypto_network_llmq_type_LLMQType_values_std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
+//#define DLLMQMapOfType std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
+#define DLLMQEntry dashcore_sml_quorum_entry_qualified_quorum_entry_QualifiedQuorumEntry
+#define DLLMQEntryDtor(ptr) dashcore_sml_quorum_entry_qualified_quorum_entry_QualifiedQuorumEntry_destroy(ptr)
+//#define DLLMQEntrySignID(ptr, req_id, hash) dash_spv_crypto_llmq_entry_LLMQEntry_sign_id(ptr, req_id, hash)
+//#define DLLMQEntryVerifySignature(ptr, sign_id, sig) dash_spv_crypto_llmq_entry_LLMQEntry_verify_signature(ptr, sign_id, sig)
+//#define DLLMQEntryHashHex(ptr) dash_spv_crypto_llmq_entry_LLMQEntry_llmq_hash_hex(ptr)
 
 #define DLLMQEntryList Vec_dash_spv_crypto_llmq_entry_LLMQEntry
 #define DLLMQEntryListCtor(count, list) Vec_dash_spv_crypto_llmq_entry_LLMQEntry_ctor(count, list)
@@ -217,66 +334,70 @@
 #define DNotFoundAsAnError() dash_spv_platform_document_manager_DocumentValidator_None_ctor()
 #define DNotFoundAsNotAnError() dash_spv_platform_document_manager_DocumentValidator_AcceptNotFoundAsNotAnError_ctor()
 
-#define DQRInfoResult Result_Tuple_Arr_u8_32_Arr_u8_32_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError
-#define DQRInfoResultDtor(ptr) Result_Tuple_Arr_u8_32_Arr_u8_32_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError_destroy(ptr)
+#define DProcessingError dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError
+#define DQRInfoResult Result_ok_std_collections_BTreeSet_dashcore_hash_types_BlockHash_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError
+#define DQRInfoResultDtor(ptr) Result_ok_std_collections_BTreeSet_dashcore_hash_types_BlockHash_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_destroy(ptr)
 
 #define DMnDiffFromFile(processor, message, protocol_version) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_file(processor, message, protocol_version)
-#define DMnDiffFromMessage(processor, message, is_from_snapshot, protocol_version, allow_invalid_merkle_roots, peer) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_message(processor, message, is_from_snapshot, protocol_version, allow_invalid_merkle_roots, peer)
+#define DMnDiffFromMessage(proc, message, height, verify) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_mn_list_diff_result_from_message(proc, message, height, verify)
 
-#define DMnDiffResult Result_Tuple_Arr_u8_32_Arr_u8_32_bool_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError
-#define DMnDiffResultDtor(ptr) Result_Tuple_Arr_u8_32_Arr_u8_32_bool_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError_destroy(ptr)
+#define DMnEngineDeserializationResult Result_ok_usize_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError
+#define DMnEngineDeserializationResultDtor(ptr) Result_ok_usize_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_destroy(ptr)
+#define DMnDiffResult Result_Tuple_dashcore_hash_types_BlockHash_dashcore_hash_types_BlockHash_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError
+#define DMnDiffResultDtor(ptr) Result_Tuple_dashcore_hash_types_BlockHash_dashcore_hash_types_BlockHash_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_destroy(ptr)
 
 #define DMasternodeListForBlockHash(processor, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_list_for_block_hash(processor, block_hash)
-#define DCalcMnMerkleRoot(list, block_height) dash_spv_masternode_processor_models_masternode_list_MasternodeList_calculate_masternodes_merkle_root(list, block_height)
-#define DCalcLLMQMerkleRoot(list) dash_spv_masternode_processor_models_masternode_list_MasternodeList_calculate_llmq_merkle_root(list)
-#define DCalcMnMerkleRootWithBlockHeightLookup(list, context, lookup) dash_spv_masternode_processor_models_masternode_list_MasternodeList_calculate_masternodes_merkle_root_with_block_height_lookup(list, context, lookup)
+//#define DCalcMnMerkleRoot(list, block_height) dashcore_sml_masternode_list_MasternodeList_calculate_masternodes_merkle_root(list, block_height)
+//#define DCalcLLMQMerkleRoot(list) dashcore_sml_masternode_list_MasternodeList_calculate_llmq_merkle_root(list)
+//#define DCalcMnMerkleRootWithBlockHeightLookup(list, context, lookup) dashcore_sml_masternode_list_MasternodeList_calculate_masternodes_merkle_root_with_block_height_lookup(list, context, lookup)
 
 #define DMasternodeListByBlockHash(cache, block_hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_masternode_list_by_block_hash(cache, block_hash)
 
-#define DMasternodeListReversedProRegTxHashes(list) dash_spv_masternode_processor_models_masternode_list_MasternodeList_reversed_pro_reg_tx_hashes_cloned(list)
+#define DMasternodeListReversedProRegTxHashes(list) dashcore_sml_masternode_list_MasternodeList_reversed_pro_reg_tx_hashes_cloned(list)
 
-#define DMnDiffQueueCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_count(cache)
-#define DMnDiffQueueMaxAmount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_get_max_amount(cache)
-#define DMnDiffQueueRemove(proc, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_mn_list_retrieval_queue(proc, block_hash)
-#define DMnDiffQueueClean(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_mn_list_retrieval_queue(proc)
+#define DProcessorClear(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clear(proc)
+//#define DMnDiffQueueCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_count(cache)
+//#define DMnDiffQueueMaxAmount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_get_max_amount(cache)
+//#define DMnDiffQueueRemove(proc, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_mn_list_retrieval_queue(proc, block_hash)
+//#define DMnDiffQueueClean(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_mn_list_retrieval_queue(proc)
 
-#define DQrInfoQueueCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_count(cache)
-#define DQrInfoQueueMaxAmount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_get_max_amount(cache)
-#define DQrInfoQueueRemove(proc, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(proc, block_hash)
-#define DQrInfoQueueClean(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_qr_info_retrieval_queue(proc)
+//#define DQrInfoQueueCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_count(cache)
+//#define DQrInfoQueueMaxAmount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_get_max_amount(cache)
+//#define DQrInfoQueueRemove(proc, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(proc, block_hash)
+//#define DQrInfoQueueClean(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_qr_info_retrieval_queue(proc)
 
-#define DMasternodeListHashesForMerkleRootWithBlockHeightLookup(list, context, lookup) dash_spv_masternode_processor_models_masternode_list_MasternodeList_hashes_for_merkle_root_with_block_height_lookup(list, context, lookup)
-#define DMasternodeEntryByProRegTxHash(list, hash) dash_spv_masternode_processor_models_masternode_list_MasternodeList_masternode_by_pro_reg_tx_hash(list, hash)
-#define DMasternodeEntryFromEntity(version, provider_registration_transaction_hash, confirmed_hash, ip_address, port, key_id_voting, operator_public_key_data, operator_public_key_version, is_valid, mn_type, platform_http_port, platform_node_id, update_height, confirmed_hash_hashed_with_provider_registration_transaction_hash, known_confirmed_at_height, entry_hash, previous_entry_hashes, previous_operator_public_keys, previous_validity) dash_spv_masternode_processor_models_masternode_entry_from_entity(version, provider_registration_transaction_hash, confirmed_hash, ip_address, port, key_id_voting, operator_public_key_data, operator_public_key_version, is_valid, mn_type, platform_http_port, platform_node_id, update_height, confirmed_hash_hashed_with_provider_registration_transaction_hash, known_confirmed_at_height, entry_hash, previous_entry_hashes, previous_operator_public_keys, previous_validity)
+//#define DMasternodeListHashesForMerkleRootWithBlockHeightLookup(list, context, lookup) dashcore_sml_masternode_list_MasternodeList_hashes_for_merkle_root_with_block_height_lookup(list, context, lookup)
+#define DMasternodeEntryByProRegTxHash(list, hash) dashcore_sml_masternode_list_MasternodeList_masternode_by_pro_reg_tx_hash(list, hash)
+//#define DMasternodeEntryFromEntity(version, provider_registration_transaction_hash, confirmed_hash, ip_address, port, key_id_voting, operator_public_key_data, operator_public_key_version, is_valid, mn_type, platform_http_port, platform_node_id, update_height, confirmed_hash_hashed_with_provider_registration_transaction_hash, known_confirmed_at_height, entry_hash, previous_entry_hashes, previous_operator_public_keys, previous_validity) dash_spv_masternode_processor_models_masternode_entry_from_entity(version, provider_registration_transaction_hash, confirmed_hash, ip_address, port, key_id_voting, operator_public_key_data, operator_public_key_version, is_valid, mn_type, platform_http_port, platform_node_id, update_height, confirmed_hash_hashed_with_provider_registration_transaction_hash, known_confirmed_at_height, entry_hash, previous_entry_hashes, previous_operator_public_keys, previous_validity)
 
-#define DMasternodeListPrint(list) dash_spv_masternode_processor_models_masternode_list_MasternodeList_print_description(list)
-#define DMasternodeEntryPrint(entry) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_print_description(entry)
-#define DLLMQEntryPrint(entry) dash_spv_crypto_llmq_entry_LLMQEntry_print_description(entry)
+//#define DMasternodeListPrint(list) dash_spv_masternode_processor_models_masternode_list_MasternodeList_print_description(list)
+//#define DMasternodeEntryPrint(entry) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_print_description(entry)
+//#define DLLMQEntryPrint(entry) dash_spv_crypto_llmq_entry_LLMQEntry_print_description(entry)
 
 
-#define DMNListDiffResult dash_spv_masternode_processor_processing_mn_listdiff_result_MNListDiffResult
+//#define DMNListDiffResult dash_spv_masternode_processor_processing_mn_listdiff_result_MNListDiffResult
 
 #define NSDataFromPtr(ptr) ptr ? [NSData dataWithBytes:(const void *)ptr->values length:ptr->count] : nil
 #define NSStringFromPtr(ptr) ptr ? [NSString stringWithCString:ptr encoding:NSUTF8StringEncoding] : nil
 
-#define DPreviousOperatorKeys std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_dash_spv_crypto_keys_operator_public_key_OperatorPublicKey
-#define DPreviousEntryHashes std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_u8_arr_32
-#define DPreviousValidity std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_bool
+//#define DPreviousOperatorKeys std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_dash_spv_crypto_keys_operator_public_key_OperatorPublicKey
+//#define DPreviousEntryHashes std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_u8_arr_32
+//#define DPreviousValidity std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_bool
 
-#define DStoredMasternodeListsCount(proc) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_stored_masternode_lists_count(proc)
-#define DKnownMasternodeListsCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_known_masternode_lists_count(cache)
-#define DLastMasternodeListBlockHeight(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_last_masternode_list_block_height(proc)
+//#define DStoredMasternodeListsCount(proc) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_stored_masternode_lists_count(proc)
+#define DKnownMasternodeListsCount(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_known_masternode_lists_count(proc)
+#define DCurrentMasternodeListBlockHeight(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list_height(proc)
 #define DHeightForBlockHash(proc, hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_height_for_block_hash(proc, hash)
 
-#define DMasternodeEntryVotingAddress(entry, chain_type) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_voting_address(entry, chain_type)
-#define DMasternodeEntryOperatorPublicKeyAddress(entry, chain_type) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_operator_public_key_address(entry, chain_type)
-#define DMasternodeEntryEvoNodeAddress(entry, chain_type) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_evo_node_address(entry, chain_type)
+#define DMasternodeEntryVotingAddress(entry, chain_type) dash_spv_masternode_processor_processing_voting_address(entry, chain_type)
+#define DMasternodeEntryOperatorPublicKeyAddress(entry, chain_type) dash_spv_masternode_processor_processing_operator_public_key_address(entry, chain_type)
+#define DMasternodeEntryEvoNodeAddress(entry, chain_type) dash_spv_masternode_processor_processing_evo_node_address(entry, chain_type)
 #define DAddMasternodeList(cache, hash, list) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_add_masternode_list(cache, hash, list)
 #define DRemoveMasternodeList(cache, hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_remove_masternode_list(cache, hash)
 #define DRemoveMasternodeListsBefore(cache, height) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_remove_masternode_lists_before_height(cache, height)
-#define DMasternodeListLoaded(cache, hash, list) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_masternode_list_loaded(cache, hash, list)
-#define DCacheBlockHeight(cache, hash, height) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_cache_block_height_for_hash(cache, hash, height)
-#define DAddMasternodeListStub(cache, hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_add_stub_for_masternode_list(cache, hash)
+//#define DMasternodeListLoaded(cache, hash, list) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_masternode_list_loaded(cache, hash, list)
+//#define DCacheBlockHeight(cache, hash, height) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_cache_block_height_for_hash(cache, hash, height)
+//#define DAddMasternodeListStub(cache, hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_add_stub_for_masternode_list(cache, hash)
 //#define DProcessingErrorIndex(ptr) dash_spv_masternode_processor_processing_processing_error_ProcessingError_index(ptr)
 
 #define DKeyType dpp_identity_identity_public_key_key_type_KeyType
@@ -334,6 +455,9 @@
 #define DValueTextU32PairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_U32_ctor(value))
 #define DValueTextU64PairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_U64_ctor(value))
 #define DValueTextIdentifierPairCtor(key, value) DValueTextPairCtor(key, platform_value_Value_Identifier_ctor(value))
+
+#define DAddSaltForUsername(model, username, salt) dash_spv_platform_identity_model_IdentityModel_add_salt(model, DChar(username), salt)
+#define DSaltForUsername(model, username) dash_spv_platform_identity_model_IdentityModel_salt_for_username(model, DChar(username))
 
 #define DGetTextDocProperty(document, propertyName) ({ \
     NSString *result = nil; \
@@ -414,10 +538,32 @@
 #define DUsernameStatus dash_spv_platform_document_usernames_UsernameStatus
 #define DUsernameStatusDtor(ptr) dash_spv_platform_document_usernames_UsernameStatus_destroy(ptr)
 #define DUsernameStatusCallback Fn_ARGS_std_os_raw_c_void_dash_spv_platform_document_usernames_UsernameStatus_RTRN_
+#define DUsernameStatusFromIndex(index) dash_spv_platform_document_usernames_username_status_from_index(index)
+#define DUsernameStatusIndex(status) dash_spv_platform_document_usernames_username_status_to_index(status)
+#define DUsernameAdd(model, username, domain, status) dash_spv_platform_identity_model_IdentityModel_add_username(model, DChar(username), DChar(domain), status);
 
 #define DIdentityKeyStatus dash_spv_platform_identity_model_IdentityKeyStatus
+#define DIdentityKeyStatusDtor(ptr) dash_spv_platform_identity_model_IdentityKeyStatus_destroy(ptr)
 #define DIdentityRegistrationStatus dash_spv_platform_identity_model_IdentityRegistrationStatus
+#define DIdentityRegistrationStatusDtor(ptr) dash_spv_platform_identity_model_IdentityRegistrationStatus_destroy(ptr)
 
+#define DKeyInfo dash_spv_platform_identity_model_KeyInfo
+#define DKeyInfoDtor(ptr) dash_spv_platform_identity_model_KeyInfo_destroy(ptr)
+#define DKeyInfoDictionaries std_collections_Map_keys_u32_values_dash_spv_platform_identity_model_KeyInfo
+#define DKeyInfoDictionariesDtor(ptr) std_collections_Map_keys_u32_values_dash_spv_platform_identity_model_KeyInfo_destroy(ptr)
+
+
+#define DIdentityKeyStatusFromIndex(index) dash_spv_platform_identity_model_IdentityKeyStatus_from_index(index)
+#define DIdentityKeyStatusToIndex(status) dash_spv_platform_identity_model_IdentityKeyStatus_to_index(status)
+
+#define DUsernameStatuses std_collections_Map_keys_String_values_dash_spv_platform_identity_model_UsernameStatusInfo
+#define DUsernameStatusesDtor(ptr) std_collections_Map_keys_String_values_dash_spv_platform_identity_model_UsernameStatusInfo_destroy(ptr)
+
+#define DMaybeInstantLock Result_ok_dashcore_ephemerealdata_instant_lock_InstantLock_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError
+#if (defined(DASHCORE_MESSAGE_VERIFICATION))
+#define DMessageVerificationResult Result_ok_bool_err_dashcore_sml_message_verification_error_MessageVerificationError
+#define DMessageVerificationResultDtor(ptr) Result_ok_bool_err_dashcore_sml_message_verification_error_MessageVerificationError_destroy(ptr)
+#endif
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSDerivationPath;

@@ -82,7 +82,7 @@
     self.wallet = wallet;
     self.isTransient = FALSE;
     self.createdLocally = YES;
-    self.identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:transaction withUsernameDictionary:nil inWallet:wallet];
+    self.identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:transaction inWallet:wallet];
     [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
     self.needsIdentityRetrieval = NO;
@@ -312,7 +312,6 @@
 
         self.identity = [[DSIdentity alloc] initAtIndex:index
                                withAssetLockTransaction:tx
-                                 withUsernameDictionary:nil
                                                inWallet:self.wallet];
         [self.identity setAssociatedInvitation:self];
         [self.identity addDashpayUsername:dashpayUsername save:NO];

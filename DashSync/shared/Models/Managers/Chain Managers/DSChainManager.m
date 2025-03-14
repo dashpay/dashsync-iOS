@@ -31,7 +31,6 @@
 #import "DSChainManager+Mining.h"
 #import "DSChainManager+Protected.h"
 #import "DSChainManager+Transactions.h"
-#import "DSCheckpoint.h"
 #import "DSDerivationPath.h"
 #import "DSEventManager.h"
 #import "DSFullBlock.h"
@@ -339,6 +338,11 @@
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer {
     DSLog(@"%@ [%@:%d] peer is misbehaving", self.logPrefix, peer.host, peer.port);
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
+}
+
+- (void)chain:(DSChain *)chain badMasternodeListReceivedFromPeer:(DSPeer *)peer {
+    DSLog(@"%@ [%@:%d] peer is misbehaving", self.logPrefix, peer.host, peer.port);
+    [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
 }
 
 - (void)chain:(DSChain *)chain receivedOrphanBlock:(DSBlock *)block fromPeer:(DSPeer *)peer {

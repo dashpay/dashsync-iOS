@@ -18,6 +18,6 @@
 @dynamic cycleHash;
 @dynamic validSignature;
 @dynamic transaction;
-@dynamic quorum;
+@dynamic version;
 
 @end
