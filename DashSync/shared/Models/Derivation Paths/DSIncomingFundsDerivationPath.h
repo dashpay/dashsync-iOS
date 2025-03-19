@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 // used external addresses
 @property (nonatomic, readonly) NSArray *usedReceiveAddresses;
 
-- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError *_Nullable *_Nullable)error;
+//- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError *_Nullable *_Nullable)error;
 
 - (NSData *_Nullable)publicKeyDataAtIndex:(uint32_t)n;
 

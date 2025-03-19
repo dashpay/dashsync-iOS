@@ -29,8 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
                             completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion;
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact *)potentialContact
                                     completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
-- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship
-                                             completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 - (void)acceptFriendRequestFromIdentity:(DSIdentity *)otherIdentity
                              completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion;
 - (void)acceptFriendRequest:(DSFriendRequestEntity *)friendRequest

@@ -43,19 +43,16 @@
 #import "DSDerivationPathFactory.h"
 #import "DSFullBlock.h"
 #import "DSFundsDerivationPath.h"
+#import "DSGapLimit.h"
 #import "DSIdentitiesManager+Protected.h"
 #import "DSInsightManager.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
-//#import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSOptionsManager.h"
 #import "DSPeerManager.h"
-//#import "DSQuorumEntryEntity+CoreDataProperties.h"
-//#import "DSQuorumSnapshotEntity+CoreDataClass.h"
-//#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSTransactionHashEntity+CoreDataProperties.h"
 #import "DSTransactionInput.h"
 #import "DSTransactionOutput.h"
@@ -93,8 +90,6 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 
 @property (nonatomic, strong) DSBlock *lastSyncBlock, *lastTerminalBlock, *lastOrphan;
 @property (nonatomic, strong) NSMutableDictionary<NSValue *, DSBlock *> *mSyncBlocks, *mTerminalBlocks, *mOrphans;
-//@property (nonatomic, copy) NSString *uniqueID;
-//@property (nonatomic, copy) NSString *networkName;
 @property (nonatomic, strong) DSAccount *viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSMutableArray<DSPeer *> *> *estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
@@ -646,8 +641,11 @@ static dispatch_once_t devnetToken = 0;
     }
     
     for (DSFundsDerivationPath *derivationPath in self.standaloneDerivationPaths) {
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
+        [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO] error:nil];
+        [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES] error:nil];
+        
+//        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
+//        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
         [allAddresses addObjectsFromArray:addresses];
     }

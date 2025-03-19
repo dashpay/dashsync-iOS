@@ -106,9 +106,9 @@
 - (BOOL)checkPayloadSignature {
     NSAssert(self.providerRegistrationTransaction, @"We need a provider registration transaction");
     u384 *pubkey = u384_ctor_u(self.providerRegistrationTransaction.operatorKey);
-    SLICE *digest = slice_u256_ctor_u([self payloadHash]);
+    Slice_u8 *digest = slice_u256_ctor_u([self payloadHash]);
     u768 *sig = u768_ctor([self payloadSignature]);
-    BOOL verified = dash_spv_crypto_keys_bls_key_BLSKey_verify_signature(pubkey, ![self.providerRegistrationTransaction usesBasicBLS], digest, sig);
+    BOOL verified = DBLSKeyVerifySig(pubkey, ![self.providerRegistrationTransaction usesBasicBLS], digest, sig);
     return verified;
 }
 
@@ -118,8 +118,8 @@
 
 - (void)signPayloadWithKey:(DOpaqueKey *)privateKey {
     NSData *payload = [self payloadDataForHash];
-    SLICE *p = slice_ctor(payload);
-    u768 *signed_data = dash_spv_crypto_keys_bls_key_BLSKey_sign_data(privateKey->bls, p);
+    Slice_u8 *p = slice_ctor(payload);
+    u768 *signed_data = DBLSKeySignData(privateKey->bls, p);
     self.payloadSignature = NSDataFromPtr(signed_data);
     u768_dtor(signed_data);
 }

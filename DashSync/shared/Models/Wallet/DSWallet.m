@@ -605,8 +605,8 @@
     NSString *uniqueID = nil;
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-        SLICE *derived_key_data = slice_ctor(derivedKeyData);
-        uint64_t unique_id = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_unique_id_from_derived_key_data(derived_key_data, chain.chainType);
+        Slice_u8 *derived_key_data = slice_ctor(derivedKeyData);
+        uint64_t unique_id = DECDSAPublicKeyUniqueIdFromDerivedKeyData(derived_key_data, chain.chainType);
         uniqueID = [NSString stringWithFormat:@"%0llx", unique_id];
         for (DSAccount *account in accounts) {
             for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
@@ -631,8 +631,8 @@
                                                     deriveKeyFromPhrase:seedPhrase
                                                          withPassphrase:nil] :
                                                 nil;
-        SLICE *derived_key_data = slice_ctor(derivedKeyData);
-        uint64_t unique_id = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_unique_id_from_derived_key_data(derived_key_data, chain.chainType);
+        Slice_u8 *derived_key_data = slice_ctor(derivedKeyData);
+        uint64_t unique_id = DECDSAPublicKeyUniqueIdFromDerivedKeyData(derived_key_data, chain.chainType);
         uniqueID = [NSString stringWithFormat:@"%0llx", unique_id];
         NSLog(@"[DSWallet] setSeedPhrase: unique_id %@", uniqueID);
 
@@ -722,7 +722,7 @@
             @autoreleasepool {
                 NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
                 if (!privKey) {
-                    privKey = [DSKeyManager NSStringFrom:dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_auth_private_key_from_seed_for_chain(slice_ctor(seed), self.chain.chainType)];
+                    privKey = [DSKeyManager NSStringFrom:DECDSAKeySerializedAuthPrivateKeyFromSeed(slice_ctor(seed), self.chain.chainType)];
                     setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
                 }
                 completion(privKey);
@@ -993,10 +993,10 @@
     NSString *keyAddress = NULL;
     if (result) {
         if (result->ok) {
-            char *c_string = dash_spv_crypto_keys_key_OpaqueKey_address_with_public_key_data(result->ok, self.chain.chainType);
+            char *c_string = DOpaqueKeyPubAddress(result->ok, self.chain.chainType);
             keyAddress = NSStringFromPtr(c_string);
             if (c_string) {
-                str_destroy(c_string);
+                DCharDtor(c_string);
             }
         }
         DMaybeOpaqueKeyDtor(result);

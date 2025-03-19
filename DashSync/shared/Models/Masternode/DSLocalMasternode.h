@@ -100,11 +100,11 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 - (NSString *_Nullable)votingKeyStringFromSeed:(NSData *)seed;
 - (NSString *_Nullable)platformNodeKeyStringFromSeed:(NSData *)seed;
 
-- (BOOL)forceOperatorPublicKey:(dash_spv_crypto_keys_key_OpaqueKey *)operatorPublicKey;
-- (BOOL)forceOwnerPrivateKey:(dash_spv_crypto_keys_key_OpaqueKey *)ownerPrivateKey;
+- (BOOL)forceOperatorPublicKey:(DOpaqueKey *)operatorPublicKey;
+- (BOOL)forceOwnerPrivateKey:(DOpaqueKey *)ownerPrivateKey;
 //the voting key can either be private or public key
-- (BOOL)forceVotingKey:(dash_spv_crypto_keys_key_OpaqueKey *)votingKey;
-- (BOOL)forcePlatformNodeKey:(dash_spv_crypto_keys_key_OpaqueKey *)platformNodeKey;
+- (BOOL)forceVotingKey:(DOpaqueKey *)votingKey;
+- (BOOL)forcePlatformNodeKey:(DOpaqueKey *)platformNodeKey;
 
 @end
 

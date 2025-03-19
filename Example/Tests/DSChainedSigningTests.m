@@ -95,8 +95,8 @@
 //    UInt256 hash1 = [[NSData dataWithUInt512:concat1] SHA256_2];
 //    UInt256 hash2 = [[NSData dataWithUInt512:concat2] SHA256_2];
 //    UInt256 hash3 = [[NSData dataWithUInt512:concat3] SHA256_2];
-    SLICE *hash0_slice = slice_u256_ctor_u(hash0);
-    Vec_u8 *signature_data0 = dash_spv_crypto_keys_key_OpaqueKey_sign(key0->ok, hash0_slice);
+    Slice_u8 *hash0_slice = slice_u256_ctor_u(hash0);
+    Vec_u8 *signature_data0 = DOpaqueKeySign(key0->ok, hash0_slice);
     NSData *signatureData0 = [DSKeyManager NSDataFrom:signature_data0];
     NSLog(@"signatureData0: %@", signatureData0.hexString);
 //    UInt768 signature0 = [key0 signDigest:hash0];

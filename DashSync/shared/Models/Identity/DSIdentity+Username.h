@@ -26,13 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*! @brief Related to DPNS. This is the list of usernames with their .dash domain that are associated to the identity in the domain "dash". These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
 @property (nonatomic, readonly) NSArray<NSString *> *dashpayUsernameFullPaths;
-
+@property (nonatomic, readonly) NSUInteger dashpayUsernameCount;
 /*! @brief Related to DPNS. This is the list of usernames that are associated to the identity in the domain "dash". These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
 @property (nonatomic, readonly) NSArray<NSString *> *dashpayUsernames;
-
-//- (void)setupUsernames;
-//- (void)setupUsernames:(NSMutableDictionary *)statuses
-//                 salts:(NSMutableDictionary *)salts;
 
 - (void)applyUsernameEntitiesFromIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity;
 - (void)collectUsernameEntitiesIntoIdentityEntityInContext:(DSBlockchainIdentityEntity *)identityEntity
@@ -51,9 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
                              inDomain:(NSString *)domain;
 - (DUsernameStatus *)statusOfDashpayUsername:(NSString *)username;
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
-
-//- (NSArray<NSString *> *)unregisteredUsernameFullPaths;
-//- (NSArray<NSString *> *)usernameFullPathsWithStatus:(DUsernameStatus *)usernameStatus;
 
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
                  withCompletion:(void (^)(BOOL success, NSError *error))completion

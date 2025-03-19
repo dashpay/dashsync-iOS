@@ -25,6 +25,7 @@
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSDerivationPath.h"
+#import "DSDerivationPathFactory.h"
 #import "DSFundsDerivationPath.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSKeyManager.h"
@@ -89,9 +90,7 @@
     XCTAssertTrue(keyCreated, @"No error should be produced");
     uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
     DOpaqueKey *publicKey = [self.identity keyAtIndex:index];
-    NSData *publicKeyData = [DSKeyManager NSDataFrom:dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey)];
-    NSLog(@"publicKeyData: %@", publicKeyData.hexString);
-    DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey);
+    DIdentityPublicKey *public_key = DIdentityRegistrationPublicKey(index, publicKey);
     DMaybeOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
     DSAssetLockTransaction *transaction = self.identity.registrationAssetLockTransaction;
     DAssetLockProof *instant_proof = [self.identity createProof:transaction.instantSendLockAwaitingProcessing];
@@ -113,9 +112,7 @@
     XCTAssertTrue(keyCreated, @"No error should be produced");
     uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
     DOpaqueKey *publicKey = [self.identity keyAtIndex:index];
-    NSData *publicKeyData = [DSKeyManager NSDataFrom:dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey)];
-    NSLog(@"publicKeyData: %@", publicKeyData.hexString);
-    DIdentityPublicKey *public_key = dash_spv_platform_identity_manager_identity_registration_public_key(index, publicKey);
+    DIdentityPublicKey *public_key = DIdentityRegistrationPublicKey(index, publicKey);
     DMaybeOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
     DAssetLockProof *chain_proof = [self.identity createProof:nil];
     DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, chain_proof, private_key->ok);
@@ -133,14 +130,18 @@
 
 - (void)testIdentitySigning {
     UInt256 digest = uint256_random;
-    XCTestExpectation *expectation = [self expectationWithDescription:@"signedAndVerifiedMessage"];
-    DMaybeOpaqueKey *key = [self.identity privateKeyAtIndex:0 ofType:DKeyKindECDSA() forSeed:self.seedData];
-    NSData *signature = [DSKeyManager signMesasageDigest:key->ok digest:digest];
+    const NSUInteger indexes[] = {self.identity.index | BIP32_HARD, 0 | BIP32_HARD};
+    NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:self.identity.wallet];
+    DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:indexPath fromSeed:self.seedData];
+    Vec_u8 *sig = DOpaqueKeySign(key->ok, slice_u256_ctor_u(digest));
+    NSData *signature = NSDataFromPtr(sig);
+    bytes_dtor(sig);
     XCTAssertFalse([signature isZeroBytes], "The blockchain identity should be able to sign a message digest");
-    BOOL verified = [self.identity verifySignature:signature forKeyIndex:0 ofType:DKeyKindECDSA() forMessageDigest:digest];
+    DMaybeOpaqueKey *publicKey = [self.identity publicKeyAtIndex:0 ofType:DKeyKindECDSA()];
+    BOOL verified = [DSKeyManager verifyMessageDigest:publicKey->ok digest:digest signature:signature];
+    DMaybeOpaqueKeyDtor(publicKey);
     XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
-    [expectation fulfill];
-    [self waitForExpectationsWithTimeout:10 handler:^(NSError *_Nullable error) { XCTAssertNil(error); }];
 }
 
 - (void)testNameRegistration {

@@ -568,8 +568,7 @@
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
 
     for (NSString *pk in privateKeys) {
-        DKeyKind *kind = DKeyKindECDSA();
-        DMaybeOpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:pk ofKeyType:kind forChainType:self.chain.chainType];
+        DMaybeOpaqueKey *key = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(pk), self.chain.chainType);
         if (!key) continue;
         [keys addObject:[NSValue valueWithPointer:key]];
     }
@@ -610,7 +609,7 @@
             for (NSValue *keyValue in keysSets) {
                 DMaybeOpaqueKeys *maybe_opaque_keys = keyValue.pointerValue;
                 if (maybe_opaque_keys->ok) {
-                    DOpaqueKey *opaque_key = dash_spv_crypto_keys_key_maybe_opaque_key_used_in_tx_input_script(bytes_ctor(inScript), maybe_opaque_keys->ok, self.chain.chainType);
+                    DOpaqueKey *opaque_key = DOpaqueKeyUsedInTxInputScript(bytes_ctor(inScript), maybe_opaque_keys->ok, self.chain.chainType);
                     if (opaque_key) {
                         NSData *data = [self toDataWithSubscriptIndex:i];
                         NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKey:opaque_key];
@@ -648,9 +647,9 @@
 + (NSData *)signInput:(NSData *)data
           inputScript:(NSData *)inputScript
    withOpaqueKey:(DOpaqueKey *)key {
-    SLICE *input = slice_ctor(data);
-    BYTES *tx_input_script = bytes_ctor(inputScript);
-    BYTES *tx_sig = dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key, input, tx_input_script);
+    Slice_u8 *input = slice_ctor(data);
+    Vec_u8 *tx_input_script = bytes_ctor(inputScript);
+    Vec_u8 *tx_sig = DOpaqueKeyCreateTxSig(key, input, tx_input_script);
     NSData *result = [DSKeyManager NSDataFrom:tx_sig];
     return result;
 }

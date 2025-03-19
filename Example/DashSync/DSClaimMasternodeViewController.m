@@ -47,10 +47,10 @@
 //        UInt160 publicKeyHash = [DSKeyManager ecdsaKeyPublicKeyHashFromSecret:self.inputTextView.text forChainType:self.chain.chainType];
         NSString *seckeyStr = self.inputTextView.text;
         
-        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key(DChar(seckeyStr), self.chain.chainType);
+        DMaybeECDSAKey *result =  DMaybeECDSAKeyWithPrivateKey(DChar(seckeyStr), self.chain.chainType);
         BOOL valid = NO;
         if (result->ok) {
-            u160 *pub_key_hash = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_hash160(result->ok);
+            u160 *pub_key_hash = DECDSAKeyPublicKeyHash(result->ok);
             dashcore_hash_types_PubkeyHash *key_id_voting = self.masternode->masternode_list_entry->key_id_voting;
             u160 *key_id = dashcore_hash_types_PubkeyHash_inner(key_id_voting);
             UInt160 pubKeyHash = u160_cast(pub_key_hash);
@@ -58,7 +58,7 @@
             valid = uint160_eq(pubKeyHash, keyID);
             u160_dtor(key_id);
         }
-        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+        DMaybeECDSAKeyDtor(result);
         if (valid) {
             [self.navigationController popViewControllerAnimated:TRUE];
         } else {

@@ -67,7 +67,7 @@
                                completion:^(BOOL success, NSError *_Nullable error) {
                 if (success && !error) {
                     DSDashpayUserEntity *dashpayUser = [identity matchingDashpayUserInContext:context];
-                    if (identity.transientDashpayUser.revision== dashpayUser.remoteProfileDocumentRevision)
+                    if (identity.transientDashpayUser.revision == dashpayUser.remoteProfileDocumentRevision)
                         identity.transientDashpayUser = nil;
                 }
             }
@@ -95,25 +95,24 @@
             return;
         }
         DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationIdentity:identity
-                                                                                                                  destinationKeyIndex:destinationKeyIndex
+                                                                                                        destinationKeyIndex:destinationKeyIndex
                                                                                                              sourceIdentity:self
-                                                                                                                       sourceKeyIndex:sourceKeyIndex
-                                                                                                                              account:[self.wallet accountWithNumber:0]];
+                                                                                                             sourceKeyIndex:sourceKeyIndex
+                                                                                                                    account:[self.wallet accountWithNumber:0]];
         [potentialFriendship createDerivationPathAndSaveExtendedPublicKeyWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath *_Nonnull incomingFundsDerivationPath) {
             if (!success) {
                 if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_KEY_HANDLING]); });
                 return;
             }
-            [potentialFriendship encryptExtendedPublicKeyWithCompletion:^(BOOL success) {
-                if (!success) {
-                    if (completion)  dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_KEY_HANDLING]); });
-                    return;
-                }
+            BOOL encrypted = [potentialFriendship encryptExtendedPublicKey];
+            if (encrypted) {
                 [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship
                                                             inContext:context
                                                            completion:completion
                                                     onCompletionQueue:completionQueue];
-            }];
+            } else if (completion) {
+                dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_KEY_HANDLING]); });
+            }
         }];
     }
                                                   onCompletionQueue:self.identityQueue];
@@ -182,14 +181,6 @@
         default:
             break;
     }
-}
-
-- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship
-                                             completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship
-                                                inContext:self.platformContext
-                                               completion:completion
-                                        onCompletionQueue:dispatch_get_main_queue()];
 }
 
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship
@@ -303,16 +294,15 @@
     DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationIdentity:otherIdentity destinationKeyIndex:friendRequest.sourceKeyIndex sourceIdentity:self sourceKeyIndex:friendRequest.destinationKeyIndex account:account];
     [potentialFriendship createDerivationPathAndSaveExtendedPublicKeyWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath *_Nonnull incomingFundsDerivationPath) {
         if (success) {
-            [potentialFriendship encryptExtendedPublicKeyWithCompletion:^(BOOL success) {
-                if (!success) {
-                    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_KEY_HANDLING]); });
-                    return;
-                }
-                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship
-                                                            inContext:friendRequest.managedObjectContext
-                                                           completion:completion
-                                                    onCompletionQueue:completionQueue];
-            }];
+            BOOL encrypted = [potentialFriendship encryptExtendedPublicKey];
+            if (!encrypted) {
+                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[ERROR_KEY_HANDLING]); });
+                return;
+            }
+            [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship
+                                                        inContext:friendRequest.managedObjectContext
+                                                       completion:completion
+                                                onCompletionQueue:completionQueue];
         } else if (completion) {
             completion(NO, @[ERROR_DERIVATION_FRIENDSHIP]);
         }

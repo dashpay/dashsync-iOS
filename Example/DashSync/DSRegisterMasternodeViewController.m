@@ -151,7 +151,7 @@
 
     DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex inPlatformNodeWallet:self.wallet platformNodeWalletIndex:platformNodeWalletIndex];
 
-    NSString *payoutAddress = [DSKeyManager isValidDashAddress:self.payToAddressTableViewCell.valueTextField.text forChain:self.chain] ?
+    NSString *payoutAddress = DIsValidDashAddress(DChar(self.payToAddressTableViewCell.valueTextField.text), self.chain.chainType) ?
         self.payToAddressTableViewCell.textLabel.text :
         self.account.receiveAddress;
 

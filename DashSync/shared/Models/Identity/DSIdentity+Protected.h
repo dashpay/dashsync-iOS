@@ -95,31 +95,16 @@ NS_ASSUME_NONNULL_BEGIN
    withAssetLockTransaction:(DSAssetLockTransaction *)transaction
                    inWallet:(DSWallet *)wallet;
 
-//- (instancetype)initAtIndex:(uint32_t)index
-//   withAssetLockTransaction:(DSAssetLockTransaction *)transaction
-//     withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary
-//                   inWallet:(DSWallet *)wallet;
-
-- (void)addKey:(DMaybeOpaqueKey *)key
- securityLevel:(DSecurityLevel *)securityLevel
-       purpose:(DPurpose *)purpose
-   atIndexPath:(NSIndexPath *)indexPath
-        ofType:(DKeyKind *)type
-    withStatus:(DIdentityKeyStatus *)status
-          save:(BOOL)save;
-- (BOOL)registerKeyWithStatus:(DIdentityKeyStatus *)status
-                securityLevel:(DSecurityLevel *)securityLevel
-                      purpose:(DPurpose *)purpose
-                  atIndexPath:(NSIndexPath *)indexPath
-                       ofType:(DKeyKind *)type;
 - (DIdentityPublicKey *_Nullable)firstIdentityPublicKeyOfSecurityLevel:(DSecurityLevel *)security_level
                                                             andPurpose:(DPurpose *)purpose;
+- (DMaybeOpaqueKey *_Nullable)publicKeyAtIndex:(uint32_t)index
+                                        ofType:(DKeyKind *)type;
 
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
                                          ofType:(DKeyKind *)type;
-- (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
-                                         ofType:(DKeyKind *)type
-                                        forSeed:(NSData *)seed;
+//- (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
+//                                         ofType:(DKeyKind *)type
+//                                        forSeed:(NSData *)seed;
 - (void)deletePersistentObjectAndSave:(BOOL)save
                             inContext:(NSManagedObjectContext *)context;
 

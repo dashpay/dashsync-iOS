@@ -19,6 +19,7 @@
 #import "DSAssetLockDerivationPath.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
+#import "DSGapLimit.h"
 #import "DSMasternodeManager.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
 #import "DSWallet+Protected.h"
@@ -89,12 +90,16 @@
 }
 
 - (NSString *)receiveAddress {
-    NSString *addr = [self registerAddressesWithGapLimit:1 error:nil].lastObject;
+    NSString *addr = [self registerAddressesWithSettings:[DSGapLimit initWithLimit:1] error:nil].lastObject;
+//    NSString *addr = [self registerAddressesWithGapLimit:1 error:nil].lastObject;
     return addr ? addr : self.mOrderedAddresses.lastObject;
 }
 
-- (NSUInteger)defaultGapLimit {
-    return 5;
+//- (NSUInteger)defaultGapLimit {
+//    return 5;
+//}
+- (DSGapLimit *)defaultGapSettings {
+    return [DSGapLimit initWithLimit:5];
 }
 
 @end

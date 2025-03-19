@@ -38,7 +38,7 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     NSString *novelString = [textField.text stringByReplacingCharactersInRange:range withString:string];
     if (textField == self.addressField) {
-        self.isValidAddress = [DSKeyManager isValidDashAddress:novelString forChain:self.account.wallet.chain];
+        self.isValidAddress = DIsValidDashAddress(DChar(novelString), self.account.wallet.chain.chainType);
     } else if (textField == self.amountField) {
         self.isValidAmount = [[DSPriceManager sharedInstance] amountForDashString:novelString] > 0;
     }

@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAuthenticationKeysDerivationPath : DSSimpleIndexedDerivationPath
 
-@property (nonatomic, readonly) BOOL hasExtendedPrivateKey;
+//@property (nonatomic, readonly) BOOL hasExtendedPrivateKey;
 @property (nonatomic, readonly) BOOL usesHardenedKeys;
 
 + (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet *)wallet;

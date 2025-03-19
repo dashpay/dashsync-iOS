@@ -526,9 +526,8 @@
     NSArray *addresses = [self.pasteboardExtractor extractAddresses];
     NSString *firstAddress = nil;
     for (NSString *string in addresses) {
-        if ([DSKeyManager isValidDashAddress:string forChain:self.chainManager.chain]) {
+        if (DIsValidDashAddress(DChar(string), self.chainManager.chain.chainType))
             firstAddress = string;
-        }
     }
     if ([self.pasteboardAddressLabel.text isEqual:firstAddress]) {
         [self payToAddressFromPasteboardAvailable:^(BOOL success){

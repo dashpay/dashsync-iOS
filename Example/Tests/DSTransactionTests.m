@@ -191,7 +191,7 @@
     UInt256 inputId = *(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.bytes;
     NSString *inputAddress = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
     NSString *inputPrivateKey = @"cNeRqjZpEEowdxMjiBa7S5uBgqweng19F1EZRFWcqE2XTpDy1Vzt";
-    DMaybeOpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyString:inputPrivateKey ofKeyType:DKeyKindECDSA() forChainType:devnetDRA.chainType];
+    DMaybeOpaqueKey *privateKey = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(inputPrivateKey), devnetDRA.chainType);
     NSString *checkInputAddress = [DSKeyManager addressForKey:privateKey->ok forChainType:devnetDRA.chainType];
     XCTAssertEqualObjects(checkInputAddress, inputAddress, @"Private key does not match input address");
     NSString *outputAddress0 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
@@ -453,11 +453,11 @@
     NSString *ipk4 = @"19d6aba7a9fcdb627ad39a2176689c2dcca13db68415411d88b1c37c2103794a";
     NSString *ipk5 = @"b4788261554d2f74647e547ef34018c228b7869191c0dc0086d91901c515c370";
     DKeyKind *kind = DKeyKindECDSA();
-    DMaybeOpaqueKey *pk1 = [DSKeyManager keyWithPrivateKeyString:ipk1 ofKeyType:kind forChainType:testnet.chainType];
-    DMaybeOpaqueKey *pk2 = [DSKeyManager keyWithPrivateKeyString:ipk2 ofKeyType:kind forChainType:testnet.chainType];
-    DMaybeOpaqueKey *pk3 = [DSKeyManager keyWithPrivateKeyString:ipk3 ofKeyType:kind forChainType:testnet.chainType];
-    DMaybeOpaqueKey *pk4 = [DSKeyManager keyWithPrivateKeyString:ipk4 ofKeyType:kind forChainType:testnet.chainType];
-    DMaybeOpaqueKey *pk5 = [DSKeyManager keyWithPrivateKeyString:ipk5 ofKeyType:kind forChainType:testnet.chainType];
+    DMaybeOpaqueKey *pk1 = DMaybeOpaqueKeyWithPrivateKey(kind, DChar(ipk1), testnet.chainType);
+    DMaybeOpaqueKey *pk2 = DMaybeOpaqueKeyWithPrivateKey(kind, DChar(ipk2), testnet.chainType);
+    DMaybeOpaqueKey *pk3 = DMaybeOpaqueKeyWithPrivateKey(kind, DChar(ipk3), testnet.chainType);
+    DMaybeOpaqueKey *pk4 = DMaybeOpaqueKeyWithPrivateKey(kind, DChar(ipk4), testnet.chainType);
+    DMaybeOpaqueKey *pk5 = DMaybeOpaqueKeyWithPrivateKey(kind, DChar(ipk5), testnet.chainType);
     NSString *ia1 = [DSKeyManager addressForKey:pk1->ok forChainType:testnet.chainType];
     NSString *ia2 = [DSKeyManager addressForKey:pk2->ok forChainType:testnet.chainType];
     NSString *ia3 = [DSKeyManager addressForKey:pk3->ok forChainType:testnet.chainType];

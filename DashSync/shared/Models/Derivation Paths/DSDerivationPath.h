@@ -25,7 +25,6 @@
 #import "dash_shared_core.h"
 #import "DSKeyManager.h"
 #import "DSChain.h"
-#import "DSDerivationPath.h"
 #import "DSTransaction.h"
 #import "DSUInt256IndexPath.h"
 #import "NSData+Dash.h"
@@ -47,7 +46,7 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL 
 #define FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_INVITATIONS 3
 #define FEATURE_PURPOSE_DASHPAY 15
 
-@class DSTransaction, DSAccount, DSDerivationPath, DSKeyManager, DSWallet;
+@class DSTransaction, DSAccount, DSDerivationPath, DSGapLimit, DSKeyManager, DSWallet;
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathType)
 {
@@ -107,6 +106,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 
 @property (nonatomic, readonly) BOOL hasExtendedPublicKey;
 
+@property (nonatomic, readonly) BOOL hasExtendedPrivateKey;
+
 // this returns the derivation path's visual representation (e.g. m/44'/5'/0')
 @property (nonatomic, readonly) NSString *stringRepresentation;
 
@@ -126,7 +127,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 @property (nonatomic, readonly) NSUInteger purpose;
 
 // currently the derivationPath is synced to this block height
-@property (nonatomic, assign) uint32_t syncBlockHeight;
+//@property (nonatomic, assign) uint32_t syncBlockHeight;
 
 // all previously generated addresses
 @property (nonatomic, readonly) NSSet *allAddresses;
@@ -141,9 +142,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 // the reference of type of derivation path
 @property (nonatomic, readonly) NSString *referenceName;
 
-// there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
-@property (nonatomic, readonly) BOOL derivationPathIsKnown;
-
 @property (nonatomic, readonly) NSNumber *depth;
 
 
@@ -157,11 +155,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
                                           reference:(DSDerivationPathReference)reference
                                             onChain:(DSChain *)chain;
 
-//+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString *)serializedExtendedPrivateKey
-//                                                               fundsType:(DSDerivationPathType)fundsType
-//                                                        signingAlgorithm:(DKeyKind *)signingAlgorithm
-//                                                                 onChain:(DSChain *)chain;
-//
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString *)serializedExtendedPublicKey
                                                                 onChain:(DSChain *)chain;
 
@@ -176,9 +169,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
                                 reference:(DSDerivationPathReference)reference
                                   onChain:(DSChain *)chain;
 
-//- (BOOL)isBIP32Only;
-//- (BOOL)isBIP43Based;
-
 - (NSIndexPath *)baseIndexPath;
 
 // set the account, can not be later changed
@@ -190,9 +180,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address;
-
-//// true if the address at index path was previously used as an input or output in any wallet transaction
-//- (BOOL)addressIsUsedAtIndexPath:(NSIndexPath *)indexPath;
 
 // inform the derivation path that the address has been used by a transaction, true if the derivation path contains the address
 - (BOOL)registerTransactionAddress:(NSString *)address;
@@ -223,16 +210,18 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 
 - (NSData *_Nullable)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath;
 
-//- (NSArray *_Nullable)serializedPrivateKeysAtIndexPaths:(NSArray *)indexPaths fromSeed:(NSData *)seed;
-
 //this loads the derivation path once it is set to an account that has a wallet;
 - (void)loadAddresses;
-
 - (void)reloadAddresses;
-
 - (BOOL)isHardenedAtPosition:(NSUInteger)position;
-
 - (BOOL)isDerivationPathEqual:(id)object;
+
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
+                                     error:(NSError **)error;
+
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
+                                 inContext:(NSManagedObjectContext *)context
+                                     error:(NSError **)error;
 
 @end
 

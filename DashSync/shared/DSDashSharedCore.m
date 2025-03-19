@@ -198,7 +198,7 @@ MaybeDataContract *get_data_contract_caller(const void *context, DIdentifier *id
 }
 void get_data_contract_dtor(MaybeDataContract *result) {}
 
-MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key, BYTES *data) {
+MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key, Vec_u8 *data) {
     DSDashSharedCore *core = AS_OBJC(context);
     DBinaryData *ok = NULL;
     dpp_errors_protocol_error_ProtocolError *error = NULL;
@@ -208,7 +208,7 @@ MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey 
     if (!maybe_key || maybe_key->error) {
         error = dpp_errors_protocol_error_ProtocolError_Generic_ctor(DSLocalizedChar(@"Can't find a signer for identity public key: %p", nil, identity_public_key));
     } else {
-        ok = DBinaryDataCtor(dash_spv_crypto_keys_key_OpaqueKey_hash_and_sign(maybe_key->ok, data));
+        ok = DBinaryDataCtor(DOpaqueKeyHashAndSign(maybe_key->ok, data));
     }
     DMaybeOpaqueKeyDtor(maybe_key);
     dpp_identity_identity_public_key_IdentityPublicKey_destroy(identity_public_key);
@@ -263,10 +263,23 @@ void get_block_hash_by_height_dtor(u256 *result) {}
 
 DMaybeCLSignature *get_cl_signature_by_block_hash_caller(const void *context, u256 *block_hash) {
     DSDashSharedCore *core = AS_OBJC(context);
-    UInt256 blockHash = uint256_reverse(u256_cast(block_hash));
+    UInt256 blockHash = u256_cast(block_hash);
+    UInt256 blockHashRev = uint256_reverse(blockHash);
     u256_dtor(block_hash);
     DSChainLock *chainLock = [core.chain.chainManager chainLockForBlockHash:blockHash];
-    return chainLock ? DMaybeCLSignatureCtor(dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(chainLock.lock), NULL) : DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No clsig for block hash %@", nil, uint256_hex(blockHash))));
+    DSChainLock *chainLockRev = [core.chain.chainManager chainLockForBlockHash:blockHashRev];
+    if (chainLock) {
+        dashcore_bls_sig_utils_BLSSignature *bls_sig = dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(chainLock.lock);
+        DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = %@", uint256_hex(blockHash), u768_hex(bls_sig->_0));
+        return DMaybeCLSignatureCtor(bls_sig, NULL);
+    } else if (chainLockRev) {
+        dashcore_bls_sig_utils_BLSSignature *bls_sig = dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(chainLockRev.lock);
+        DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = %@", uint256_hex(blockHashRev), u768_hex(bls_sig->_0));
+        return DMaybeCLSignatureCtor(bls_sig, NULL);
+    } else {
+        DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = None", uint256_hex(blockHash));
+        return DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No clsig for block hash %@", nil, uint256_hex(blockHash))));
+    }
 }
 void get_cl_signature_by_block_hash_dtor(DMaybeCLSignature *result) {}
 

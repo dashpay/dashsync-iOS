@@ -26,11 +26,6 @@
     return ffi_ref; \
 }())
 
-//static uint8_t * _Nonnull NSDataToHeap(NSData * _Nonnull data) {
-//    uint8_t *heapBuffer = malloc(data.length);
-//    memcpy(heapBuffer, data.bytes, data.length);
-//    return heapBuffer;
-//}
 #define u128 Arr_u8_16
 #define u160 Arr_u8_20
 #define u256 Arr_u8_32
@@ -38,18 +33,6 @@
 #define u384 Arr_u8_48
 #define u512 Arr_u8_64
 #define u768 Arr_u8_96
-
-#define SLICE Slice_u8
-#define BYTES Vec_u8
-#define BITSET dash_spv_crypto_llmq_bitset_Bitset
-
-//#define u128_ctor(data) Arr_u8_16_ctor(data.length, (uint8_t *) data.bytes)
-//#define u160_ctor(data) Arr_u8_20_ctor(data.length, (uint8_t *) data.bytes)
-//#define u256_ctor(data) Arr_u8_32_ctor(data.length, (uint8_t *) data.bytes)
-//#define u264_ctor(data) Arr_u8_33_ctor(data.length, (uint8_t *) data.bytes)
-//#define u384_ctor(data) Arr_u8_48_ctor(data.length, (uint8_t *) data.bytes)
-//#define u512_ctor(data) Arr_u8_64_ctor(data.length, (uint8_t *) data.bytes)
-//#define u768_ctor(data) Arr_u8_96_ctor(data.length, (uint8_t *) data.bytes)
 
 #define u128_ctor(data) Arr_u8_16_ctor(data.length, NSDataToHeap(data))
 #define u160_ctor(data) Arr_u8_20_ctor(data.length, NSDataToHeap(data))
@@ -59,14 +42,6 @@
 #define u512_ctor(data) Arr_u8_64_ctor(data.length, NSDataToHeap(data))
 #define u768_ctor(data) Arr_u8_96_ctor(data.length, NSDataToHeap(data))
 
-//#define u128_ctor_hash(data) Arr_u8_16_ctor(data.length, (uint8_t *) data.bytes)
-//#define u160_ctor_hash(data) Arr_u8_20_ctor(data.length, (uint8_t *) data.bytes)
-//#define u256_ctor_hash(data) Arr_u8_32_ctor(data.length, (uint8_t *) data.bytes)
-//#define u264_ctor_hash(data) Arr_u8_33_ctor(data.length, (uint8_t *) data.bytes)
-//#define u384_ctor_hash(data) Arr_u8_48_ctor(data.length, (uint8_t *) data.bytes)
-//#define u512_ctor_hash(data) Arr_u8_64_ctor(data.length, (uint8_t *) data.bytes)
-//#define u768_ctor_hash(data) Arr_u8_96_ctor(data.length, (uint8_t *) data.bytes)
-
 #define u128_cast(u) *((UInt128 *)u->values)
 #define u160_cast(u) *((UInt160 *)u->values)
 #define u256_cast(u) *((UInt256 *)u->values)
@@ -74,13 +49,6 @@
 #define u512_cast(u) *((UInt512 *)u->values)
 #define u768_cast(u) *((UInt768 *)u->values)
 
-//#define u128_hash_cast(u) *((UInt128 *)u)
-//#define u160_hash_cast(u) *((UInt160 *)u)
-//#define u256_hash_cast(u) *((UInt256 *)u)
-//#define u384_hash_cast(u) *((UInt384 *)u)
-//#define u512_hash_cast(u) *((UInt512 *)u)
-//#define u768_hash_cast(u) *((UInt768 *)u)
-//
 #define u128_hex(u) uint128_hex(*((UInt128 *)u->values))
 #define u160_hex(u) uint160_hex(*((UInt160 *)u->values))
 #define u256_hex(u) uint256_hex(*((UInt256 *)u->values))
@@ -94,13 +62,6 @@
 #define u384_reversed_hex(u) uint384_hex(uint384_reverse(*((UInt384 *)u->values)))
 #define u512_reversed_hex(u) uint512_hex(uint512_reverse(*((UInt512 *)u->values)))
 #define u768_reversed_hex(u) uint768_hex(uint768_reverse(*((UInt768 *)u->values)))
-
-//#define u128_hash_hex(u) uint128_hex(*((UInt128 *)u))
-//#define u160_hash_hex(u) uint160_hex(*((UInt160 *)u))
-//#define u256_hash_hex(u) uint256_hex(*((UInt256 *)u))
-//#define u384_hash_hex(u) uint384_hex(*((UInt384 *)u))
-//#define u512_hash_hex(u) uint512_hex(*((UInt512 *)u))
-//#define u768_hash_hex(u) uint768_hex(*((UInt768 *)u))
 
 #define u8_16_ctor_u(u) (^{ \
     uint8_t (*ffi_ref)[16] = malloc(16 * sizeof(uint8_t)); \
@@ -136,43 +97,6 @@
     memcpy(ffi_ref, u.u8, 96); \
     return ffi_ref; \
 }())
-
-
-//
-//#define u128_ctor_u_hash(u) (^{ \
-//    uint8_t (*ffi_ref)[16] = malloc(16 * sizeof(uint8_t)); \
-//    memcpy(ffi_ref, u.u8, 16); \
-//    return ffi_ref; \
-//}())
-//
-//#define u160_ctor_u_hash(u) (^{ \
-//    uint8_t (*ffi_ref)[20] = malloc(20 * sizeof(uint8_t)); \
-//    memcpy(ffi_ref, u.u8, 20); \
-//    return ffi_ref; \
-//}())
-//#define u256_ctor_u_hash(u) (^{ \
-//    uint8_t (*ffi_ref)[32] = malloc(32 * sizeof(uint8_t)); \
-//    memcpy(ffi_ref, u.u8, 32); \
-//    return ffi_ref; \
-//}())
-//
-//#define u384_ctor_u_hash(u) (^{ \
-//    uint8_t (*ffi_ref)[48] = malloc(48 * sizeof(uint8_t)); \
-//    memcpy(ffi_ref, u.u8, 48); \
-//    return ffi_ref; \
-//}())
-//
-//#define u512_ctor_u_hash(u) (^{ \
-//    uint8_t (*ffi_ref)[64] = malloc(64 * sizeof(uint8_t)); \
-//    memcpy(ffi_ref, u.u8, 64); \
-//    return ffi_ref; \
-//}())
-//
-//#define u768_ctor_u_hash(u) (^{ \
-//    uint8_t (*ffi_ref)[96] = malloc(96 * sizeof(uint8_t)); \
-//    memcpy(ffi_ref, u.u8, 96); \
-//    return ffi_ref; \
-//}())
 
 #define u128_ctor_u(u) (^{ \
     uint8_t *ffi_ref = malloc(16 * sizeof(uint8_t)); \
@@ -226,7 +150,6 @@
 })
 
 #define slice_ctor(data) Slice_u8_ctor(data.length, NSDataToHeap(data))
-//#define slice_ctor(data) Slice_u8_ctor(data.length, (uint8_t *) data.bytes)
 #define slice_u128_ctor_u(u) Slice_u8_ctor(16, u.u8)
 #define slice_u160_ctor_u(u) Slice_u8_ctor(20, u.u8)
 #define slice_u256_ctor_u(u) Slice_u8_ctor(32, u.u8)
@@ -237,13 +160,10 @@
 #define slice_dtor(ptr) Slice_u8_destroy(ptr)
 
 #define bytes_ctor(data) Vec_u8_ctor(data.length, NSDataToHeap(data))
-//#define bytes_ctor(data) Vec_u8_ctor(data.length, (uint8_t *)data.bytes)
 #define bytes_dtor(ptr) Vec_u8_destroy(ptr)
 
-#define bitset_ctor(data, count) dash_spv_crypto_llmq_bitset_Bitset_ctor(data.length, NSDataToHeap(data))
-#define bitset_dtor(ptr) dash_spv_crypto_llmq_bitset_Bitset_destroy(ptr)
-
 #define DChar(str) (char *) [str UTF8String]
+#define DCharDtor(str) str_destroy(str)
 
 
 #define DMNSyncState dash_spv_masternode_processor_models_sync_state_CacheState
@@ -280,39 +200,125 @@
 
 #define DMasternodeList dashcore_sml_masternode_list_MasternodeList
 #define DMasternodeListDtor(ptr) dashcore_sml_masternode_list_MasternodeList_destroy(ptr)
-//#define DArcMasternodeList std_sync_Arc_dash_spv_masternode_processor_models_masternode_list_MasternodeList
-//#define DArcMasternodeListDtor(ptr) std_sync_Arc_dash_spv_masternode_processor_models_masternode_list_MasternodeList_destroy(ptr)
 #define DMaybeMasternodeList Result_ok_dashcore_sml_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 
-//#define DMasternodeListFromEntryPool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec) dash_spv_masternode_processor_models_masternode_list_from_entry_pool(block_hash, block_height, mn_merkle_root, llmq_merkle_root, masternodes_vec, quorums_vec)
 #define DMasternodeEntry dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry
 #define DMasternodeEntryDtor(ptr) dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_destroy(ptr)
 #define DMasternodeEntryList Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry
 #define DMasternodeEntryListCtor(count, list) Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_ctor(count, list)
 #define DMasternodeEntryListDtor(ptr) Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_destroy(ptr)
-//#define DMasternodeEntryMap std_collections_Map_keys_u8_arr_32_values_dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry
 #define DMasternodeEntryMapDtor(ptr) std_collections_Map_keys_u8_arr_32_values_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_destroy(ptr)
-//#define DLLMQMap std_collections_Map_keys_dash_spv_crypto_network_llmq_type_LLMQType_values_std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
-//#define DLLMQMapOfType std_collections_Map_keys_u8_arr_32_values_dash_spv_crypto_llmq_entry_LLMQEntry
 #define DLLMQEntry dashcore_sml_quorum_entry_qualified_quorum_entry_QualifiedQuorumEntry
 #define DLLMQEntryDtor(ptr) dashcore_sml_quorum_entry_qualified_quorum_entry_QualifiedQuorumEntry_destroy(ptr)
-//#define DLLMQEntrySignID(ptr, req_id, hash) dash_spv_crypto_llmq_entry_LLMQEntry_sign_id(ptr, req_id, hash)
-//#define DLLMQEntryVerifySignature(ptr, sign_id, sig) dash_spv_crypto_llmq_entry_LLMQEntry_verify_signature(ptr, sign_id, sig)
-//#define DLLMQEntryHashHex(ptr) dash_spv_crypto_llmq_entry_LLMQEntry_llmq_hash_hex(ptr)
 
 #define DLLMQEntryList Vec_dash_spv_crypto_llmq_entry_LLMQEntry
 #define DLLMQEntryListCtor(count, list) Vec_dash_spv_crypto_llmq_entry_LLMQEntry_ctor(count, list)
 
 #define DLLMQType dash_spv_crypto_network_llmq_type_LLMQType
 #define DLLMQSnapshot dash_spv_masternode_processor_models_snapshot_LLMQSnapshot
+#define DKeyError dash_spv_crypto_keys_KeyError
 #define DKeyKind dash_spv_crypto_keys_key_KeyKind
+#define DKeyKindIndex(kind) dash_spv_crypto_keys_key_KeyKind_index(kind)
+#define DKeyKindFromIndex(index) dash_spv_crypto_keys_key_key_kind_from_index(index)
 #define DKeyKindDtor(ptr) dash_spv_crypto_keys_key_KeyKind_destroy(ptr)
 #define DKeyKindECDSA() dash_spv_crypto_keys_key_KeyKind_ECDSA_ctor()
 #define DKeyKindBLS() dash_spv_crypto_keys_key_KeyKind_BLS_ctor()
 #define DKeyKindED25519() dash_spv_crypto_keys_key_KeyKind_ED25519_ctor()
+#define DKeyKindStoragePrefix(kind) dash_spv_crypto_keys_key_KeyKind_key_storage_prefix(kind)
+#define DKeyKindDerivationString(kind) dash_spv_crypto_keys_key_KeyKind_derivation_string(kind)
+#define DKeyVerificationResult Result_ok_bool_err_dash_spv_crypto_keys_KeyError
+#define DKeyVerificationResultDtor(ptr) Result_ok_bool_err_dash_spv_crypto_keys_KeyError_destroy(ptr)
+
+#define DMaybeECDSAKey Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError
+#define DMaybeECDSAKeyDtor(ptr) Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(ptr)
+#define DMaybeECDSAKeyWithPrivateKey(key_str, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key(key_str, chain_type)
+#define DECDSAKeyPublicKeyData(key) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(key)
+#define DECDSAKeyPublicKeyDataForPrivateKey(key_str, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_for_private_key(key_str, chain_type)
+#define DECDSAKeySign(key, data) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_sign(key, data)
+#define DECDSAKeyCompactSign(key, data) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_compact_sign(key, data)
+#define DECDSAKeyPublicKeyHash(key) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_hash160(key)
+#define DECDSAKeyPubAddress(key, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_with_public_key_data(key, chain_type)
+#define DECDSAKeyWithSecret(data, compressed) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_secret_data(data, compressed)
+#define DECDSAKeyWithPublicKeyData(data) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_public_key_data(data)
+#define DECDSAKeyWithPublicKeyDataEqualTo(key, data) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data_equal_to(key, data)
+#define DECDSAKeyWithCompactSig(sig, digest) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_compact_sig(sig, digest)
+#define DECDSAKeyFromCompactSig(sig, digest) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(sig, digest)
+#define DECDSAKeyFromSeedData(data) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_init_with_seed_data(data)
+#define DECDSAKeySerializedPrivateKey(key, script) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_private_key_for_script(key, script)
+#define DECDSAKeySerializedPrivateMasterKey(seed, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_private_master_key_from_seed(seed, chain_type)
+#define DECDSAKeySerializedPrivateKeyFromSeedAtU256(seed, path, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_extended_private_key_from_seed_at_u256_path(seed, path, chain_type)
+#define DECDSAKeySerializedPrivateKeyFromBIP38(bip38_key, passphrase, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_from_bip38_key(bip38_key, passphrase, chain_type)
+#define DECDSAKeySerializedAuthPrivateKeyFromSeed(seed, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_auth_private_key_from_seed_for_chain(seed, chain_type)
+#define DECDSAKeyIsValidBIP38(bip38_key) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_is_valid_bip38_key(bip38_key)
+#define DECDSAPublicKeyUniqueIdFromDerivedKeyData(secret, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_unique_id_from_derived_key_data(secret, chain_type)
+#define DECDSAKeyProRegTxPayloadCollateralDigest(payload_hash, script_payout, reward, owner_hash, voter_hash, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_pro_reg_tx_payload_collateral_digest(payload_hash, script_payout, reward, owner_hash, voter_hash, chain_type)
+#define DECDSAKeyProRegTxVerifyPayloadSig(sig, payload, hash) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_pro_reg_tx_verify_payload_signature(sig, payload, hash)
+#define DECDSAKeyContainsSecretKey(sec_key_str, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_contains_secret_key(sec_key_str, chain_type)
+
+#define DECDSAKeyAddressFromPublicKeyData(data, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_from_public_key_data(data, chain_type)
+#define DECDSAKeyAddressFromRecoveredCompactSig(sig, digest, chain_type) dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_from_recovered_compact_sig(sig, digest, chain_type)
+
+#define DBLSKeyWithPublicKey(key, legacy) dash_spv_crypto_keys_bls_key_BLSKey_key_with_public_key(key, legacy)
+#define DBLSKeyWithSeedData(data, legacy) dash_spv_crypto_keys_bls_key_BLSKey_key_with_seed_data(data, legacy)
+#define DBLSKeyPublicKeyData(key) dash_spv_crypto_keys_bls_key_BLSKey_public_key_data(key)
+#define DBLSKeyPrivateKeyData(key) dash_spv_crypto_keys_bls_key_BLSKey_private_key_data(key)
+#define DBLSKeySignData(key, data) dash_spv_crypto_keys_bls_key_BLSKey_sign_data(key, data)
+#define DBLSKeyVerify(key, digest, sig) dash_spv_crypto_keys_bls_key_BLSKey_verify(key, digest, sig)
+#define DBLSKeyVerifySig(key, legacy, digest, sig) dash_spv_crypto_keys_bls_key_BLSKey_verify_signature(key, legacy, digest, sig)
+#define DBLSKeySerializedPubKey(key, legacy) dash_spv_crypto_keys_bls_key_BLSKey_public_key_serialized(key, legacy)
 
 #define DOpaqueKey dash_spv_crypto_keys_key_OpaqueKey
 #define DOpaqueKeyDtor(ptr) dash_spv_crypto_keys_key_OpaqueKey_destroy(ptr)
+#define DOpaqueKeyExtendedPublicKeyData(ptr) dash_spv_crypto_keys_key_OpaqueKey_extended_public_key_data(ptr)
+
+#define DOpaqueKeyEncryptData(prv_key, pub_key, data) dash_spv_crypto_keys_key_OpaqueKey_encrypt_data(prv_key, pub_key, data)
+#define DOpaqueKeyEncryptDataUsingIV(prv_key, pub_key, data, iv) dash_spv_crypto_keys_key_OpaqueKey_encrypt_data_using_iv(prv_key, pub_key, data, iv)
+#define DOpaqueKeyEncryptDataWithDHKey(key, data) dash_spv_crypto_keys_key_OpaqueKey_encrypt_data_with_dh_key(key, data)
+#define DOpaqueKeyDecryptData(prv_key, pub_key, data) dash_spv_crypto_keys_key_OpaqueKey_decrypt_data(prv_key, pub_key, data)
+#define DOpaqueKeyDecryptDataUsingIV(prv_key, pub_key, data, iv) dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_using_iv_size(prv_key, pub_key, data, iv)
+#define DOpaqueKeyDecryptDataWithDHKey(key, data) dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_with_dh_key(key, data)
+
+#define DOpaqueKeySign(key, data) dash_spv_crypto_keys_key_OpaqueKey_sign(key, data)
+#define DOpaqueKeyPrivateKeyData(key) dash_spv_crypto_keys_key_OpaqueKey_private_key_data(key)
+#define DOpaqueKeyPublicKeyData(key) dash_spv_crypto_keys_key_OpaqueKey_public_key_data(key)
+#define DOpaqueKeyPublicKeyHash(key) dash_spv_crypto_keys_key_OpaqueKey_hash160(key)
+#define DOpaqueKeyHashAndSign(key, data) dash_spv_crypto_keys_key_OpaqueKey_hash_and_sign(key, data)
+#define DOpaqueKeyCreateIdentifier(key) dash_spv_crypto_keys_key_OpaqueKey_create_identifier(key)
+#define DOpaqueKeyCreateAccountRef(src_key, dst_key, acc_number) dash_spv_crypto_keys_key_OpaqueKey_create_account_reference(src_key, dst_key, acc_number)
+#define DOpaqueKeyCreateTxSig(key, input, in_script) dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key, input, in_script)
+#define DOpaqueKeyHasPrivateKey(key) dash_spv_crypto_keys_key_OpaqueKey_has_private_key(key)
+#define DOpaqueKeyForgetPrivateKey(key) dash_spv_crypto_keys_key_OpaqueKey_forget_private_key(key)
+#define DOpaqueKeyDerivateTo256WithOffset(key, path, offset) dash_spv_crypto_keys_key_OpaqueKey_public_derive_to_256_path_with_offset(key, path, offset)
+#define DOpaqueKeyVerify(key, payload, signature) dash_spv_crypto_keys_key_OpaqueKey_verify(key, payload, signature)
+#define DOpaqueKeyCheckPayloadSignature(key, hash) dash_spv_crypto_keys_key_OpaqueKey_check_payload_signature(key, hash)
+#define DOpaqueKeySerializedPrivateKey(key, script) dash_spv_crypto_keys_key_OpaqueKey_serialized_private_key_for_script(key, script)
+#define DOpaqueKeyPublicKeyDataEqualTo(key, data) dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key, data)
+#define DOpaqueKeyPublicKeyDataAtIndexPath(key, index_path) dash_spv_crypto_keys_key_OpaqueKey_public_key_data_at_index_path(key, index_path)
+#define DOpaqueKeyPublicKeyFromExtPubKeyDataAtIndexPath(key, index_path) dash_spv_crypto_keys_key_OpaqueKey_public_key_from_extended_public_key_data_at_index_path(key, index_path)
+#define DOpaqueKeyPrivateKeyDataEqualTo(key, data) dash_spv_crypto_keys_key_OpaqueKey_private_key_data_equal_to(key, data)
+#define DOpaqueKeyExtPrivateKeyData(key) dash_spv_crypto_keys_key_OpaqueKey_extended_private_key_data(key)
+#define DOpaqueKeySecretKeyString(key) dash_spv_crypto_keys_key_OpaqueKey_secret_key_string(key)
+#define DOpaqueKeyHasKind(key, kind) dash_spv_crypto_keys_key_OpaqueKey_has_kind(key, kind)
+#define DOpaqueKeyDecrypt(prv_key, pub_key, data) dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(prv_key, pub_key, data)
+#define DOpaqueKeyPubAddress(key, chain_type) dash_spv_crypto_keys_key_OpaqueKey_address_with_public_key_data(key, chain_type)
+
+#define DScriptPubKeyForAddress(address, chain_type) dash_spv_apple_bindings_address_addresses_script_pubkey_for_address(address, chain_type)
+#define DIsValidDashAddress(address, chain_type) dash_spv_apple_bindings_address_addresses_is_valid_dash_address_for_chain(address, chain_type)
+
+#define DMaybeOpaqueKeyFromSeed(kind, seed) dash_spv_crypto_keys_key_KeyKind_key_with_seed_data(kind, seed)
+#define DMaybeDeriveOpaqueKeyFromExtendedPrivateKeyDataForIndexPath(kind, data, index_path) dash_spv_crypto_keys_key_KeyKind_derive_key_from_extended_private_key_data_for_index_path(kind, data, index_path)
+#define DMaybeOpaqueKeyWithPrivateKeyData(kind, data) dash_spv_crypto_keys_key_KeyKind_key_with_private_key_data(kind, data)
+#define DMaybeOpaqueKeyWithPrivateKey(kind, key_str, data) dash_spv_crypto_keys_key_KeyKind_key_with_private_key(kind, key_str, data)
+#define DMaybeOpaqueKeyWithPublicKeyData(kind, data) dash_spv_crypto_keys_key_KeyKind_key_with_public_key_data(kind, data)
+#define DMaybeOpaqueKeyInitWithExtendedPublicKeyData(kind, data) dash_spv_crypto_keys_key_KeyKind_key_init_with_extended_public_key_data(kind, data)
+#define DMaybeOpaqueKeyWithExtendedPublicKeyData(kind, data) dash_spv_crypto_keys_key_KeyKind_key_with_extended_public_key_data(kind, data)
+#define DMaybeOpaqueKeyWithExtendedPrivateKeyData(kind, data) dash_spv_crypto_keys_key_KeyKind_key_with_extended_private_key_data(kind, data)
+#define DMaybeOpaqueKeyFromExtendedPublicKeyDataAtU256(kind, data, path) dash_spv_crypto_keys_key_KeyKind_public_key_from_extended_public_key_data_at_index_path_256(kind, data, path)
+#define DMaybeOpaquePrivateKeyAtIndexPathWrapped(kind, seed, index_path, derivation_path) dash_spv_crypto_keys_key_KeyKind_private_key_at_index_path_wrapped(kind, seed, index_path, derivation_path)
+#define DMaybeOpaquePrivateKeysAtIndexPathsWrapped(kind, seed, index_paths, derivation_path) dash_spv_crypto_keys_key_KeyKind_private_keys_at_index_paths_wrapped(kind, seed, index_paths, derivation_path)
+#define DMaybeSerializedOpaquePrivateKeysAtIndexPathsWrapped(kind, seed, index_paths, derivation_path, chain_type) dash_spv_crypto_keys_key_KeyKind_serialized_private_keys_at_index_paths_wrapper(kind, seed, index_paths, derivation_path, chain_type)
+#define DOpaqueKeyUsedInTxInputScript(in_script, key, chain_type) dash_spv_crypto_keys_key_maybe_opaque_key_used_in_tx_input_script(in_script, key, chain_type)
+
 #define DMaybeOpaqueKey Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError
 #define DMaybeOpaqueKeys Result_ok_Vec_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError
 #define DMaybeKeyData Result_ok_Vec_u8_err_dash_spv_crypto_keys_KeyError
@@ -347,44 +353,18 @@
 #define DMnDiffResultDtor(ptr) Result_Tuple_dashcore_hash_types_BlockHash_dashcore_hash_types_BlockHash_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_destroy(ptr)
 
 #define DMasternodeListForBlockHash(processor, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_list_for_block_hash(processor, block_hash)
-//#define DCalcMnMerkleRoot(list, block_height) dashcore_sml_masternode_list_MasternodeList_calculate_masternodes_merkle_root(list, block_height)
-//#define DCalcLLMQMerkleRoot(list) dashcore_sml_masternode_list_MasternodeList_calculate_llmq_merkle_root(list)
-//#define DCalcMnMerkleRootWithBlockHeightLookup(list, context, lookup) dashcore_sml_masternode_list_MasternodeList_calculate_masternodes_merkle_root_with_block_height_lookup(list, context, lookup)
 
 #define DMasternodeListByBlockHash(cache, block_hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_masternode_list_by_block_hash(cache, block_hash)
 
 #define DMasternodeListReversedProRegTxHashes(list) dashcore_sml_masternode_list_MasternodeList_reversed_pro_reg_tx_hashes_cloned(list)
 
 #define DProcessorClear(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clear(proc)
-//#define DMnDiffQueueCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_count(cache)
-//#define DMnDiffQueueMaxAmount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_mn_list_retrieval_queue_get_max_amount(cache)
-//#define DMnDiffQueueRemove(proc, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_mn_list_retrieval_queue(proc, block_hash)
-//#define DMnDiffQueueClean(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_mn_list_retrieval_queue(proc)
 
-//#define DQrInfoQueueCount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_count(cache)
-//#define DQrInfoQueueMaxAmount(cache) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_qr_info_retrieval_queue_get_max_amount(cache)
-//#define DQrInfoQueueRemove(proc, block_hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_remove_from_qr_info_retrieval_queue(proc, block_hash)
-//#define DQrInfoQueueClean(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_clean_qr_info_retrieval_queue(proc)
-
-//#define DMasternodeListHashesForMerkleRootWithBlockHeightLookup(list, context, lookup) dashcore_sml_masternode_list_MasternodeList_hashes_for_merkle_root_with_block_height_lookup(list, context, lookup)
 #define DMasternodeEntryByProRegTxHash(list, hash) dashcore_sml_masternode_list_MasternodeList_masternode_by_pro_reg_tx_hash(list, hash)
-//#define DMasternodeEntryFromEntity(version, provider_registration_transaction_hash, confirmed_hash, ip_address, port, key_id_voting, operator_public_key_data, operator_public_key_version, is_valid, mn_type, platform_http_port, platform_node_id, update_height, confirmed_hash_hashed_with_provider_registration_transaction_hash, known_confirmed_at_height, entry_hash, previous_entry_hashes, previous_operator_public_keys, previous_validity) dash_spv_masternode_processor_models_masternode_entry_from_entity(version, provider_registration_transaction_hash, confirmed_hash, ip_address, port, key_id_voting, operator_public_key_data, operator_public_key_version, is_valid, mn_type, platform_http_port, platform_node_id, update_height, confirmed_hash_hashed_with_provider_registration_transaction_hash, known_confirmed_at_height, entry_hash, previous_entry_hashes, previous_operator_public_keys, previous_validity)
-
-//#define DMasternodeListPrint(list) dash_spv_masternode_processor_models_masternode_list_MasternodeList_print_description(list)
-//#define DMasternodeEntryPrint(entry) dash_spv_masternode_processor_models_masternode_entry_MasternodeEntry_print_description(entry)
-//#define DLLMQEntryPrint(entry) dash_spv_crypto_llmq_entry_LLMQEntry_print_description(entry)
-
-
-//#define DMNListDiffResult dash_spv_masternode_processor_processing_mn_listdiff_result_MNListDiffResult
 
 #define NSDataFromPtr(ptr) ptr ? [NSData dataWithBytes:(const void *)ptr->values length:ptr->count] : nil
 #define NSStringFromPtr(ptr) ptr ? [NSString stringWithCString:ptr encoding:NSUTF8StringEncoding] : nil
 
-//#define DPreviousOperatorKeys std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_dash_spv_crypto_keys_operator_public_key_OperatorPublicKey
-//#define DPreviousEntryHashes std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_u8_arr_32
-//#define DPreviousValidity std_collections_Map_keys_dash_spv_masternode_processor_common_block_Block_values_bool
-
-//#define DStoredMasternodeListsCount(proc) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_stored_masternode_lists_count(proc)
 #define DKnownMasternodeListsCount(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_known_masternode_lists_count(proc)
 #define DCurrentMasternodeListBlockHeight(proc) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list_height(proc)
 #define DHeightForBlockHash(proc, hash) dash_spv_masternode_processor_processing_processor_MasternodeProcessor_height_for_block_hash(proc, hash)
@@ -395,10 +375,6 @@
 #define DAddMasternodeList(cache, hash, list) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_add_masternode_list(cache, hash, list)
 #define DRemoveMasternodeList(cache, hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_remove_masternode_list(cache, hash)
 #define DRemoveMasternodeListsBefore(cache, height) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_remove_masternode_lists_before_height(cache, height)
-//#define DMasternodeListLoaded(cache, hash, list) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_masternode_list_loaded(cache, hash, list)
-//#define DCacheBlockHeight(cache, hash, height) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_cache_block_height_for_hash(cache, hash, height)
-//#define DAddMasternodeListStub(cache, hash) dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_add_stub_for_masternode_list(cache, hash)
-//#define DProcessingErrorIndex(ptr) dash_spv_masternode_processor_processing_processing_error_ProcessingError_index(ptr)
 
 #define DKeyType dpp_identity_identity_public_key_key_type_KeyType
 
@@ -517,6 +493,7 @@
 #define DRaiseIdentityNotFound() dash_spv_platform_identity_manager_IdentityValidator_None_ctor()
 
 #define DOpaqueKeyFromIdentityPubKey(key) dash_spv_platform_identity_manager_opaque_key_from_identity_public_key(key)
+#define DOpaqueKeyToKeyTypeIndex(key) dash_spv_platform_identity_manager_opaque_key_to_key_type_index(key)
 #define DOpaqueKeyKind(key) dash_spv_crypto_keys_key_OpaqueKey_kind(key)
 
 #define DDataContract dpp_data_contract_DataContract
@@ -534,6 +511,7 @@
 #define DSecurityLevelIndex(ptr) dash_spv_platform_identity_manager_security_level_to_index(ptr)
 #define DSecurityLevelFromIndex(index) dash_spv_platform_identity_manager_security_level_from_index(index)
 
+#define DIdentityRegistrationPublicKey(index, key) dash_spv_platform_identity_manager_identity_registration_public_key(index, key)
 #define DCreateIdentityPubKey(index, key, security_level, purpose) dash_spv_platform_identity_manager_identity_public_key(index, key, security_level, purpose)
 #define DUsernameStatus dash_spv_platform_document_usernames_UsernameStatus
 #define DUsernameStatusDtor(ptr) dash_spv_platform_document_usernames_UsernameStatus_destroy(ptr)
@@ -541,20 +519,28 @@
 #define DUsernameStatusFromIndex(index) dash_spv_platform_document_usernames_username_status_from_index(index)
 #define DUsernameStatusIndex(status) dash_spv_platform_document_usernames_username_status_to_index(status)
 #define DUsernameAdd(model, username, domain, status) dash_spv_platform_identity_model_IdentityModel_add_username(model, DChar(username), DChar(domain), status);
-
+#define DMaybeIdentityBalance Result_ok_Option_u64_err_dash_spv_platform_error_Error
+#define DMaybeIdentityBalanceDtor(ptr) Result_ok_Option_u64_err_dash_spv_platform_error_Error_destroy(ptr)
 #define DIdentityKeyStatus dash_spv_platform_identity_model_IdentityKeyStatus
 #define DIdentityKeyStatusDtor(ptr) dash_spv_platform_identity_model_IdentityKeyStatus_destroy(ptr)
 #define DIdentityRegistrationStatus dash_spv_platform_identity_model_IdentityRegistrationStatus
 #define DIdentityRegistrationStatusDtor(ptr) dash_spv_platform_identity_model_IdentityRegistrationStatus_destroy(ptr)
+#define DIdentityRegistrationStatusIndex(ptr) dash_spv_platform_identity_model_IdentityModel_registration_status_index(ptr)
+#define DIdentityRegistrationStatusFromIndex(index) dash_spv_platform_identity_model_IdentityRegistrationStatus_from_index(index)
+#define DIdentityRegistrationStatusRegistered() dash_spv_platform_identity_model_IdentityRegistrationStatus_Registered_ctor()
 
 #define DKeyInfo dash_spv_platform_identity_model_KeyInfo
 #define DKeyInfoDtor(ptr) dash_spv_platform_identity_model_KeyInfo_destroy(ptr)
 #define DKeyInfoDictionaries std_collections_Map_keys_u32_values_dash_spv_platform_identity_model_KeyInfo
 #define DKeyInfoDictionariesDtor(ptr) std_collections_Map_keys_u32_values_dash_spv_platform_identity_model_KeyInfo_destroy(ptr)
-
-
+#define DKeyInfoAtIndex(model, index) dash_spv_platform_identity_model_IdentityModel_key_info_at_index(model, index)
+#define DIdentityModelSetStatus(model, status) dash_spv_platform_identity_model_IdentityModel_set_registration_status(model, status)
+#define DGetKeyInfoDictionaries(model) dash_spv_platform_identity_model_IdentityModel_key_info_dictionaries(model)
+#define DGetRegisteredKeyInfoDictionaries(model) dash_spv_platform_identity_model_IdentityModel_registered_key_info_dictionaries(model)
 #define DIdentityKeyStatusFromIndex(index) dash_spv_platform_identity_model_IdentityKeyStatus_from_index(index)
 #define DIdentityKeyStatusToIndex(status) dash_spv_platform_identity_model_IdentityKeyStatus_to_index(status)
+
+#define DIdentityKeyStatusRegistered() dash_spv_platform_identity_model_IdentityKeyStatus_Registered_ctor()
 
 #define DUsernameStatuses std_collections_Map_keys_String_values_dash_spv_platform_identity_model_UsernameStatusInfo
 #define DUsernameStatusesDtor(ptr) std_collections_Map_keys_String_values_dash_spv_platform_identity_model_UsernameStatusInfo_destroy(ptr)
@@ -572,13 +558,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSKeyManager : NSObject
 
 - (instancetype)initWithChain:(DSChain *)chain;
-//+ (DKeyKind *)keyKindFromIndex:(uint16_t)index;
 
 + (BOOL)hasPrivateKey:(DOpaqueKey *)key;
 + (NSString *)secretKeyHexString:(DOpaqueKey *)key;
-+ (DMaybeOpaqueKey *_Nullable)keyWithPrivateKeyString:(NSString *)key
-                                            ofKeyType:(DKeyKind *)keyType
-                                         forChainType:(DChainType *)chainType;
 + (DMaybeOpaqueKey *_Nullable)keyWithPrivateKeyData:(NSData *)data ofType:(DKeyKind *)keyType;
 + (DMaybeOpaqueKey *_Nullable)keyWithPublicKeyData:(NSData *)data ofType:(DKeyKind *)keyType;
 + (DMaybeOpaqueKey *_Nullable)keyWithExtendedPublicKeyData:(NSData *)data ofType:(DKeyKind *)keyType;
@@ -586,16 +568,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSData *)signMesasageDigest:(DOpaqueKey *)key digest:(UInt256)digest;
 + (BOOL)verifyMessageDigest:(DOpaqueKey *)key digest:(UInt256)digest signature:(NSData *)signature;
 
-//+ (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(DKeyKind *)keyType
-//                                               path:(DIndexPathU256 *)path
-//                                         index_path:(Vec_u32 *)index_path
-//                                               seed:(NSData *)seed;
-//+ (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(DKeyKind *)keyType
-//                                       indexes:(UInt256 *)indexes
-//                                      hardened:(BOOL *)hardened
-//                                        length:(NSUInteger)length
-//                                     indexPath:(NSIndexPath *)indexPath
-//                                      fromSeed:(NSData *)seed;
 + (DMaybeOpaqueKey *_Nullable)publicKeyAtIndexPath:(DOpaqueKey *)key indexPath:(NSIndexPath *)indexPath;
 + (NSData *_Nullable)publicKeyDataAtIndexPath:(DOpaqueKey *)key indexPath:(NSIndexPath *)indexPath;
 
@@ -603,14 +575,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSData *)publicKeyData:(DOpaqueKey *)key;
 + (NSData *)extendedPrivateKeyData:(DOpaqueKey *)key;
 + (NSData *)extendedPublicKeyData:(DOpaqueKey *)key;
-
-+ (DMaybeOpaqueKey *_Nullable)deriveKeyFromExtenedPrivateKeyDataAtIndexPath:(NSData *_Nullable)data
-                                                             indexPath:(NSIndexPath *)indexPath
-                                                            forKeyType:(DKeyKind *)keyType;
-//+ (DMaybeOpaqueKey *_Nullable)keyPublicDeriveTo256Bit:(DSDerivationPath *)parentPath
-//                                    childIndexes:(UInt256 *)childIndexes
-//                                   childHardened:(BOOL *)childHardened
-//                                          length:(NSUInteger)length;
 
 + (NSString *)serializedPrivateKey:(DOpaqueKey *)key
                          chainType:(DChainType *)chainType;
@@ -630,8 +594,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSData *)scriptPubKeyForAddress:(NSString *)address
                           forChain:(nonnull DSChain *)chain;
 
-//+ (UInt160)ecdsaKeyPublicKeyHashFromSecret:(NSString *)secret forChainType:(DChainType *)chainType;
-
 + (NSString *_Nullable)ecdsaKeyAddressFromPublicKeyData:(NSData *)data
                                            forChainType:(DChainType *)chainType;
 - (NSString *)ecdsaKeyPublicKeyUniqueIDFromDerivedKeyData:(UInt256)secret
@@ -642,21 +604,15 @@ NS_ASSUME_NONNULL_BEGIN
                         fromSeed:(NSData *)seed
                      atIndexPath:(NSIndexPath *)indexPath
                           digest:(UInt256)digest;
-//+ (struct ECDSAKey *)ecdsaKeyWithPrivateKey:(NSString *)key forChainType:(DChainType *)chainType;
 + (NSString *)blsPublicKeySerialize:(DOpaqueKey *)key
                              legacy:(BOOL)legacy;
 + (NSString *_Nullable)ecdsaKeyWithBIP38Key:(NSString *)key
                                  passphrase:(NSString *)passphrase
                                forChainType:(DChainType *)chainType;
 + (BOOL)isValidDashBIP38Key:(NSString *)key;
-//+ (DOpaqueKey *_Nullable)keyDeprecatedExtendedPublicKeyFromSeed:(NSData *)seed
-//                                                        indexes:(UInt256 *)indexes
-//                                                       hardened:(BOOL *)hardened
-//                                                         length:(NSUInteger)length;
 
 + (NSString *)NSStringFrom:(char *)c_string;
-+ (NSData *)NSDataFrom:(BYTES *)byte_array;
-+ (NSData *)NSDataFromArr_u8_32:(u256 *)byte_array;
++ (NSData *)NSDataFrom:(Vec_u8 *)byte_array;
 + (NSString *)localizedKeyType:(DOpaqueKey *)key;
 
 + (UInt256)x11:(NSData *)data;
@@ -669,8 +625,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSData *)encryptData:(NSData *)data withDHKey:(DOpaqueKey *)dhKey;
 + (NSData *)decryptData:(NSData *)data withDHKey:(DOpaqueKey *)dhKey;
-
-//+ (NSString *)keyStoragePrefix:(DKeyKind *)keyType;
 
 /// Transactions
 + (BOOL)verifyProRegTXPayloadSignature:(NSData *)signature payload:(NSData *)payload ownerKeyHash:(UInt160)ownerKeyHash;

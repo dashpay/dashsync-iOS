@@ -29,6 +29,7 @@
 #import "DSChain+Wallet.h"
 #import "DSChainManager.h"
 #import "DSDashPlatform.h"
+#import "DSDerivationPathFactory.h"
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
 #import "DSPeerManager.h"
@@ -164,7 +165,7 @@
         
         for (DSWallet *wallet in wallets) {
             uint32_t unusedIndex = [wallet unusedIdentityIndex];
-            DSAuthenticationKeysDerivationPath *derivationPath = [DSIdentity derivationPathForType:DKeyKindECDSA() forWallet:wallet];
+            DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet];
             const int keysToCheck = 5;
             NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionaryWithCapacity:keysToCheck];
             u160 **key_hashes = malloc(keysToCheck * sizeof(u160 *));

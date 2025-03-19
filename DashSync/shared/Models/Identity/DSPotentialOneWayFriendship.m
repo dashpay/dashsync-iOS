@@ -120,18 +120,28 @@
     if (completion) completion(YES, self.fundsDerivationPathForContact);
 }
 
-- (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion {
+- (BOOL)encryptExtendedPublicKey {
     NSAssert(self.extendedPublicKey && self.extendedPublicKey->ok, @"Problem creating extended public key for potential contact?");
-    DOpaqueKey *recipientKey = [self destinationKeyAtIndex];
-    self.encryptedExtendedPublicKeyData = [self.sourceIdentity encryptData:[DSKeyManager extendedPublicKeyData:self.extendedPublicKey->ok]
-                                                            withKeyAtIndex:self.sourceKeyIndex
-                                                           forRecipientKey:recipientKey];
-    if (completion) completion(YES);
+    DOpaqueKey *recipient_key = [self destinationKeyAtIndex];
+    NSParameterAssert(recipient_key);
+    DMaybeKeyData *pub_key_data = DOpaqueKeyExtendedPublicKeyData(self.extendedPublicKey->ok);
+    NSParameterAssert(pub_key_data->ok);
+    NSData *data = NSDataFromPtr(pub_key_data->ok);
+    DMaybeKeyDataDtor(pub_key_data);
+    DKeyKind *kind = DOpaqueKeyKind(recipient_key);
+    DMaybeOpaqueKey *privateKey = [self.sourceIdentity privateKeyAtIndex:self.sourceKeyIndex ofType:kind];
+    Slice_u8 *slice = slice_ctor(data);
+    DMaybeKeyData *result = DOpaqueKeyEncryptData(privateKey->ok, recipient_key, slice);
+    NSData *encrypted = result->ok ? NSDataFromPtr(result->ok) : nil;
+    DMaybeKeyDataDtor(result);
+    DMaybeOpaqueKeyDtor(privateKey);
+    self.encryptedExtendedPublicKeyData = encrypted;
+    return encrypted;
 }
 
 - (uint32_t)createAccountReference {
     // TODO: make test
-    return dash_spv_crypto_keys_key_OpaqueKey_create_account_reference([self sourceKeyAtIndex], self.extendedPublicKey->ok, self.account.accountNumber);
+    return DOpaqueKeyCreateAccountRef([self sourceKeyAtIndex], self.extendedPublicKey->ok, self.account.accountNumber);
 }
 
 - (DValue *)toValue {

@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)createDerivationPathAndSaveExtendedPublicKeyWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion;
 
-- (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
+- (BOOL)encryptExtendedPublicKey;
 
 - (DValue *)toValue;
 

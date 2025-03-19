@@ -454,8 +454,8 @@
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed {
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
-    SLICE *seed_slice = slice_ctor(seed);
-    char *c_string = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_private_master_key_from_seed(seed_slice, self.chain.chainType);
+    Slice_u8 *seed_slice = slice_ctor(seed);
+    char *c_string = DECDSAKeySerializedPrivateMasterKey(seed_slice, self.chain.chainType);
     
     NSString *xprv = [DSKeyManager NSStringFrom:c_string];
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
@@ -578,35 +578,30 @@
     NSIndexPath *indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
     DMaybeOpaqueKey *privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1 fromSeed:self.seed];
     DMaybeOpaqueKey *publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
-    BYTES *publicKey1_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey1->ok);
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey1->ok, publicKey1_data), @"the public keys must match");
+    Vec_u8 *publicKey1_data = DOpaqueKeyPublicKeyData(publicKey1->ok);
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1->ok, publicKey1_data), @"the public keys must match");
     DMaybeOpaqueKey *privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2 fromSeed:self.seed];
     DMaybeOpaqueKey *publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
-    BYTES *publicKey2_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey2->ok);
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey2->ok, publicKey2_data), @"the public keys must match");
-//    XCTAssert(keys_public_key_data_is_equal(privateKey2, publicKey2), @"the public keys must match");
+    Vec_u8 *publicKey2_data = DOpaqueKeyPublicKeyData(publicKey2->ok);
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2->ok, publicKey2_data), @"the public keys must match");
     
     DMaybeOpaqueKeys *privateKeys = [DSDerivationPathFactory privateKeysAtIndexPaths:@[indexPath1, indexPath2]
                                                                             fromSeed:self.seed
                                                                       derivationPath:derivationPath];
     
-//    NSValue *privateKey1FromMultiIndexValue = privateKeys[0];
-//    NSValue *privateKey2FromMultiIndexValue = privateKeys[1];
-//    DOpaqueKey *privateKey1FromMultiIndex = privateKey1FromMultiIndexValue.pointerValue;
-//    DOpaqueKey *privateKey2FromMultiIndex = privateKey2FromMultiIndexValue.pointerValue;
     DOpaqueKey *privateKey1FromMultiIndex = privateKeys->ok->values[0];
     DOpaqueKey *privateKey2FromMultiIndex = privateKeys->ok->values[1];
 
-    Vec_u8 *privateKey1_public_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(privateKey1->ok);
-    Vec_u8 *privateKey2_public_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(privateKey2->ok);
-    Result_ok_Vec_u8_err_dash_spv_crypto_keys_KeyError *privateKey1_private_key_data = dash_spv_crypto_keys_key_OpaqueKey_private_key_data(privateKey1->ok);
-    Result_ok_Vec_u8_err_dash_spv_crypto_keys_KeyError *privateKey2_private_key_data = dash_spv_crypto_keys_key_OpaqueKey_private_key_data(privateKey2->ok);
+    Vec_u8 *privateKey1_public_key_data = DOpaqueKeyPublicKeyData(privateKey1->ok);
+    Vec_u8 *privateKey2_public_key_data = DOpaqueKeyPublicKeyData(privateKey2->ok);
+    DMaybeKeyData *privateKey1_private_key_data = DOpaqueKeyPrivateKeyData(privateKey1->ok);
+    DMaybeKeyData *privateKey2_private_key_data = DOpaqueKeyPrivateKeyData(privateKey2->ok);
     u256 *privateKey1_private_key_data_u = Arr_u8_32_ctor(privateKey1_private_key_data->ok->count, privateKey1_private_key_data->ok->values);
     u256 *privateKey2_private_key_data_u = Arr_u8_32_ctor(privateKey2_private_key_data->ok->count, privateKey2_private_key_data->ok->values);
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey1FromMultiIndex, privateKey1_public_key_data), @"the public keys must match");
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey2FromMultiIndex, privateKey2_public_key_data), @"the public keys must match");
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_private_key_data_equal_to(privateKey1FromMultiIndex, privateKey1_private_key_data_u), @"the private keys must match");
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_private_key_data_equal_to(privateKey2FromMultiIndex, privateKey2_private_key_data_u), @"the private keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1FromMultiIndex, privateKey1_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2FromMultiIndex, privateKey2_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPrivateKeyDataEqualTo(privateKey1FromMultiIndex, privateKey1_private_key_data_u), @"the private keys must match");
+    XCTAssert(DOpaqueKeyPrivateKeyDataEqualTo(privateKey2FromMultiIndex, privateKey2_private_key_data_u), @"the private keys must match");
 }
 
 - (void)testBLSPrivateDerivation {
@@ -619,16 +614,16 @@
     DMaybeOpaqueKey *privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1];
     DMaybeOpaqueKey *publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
     
-    Vec_u8 *publicKey1_public_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey1->ok);
+    Vec_u8 *publicKey1_public_key_data = DOpaqueKeyPublicKeyData(publicKey1->ok);
     
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey1->ok, publicKey1_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1->ok, publicKey1_public_key_data), @"the public keys must match");
 //    XCTAssert(keys_public_key_data_is_equal(privateKey1, publicKey1), @"the public keys must match");
     DMaybeOpaqueKey *privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2];
     DMaybeOpaqueKey *publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
     
-    Vec_u8 *publicKey2_public_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(publicKey2->ok);
+    Vec_u8 *publicKey2_public_key_data = DOpaqueKeyPublicKeyData(publicKey2->ok);
 
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey2->ok, publicKey2_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2->ok, publicKey2_public_key_data), @"the public keys must match");
     DMaybeOpaqueKeys *privateKeys = [DSDerivationPathFactory privateKeysAtIndexPaths:@[indexPath1, indexPath2]
                                                                             fromSeed:self.seed
                                                                       derivationPath:derivationPath];
@@ -637,18 +632,18 @@
     DOpaqueKey *privateKey2FromMultiIndex = privateKeys->ok->values[1];
     
     
-    Vec_u8 *privateKey1_public_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(privateKey1->ok);
-    Vec_u8 *privateKey2_public_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(privateKey2->ok);
-    Result_ok_Vec_u8_err_dash_spv_crypto_keys_KeyError *privateKey1_private_key_data = dash_spv_crypto_keys_key_OpaqueKey_private_key_data(privateKey1->ok);
-    Result_ok_Vec_u8_err_dash_spv_crypto_keys_KeyError *privateKey2_private_key_data = dash_spv_crypto_keys_key_OpaqueKey_private_key_data(privateKey2->ok);
+    Vec_u8 *privateKey1_public_key_data = DOpaqueKeyPublicKeyData(privateKey1->ok);
+    Vec_u8 *privateKey2_public_key_data = DOpaqueKeyPublicKeyData(privateKey2->ok);
+    DMaybeKeyData *privateKey1_private_key_data = DOpaqueKeyPrivateKeyData(privateKey1->ok);
+    DMaybeKeyData *privateKey2_private_key_data = DOpaqueKeyPrivateKeyData(privateKey2->ok);
     u256 *privateKey1_private_key_data_u = Arr_u8_32_ctor(privateKey1_private_key_data->ok->count, privateKey1_private_key_data->ok->values);
     u256 *privateKey2_private_key_data_u = Arr_u8_32_ctor(privateKey2_private_key_data->ok->count, privateKey2_private_key_data->ok->values);
 
     
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey1FromMultiIndex, privateKey1_public_key_data), @"the public keys must match");
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(privateKey2FromMultiIndex, privateKey2_public_key_data), @"the public keys must match");
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_private_key_data_equal_to(privateKey1FromMultiIndex, privateKey1_private_key_data_u), @"the private keys must match");
-    XCTAssert(dash_spv_crypto_keys_key_OpaqueKey_private_key_data_equal_to(privateKey2FromMultiIndex, privateKey2_private_key_data_u), @"the private keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1FromMultiIndex, privateKey1_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2FromMultiIndex, privateKey2_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPrivateKeyDataEqualTo(privateKey1FromMultiIndex, privateKey1_private_key_data_u), @"the private keys must match");
+    XCTAssert(DOpaqueKeyPrivateKeyDataEqualTo(privateKey2FromMultiIndex, privateKey2_private_key_data_u), @"the private keys must match");
 
     
 //    NSValue *privateKey1FromMultiIndexValue = privateKeys[0];
@@ -732,9 +727,9 @@
     DMaybeOpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:self.wallet];
     NSData *seed_data = [NSData dataWithBytes:(uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10} length:10];
-    SLICE *seed_slice = slice_ctor(seed_data);
+    Slice_u8 *seed_slice = slice_ctor(seed_data);
     DKeyKind *kind = DKeyKindBLS();
-    DMaybeOpaqueKey *bobKeyPairBLS = dash_spv_crypto_keys_key_KeyKind_key_with_seed_data(kind, seed_slice);
+    DMaybeOpaqueKey *bobKeyPairBLS = DMaybeOpaqueKeyFromSeed(kind, seed_slice);
 //    DOpaqueKey *bobKeyPairBLS = key_with_seed_data((uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10}, 10, (int16_t) KeyKind_BLS);
     DMaybeOpaqueKey *privateKeyBLS = [derivationPath privateKeyAtIndex:0 fromSeed:self.seed];
     NSData *extendedPublicKeyFromMasterContactDerivationPathData = [DSKeyManager extendedPublicKeyData:extendedPublicKeyFromMasterContactDerivationPath->ok];
@@ -757,9 +752,9 @@
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:self.wallet];
     NSData *bobSecretData = @"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData;
     
-    SLICE *bob_secret_slice = slice_ctor(bobSecretData);
+    Slice_u8 *bob_secret_slice = slice_ctor(bobSecretData);
     
-    DMaybeOpaqueKey *bobKeyPairECDSA = dash_spv_crypto_keys_key_KeyKind_key_with_private_key_data(DKeyKindECDSA(), bob_secret_slice);
+    DMaybeOpaqueKey *bobKeyPairECDSA = DMaybeOpaqueKeyWithPrivateKeyData(DKeyKindECDSA(), bob_secret_slice);
     
     DMaybeOpaqueKey *privateKeyECDSA = [derivationPath privateKeyAtIndex:0 fromSeed:self.seed];
     NSData *encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyECDSA->ok forPublicKey:bobKeyPairECDSA->ok];
@@ -787,11 +782,11 @@
         const NSUInteger indexes[] = {(unusedIndex + i) | BIP32_HARD, 0 | BIP32_HARD};
         NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
         DMaybeOpaqueKey *key = [derivationPath publicKeyAtIndexPath:indexPath];
-        u160 *key_hash = dash_spv_crypto_keys_key_OpaqueKey_hash160(key->ok);
+        u160 *key_hash = DOpaqueKeyPublicKeyHash(key->ok);
         NSData *keyHash = NSDataFromPtr(key_hash);
         u160_dtor(key_hash);
         [keyHashes addObject:keyHash];
-        Vec_u8 *pub_key_data = dash_spv_crypto_keys_key_OpaqueKey_public_key_data(key->ok);
+        Vec_u8 *pub_key_data = DOpaqueKeyPublicKeyData(key->ok);
         [keyIndexes setObject:@(unusedIndex + i) forKey:NSDataFromPtr(pub_key_data)];
         Vec_u8_destroy(pub_key_data);
     }

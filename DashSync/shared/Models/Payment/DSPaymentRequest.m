@@ -100,7 +100,7 @@
     if (!url || !url.scheme) {
         
         if (dash_spv_crypto_bip_bip38_is_valid_payment_request_address(DChar(s), self.chain.chainType)) {
-//        if ([DSKeyManager isValidDashAddress:s forChain:self.chain] ||
+//        if (DIsValidDashAddress(DChar(s), self.chain.chainType) ||
 //            [s isValidDashPrivateKeyOnChain:self.chain] ||
 //            [DSKeyManager isValidDashBIP38Key:s]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
@@ -240,7 +240,7 @@
 
 - (BOOL)isValidAsNonDashpayPaymentRequest {
     if ([self.scheme isEqualToString:@"dash"]) {
-        BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]);
+        BOOL valid = DIsValidDashAddress(DChar(self.paymentAddress), self.chain.chainType) || (self.r && [NSURL URLWithString:self.r]);
         if (!valid) {
             DSLog(@"Not a valid dash request");
         }
@@ -274,7 +274,7 @@
                 }
             }
         }];
-        BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath;
+        BOOL valid = DIsValidDashAddress(DChar(self.paymentAddress), self.chain.chainType) || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath;
         if (!valid) {
             DSLog(@"Not a valid dash request");
         }
@@ -389,7 +389,7 @@
 - (DSPaymentProtocolRequest *)protocolRequest {
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
-    if ([DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain]) {
+    if (DIsValidDashAddress(DChar(self.paymentAddress), self.chain.chainType)) {
         [script appendData:[DSKeyManager scriptPubKeyForAddress:self.paymentAddress forChain:self.chain]];
     }
 #if SHAPESHIFT_ENABLED

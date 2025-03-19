@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @interface NSError (dash_spv_crypto_keys_KeyError)
-+ (NSError *)ffi_from_key_error:(dash_spv_crypto_keys_KeyError *)ffi_ref;
++ (NSError *)ffi_from_key_error:(DKeyError *)ffi_ref;
 @end
 
 @interface NSError (dash_spv_masternode_processor_processing_core_provider_CoreProviderError)

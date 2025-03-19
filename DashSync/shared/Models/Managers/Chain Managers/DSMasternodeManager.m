@@ -192,7 +192,7 @@
 - (BOOL)restoreEngine {
     NSData *engineBytes = [self readFromDisk:ENGINE_STORAGE_LOCATION(self.chain)];
     if (engineBytes) {
-        SLICE *bytes = slice_ctor(engineBytes);
+        Slice_u8 *bytes = slice_ctor(engineBytes);
         DMnEngineDeserializationResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_deserialize_engine(self.processor, bytes);
         BOOL success = !result->error;
         if (success) {
@@ -232,9 +232,9 @@
     BOOL restored = [self restoreEngine];
     if (!restored) {
         DSLog(@"%@ No Engine Stored", self.logPrefix);
-        restored = [self restoreFromCheckpoint];
-        if (!restored)
-            DSLog(@"%@ No Checkpoint Stored", self.logPrefix);
+//        restored = [self restoreFromCheckpoint];
+//        if (!restored)
+//            DSLog(@"%@ No Checkpoint Stored", self.logPrefix);
     }
     if (restored) {
         DMasternodeList *current_list = [self currentMasternodeList];
@@ -421,23 +421,6 @@
     }
 }
 
-//- (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError **)error {
-//    DSMerkleBlock *merkleBlock = [self.chain blockAtHeight:blockHeight];
-//    if (!merkleBlock) {
-//        if (error) {
-//            *error = [NSError errorWithCode:600 localizedDescriptionKey:@"Unknown block"];
-//        }
-//        return FALSE;
-//    }
-//    UInt256 blockHash = merkleBlock.blockHash;
-//    u256 *block_hash = u256_ctor_u(blockHash);
-//    dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_set_last_queried_block_hash(self.cache, block_hash);
-//    dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_add_block_hash_for_list_needing_quorums_validated(self.cache, block_hash);
-//    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_add_to_mn_list_retrieval_queue(self.processor, block_hash);
-//    [self.masternodeListDiffService dequeueMasternodeListRequest];
-//    return TRUE;
-//}
-
 - (BOOL)processRequestFromFileForBlockHash:(UInt256)blockHash {
     DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
     if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""])
@@ -513,7 +496,7 @@
     }
     dispatch_async(self.processingQueue, ^{
         dispatch_group_enter(self.processingGroup);
-        SLICE *message_slice = slice_ctor(message);
+        Slice_u8 *message_slice = slice_ctor(message);
         
         DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, true);
 
@@ -542,19 +525,6 @@
             dispatch_group_leave(self.processingGroup);
             return;
         }
-        //u256 *block_hash = result->ok->o_1;
-//        NSData *masternodeListBlockHashData = NSDataFromPtr(block_hash);
-//        bool has_added_rotated_quorums = result->ok->o_2;
-//        UInt256 masternodeListBlockHash = u256_cast(block_hash);
-//        if (has_added_rotated_quorums && !self.chain.isRotatedQuorumsPresented) {
-//            uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
-//            self.chain.isRotatedQuorumsPresented = YES;
-//            self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
-//            if (self.isSyncing) {
-//                dash_spv_masternode_processor_processing_processor_MasternodeProcessor_add_to_qr_info_retrieval_queue(self.processor, block_hash);
-//                [self.quorumRotationService dequeueMasternodeListRequest];
-//            }
-//        }
         if (self.isSyncing) {
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(result->ok->o_1);
             NSData *blockHashData = NSDataFromPtr(block_hash);
@@ -582,69 +552,96 @@
     });
 }
 
+- (void)saveMessage:(NSData *)message name:(NSString *)fileName {
+    DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
+    [message saveToFile:fileName inDirectory:NSCachesDirectory];
+}
+
+- (void)tryToProcessQrInfo:(DSPeer *)peer message:(NSData *)message attempt:(uint8_t)attempt {
+    //    uint32_t protocol_version = peer ? peer.version : self.chain.protocolVersion;
+        dispatch_async(self.processingQueue, ^{
+            dispatch_group_enter(self.processingGroup);
+            Slice_u8 *slice_msg = slice_ctor(message);
+            
+            DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_qr_info_result_from_message(self.processor, slice_msg, true);
+            if (result->error) {
+                NSError *error = [NSError ffi_from_processing_error:result->error];
+                DSLog(@"%@ qrinfo: Error: %@", self.logPrefix, error);
+                switch (result->error->tag) {
+                    case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_InvalidResult:
+                        [self issueWithMasternodeListFromPeer:peer];
+                        break;
+                    case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_LocallyStored:
+                        [self.quorumRotationService cleanListsRetrievalQueue];
+                        break;
+                    case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_UnknownBlockHash:
+                        break;
+                    case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_QuorumValidationError:
+                        switch (result->error->quorum_validation_error->tag) {
+                            case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockNotPresent: {
+                                dashcore_hash_types_BlockHash *unknown_block_hash = result->error->quorum_validation_error->required_block_not_present;
+                                // TODO: it can be tip so we can wait for 300ms and try again
+                                if (attempt < 3) {
+                                    sleep(10);
+                                    attempt++;
+                                    dispatch_group_leave(self.processingGroup);
+                                    [self tryToProcessQrInfo:peer message:message attempt:attempt];
+                                }
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+    //        #if SAVE_MASTERNODE_DIFF_TO_FILE
+    //                NSString *fileName = [NSString stringWithFormat:@"QRINFO_ERR_%d.dat", peer.version];
+    //                DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
+    //                [message saveToFile:fileName inDirectory:NSCachesDirectory];
+    //        #endif
+
+                DQRInfoResultDtor(result);
+                dispatch_group_leave(self.processingGroup);
+                return;
+            }
+            std_collections_BTreeSet_dashcore_hash_types_BlockHash *missed_hashes = result->ok;
+            
+            if (missed_hashes->count > 0) {
+                NSArray<NSData *> *missedHashes = [NSArray ffi_from_block_hash_btree_set:missed_hashes];
+                [self.masternodeListDiffService addToRetrievalQueueArray:missedHashes];
+            }
+
+    //#if SAVE_MASTERNODE_DIFF_TO_FILE
+    //        u256 *base_block_hash = result->ok->o_0;
+    //        uint32_t base_block_height = DHeightForBlockHash(self.processor, base_block_hash);
+    //        uint32_t block_height = DHeightForBlockHash(self.processor, block_hash);
+    //        NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @(base_block_height), @(block_height), peer.version];
+    //        DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
+    //        [message saveToFile:fileName inDirectory:NSCachesDirectory];
+    //#endif
+    //        [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:NSDataFromPtr(block_hash) fromPeer:peer];
+            
+            [self.quorumRotationService cleanListsRetrievalQueue];
+            [self.quorumRotationService dequeueMasternodeListRequest];
+            if (missed_hashes->count == 0)
+                [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+
+            
+            DQRInfoResultDtor(result);
+            dispatch_group_leave(self.processingGroup);
+        });
+}
+
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
     DSLog(@"%@ [%@:%d] qrinfo: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.quorumRotationService) {
         self.quorumRotationService.timedOutAttempt = 0;
     }
-//    uint32_t protocol_version = peer ? peer.version : self.chain.protocolVersion;
-    dispatch_async(self.processingQueue, ^{
-        dispatch_group_enter(self.processingGroup);
-        SLICE *slice_msg = slice_ctor(message);
-        
-        DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_qr_info_result_from_message(self.processor, slice_msg, true);
-        if (result->error) {
-            NSError *error = [NSError ffi_from_processing_error:result->error];
-            DSLog(@"%@ qrinfo: Error: %@", self.logPrefix, error);
-            switch (result->error->tag) {
-                case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_InvalidResult:
-                    [self issueWithMasternodeListFromPeer:peer];
-                    break;
-                case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_LocallyStored:
-                    [self.quorumRotationService cleanListsRetrievalQueue];
-                    break;
-                case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_UnknownBlockHash:
-                    break;
-                default:
-                    break;
-            }
-//        #if SAVE_MASTERNODE_DIFF_TO_FILE
-//                NSString *fileName = [NSString stringWithFormat:@"QRINFO_ERR_%d.dat", peer.version];
-//                DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
-//                [message saveToFile:fileName inDirectory:NSCachesDirectory];
-//        #endif
-
-            DQRInfoResultDtor(result);
-            dispatch_group_leave(self.processingGroup);
-            return;
-        }
-        std_collections_BTreeSet_dashcore_hash_types_BlockHash *missed_hashes = result->ok;
-        
-        if (missed_hashes->count > 0) {
-            NSArray<NSData *> *missedHashes = [NSArray ffi_from_block_hash_btree_set:missed_hashes];
-            [self.masternodeListDiffService addToRetrievalQueueArray:missedHashes];
-        }
-
-//#if SAVE_MASTERNODE_DIFF_TO_FILE
-//        u256 *base_block_hash = result->ok->o_0;
-//        uint32_t base_block_height = DHeightForBlockHash(self.processor, base_block_hash);
-//        uint32_t block_height = DHeightForBlockHash(self.processor, block_hash);
-//        NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @(base_block_height), @(block_height), peer.version];
-//        DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
-//        [message saveToFile:fileName inDirectory:NSCachesDirectory];
-//#endif
-//        [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:NSDataFromPtr(block_hash) fromPeer:peer];
-        
-        [self.quorumRotationService cleanListsRetrievalQueue];
-        [self.quorumRotationService dequeueMasternodeListRequest];
-        if (missed_hashes->count == 0)
-            [self.chain.chainManager.transactionManager checkWaitingForQuorums];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-
-        
-        DQRInfoResultDtor(result);
-        dispatch_group_leave(self.processingGroup);
-    });
+    
+    [self tryToProcessQrInfo:peer message:message attempt:0];
 }
 
 // MARK: - Meta information

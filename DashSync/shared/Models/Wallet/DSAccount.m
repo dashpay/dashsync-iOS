@@ -28,12 +28,9 @@
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSFundsDerivationPath.h"
+#import "DSGapLimit.h"
 #import "DSWallet+Protected.h"
 
-//#import "DSIdentityCloseTransition.h"
-//#import "DSIdentityRegistrationTransition.h"
-//#import "DSIdentityTopupTransition.h"
-//#import "DSIdentityUpdateTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
@@ -299,12 +296,15 @@
             }
         }
     } else {
-        for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
+        for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
             if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                [derivationPath registerAddressesWithGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:NO error:nil];
+                [derivationPath registerAddressesWithSettings:[DSGapLimit initWithLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL] error:nil];
+//                [derivationPath registerAddressesWithGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:NO error:nil];
             } else {
-                [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
-                [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
+                [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES] error:nil];
+                [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO] error:nil];
+//                [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
+//                [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
             }
         }
     }
@@ -475,9 +475,13 @@
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
             DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
             NSUInteger registerGapLimit = [fundsDerivationPath shouldUseReducedGapLimit] ? unusedAccountGapLimit : gapLimit;
-            [mArray addObjectsFromArray:[fundsDerivationPath registerAddressesWithGapLimit:registerGapLimit internal:internal error:error]];
+            NSArray *addresses = [fundsDerivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:registerGapLimit internal:internal] error:error];
+            [mArray addObjectsFromArray:addresses];
+//            [mArray addObjectsFromArray:[fundsDerivationPath registerAddressesWithGapLimit:registerGapLimit internal:internal error:error]];
         } else if (!internal && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-            [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
+            NSArray *addresses = [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:dashpayGapLimit] error:error];
+            [mArray addObjectsFromArray:addresses];
+//            [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
         }
     }
     return mArray;
@@ -1900,27 +1904,22 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         return;
     }
     DChainType *chain_type = self.wallet.chain.chainType;
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_private_key(DChar(privKey), chain_type);
+    DMaybeECDSAKey *result = DMaybeECDSAKeyWithPrivateKey(DChar(privKey), chain_type);
     if (!result) {
         completion(nil, 0, ERROR_CANT_CREATE_KEY);
         return;
     }
     if (!result->ok) {
-        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+        DMaybeECDSAKeyDtor(result);
         completion(nil, 0, ERROR_CANT_CREATE_KEY);
         return;
     }
     
-    char *addr = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_address_with_public_key_data(result->ok, self.wallet.chain.chainType);
+    char *addr = DECDSAKeyPubAddress(result->ok, self.wallet.chain.chainType);
     NSString *address = [DSKeyManager NSStringFrom:addr];
-    BYTES *public_key_data = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(result->ok);
+    Vec_u8 *public_key_data = DECDSAKeyPublicKeyData(result->ok);
     NSData *publicKeyData = [DSKeyManager NSDataFrom:public_key_data];
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
-
-//    ECDSAKey *key = key_ecdsa_with_private_key(DChar(privKey), chain_type);
-//    NSString *address = [DSKeyManager NSStringFrom:address_for_ecdsa_key(key, chain_type)];
-//    NSData *publicKeyData = [DSKeyManager NSDataFrom:key_ecdsa_public_key_data(key)];
-//    processor_destroy_ecdsa_key(key);
+    DMaybeECDSAKeyDtor(result);
     
     if (!address) {
         completion(nil, 0, ERROR_INVALID_PRIVATE_KEY);

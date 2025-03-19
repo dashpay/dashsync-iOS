@@ -98,13 +98,14 @@
     u256 *block_hash = dash_spv_masternode_processor_processing_chain_lock_block_hash(self.lock);
     UInt256 data = u256_cast(block_hash);
     u256_dtor(block_hash);
-    return data;
+    return uint256_reverse(data);
 }
 - (NSData *)blockHashData {
     u256 *block_hash = dash_spv_masternode_processor_processing_chain_lock_block_hash(self.lock);
     NSData *data = NSDataFromPtr(block_hash);
     u256_dtor(block_hash);
-    return data;
+    
+    return [data reverse];
 }
 
 - (UInt768)signature {

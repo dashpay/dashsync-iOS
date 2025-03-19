@@ -40,7 +40,7 @@
 
 @implementation NSError (dash_spv_crypto_keys_KeyError)
 
-+ (nonnull NSError *)ffi_from_key_error:(nonnull dash_spv_crypto_keys_KeyError *)ffi_ref {
++ (nonnull NSError *)ffi_from_key_error:(nonnull DKeyError *)ffi_ref {
     switch (ffi_ref->tag) {
         case dash_spv_crypto_keys_KeyError_WrongFormat:
             return [NSError errorWithCode:0 localizedDescriptionKey:@"Wrong key format"];

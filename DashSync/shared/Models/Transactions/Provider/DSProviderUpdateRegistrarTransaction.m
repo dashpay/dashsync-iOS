@@ -139,32 +139,31 @@
 
 - (BOOL)checkPayloadSignature:(DOpaqueKey *)providerOwnerPublicKey {
     u160 *owner_key_hash = u160_ctor_u(self.providerRegistrationTransaction.ownerKeyHash);
-    BOOL result = dash_spv_crypto_keys_key_OpaqueKey_check_payload_signature(providerOwnerPublicKey, owner_key_hash);
-//    u160_dtor(owner_key_hash);
+    BOOL result = DOpaqueKeyCheckPayloadSignature(providerOwnerPublicKey, owner_key_hash);
     return result;
 }
 
 - (BOOL)checkPayloadSignature {
     NSData *signature = self.payloadSignature;
     NSData *payload = [self payloadDataForHash];
-    SLICE *slice = slice_ctor(signature);
+    Slice_u8 *slice = slice_ctor(signature);
     u256 *digest = u256_ctor(payload);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_compact_sig(slice, digest);
-    if (!result) return NO;
+    DMaybeECDSAKey *result = DECDSAKeyWithCompactSig(slice, digest);
     if (!result->ok) {
-        Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(result);
+        DMaybeECDSAKeyDtor(result);
         return NO;
+    } else {
+        u160 *hashed = DECDSAKeyPublicKeyHash(result->ok);
+        BOOL verified = uint160_eq(self.providerRegistrationTransaction.ownerKeyHash, u160_cast(hashed));
+        DMaybeECDSAKeyDtor(result);
+        return verified;
     }
-    u160 *hashed = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_hash160(result->ok);
-    BOOL verified = uint160_eq(self.providerRegistrationTransaction.ownerKeyHash, u160_cast(hashed));
-    return verified;
 }
 
 - (void)signPayloadWithKey:(DOpaqueKey *)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
-    u256 *digest = u256_ctor_u([self payloadHash]);
-    Arr_u8_65 *sig = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_compact_sign(privateKey->ecdsa, digest);
+    Arr_u8_65 *sig = DECDSAKeyCompactSign(privateKey->ecdsa, slice_u256_ctor_u([self payloadHash]));
     self.payloadSignature = NSDataFromPtr(sig);
     Arr_u8_65_destroy(sig);
 }

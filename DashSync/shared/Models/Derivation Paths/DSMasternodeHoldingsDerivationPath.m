@@ -9,6 +9,7 @@
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
+#import "DSGapLimit.h"
 #import "DSMasternodeManager.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
 #import "DSWallet+Protected.h"
@@ -35,8 +36,11 @@
                                    onChain:chain];
 }
 
-- (NSUInteger)defaultGapLimit {
-    return 5;
+//- (NSUInteger)defaultGapLimit {
+//    return 5;
+//}
+- (DSGapLimit *)defaultGapSettings {
+    return [DSGapLimit initWithLimit:5];
 }
 
 @end

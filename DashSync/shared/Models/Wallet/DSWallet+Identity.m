@@ -255,7 +255,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
             uint32_t key_index = v0->id->_0;
             for (DSIdentity *identity in [self.mIdentities allValues]) {
                 DOpaqueKey *key = [identity keyAtIndex:key_index];
-                if (key && dash_spv_crypto_keys_key_OpaqueKey_public_key_data_equal_to(key, v0->data->_0))
+                if (key && DOpaqueKeyPublicKeyDataEqualTo(key, v0->data->_0))
                     return [identity privateKeyAtIndex:key_index ofType:dash_spv_platform_identity_manager_key_kind_from_key_type(v0->key_type)];
             }
             return nil;

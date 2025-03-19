@@ -20,6 +20,7 @@
 #import "DSAssetLockDerivationPath.h"
 #import "DSAssetLockTransactionEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
+#import "DSGapLimit.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
@@ -121,7 +122,7 @@
 
 - (UInt160)creditBurnPublicKeyHash {
     DSTransactionOutput *output = self.creditOutputs.firstObject;
-    BYTES *maybe_pub_key_hash = dash_spv_crypto_util_address_address_public_key_hash_from_script(bytes_ctor(output.outScript));
+    Vec_u8 *maybe_pub_key_hash = dash_spv_crypto_util_address_address_public_key_hash_from_script(bytes_ctor(output.outScript));
     if (maybe_pub_key_hash) {
         NSData *result = NSDataFromPtr(maybe_pub_key_hash);
         bytes_dtor(maybe_pub_key_hash);
@@ -146,20 +147,23 @@
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [path registerTransactionAddress:address];
-    [path registerAddressesWithGapLimit:10 error:nil];
+    [path registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
+//    [path registerAddressesWithGapLimit:10 error:nil];
 }
 
 - (void)markAddressAsUsedInWallet:(DSWallet *)wallet {
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [path registerTransactionAddress:address];
-    [path registerAddressesWithGapLimit:10 error:nil];
+    [path registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
+//    [path registerAddressesWithGapLimit:10 error:nil];
 }
 - (void)markTopUpAddressAsUsedInWallet:(DSWallet *)wallet {
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityTopupFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [path registerTransactionAddress:address];
-    [path registerAddressesWithGapLimit:10 error:nil];
+    [path registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
+//    [path registerAddressesWithGapLimit:10 error:nil];
 }
 
 - (Class)entityClass {

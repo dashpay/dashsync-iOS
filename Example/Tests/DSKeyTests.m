@@ -33,13 +33,13 @@
     // uncompressed private key
     XCTAssertTrue([@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" isValidDashPrivateKeyOnChain:self.chain],
         @"[NSString+Base58 isValidDashPrivateKey]");
-    DMaybeOpaqueKey *key = [DSKeyManager keyWithPrivateKeyString:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" ofKeyType:DKeyKindECDSA() forChainType:self.chain.chainType];
+    DMaybeOpaqueKey *key = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62"), self.chain.chainType);
     NSLog(@"privKey:7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62 = %@", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType]);
     XCTAssertEqualObjects(@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType], @"[DSKey keyWithPrivateKey:]");
     DMaybeOpaqueKeyDtor(key);
 
     // compressed private key
-    key = [DSKeyManager keyWithPrivateKeyString:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" ofKeyType:DKeyKindECDSA() forChainType:self.chain.chainType];
+    key = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6"), self.chain.chainType);
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType]);
     XCTAssertEqualObjects(@"XbKPGyV1BpzzxNAggx6Q9a6o7GaBWTLhJS", [DSKeyManager addressForKey:key->ok forChainType:self.chain.chainType], @"[DSKey keyWithPrivateKey:]");
     // compressed private key export
@@ -111,8 +111,8 @@
     for (NSArray *triple in data) {
         key = [DSKeyManager keyWithPrivateKeyData:((NSString *)triple[0]).hexToData ofType:DKeyKindECDSA()];
         md = [(NSString *) triple[1] dataUsingEncoding:NSUTF8StringEncoding].SHA256;
-        SLICE *slice = slice_u256_ctor_u(md);
-        Vec_u8 *vec = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_sign(key->ok->ecdsa, slice);
+        Slice_u8 *slice = slice_u256_ctor_u(md);
+        Vec_u8 *vec = DECDSAKeySign(key->ok->ecdsa, slice);
         sig = NSDataFromPtr(vec);
         XCTAssertEqualObjects(sig, ((NSString *)triple[2]).hexToData, @"[DSKey sign:]");
         XCTAssertTrue([DSKeyManager verifyMessageDigest:key->ok digest:md signature:sig], @"[DSKey verify:signature:]");
@@ -127,52 +127,54 @@
     NSData *sec = @"0000000000000000000000000000000000000000000000000000000000000001".hexToData, *sig;
     NSData *pubKeyData, *recPubKeyData;
     UInt256 md;
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError *key, *reckey;
+    DMaybeECDSAKey *key, *reckey;
     Arr_u8_65 *sign;
     Vec_u8 *pub_key_data, *rec_pub_key_data;
     u256 *digest;
-    SLICE *data = slice_ctor(sec);
+    Slice_u8 *digest_slice;
+    Slice_u8 *data = slice_ctor(sec);
     
-    key = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_secret_data(data, true);
+    key = DECDSAKeyWithSecret(data, true);
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     digest = u256_ctor_u(md);
-    sign = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_compact_sign(key->ok, digest);
+    digest_slice = slice_u256_ctor_u(md);
+    sign = DECDSAKeyCompactSign(key->ok, digest_slice);
     sig = NSDataFromPtr(sign);
     NSLog(@"sig: %@", sig.hexString);
 
-    reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
-    pub_key_data = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(key->ok);
-    rec_pub_key_data =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(reckey->ok);
+    reckey = DECDSAKeyFromCompactSig(Slice_u8_ctor(sign->count, sign->values), digest);
+    pub_key_data = DECDSAKeyPublicKeyData(key->ok);
+    rec_pub_key_data =  DECDSAKeyPublicKeyData(reckey->ok);
     pubKeyData = NSDataFromPtr(pub_key_data);
     recPubKeyData = NSDataFromPtr(rec_pub_key_data);
     
     XCTAssertEqualObjects(pubKeyData, recPubKeyData);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(key);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(reckey);
+    DMaybeECDSAKeyDtor(key);
+    DMaybeECDSAKeyDtor(reckey);
     
-    key = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_with_secret_data(data, false);
+    key = DECDSAKeyWithSecret(data, false);
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     digest = u256_ctor_u(md);
-    sign = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_compact_sign(key->ok, digest);
+    sign = DECDSAKeyCompactSign(key->ok, digest_slice);
     sig = NSDataFromPtr(sign);
     NSLog(@"sig: %@", sig.hexString);
-    reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
-    pub_key_data = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(key->ok);
-    rec_pub_key_data =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(reckey->ok);
+    reckey = DECDSAKeyFromCompactSig(Slice_u8_ctor(sign->count, sign->values), digest);
+    pub_key_data = DECDSAKeyPublicKeyData(key->ok);
+    rec_pub_key_data =  DECDSAKeyPublicKeyData(reckey->ok);
     pubKeyData = NSDataFromPtr(pub_key_data);
     recPubKeyData = NSDataFromPtr(rec_pub_key_data);
     XCTAssertEqualObjects(pubKeyData, recPubKeyData);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(reckey);
+    DMaybeECDSAKeyDtor(reckey);
 
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3kq9e842BzkMfbPSbhKVwGZgspDSkz4YfqjdBYQPWDzqd77gPgR1zq4XG7KtAL5DZTcfFFs2iph4urNyXeBkXsEYY".base58ToData;
     sign = Arr_u8_65_ctor(65, NSDataToHeap(sig));
     digest = u256_ctor_u(md);
-    reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
-    rec_pub_key_data =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(reckey->ok);
+    reckey = DECDSAKeyFromCompactSig(Slice_u8_ctor(sign->count, sign->values), digest);
+    rec_pub_key_data =  DECDSAKeyPublicKeyData(reckey->ok);
     recPubKeyData = NSDataFromPtr(rec_pub_key_data);
     XCTAssertEqualObjects(@"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData, recPubKeyData);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(reckey);
+    DMaybeECDSAKeyDtor(reckey);
 
     md = [@"i am a test signed string do de dah" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3qECEYmb6x4X22sH98Aer68SdfrLwtqvb5Ncv7EqKmzbxeYYJ1hU9irP6R5PeCctCPYo5KQiWFgoJ3H5MkuX18gHu".base58ToData;
@@ -181,23 +183,23 @@
     sign = Arr_u8_65_ctor(65, NSDataToHeap(sig));
     sig = NSDataFromPtr(sign);
     NSLog(@"sig: %@", sig.hexString);
-    reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
-    rec_pub_key_data =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(reckey->ok);
+    reckey = DECDSAKeyFromCompactSig(Slice_u8_ctor(sign->count, sign->values), digest);
+    rec_pub_key_data =  DECDSAKeyPublicKeyData(reckey->ok);
     recPubKeyData = NSDataFromPtr(rec_pub_key_data);
     XCTAssertEqualObjects(@"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData, recPubKeyData);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(reckey);
+    DMaybeECDSAKeyDtor(reckey);
 
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3oHQhxq5eW8dnp7DquTCbA5tECoNx7ubyiubw4kiFm7wXJF916SZVykFzb8rB1K6dEu7mLspBWbBEJyYk79jAosVR".base58ToData;
     sign = Arr_u8_65_ctor(65, NSDataToHeap(sig));
     sig = NSDataFromPtr(sign);
     digest = u256_ctor_u(md);
-    reckey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_key_recovered_from_compact_sig(Slice_u8_ctor(sign->count, sign->values), digest);
-    rec_pub_key_data =  dash_spv_crypto_keys_ecdsa_key_ECDSAKey_public_key_data(reckey->ok);
+    reckey = DECDSAKeyFromCompactSig(Slice_u8_ctor(sign->count, sign->values), digest);
+    rec_pub_key_data =  DECDSAKeyPublicKeyData(reckey->ok);
     recPubKeyData = NSDataFromPtr(rec_pub_key_data);
     XCTAssertEqualObjects(@"gpRv1sNA3XURB6QEtGrx6Q18DZ5cSgUSDQKX4yYypxpW".base58ToData, recPubKeyData);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(key);
-    Result_ok_dash_spv_crypto_keys_ecdsa_key_ECDSAKey_err_dash_spv_crypto_keys_KeyError_destroy(reckey);
+    DMaybeECDSAKeyDtor(key);
+    DMaybeECDSAKeyDtor(reckey);
 }
 
 // implemented in rust
@@ -206,26 +208,26 @@
     NSData *seedData1 = [NSData dataWithBytes:seed1 length:5];
     uint8_t message1[3] = {7, 8, 9};
     NSData *messageData1 = [NSData dataWithBytes:message1 length:3];
-    SLICE *seed_slice = slice_ctor(seedData1);
-    BLSKey *bls_key = dash_spv_crypto_keys_bls_key_BLSKey_key_with_seed_data(seed_slice, true);
-    BYTES *public_key_data = dash_spv_crypto_keys_bls_key_BLSKey_public_key_data(bls_key);
-    Result_ok_Vec_u8_err_dash_spv_crypto_keys_KeyError *private_key_data_res = dash_spv_crypto_keys_bls_key_BLSKey_private_key_data(bls_key);
+    Slice_u8 *seed_slice = slice_ctor(seedData1);
+    BLSKey *bls_key = DBLSKeyWithSeedData(seed_slice, true);
+    Vec_u8 *public_key_data = DBLSKeyPublicKeyData(bls_key);
+    DMaybeKeyData *private_key_data_res = DBLSKeyPrivateKeyData(bls_key);
     NSData *publicKeyData = NSDataFromPtr(public_key_data);
     NSData *privateKeyData = NSDataFromPtr(private_key_data_res->ok);
     XCTAssertEqualObjects(publicKeyData.hexString, @"02a8d2aaa6a5e2e08d4b8d406aaf0121a2fc2088ed12431e6b0663028da9ac5922c9ea91cde7dd74b7d795580acc7a61");
     XCTAssertEqualObjects(privateKeyData.hexString, @"022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
-    Arr_u8_96 *sig1 = dash_spv_crypto_keys_bls_key_BLSKey_sign_data(bls_key, slice_ctor(messageData1));
+    Arr_u8_96 *sig1 = DBLSKeySignData(bls_key, slice_ctor(messageData1));
     NSData *signature1 = NSDataFromPtr(sig1);
     XCTAssertEqualObjects(signature1.hexString, @"023f5c750f402c69dab304e5042a7419722536a38d58ce46ba045be23e99d4f9ceeffbbc6796ebbdab6e9813c411c78f07167a3b76bef2262775a1e9f95ff1a80c5fa9fe8daa220d4d9da049a96e8932d5071aaf48fbff27a920bc4aa7511fd4");
-    Vec_u8 *pub_key_data = dash_spv_crypto_keys_bls_key_BLSKey_public_key_data(bls_key);
+    Vec_u8 *pub_key_data = DBLSKeyPublicKeyData(bls_key);
     NSData *pkData = NSDataFromPtr(pub_key_data);
     NSLog(@"pkData: %@", pkData.hexString);
     u384 *pub_key = u384_ctor(pkData);
-    BLSKey *key2 = dash_spv_crypto_keys_bls_key_BLSKey_key_with_public_key(pub_key, true);
-    SLICE *dig = slice_u256_ctor_u([messageData1 SHA256_2]);
-    SLICE *sig = slice_ctor(signature1);
-    Result_ok_bool_err_dash_spv_crypto_keys_KeyError *res = dash_spv_crypto_keys_bls_key_BLSKey_verify(key2, dig, sig);
-
+    BLSKey *key2 = DBLSKeyWithPublicKey(pub_key, true);
+    Slice_u8 *dig = slice_u256_ctor_u([messageData1 SHA256_2]);
+    Slice_u8 *sig = slice_ctor(signature1);
+    DKeyVerificationResult *res = DBLSKeyVerify(key2, dig, sig);
+    DMaybeKeyDataDtor(private_key_data_res);
     XCTAssertTrue(res->ok[0], @"Testing BLS signature verification");
 }
 

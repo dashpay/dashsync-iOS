@@ -366,27 +366,24 @@
     if (indexPaths.count == 0)
         return Result_ok_Vec_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_ctor(Vec_dash_spv_crypto_keys_key_OpaqueKey_ctor(0, NULL), NULL);
     NSUInteger count = indexPaths.count;
-    SLICE *seed_slice = slice_ctor(seed);
+    Slice_u8 *seed_slice = slice_ctor(seed);
     Vec_u32 **values = malloc(count * sizeof(Vec_u32 *));
     for (NSUInteger i = 0; i < count; i++) {
         values[i] = [NSIndexPath ffi_to:indexPaths[i]];
     }
     Vec_Vec_u32 *index_paths = Vec_Vec_u32_ctor(count, values);
     DIndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
-    return dash_spv_crypto_keys_key_KeyKind_private_keys_at_index_paths_wrapped(derivationPath.signingAlgorithm, seed_slice, index_paths, path);
+    return DMaybeOpaquePrivateKeysAtIndexPathsWrapped(derivationPath.signingAlgorithm, seed_slice, index_paths, path);
 }
 
 + (NSString *)serializedExtendedPrivateKeyFromSeed:(NSData *)seed
                                     derivationPath:(DSDerivationPath *)derivationPath {
     @autoreleasepool {
         if (!seed) return nil;
-        SLICE *slice = slice_ctor(seed);
+        Slice_u8 *slice = slice_ctor(seed);
         DIndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
-        DMaybeKeyString *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_serialized_extended_private_key_from_seed_at_u256_path(slice, path, derivationPath.chain.chainType);
-        NSString *serializedKey = nil;
-        if (result->ok) {
-            serializedKey = [NSString stringWithUTF8String:result->ok];
-        }
+        DMaybeKeyString *result = DECDSAKeySerializedPrivateKeyFromSeedAtU256(slice, path, derivationPath.chain.chainType);
+        NSString *serializedKey = result->ok ? NSStringFromPtr(result->ok) : nil;
         DMaybeKeyStringDtor(result);
         return serializedKey;
     }
@@ -405,12 +402,12 @@
     }
     Vec_Vec_u32 *index_paths = Vec_Vec_u32_ctor(count, values);
     DIndexPathU256 *path = [DSDerivationPath ffi_to:derivationPath];
-    SLICE *seed_slice = slice_ctor(seed);
-    Result_ok_Vec_String_err_dash_spv_crypto_keys_KeyError *result = dash_spv_crypto_keys_key_KeyKind_serialized_private_keys_at_index_paths_wrapper(derivationPath.signingAlgorithm, seed_slice, index_paths, path, derivationPath.chain.chainType);
+    Slice_u8 *seed_slice = slice_ctor(seed);
+    Result_ok_Vec_String_err_dash_spv_crypto_keys_KeyError *result = DMaybeSerializedOpaquePrivateKeysAtIndexPathsWrapped(derivationPath.signingAlgorithm, seed_slice, index_paths, path, derivationPath.chain.chainType);
     Vec_String *keys = result->ok;
     NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:keys->count];
     for (NSUInteger i = 0; i < keys->count; i++) {
-        [privateKeys addObject:[NSString stringWithUTF8String:keys->values[i]]];
+        [privateKeys addObject:NSStringFromPtr(keys->values[i])];
     }
     Result_ok_Vec_String_err_dash_spv_crypto_keys_KeyError_destroy(result);
     return privateKeys;

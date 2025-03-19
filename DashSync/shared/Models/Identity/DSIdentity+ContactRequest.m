@@ -110,7 +110,7 @@
     }
     u256 *user_id = u256_ctor_u(self.uniqueID);
     uint64_t since = self.lastCheckedIncomingContactsTimestamp ? (self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
-    BYTES *start_after = startAfter ? bytes_ctor(startAfter) : nil;
+    Vec_u8 *start_after = startAfter ? bytes_ctor(startAfter) : nil;
     __weak typeof(self) weakSelf = self;
     DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_incoming_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.sharedContactsObj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
     if (result->error) {
@@ -225,7 +225,7 @@
     }
     __weak typeof(self) weakSelf = self;
     
-    BYTES *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
+    Vec_u8 *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
     uint64_t since = self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     u256 *user_id = u256_ctor_u(self.uniqueID);
     DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_stream_outgoing_contact_requests_with_contract(self.chain.sharedRuntime, self.chain.sharedContactsObj, user_id, since, start_after, dashpayContract.raw_contract, DRetryLinear(5), dash_spv_platform_document_contact_request_ContactRequestValidator_None_ctor(), 1000);
@@ -318,7 +318,7 @@
     uint32_t index = uint256_eq(self.uniqueID, u256_cast(request->recipient)) ? request->sender_key_index : request->recipient_key_index;
     DMaybeOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
     NSAssert(maybe_key->ok, @"Key should exist");
-    DMaybeKeyData *key_data = dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(maybe_key->ok, key, request->encrypted_public_key);
+    DMaybeKeyData *key_data = DOpaqueKeyDecrypt(maybe_key->ok, key, request->encrypted_public_key);
     NSData *data = key_data->ok ? NSDataFromPtr(key_data->ok) : nil;
     DMaybeKeyDataDtor(key_data);
     DMaybeOpaqueKeyDtor(maybe_key);

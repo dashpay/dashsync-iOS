@@ -240,9 +240,9 @@
 //        
 ////        u256 *llmq_hash = u256_ctor(quorumEntity.quorumHashData);
 //////        DLLMQType *llmq_type = dash_spv_crypto_network_llmq_type_LLMQType_from_u16(quorumEntity.llmqType);
-//        BYTES *signers = bytes_ctor(((NSString *)llmq[@"signers"]).hexToData);
+//        Vec_u8 *signers = bytes_ctor(((NSString *)llmq[@"signers"]).hexToData);
 //        BITSET *signers_bitset = dash_spv_crypto_llmq_bitset_Bitset_ctor((int32_t)[[llmq objectForKey:@"signersCount"] integerValue], signers);
-//        BYTES *valid_members = bytes_ctor(((NSString *)llmq[@"quorumHash"]).hexToData);
+//        Vec_u8 *valid_members = bytes_ctor(((NSString *)llmq[@"quorumHash"]).hexToData);
 //        BITSET *valid_members_bitset = dash_spv_crypto_llmq_bitset_Bitset_ctor((int32_t)[[llmq objectForKey:@"validMembersCount"] integerValue], valid_members);
 //        DLLMQEntry *entry = dash_spv_crypto_llmq_entry_new([[llmq valueForKey:@"version"] unsignedIntegerValue], [[llmq objectForKey:@"llmqType"] unsignedIntegerValue], u256_ctor_u(((NSString *)llmq[@"quorumHash"]).hexToData.UInt256), (uint32_t)[[llmq objectForKey:@"quorumIndex"] unsignedIntegerValue], signers_bitset, valid_members_bitset, u384_ctor(((NSString *)llmq[@"quorumPublicKey"]).hexToData), u256_ctor(((NSString *)llmq[@"quorumVvecHash"]).hexToData), u768_ctor(((NSString *)llmq[@"quorumSig"]).hexToData), u768_ctor(((NSString *)llmq[@"membersSig"]).hexToData));
 //        quorums[quorums_count] = entry;
@@ -545,7 +545,7 @@
 ////    XCTAssertTrue(totalTransactions == shouldBeTotalTransactions, @"Invalid transaction count");
 ////
 ////    XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
-////    SLICE *message_slice = slice_ctor(message);
+////    Slice_u8 *message_slice = slice_ctor(message);
 ////    Result_ok_u8_arr_32_err_dash_spv_masternode_processor_processing_processing_error_ProcessingError *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_mn_list_diff_result_from_file(chain.sharedProcessorObj, message_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
 ////    DMasternodeList *list = DMasternodeListByBlockHash(chain.sharedCacheObj, result->ok);
 ////
@@ -653,7 +653,7 @@
 //        UInt256 blockHash = [message readUInt256AtOffset:&offset];
 //        __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 //        dispatch_group_enter(dispatch_group);
-//        SLICE *message_slice = slice_ctor(message);
+//        Slice_u8 *message_slice = slice_ctor(message);
 //        DMnDiffResult *result = DMnDiffFromMessage(processor, message_slice, true, DEFAULT_CHECKPOINT_PROTOCOL_VERSION, false, NULL);
 //        DMasternodeList *list = DMasternodeListForBlockHash(processor, result->ok->o_0);
 //
@@ -736,7 +736,7 @@
 //    //    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"ML1100000"];
 //
 //    DSChain *chain = [DSChain mainnet];
-//    SLICE *message_slice = slice_ctor(message);
+//    Slice_u8 *message_slice = slice_ctor(message);
 //    DMnDiffResult *result = DMnDiffFromFile(chain.sharedProcessorObj, message_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
 //    XCTAssertTrue(result->error == NULL, @"There should not be an error");
 //    u256 *base_block_hash = result->ok->o_0;
@@ -883,7 +883,7 @@
 //
 //    XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
 //
-//    SLICE *message_0_122064_slice = slice_ctor([DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_0_122064"]);
+//    Slice_u8 *message_0_122064_slice = slice_ctor([DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_0_122064"]);
 //    DMnDiffResult *result_0_122064 = DMnDiffFromFile(chain.sharedProcessorObj, message_0_122064_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
 //    XCTAssertTrue(result_0_122064->error == NULL, @"There should not be an error");
 //    UInt256 baseBlockHash_0_122064 = u256_cast(result_0_122064->ok->o_0);
@@ -892,7 +892,7 @@
 //    DMnDiffResultDtor(result_0_122064);
 //
 //    XCTAssert(uint256_eq(chain.genesisHash, baseBlockHash_0_122064) || uint256_is_zero(baseBlockHash_0_122064), @"Base block hash should be from chain origin");
-//    SLICE *message_122064_122088_slice = slice_ctor([DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_122064_122088"]);
+//    Slice_u8 *message_122064_122088_slice = slice_ctor([DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_122064_122088"]);
 //    DMnDiffResult *result_122064_122088 = DMnDiffFromFile(chain.sharedProcessorObj, message_122064_122088_slice, DEFAULT_CHECKPOINT_PROTOCOL_VERSION);
 //    XCTAssertTrue(result_122064_122088->error == NULL, @"There should not be an error");
 //    XCTAssert(uint256_eq(blockHash_0_122064, u256_cast(result_122064_122088->ok->o_0)), @"Base block hash should be from block 122064");

@@ -38,6 +38,7 @@
 #import "DSChainManager+Transactions.h"
 #import "DSError.h"
 #import "DSEventManager.h"
+#import "DSGapLimit.h"
 #import "DSIdentitiesManager.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager+Protected.h"
@@ -1022,8 +1023,10 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     }
 
     for (DSFundsDerivationPath *derivationPath in self.chain.standaloneDerivationPaths) {
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
+        [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO] error:nil];
+        [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES] error:nil];
+//        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
+//        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:addresses];
     }
@@ -1724,10 +1727,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
 
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
-    NSData *clBlockHashData = chainLock.blockHashData;
-    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, clBlockHashData.hexString);
+    UInt256 clBlockHash = chainLock.blockHash;
+    UInt256 clBlockHashRev = uint256_reverse(clBlockHash);
+    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
 
-    DSMerkleBlock *block = [self.chain blockForBlockHash:clBlockHashData.UInt256];
+    DSMerkleBlock *block = [self.chain blockForBlockHash:clBlockHash];
+    if (!block)
+        block = [self.chain blockForBlockHash:clBlockHashRev];
 
     if (block) {
         [self.chain addChainLock:chainLock];
@@ -1737,13 +1743,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
         });
     } else {
-        DSLog(@"[%@: %@:%d] no block for chain lock %@", self.chain.name, peer.host, peer.port, clBlockHashData.hexString);
-        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:clBlockHashData];
+        DSLog(@"[%@: %@:%d] no block for chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
+        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:uint256_data(clBlockHash)];
     }
 
     if (!verified /*&& !chainLock.intendedQuorumPublicKey*/) {
         //the quorum hasn't been retrieved yet
-        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:clBlockHashData];
+        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:uint256_data(clBlockHash)];
     }
 }
 

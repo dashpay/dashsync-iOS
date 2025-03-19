@@ -11,6 +11,7 @@
 #import "DSChain+Params.h"
 #import "DSAssetLockDerivationPath.h"
 #import "DSDerivationPathFactory.h"
+#import "DSGapLimit.h"
 #import "DSKeyManager.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
 #import "NSError+Dash.h"
@@ -46,8 +47,11 @@
     return [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet];
 }
 
-- (NSUInteger)defaultGapLimit {
-    return 10;
+//- (NSUInteger)defaultGapLimit {
+//    return 10;
+//}
+- (DSGapLimit *)defaultGapSettings {
+    return [DSGapLimit initWithLimit:10];
 }
 
 - (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length
@@ -146,48 +150,40 @@
             [self loadAddressesInContext:self.managedObjectContext];
             self.addressesLoaded = TRUE;
             if ([self type] == DSDerivationPathType_SingleUserAuthentication) {
-                [self registerAddressesWithGapLimit:10 error:nil];
+                [self registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
+//                [self registerAddressesWithGapLimit:10 error:nil];
             } else {
-                [self registerAddressesWithGapLimit:10 forIdentityIndex:0 error:nil];
+                [self registerAddressesWithSettings:[DSGapLimitIdentity initWithLimit:10 identityID:0] error:nil];
+//                [self registerAddressesWithGapLimit:10 forIdentityIndex:0 error:nil];
             }
         }
     }
 }
 
-
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
-                          forIdentityIndex:(uint32_t)identityIndex
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
+                                 inContext:(NSManagedObjectContext *)context
                                      error:(NSError **)error {
-    if (!self.account.wallet.isTransient) {
-        NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
-    }
-    NSAssert(self.type != DSDerivationPathType_SingleUserAuthentication, @"This should not be called for single user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error' instead.");
+    if (self.type == DSDerivationPathType_SingleUserAuthentication) {
+       return [super registerAddressesWithSettings:settings inContext:context error:error];
+    } else {
+        DSGapLimitIdentity *identitySettings = (DSGapLimitIdentity *)settings;
+        uint32_t identityIndex = identitySettings.identityID;
+        uintptr_t gapLimit = identitySettings.gapLimit;
+        if (!self.account.wallet.isTransient) {
+            NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
+        }
+        NSAssert(self.type != DSDerivationPathType_SingleUserAuthentication, @"This should not be called for single user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error' instead.");
 
-    if (self.usesHardenedKeys && !self.hasExtendedPrivateKey) {
-        return [NSArray array];
-    }
+        if (self.usesHardenedKeys && !self.hasExtendedPrivateKey) {
+            return [NSArray array];
+        }
 
-    if (![self.addressesByIdentity objectForKey:@(identityIndex)]) {
-        [self.addressesByIdentity setObject:[NSMutableArray array] forKey:@(identityIndex)];
-    }
+        if (![self.addressesByIdentity objectForKey:@(identityIndex)]) {
+            [self.addressesByIdentity setObject:[NSMutableArray array] forKey:@(identityIndex)];
+        }
 
-    NSMutableArray *a = [NSMutableArray arrayWithArray:[self.addressesByIdentity objectForKey:@(identityIndex)]];
-    NSUInteger i = a.count;
-
-    // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
-        i--;
-    }
-
-    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-
-    @synchronized(self) {
-        //It seems weird to repeat this, but it's correct because of the original call receive address and change address
-        [a setArray:[self.addressesByIdentity objectForKey:@(identityIndex)]];
-        i = a.count;
-
-        unsigned n = (unsigned)i;
+        NSMutableArray *a = [NSMutableArray arrayWithArray:[self.addressesByIdentity objectForKey:@(identityIndex)]];
+        NSUInteger i = a.count;
 
         // keep only the trailing contiguous block of addresses with no transactions
         while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
@@ -197,34 +193,122 @@
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 
-        while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            const NSUInteger hardenedIndexes[] = {identityIndex | BIP32_HARD, n | BIP32_HARD};
-            const NSUInteger softIndexes[] = {identityIndex, n};
-            const NSUInteger *indexes = self.usesHardenedKeys ? hardenedIndexes : softIndexes;
-            NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-            NSString *addr = [DSKeyManager NSStringFrom:dash_spv_crypto_util_address_address_with_public_key_data(slice_ctor(pubKey), self.chain.chainType)];
+        @synchronized(self) {
+            //It seems weird to repeat this, but it's correct because of the original call receive address and change address
+            [a setArray:[self.addressesByIdentity objectForKey:@(identityIndex)]];
+            i = a.count;
 
-            if (!addr) {
-                DSLog(@"[%@] error generating keys", self.chain.name);
-                if (error) {
-                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+            unsigned n = (unsigned)i;
+
+            // keep only the trailing contiguous block of addresses with no transactions
+            while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
+                i--;
+            }
+
+            if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+            if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+
+            while (a.count < gapLimit) { // generate new addresses up to gapLimit
+                const NSUInteger hardenedIndexes[] = {identityIndex | BIP32_HARD, n | BIP32_HARD};
+                const NSUInteger softIndexes[] = {identityIndex, n};
+                const NSUInteger *indexes = self.usesHardenedKeys ? hardenedIndexes : softIndexes;
+                NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+                NSString *addr = [DSKeyManager NSStringFrom:dash_spv_crypto_util_address_address_with_public_key_data(slice_ctor(pubKey), self.chain.chainType)];
+
+                if (!addr) {
+                    DSLog(@"[%@] error generating keys", self.chain.name);
+                    if (error) {
+                        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+                    }
+                    return nil;
                 }
-                return nil;
+
+                if (!self.account.wallet.isTransient) {
+                    [self storeNewAddressInContext:addr atIndex:n identityIndex:identityIndex context:self.managedObjectContext];
+                }
+
+                [self.mAllAddresses addObject:addr];
+                [[self.addressesByIdentity objectForKey:@(identityIndex)] addObject:addr];
+                [a addObject:addr];
+                n++;
             }
 
-            if (!self.account.wallet.isTransient) {
-                [self storeNewAddressInContext:addr atIndex:n identityIndex:identityIndex context:self.managedObjectContext];
-            }
-
-            [self.mAllAddresses addObject:addr];
-            [[self.addressesByIdentity objectForKey:@(identityIndex)] addObject:addr];
-            [a addObject:addr];
-            n++;
+            return a;
         }
-
-        return a;
     }
 }
+
+
+//- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
+//                          forIdentityIndex:(uint32_t)identityIndex
+//                                     error:(NSError **)error {
+//    if (!self.account.wallet.isTransient) {
+//        NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
+//    }
+//    NSAssert(self.type != DSDerivationPathType_SingleUserAuthentication, @"This should not be called for single user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error' instead.");
+//
+//    if (self.usesHardenedKeys && !self.hasExtendedPrivateKey) {
+//        return [NSArray array];
+//    }
+//
+//    if (![self.addressesByIdentity objectForKey:@(identityIndex)]) {
+//        [self.addressesByIdentity setObject:[NSMutableArray array] forKey:@(identityIndex)];
+//    }
+//
+//    NSMutableArray *a = [NSMutableArray arrayWithArray:[self.addressesByIdentity objectForKey:@(identityIndex)]];
+//    NSUInteger i = a.count;
+//
+//    // keep only the trailing contiguous block of addresses with no transactions
+//    while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
+//        i--;
+//    }
+//
+//    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+//    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+//
+//    @synchronized(self) {
+//        //It seems weird to repeat this, but it's correct because of the original call receive address and change address
+//        [a setArray:[self.addressesByIdentity objectForKey:@(identityIndex)]];
+//        i = a.count;
+//
+//        unsigned n = (unsigned)i;
+//
+//        // keep only the trailing contiguous block of addresses with no transactions
+//        while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
+//            i--;
+//        }
+//
+//        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+//        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+//
+//        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+//            const NSUInteger hardenedIndexes[] = {identityIndex | BIP32_HARD, n | BIP32_HARD};
+//            const NSUInteger softIndexes[] = {identityIndex, n};
+//            const NSUInteger *indexes = self.usesHardenedKeys ? hardenedIndexes : softIndexes;
+//            NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+//            NSString *addr = [DSKeyManager NSStringFrom:dash_spv_crypto_util_address_address_with_public_key_data(slice_ctor(pubKey), self.chain.chainType)];
+//
+//            if (!addr) {
+//                DSLog(@"[%@] error generating keys", self.chain.name);
+//                if (error) {
+//                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+//                }
+//                return nil;
+//            }
+//
+//            if (!self.account.wallet.isTransient) {
+//                [self storeNewAddressInContext:addr atIndex:n identityIndex:identityIndex context:self.managedObjectContext];
+//            }
+//
+//            [self.mAllAddresses addObject:addr];
+//            [[self.addressesByIdentity objectForKey:@(identityIndex)] addObject:addr];
+//            [a addObject:addr];
+//            n++;
+//        }
+//
+//        return a;
+//    }
+//}
 
 
 - (NSData *)firstUnusedPublicKey {
@@ -253,20 +337,14 @@
                                     storePrivateKey:self.shouldStoreExtendedPrivateKey];
 }
 
-- (BOOL)hasExtendedPrivateKey {
-    NSError *error = nil;
-    return hasKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
-}
-
-- (NSData *)extendedPrivateKeyData {
-    NSError *error = nil;
-    return getKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
-}
 
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath {
-    return [DSKeyManager deriveKeyFromExtenedPrivateKeyDataAtIndexPath:self.extendedPrivateKeyData
-                                                                                indexPath:indexPath
-                                                                               forKeyType:self.signingAlgorithm];
+    NSData *extendedPrivateKeyData = self.extendedPrivateKeyData;
+    if (!extendedPrivateKeyData) return nil;
+    Slice_u8 *slice = slice_ctor(extendedPrivateKeyData);
+    Vec_u32 *index_path = [NSIndexPath ffi_to:indexPath];
+    DMaybeOpaqueKey *maybe_key = DMaybeDeriveOpaqueKeyFromExtendedPrivateKeyDataForIndexPath(self.signingAlgorithm, slice, index_path);
+    return maybe_key;
 }
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath {
@@ -298,13 +376,13 @@
 - (void)loadAddressesInContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-        self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
+//        self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
         NSArray<DSAddressEntity *> *addresses = [derivationPathEntity.addresses sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]]];
         for (DSAddressEntity *e in addresses) {
             @autoreleasepool {
                 while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
                 
-                if (![DSKeyManager isValidDashAddress:e.address forChain:self.chain]) {
+                if (!DIsValidDashAddress(DChar(e.address), self.chain.chainType)) {
 #if DEBUG
                     DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.chain.name, e.address);
 #else
@@ -330,7 +408,7 @@
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
         DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
         e.derivationPath = derivationPathEntity;
-        NSAssert([DSKeyManager isValidDashAddress:address forChain:self.chain], @"the address is being saved to the wrong derivation path");
+        NSAssert(DIsValidDashAddress(DChar(address), self.chain.chainType), @"the address is being saved to the wrong derivation path");
         e.address = address;
         e.index = n;
         e.identityIndex = identityIndex;

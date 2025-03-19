@@ -179,11 +179,11 @@
 }
 
 - (UInt256)payloadCollateralDigest {
-    SLICE *pld = slice_ctor([self payloadDataForHash]);
-    SLICE *sp = slice_ctor(self.scriptPayout);
+    Slice_u8 *pld = slice_ctor([self payloadDataForHash]);
+    Slice_u8 *sp = slice_ctor(self.scriptPayout);
     u160 *owner_hash = u160_ctor_u(self.ownerKeyHash);
     u160 *voter_hash = u160_ctor_u(self.votingKeyHash);
-    u256 *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_pro_reg_tx_payload_collateral_digest(pld, sp, self.operatorReward, owner_hash, voter_hash, self.chain.chainType);
+    u256 *result = DECDSAKeyProRegTxPayloadCollateralDigest(pld, sp, self.operatorReward, owner_hash, voter_hash, self.chain.chainType);
     UInt256 digest = u256_cast(result);
     u256_dtor(result);
     return digest;

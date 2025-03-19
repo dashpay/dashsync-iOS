@@ -12,6 +12,7 @@
 #import "DSChain+Params.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
+#import "DSGapLimit.h"
 #import "DSKeyManager.h"
 #import "DSLogger.h"
 #import "NSError+Dash.h"
@@ -96,6 +97,8 @@
 }
 
 - (NSString *)hasKnownBalanceUniqueIDString {
+    // NSString accountUniqueID = [NSString stringWithFormat:@"%@-0-%u", self.wallet.uniqueIDString, self.accountNumber]; //0 is for type 0
+
     return [NSString stringWithFormat:@"%@_%@_%lu", DERIVATION_PATH_IS_USED_KEY, [self.account uniqueID], (unsigned long)self.reference];
 }
 
@@ -111,8 +114,12 @@
     if (!self.addressesLoaded) {
         [self loadAddressesInContext:self.managedObjectContext];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:YES error:nil];
-        [self registerAddressesWithGapLimit:(self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:NO error:nil];
+        uintptr_t gapLimit = self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL;
+        
+        [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:gapLimit internal:YES] error:nil];
+        [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:gapLimit internal:NO] error:nil];
+//        [self registerAddressesWithGapLimit:(reduced ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:YES error:nil];
+//        [self registerAddressesWithGapLimit:(reduced ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL) internal:NO error:nil];
     }
 }
 
@@ -123,9 +130,11 @@
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
             if ([self.allChangeAddresses containsObject:address]) {
-                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
+                [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES] error:nil];
+//                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
             } else {
-                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
+                [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO] error:nil];
+//                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
             }
         }
         return TRUE;
@@ -137,7 +146,12 @@
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError **)error {
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
+                                 inContext:(NSManagedObjectContext *)context
+                                     error:(NSError **)error {
+    DSGapLimitInternal *gapLimitSettings = (DSGapLimitInternal *)settings;
+    uintptr_t gapLimit = gapLimitSettings.gapLimit;
+    BOOL internal = gapLimitSettings.internal;
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
@@ -193,24 +207,86 @@
         }
 
         if (!self.account.wallet.isTransient) {
-            [self storeNewAddressesInContext:addAddresses internal:internal context:self.managedObjectContext];
+            [self storeNewAddressesInContext:addAddresses internal:internal context:context];
         }
 
         return a;
     }
 }
 
+
+//- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError **)error {
+//    if (!self.account.wallet.isTransient) {
+//        NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
+//    }
+//    @synchronized(self) {
+//        NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
+//        NSUInteger i = a.count;
+//        // keep only the trailing contiguous block of addresses with no transactions
+//        while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
+//            i--;
+//        }
+//
+//        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+//        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+//
+//        if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
+//            [self receiveAddress];
+//            [self changeAddress];
+//        }
+//
+//        //It seems weird to repeat this, but it's correct because of the original call receive address and change address
+//        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
+//        i = a.count;
+//
+//        unsigned n = (unsigned)i;
+//
+//        // keep only the trailing contiguous block of addresses with no transactions
+//        while (i > 0 && ![self.usedAddresses containsObject:a[i - 1]]) {
+//            i--;
+//        }
+//
+//        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+//        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+//
+//        NSMutableDictionary *addAddresses = [NSMutableDictionary dictionary];
+//
+//        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+//            NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
+//            NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+//
+//            if (!addr) {
+//                DSLog(@"[%@] error generating keys", self.account.wallet.chain.name);
+//                if (error) {
+//                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+//                }
+//                return nil;
+//            }
+//
+//            [self.mAllAddresses addObject:addr];
+//            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
+//            [a addObject:addr];
+//            [addAddresses setObject:addr forKey:@(n)];
+//            n++;
+//        }
+//
+//        if (!self.account.wallet.isTransient) {
+//            [self storeNewAddressesInContext:addAddresses internal:internal context:self.managedObjectContext];
+//        }
+//
+//        return a;
+//    }
+//}
+
 - (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange {
     NSMutableArray *addresses = [NSMutableArray array];
     for (NSUInteger i = exportInternalRange.location; i < exportInternalRange.length + exportInternalRange.location; i++) {
-        NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:YES];
-        NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+        NSString *addr = [self addressAtIndex:(uint32_t)i internal:YES];
         [addresses addObject:addr];
     }
 
     for (NSUInteger i = exportExternalRange.location; i < exportExternalRange.location + exportExternalRange.length; i++) {
-        NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:NO];
-        NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+        NSString *addr = [self addressAtIndex:(uint32_t)i internal:NO];
         [addresses addObject:addr];
     }
 
@@ -227,20 +303,23 @@
 // returns the first unused external address
 - (NSString *)receiveAddress {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO error:nil].lastObject;
+    NSString *addr = [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:1 internal:NO] error:nil].lastObject;
+//    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO error:nil].lastObject;
     return (addr) ? addr : self.allReceiveAddresses.lastObject;
 }
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO error:nil].lastObject;
+    NSString *addr = [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:offset + 1 internal:NO] error:nil].lastObject;
+//    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO error:nil].lastObject;
     return (addr) ? addr : self.allReceiveAddresses.lastObject;
 }
 
 // returns the first unused internal address
 - (NSString *)changeAddress {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return [self registerAddressesWithGapLimit:1 internal:YES error:nil].lastObject;
+    return [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:1 internal:YES] error:nil].lastObject;
+//    return [self registerAddressesWithGapLimit:1 internal:YES error:nil].lastObject;
 }
 
 // all previously generated external addresses
@@ -296,17 +375,17 @@
 - (void)loadAddressesInContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-        self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
+//        self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
         for (DSAddressEntity *e in derivationPathEntity.addresses) {
             @autoreleasepool {
                 NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
 
                 while (e.index >= a.count) [a addObject:[NSNull null]];
-                if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
+                if (!DIsValidDashAddress(DChar(e.address), self.chain.chainType)) {
 #if DEBUG
-                    DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
+                    DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.chain.name, e.address);
 #else
-                        DSLog(@"[%@] address %@ loaded but was not valid on chain %@", self.account.wallet.chain.name, @"<REDACTED>");
+                        DSLog(@"[%@] address %@ loaded but was not valid on chain %@", self.chain.name, @"<REDACTED>");
 #endif /* DEBUG */
                     continue;
                 }
@@ -327,7 +406,7 @@
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
         for (NSNumber *number in addAddresses) {
             NSString *address = [addAddresses objectForKey:number];
-            NSAssert([DSKeyManager isValidDashAddress:address forChain:self.chain], @"the address is being saved to the wrong derivation path");
+            NSAssert(DIsValidDashAddress(DChar(address), self.chain.chainType), @"the address is being saved to the wrong derivation path");
             DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
             e.derivationPath = derivationPathEntity;
             e.address = address;

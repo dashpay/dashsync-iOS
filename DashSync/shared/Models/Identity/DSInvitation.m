@@ -225,7 +225,7 @@
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
 //            isEmptyFundingPrivateKey = key_ecdsa_secret_key_is_empty(DChar(queryItem.value), chain.chainType);
-            isEmptyFundingPrivateKey = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_contains_secret_key(DChar(queryItem.value), chain.chainType);
+            isEmptyFundingPrivateKey = DECDSAKeyContainsSecretKey(DChar(queryItem.value), chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
@@ -287,14 +287,14 @@
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-            fundingPrivateKey = dash_spv_crypto_keys_key_KeyKind_key_with_private_key(DKeyKindECDSA(), DChar(queryItem.value), self.chain.chainType);
+            fundingPrivateKey = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(queryItem.value), self.chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
         if (completion) completion(DSIdentityRegistrationStep_None, @[ERROR_INVITATION_FORMAT]);
         return;
     }
-    if (!fundingPrivateKey || !dash_spv_crypto_keys_key_OpaqueKey_has_private_key(fundingPrivateKey->ok)) {
+    if (!fundingPrivateKey || !DOpaqueKeyHasPrivateKey(fundingPrivateKey->ok)) {
         if (completion) completion(DSIdentityRegistrationStep_None, @[ERROR_INVALID_FUNDING_PRV_KEY]);
         return;
     }

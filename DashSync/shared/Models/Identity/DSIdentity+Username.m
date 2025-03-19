@@ -65,7 +65,7 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
         NSString *username = usernameEntity.stringValue;
         DUsernameStatus *status = DUsernameStatusFromIndex(usernameEntity.status);
         if (salt) {
-            BYTES *salt_bytes = bytes_ctor(salt);
+            Vec_u8 *salt_bytes = bytes_ctor(salt);
             dash_spv_platform_identity_model_IdentityModel_add_username_with_salt(self.identity_model, DChar(username), DChar(domain), status, salt_bytes);
             DAddSaltForUsername(self.identity_model, username, salt_bytes);
         } else {
@@ -76,7 +76,6 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
 
 - (void)collectUsernameEntitiesIntoIdentityEntityInContext:(DSBlockchainIdentityEntity *)identityEntity
                                                    context:(NSManagedObjectContext *)context {
-    
     DUsernameStatuses *username_statuses = dash_spv_platform_identity_model_IdentityModel_username_statuses(self.identity_model);
     for (int i = 0; i < username_statuses->count; i++) {
         char *username_full_path = username_statuses->keys[i];
@@ -134,7 +133,6 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
 - (DUsernameStatus *)statusOfUsername:(NSString *)username
                              inDomain:(NSString *)domain {
     return dash_spv_platform_identity_model_IdentityModel_status_of_username(self.identity_model, DChar(username), DChar(domain));
-//    return [self statusOfUsernameFullPath:[self fullPathForUsername:username inDomain:domain]];
 }
 
 - (DUsernameStatus *)statusOfDashpayUsername:(NSString *)username {
@@ -148,14 +146,14 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
 - (NSString *)usernameOfUsernameFullPath:(NSString *)usernameFullPath {
     char *result = dash_spv_platform_identity_model_IdentityModel_username_of_username_full_path(self.identity_model, DChar(usernameFullPath));
     NSString *res = NSStringFromPtr(result);
-    str_destroy(result);
+    DCharDtor(result);
     return res;
 }
 
 - (NSString *)domainOfUsernameFullPath:(NSString *)usernameFullPath {
     char *result = dash_spv_platform_identity_model_IdentityModel_domain_of_username_full_path(self.identity_model, DChar(usernameFullPath));
     NSString *res = NSStringFromPtr(result);
-    str_destroy(result);
+    DCharDtor(result);
     return res;
 }
 
@@ -163,7 +161,9 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                          inDomain:(NSString *)domain {
     return [[username lowercaseString] stringByAppendingFormat:@".%@", [domain lowercaseString]];
 }
-
+- (NSUInteger)dashpayUsernameCount {
+    return dash_spv_platform_identity_model_IdentityModel_dashpay_username_count(self.identity_model);
+}
 - (NSArray<NSString *> *)dashpayUsernameFullPaths {
     Vec_String *result = dash_spv_platform_identity_model_IdentityModel_dashpay_username_full_paths(self.identity_model);
     NSArray<NSString *>*arr = [NSArray ffi_from_vec_of_string:result];
@@ -180,68 +180,35 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
     return arr;
 }
 
-//- (NSArray<NSString *> *)unregisteredUsernameFullPaths {
-//    Vec_String *result = dash_spv_platform_identity_model_IdentityModel_unregistered_username_full_paths(self.identity_model);
-//    NSArray *res = [NSArray ffi_from_vec_of_string:result];
-//    Vec_String_destroy(result);
-//    return res;
-//}
-//
-//- (NSArray<NSString *> *)usernameFullPathsWithStatus:(DUsernameStatus *)usernameStatus {
-//    Vec_String *result = dash_spv_platform_identity_model_IdentityModel_username_full_paths_with_status(self.identity_model, usernameStatus);
-//    NSArray *res = [NSArray ffi_from_vec_of_string:result];
-//    Vec_String_destroy(result);
-//    return res;
-//}
-
-//- (NSArray<NSString *> *)preorderedUsernameFullPaths {
-//    NSMutableArray *unregisteredUsernames = [NSMutableArray array];
-//    for (NSString *username in self.usernameStatuses) {
-//        NSDictionary *usernameInfo = self.usernameStatuses[username];
-//        DSIdentityUsernameStatus status = [usernameInfo[BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
-//        if (status == DSIdentityUsernameStatus_Preordered)
-//            [unregisteredUsernames addObject:username];
-//    }
-//    return [unregisteredUsernames copy];
-//}
-
 // MARK: Username Helpers
 
-- (NSData *)saltForUsernameFullPath:(NSString *)usernameFullPath
-                           saveSalt:(BOOL)saveSalt
-                          inContext:(NSManagedObjectContext *)context {
-    NSData *salt;
-    BOOL is_initial = dash_spv_platform_identity_model_IdentityModel_status_of_username_full_path_is_initial(self.identity_model, DChar(usernameFullPath));
-    Vec_u8 *maybe_salt = DSaltForUsername(self.identity_model, usernameFullPath);
-
-    if (is_initial || !maybe_salt) {
-        salt = uint256_data(uint256_random);
-        DAddSaltForUsername(self.identity_model, usernameFullPath, bytes_ctor(salt));
-        if (saveSalt)
-            [self saveUsername:[self usernameOfUsernameFullPath:usernameFullPath]
-                      inDomain:[self domainOfUsernameFullPath:usernameFullPath]
-                        status:DUsernameStatusIndex([self statusOfUsernameFullPath:usernameFullPath])
-                          salt:salt
-                    commitSave:YES
-                     inContext:context];
-    } else {
-        salt = NSDataFromPtr(maybe_salt);
-        Vec_u8_destroy(maybe_salt);
-    }
-    return salt;
-}
 
 - (NSMutableDictionary<NSString *, NSData *> *)saltedDomainHashesForUsernameFullPaths:(NSArray *)usernameFullPaths
                                                                             inContext:(NSManagedObjectContext *)context {
     NSMutableDictionary *mSaltedDomainHashes = [NSMutableDictionary dictionary];
     for (NSString *unregisteredUsernameFullPath in usernameFullPaths) {
         NSMutableData *saltedDomain = [NSMutableData data];
-        NSData *salt = [self saltForUsernameFullPath:unregisteredUsernameFullPath saveSalt:YES inContext:context];
+        NSData *salt;
+        BOOL is_initial = dash_spv_platform_identity_model_IdentityModel_status_of_username_full_path_is_initial(self.identity_model, DChar(unregisteredUsernameFullPath));
+        Vec_u8 *maybe_salt = DSaltForUsername(self.identity_model, unregisteredUsernameFullPath);
+        if (is_initial || !maybe_salt) {
+            salt = uint256_data(uint256_random);
+            DAddSaltForUsername(self.identity_model, unregisteredUsernameFullPath, bytes_ctor(salt));
+            [self saveUsername:[self usernameOfUsernameFullPath:unregisteredUsernameFullPath]
+                      inDomain:[self domainOfUsernameFullPath:unregisteredUsernameFullPath]
+                        status:DUsernameStatusIndex([self statusOfUsernameFullPath:unregisteredUsernameFullPath])
+                          salt:salt
+                    commitSave:YES
+                     inContext:context];
+        } else {
+            salt = NSDataFromPtr(maybe_salt);
+            Vec_u8_destroy(maybe_salt);
+        }
+
         [saltedDomain appendData:salt];
         [saltedDomain appendData:[unregisteredUsernameFullPath dataUsingEncoding:NSUTF8StringEncoding]];
         mSaltedDomainHashes[unregisteredUsernameFullPath] = uint256_data([saltedDomain SHA256_2]);
         DAddSaltForUsername(self.identity_model, unregisteredUsernameFullPath, bytes_ctor(salt));
-//        [self.usernameSalts setObject:salt forKey:unregisteredUsernameFullPath];
     }
     return [mSaltedDomainHashes copy];
 }
@@ -258,24 +225,26 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
         DSBlockchainIdentityUsernameEntity *usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
         usernameEntity.status = status;
         usernameEntity.stringValue = username;
-        usernameEntity.salt = [self saltForUsernameFullPath:[self fullPathForUsername:username inDomain:domain] saveSalt:NO inContext:context];
+        NSString *usernameFullPath = [self fullPathForUsername:username inDomain:domain];
+        BOOL is_initial = dash_spv_platform_identity_model_IdentityModel_status_of_username_full_path_is_initial(self.identity_model, DChar(usernameFullPath));
+        Vec_u8 *maybe_salt = DSaltForUsername(self.identity_model, usernameFullPath);
+        if (is_initial || !maybe_salt) {
+            NSData *salt = uint256_data(uint256_random);
+            usernameEntity.salt = salt;
+            DAddSaltForUsername(self.identity_model, usernameFullPath, bytes_ctor(salt));
+        } else {
+            usernameEntity.salt = NSDataFromPtr(maybe_salt);
+            Vec_u8_destroy(maybe_salt);
+        }
         usernameEntity.domain = domain;
         [entity addUsernamesObject:usernameEntity];
         [entity setDashpayUsername:usernameEntity];
         [context ds_save];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateUsernameStatusNotification
-                                                                object:nil
-                                                              userInfo:@{
-                DSChainManagerNotificationChainKey: self.chain,
-                DSIdentityKey: self
-            }];
-        });
+        [self notifyUsernameUpdate:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSIdentityKey: self
+        }];
     }];
-}
-
-- (void)setUsernameFullPaths:(NSArray *)usernameFullPaths
-                    toStatus:(DUsernameStatus *)status {
 }
 
 - (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
@@ -290,16 +259,16 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
             Tuple_String_String *pair = result->values[i];
             NSString *username = NSStringFromPtr(pair->o_0);
             NSString *domain = NSStringFromPtr(pair->o_1);
-            [self saveUsername:username inDomain:domain status:DUsernameStatusIndex(status) salt:nil commitSave:NO inContext:context];
+            [self saveUsername:username
+                      inDomain:domain
+                        status:DUsernameStatusIndex(status)
+                          salt:nil
+                    commitSave:NO
+                     inContext:context];
         }
         [context ds_save];
     }];
     Vec_Tuple_String_String_destroy(result);
-}
-
-- (void)saveUsernamesInDictionary:(NSArray *)usernameFullPaths
-                         toStatus:(DUsernameStatus *)status
-                        inContext:(NSManagedObjectContext *)context {
 }
 
 - (void)saveUsernameFullPath:(NSString *)usernameFullPath
@@ -323,16 +292,12 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                 usernameEntity.salt = salt;
             if (commitSave)
                 [context ds_save];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateUsernameStatusNotification
-                                                                    object:nil
-                                                                  userInfo:@{
-                    DSChainManagerNotificationChainKey: self.chain,
-                    DSIdentityKey: self,
-                    DSIdentityUsernameKey: usernameEntity.stringValue,
-                    DSIdentityUsernameDomainKey: usernameEntity.domain
-                }];
-            });
+            [self notifyUsernameUpdate:@{
+                DSChainManagerNotificationChainKey: self.chain,
+                DSIdentityKey: self,
+                DSIdentityUsernameKey: usernameEntity.stringValue,
+                DSIdentityUsernameDomainKey: usernameEntity.domain
+            }];
         }
     }];
 }
@@ -359,16 +324,12 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                 usernameEntity.salt = salt;
             if (commitSave)
                 [context ds_save];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateUsernameStatusNotification
-                                                                    object:nil
-                                                                  userInfo:@{
-                    DSChainManagerNotificationChainKey: self.chain,
-                    DSIdentityKey: self,
-                    DSIdentityUsernameKey: username,
-                    DSIdentityUsernameDomainKey: domain
-                }];
-            });
+            [self notifyUsernameUpdate:@{
+                DSChainManagerNotificationChainKey: self.chain,
+                DSIdentityKey: self,
+                DSIdentityUsernameKey: username,
+                DSIdentityUsernameDomainKey: domain
+            }];
         }
     }];
 }
@@ -520,7 +481,6 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                 }
 
                 uintptr_t i = 0;
-//                Vec_u8 **salted_domain_hashes_values = malloc(sizeof(Vec_u8 *) * saltedDomainHashesForUsernameFullPaths.count);
                 NSMutableArray<NSError *> *errors = [NSMutableArray array];
                 for (NSData *saltedDomainHashData in [saltedDomainHashesForUsernameFullPaths allValues]) {
                     
@@ -844,4 +804,12 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
     return NO;
 }
 
+- (void)notifyUsernameUpdate:(nullable NSDictionary *)userInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSIdentityDidUpdateUsernameStatusNotification
+                                                            object:nil
+                                                          userInfo:userInfo];
+    });
+
+}
 @end

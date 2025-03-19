@@ -15,8 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DSMasternodeManagerNew.h"
+#import <Foundation/Foundation.h>
 
-@implementation DSMasternodeManagerNew
+NS_ASSUME_NONNULL_BEGIN
 
+@interface DSGapLimit : NSObject
+@property (nonatomic, readwrite) uintptr_t gapLimit;
++ (instancetype)initWithLimit:(uintptr_t)limit;
 @end
+
+@interface DSGapLimitInternal : DSGapLimit
+@property (nonatomic, readwrite) BOOL internal;
++ (instancetype)initWithLimit:(uintptr_t)limit internal:(BOOL)internal;
+@end
+
+@interface DSGapLimitIdentity : DSGapLimit
+@property (nonatomic, readwrite) uint32_t identityID;
++ (instancetype)initWithLimit:(uintptr_t)limit identityID:(uint32_t)identityID;
+@end
+
+
+NS_ASSUME_NONNULL_END

@@ -44,7 +44,7 @@
     DSDerivationPathTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
 
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
-    char *str = dash_spv_crypto_keys_key_KeyKind_derivation_string(derivationPath.signingAlgorithm);
+    char *str = DKeyKindDerivationString(derivationPath.signingAlgorithm);
     NSString *string = [DSKeyManager NSStringFrom:str];
     cell.signingMechanismLabel.text = string.length == 0 ? @"ECDSA" : string;
     cell.referenceNameLabel.text = derivationPath.referenceName;

@@ -5,14 +5,13 @@
 //  Created by Sam Westrich on 6/12/18.
 //
 
+#import "dash_shared_core.h"
 #import "DSGovernanceVote.h"
 #import "DSChain.h"
 #import "DSChain+Params.h"
 #import "DSChainsManager.h"
-#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
-//#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -149,8 +148,8 @@
 - (void)signWithKey:(DOpaqueKey *)key {
     NSParameterAssert(key);
     // ECDSA
-    SLICE *slice = slice_u256_ctor_u(self.governanceVoteHash);
-    BYTES *result = dash_spv_crypto_keys_ecdsa_key_ECDSAKey_sign(key->ecdsa, slice);
+    Slice_u8 *slice = slice_u256_ctor_u(self.governanceVoteHash);
+    Vec_u8 *result = DECDSAKeySign(key->ecdsa, slice);
     self.signature = [DSKeyManager NSDataFrom:result];
 }
 

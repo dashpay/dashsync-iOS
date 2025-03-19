@@ -219,13 +219,13 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
 
-- (BOOL)verifySignature:(NSData *)signature
-            forKeyIndex:(uint32_t)keyIndex
-                 ofType:(DKeyKind *)signingAlgorithm
-       forMessageDigest:(UInt256)messageDigest;
-- (BOOL)verifySignature:(NSData *)signature
-                 ofType:(DKeyKind *)signingAlgorithm
-       forMessageDigest:(UInt256)messageDigest;
+//- (BOOL)verifySignature:(NSData *)signature
+//            forKeyIndex:(uint32_t)keyIndex
+//                 ofType:(DKeyKind *)signingAlgorithm
+//       forMessageDigest:(UInt256)messageDigest;
+//- (BOOL)verifySignature:(NSData *)signature
+//                 ofType:(DKeyKind *)signingAlgorithm
+//       forMessageDigest:(UInt256)messageDigest;
 - (void)createFundingPrivateKeyWithPrompt:(NSString *)prompt
                                completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
 - (void)createFundingPrivateKeyForInvitationWithPrompt:(NSString *)prompt
@@ -238,9 +238,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                   withCompletion:(void (^)(BOOL, NSError *_Nullable))completion;
 
 
-- (NSData *)encryptData:(NSData *)data
-         withKeyAtIndex:(uint32_t)index
-        forRecipientKey:(DOpaqueKey *)recipientPublicKey;
+//- (NSData *)encryptData:(NSData *)data
+//         withKeyAtIndex:(uint32_t)index
+//        forRecipientKey:(DOpaqueKey *)recipientPublicKey;
 
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
 */
@@ -274,9 +274,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                          purpose:(DPurpose *)purpose
                                          saveKey:(BOOL)saveKey
                                      returnIndex:(uint32_t *)rIndex;
-- (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type atIndex:(uint32_t)rIndex;
-+ (DSAuthenticationKeysDerivationPath *_Nullable)derivationPathForType:(DKeyKind *)type
-                                                             forWallet:(DSWallet *)wallet;
+//- (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type atIndex:(uint32_t)rIndex;
 - (BOOL)containsPublicKey:(DIdentityPublicKey *)identity_public_key;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error;
