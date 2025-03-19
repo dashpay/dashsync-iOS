@@ -235,15 +235,12 @@
     return data;
 }
 
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
+                        anyoneCanPay:(BOOL)anyoneCanPay {
     @synchronized(self) {
-        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-        NSLog(@"[PRO_REG_TX] toDataWithSubscriptIndex [%lul] %@", subscriptIndex, data.hexString);
-        NSLog(@"[PRO_REG_TX] base payload: [%lul] %@", subscriptIndex, [self basePayloadData].hexString);
-        NSLog(@"[PRO_REG_TX] signature: [%lul] %@", subscriptIndex, self.payloadSignature.hexString);
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:anyoneCanPay] mutableCopy];
         [data appendCountedData:[self payloadData]];
         if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
-        NSLog(@"[PRO_REG_TX] toDataWithSubscriptIndex [%lul] %@", subscriptIndex, data.hexString);
         return data;
     }
 }

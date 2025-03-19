@@ -88,6 +88,7 @@
 
     NSAssert([paymentRequest isValidAsNonDashpayPaymentRequest], @"Payment request must be valid");
 
+    // TODO: MOCK_DASHPAY mixed only?
     [account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
                                                     usingUserIdentity:nil
                                                                     fromAccount:account

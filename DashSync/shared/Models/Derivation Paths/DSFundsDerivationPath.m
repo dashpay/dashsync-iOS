@@ -53,6 +53,12 @@
                                  reference:DSDerivationPathReference_BIP44
                                    onChain:chain];
 }
++ (instancetype _Nonnull)coinJoinDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long((uint64_t) chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_COINJOIN), uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES, YES, YES, YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_AnonymousFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_CoinJoin onChain:chain];
+}
+
 
 - (instancetype)initWithIndexes:(const UInt256[])indexes
                        hardened:(const BOOL[])hardenedIndexes
@@ -114,7 +120,7 @@
     if (!self.addressesLoaded) {
         [self loadAddressesInContext:self.managedObjectContext];
         self.addressesLoaded = TRUE;
-        uintptr_t gapLimit = self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_GAP_LIMIT_INITIAL;
+        uintptr_t gapLimit = self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : (self.type == DSDerivationPathType_AnonymousFunds ? SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN : SEQUENCE_GAP_LIMIT_INITIAL);
         
         [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:gapLimit internal:YES] error:nil];
         [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:gapLimit internal:NO] error:nil];
@@ -155,6 +161,7 @@
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
+    
     @synchronized(self) {
         NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
         NSUInteger i = a.count;

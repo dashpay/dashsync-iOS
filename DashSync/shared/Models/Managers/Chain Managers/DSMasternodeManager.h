@@ -66,6 +66,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (DMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
 
+- (DSSimplifiedMasternodeEntry *)masternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
 //- (DLLMQEntry *_Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID

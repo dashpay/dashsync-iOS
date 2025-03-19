@@ -15,6 +15,7 @@
     {
       "skippedTests" : [
         "DSAttackTests",
+        "DSCoinJoinSessionTest",
         "DSMainnetE2ETests",
         "DSMainnetMetricSyncTests",
         "DSMainnetSyncTests",

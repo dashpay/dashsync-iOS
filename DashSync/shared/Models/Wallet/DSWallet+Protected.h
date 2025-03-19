@@ -25,8 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSString *creationTimeUniqueID;
 
-@property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
-
 @property (nonatomic, strong) SecureSeedRequestBlock secureSeedRequestBlock;
 
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
@@ -45,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSOrderedSet *_Nullable)blockZonesFromChainSynchronizationFingerprint:(NSData *)chainSynchronizationFingerprint rVersion:(uint8_t *_Nullable)rVersion rChainHeight:(uint32_t *_Nullable)rChainHeight;
 
 + (NSData *)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight;
+
+- (NSData *_Nullable)requestSeedNoAuth;
 
 @end
 

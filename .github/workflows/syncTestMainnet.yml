@@ -44,6 +44,10 @@ jobs:
             ${{ runner.os }}-pods-
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
+      - name: Setup CocoaPods
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: 1.15.2
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install --repo-update

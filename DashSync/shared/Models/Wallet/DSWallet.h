@@ -157,6 +157,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
                      unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit
                            dashpayGapLimit:(NSUInteger)dashpayGapLimit
+                          coinJoinGapLimit:(NSUInteger)coinJoinGapLimit
                                   internal:(BOOL)internal
                                      error:(NSError *_Nullable *_Nullable)error;
 
@@ -171,6 +172,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
+
+// returns input value if no previous wallet transaction spends this input, and the input is valid, -1 otherwise.
+- (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index;
 
 // this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
 - (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
