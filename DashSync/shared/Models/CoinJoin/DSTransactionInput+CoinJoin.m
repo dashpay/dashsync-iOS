@@ -31,7 +31,7 @@
     else
         script = DScriptBufCtor(bytes_ctor(self.signature));
     
-    return DTxInCtor(outpoint, script, self.sequence, dashcore_blockdata_witness_Witness_ctor(bytes_ctor([NSData data]), 0, 0));
+    return DTxInCtor(outpoint, script, self.sequence);
 //    TransactionInput *transactionInput = malloc(sizeof(TransactionInput));
 //    transactionInput->input_hash = uint256_malloc(self.inputHash);
 //    transactionInput->index = self.index;

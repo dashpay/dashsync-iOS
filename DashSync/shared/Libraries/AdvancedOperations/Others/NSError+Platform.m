@@ -168,8 +168,6 @@
     switch (ffi_ref->tag) {
         case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_NullResult:
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Core Provider Null Result", nil)];
-        case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ByteError:
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedString(@"Message Parse Error", nil)];
         case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_BadBlockHash:
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Bad Block Hash (%@)", nil, u256_hex(ffi_ref->bad_block_hash))];
         case dash_spv_masternode_processor_processing_core_provider_CoreProviderError_UnknownBlockHeightForHash:

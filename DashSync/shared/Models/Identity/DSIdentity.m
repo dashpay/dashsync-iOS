@@ -1318,35 +1318,35 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     uint32_t lock_time = self.registrationAssetLockTransaction.lockTime;
     NSArray *inputs = self.registrationAssetLockTransaction.inputs;
     NSUInteger inputsCount = inputs.count;
-    dash_spv_crypto_tx_input_TransactionInput **tx_inputs = malloc(sizeof(dash_spv_crypto_tx_input_TransactionInput *) * inputsCount);
+    DTxIn **tx_inputs = malloc(sizeof(DTxIn *) * inputsCount);
     for (int i = 0; i < inputs.count; i++) {
         DSTransactionInput *o = inputs[i];
         u256 *input_hash = u256_ctor_u(o.inputHash);
-        Vec_u8 *script = o.inScript ? bytes_ctor(o.inScript) : NULL;
-        Vec_u8 *signature = o.signature ? bytes_ctor(o.signature) : NULL;
-        tx_inputs[i] = dash_spv_crypto_tx_input_TransactionInput_ctor(input_hash, o.index, script, signature, o.sequence);
+        DScriptBuf *script = o.signature ? DScriptBufCtor(bytes_ctor(o.signature)) : o.inScript ? DScriptBufCtor(bytes_ctor(o.inScript)) : NULL;
+        DOutPoint *prev_output = DOutPointCtor(DTxidCtor(input_hash), o.index);
+        tx_inputs[i] = DTxInCtor(prev_output, script, o.sequence);
     }
     
     NSArray *outputs = self.registrationAssetLockTransaction.outputs;
     NSUInteger outputsCount = outputs.count;
-    dash_spv_crypto_tx_output_TransactionOutput **tx_outputs = malloc(sizeof(dash_spv_crypto_tx_output_TransactionOutput *) * outputsCount);
+    DTxOut **tx_outputs = malloc(sizeof(DTxOut *) * outputsCount);
     for (int i = 0; i < outputs.count; i++) {
         DSTransactionOutput *o = outputs[i];
-        tx_outputs[i] = dash_spv_crypto_tx_output_TransactionOutput_ctor(o.amount, o.outScript ? bytes_ctor(o.outScript) : NULL, NULL);
+        tx_outputs[i] = DTxOutCtor(o.amount, DScriptBufCtor(o.outScript ? bytes_ctor(o.outScript) : bytes_ctor([NSData data])));
     }
     uint8_t asset_lock_payload_version = self.registrationAssetLockTransaction.specialTransactionVersion;
     
     NSArray *creditOutputs = self.registrationAssetLockTransaction.creditOutputs;
     NSUInteger creditOutputsCount = creditOutputs.count;
-    dash_spv_crypto_tx_output_TransactionOutput **credit_outputs = malloc(sizeof(dash_spv_crypto_tx_output_TransactionOutput *) * creditOutputsCount);
+    DTxOut **credit_outputs = malloc(sizeof(DTxOut *) * creditOutputsCount);
     for (int i = 0; i < creditOutputsCount; i++) {
         DSTransactionOutput *o = creditOutputs[i];
-        credit_outputs[i] = dash_spv_crypto_tx_output_TransactionOutput_ctor(o.amount, o.outScript ? bytes_ctor(o.outScript) : NULL, NULL);
+        credit_outputs[i] = DTxOutCtor(o.amount, DScriptBufCtor(o.outScript ? bytes_ctor(o.outScript) : bytes_ctor([NSData data])));
     }
 
-    Vec_dash_spv_crypto_tx_input_TransactionInput *input_vec = Vec_dash_spv_crypto_tx_input_TransactionInput_ctor(inputsCount, tx_inputs);
-    Vec_dash_spv_crypto_tx_output_TransactionOutput *output_vec = Vec_dash_spv_crypto_tx_output_TransactionOutput_ctor(outputsCount, tx_outputs);
-    Vec_dash_spv_crypto_tx_output_TransactionOutput *credit_output_vec = Vec_dash_spv_crypto_tx_output_TransactionOutput_ctor(creditOutputsCount, credit_outputs);
+    Vec_dashcore_blockdata_transaction_txin_TxIn *input_vec = Vec_dashcore_blockdata_transaction_txin_TxIn_ctor(inputsCount, tx_inputs);
+    Vec_dashcore_blockdata_transaction_txout_TxOut *output_vec = Vec_dashcore_blockdata_transaction_txout_TxOut_ctor(outputsCount, tx_outputs);
+    Vec_dashcore_blockdata_transaction_txout_TxOut *credit_output_vec = Vec_dashcore_blockdata_transaction_txout_TxOut_ctor(creditOutputsCount, credit_outputs);
     uint32_t output_index = (uint32_t ) self.registrationAssetLockTransaction.lockedOutpoint.n;
     
     return dash_spv_platform_transition_instant_proof(output_index, isLock, tx_version, lock_time, input_vec, output_vec, asset_lock_payload_version, credit_output_vec);

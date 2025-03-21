@@ -556,7 +556,7 @@
 #define DScriptBufDtor(ptr) dashcore_blockdata_script_owned_ScriptBuf_destroy(ptr)
 
 #define DTxIn dashcore_blockdata_transaction_txin_TxIn
-#define DTxInCtor(prev_output, script_sig, sequence, witness) dashcore_blockdata_transaction_txin_TxIn_ctor(prev_output, script_sig, sequence, nil)
+#define DTxInCtor(prev_output, script_sig, sequence) dashcore_blockdata_transaction_txin_TxIn_ctor(prev_output, script_sig, sequence, dashcore_blockdata_witness_Witness_ctor(bytes_ctor([NSData data]), 0, 0))
 #define DTxInDtor(ptr) dashcore_blockdata_transaction_txin_TxIn_destroy(ptr)
 
 #define DTxOut dashcore_blockdata_transaction_txout_TxOut
