@@ -22,7 +22,6 @@
 @dynamic derivationPath;
 @dynamic usedInInputs;
 @dynamic usedInOutputs;
-//@dynamic usedInSimplifiedMasternodeEntries;
 @dynamic usedInSpecialTransactions;
 
 @end

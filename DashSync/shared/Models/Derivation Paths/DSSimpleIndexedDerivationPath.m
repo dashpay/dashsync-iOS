@@ -44,7 +44,6 @@
             [self loadAddressesInContext:self.managedObjectContext];
             self.addressesLoaded = TRUE;
             [self registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
-//            [self registerAddressesWithGapLimit:10 error:nil];
         }
     }
 }
@@ -74,15 +73,6 @@
 - (DSGapLimit *)defaultGapSettings {
     return [DSGapLimit initWithLimit:10];
 }
-//- (NSUInteger)defaultGapLimit {
-//    return 10;
-//}
-//
-//- (NSArray *)registerAddressesWithDefaultGapLimitWithError:(NSError **)error {
-//    return [self registerAddressesWithGapLimit:[self defaultGapLimit] error:error];
-//}
-//
-
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
@@ -147,63 +137,6 @@
         return rArray;
     }
 }
-//- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError **)error {
-//    NSAssert(self.type != DSDerivationPathType_MultipleUserAuthentication, @"This should not be called for multiple user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit forIdentityIndex:(uint32_t)identityIndex error:(NSError**)error' instead.");
-//
-//    NSMutableArray *rArray = [self.mOrderedAddresses mutableCopy];
-//
-//    if (!self.wallet.isTransient) {
-//        NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
-//    }
-//    NSUInteger i = rArray.count;
-//
-//    // keep only the trailing contiguous block of addresses that aren't used
-//    while (i > 0 && ![self.usedAddresses containsObject:rArray[i - 1]]) {
-//        i--;
-//    }
-//
-//    if (i > 0) [rArray removeObjectsInRange:NSMakeRange(0, i)];
-//    if (rArray.count >= gapLimit) return [rArray subarrayWithRange:NSMakeRange(0, gapLimit)];
-//
-//    @synchronized(self) {
-//        //It seems weird to repeat this, but it's correct because of the original call receive address and change address
-//        rArray = [self.mOrderedAddresses mutableCopy];
-//        i = rArray.count;
-//
-//        unsigned n = (unsigned)i;
-//
-//        // keep only the trailing contiguous block of addresses with no transactions
-//        while (i > 0 && ![self.usedAddresses containsObject:rArray[i - 1]]) {
-//            i--;
-//        }
-//
-//        if (i > 0) [rArray removeObjectsInRange:NSMakeRange(0, i)];
-//        if (rArray.count >= gapLimit) return [rArray subarrayWithRange:NSMakeRange(0, gapLimit)];
-//
-//        while (rArray.count < gapLimit) { // generate new addresses up to gapLimit
-//            NSData *pubKey = [self publicKeyDataAtIndex:n];
-//            NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
-//            if (!addr) {
-//                DSLog(@"[%@] error generating keys", self.chain.name);
-//                if (error) {
-//                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
-//                }
-//                return nil;
-//            }
-//
-//            if (!self.wallet.isTransient) {
-//                [self storeNewAddressInContext:addr atIndex:n context:self.managedObjectContext];
-//            }
-//
-//            [self.mAllAddresses addObject:addr];
-//            [rArray addObject:addr];
-//            [self.mOrderedAddresses addObject:addr];
-//            n++;
-//        }
-//
-//        return rArray;
-//    }
-//}
 
 - (NSUInteger)firstUnusedIndex {
     uint32_t i = (uint32_t)self.mOrderedAddresses.count;
@@ -220,10 +153,6 @@
 - (NSString *)addressAtIndex:(uint32_t)index {
     return [self addressAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
-
-//- (BOOL)addressIsUsedAtIndex:(uint32_t)index {
-//    return [self addressIsUsedAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-//}
 
 - (NSIndexPath *)indexPathForKnownAddress:(NSString *)address {
     return [NSIndexPath indexPathWithIndex:[self indexOfKnownAddress:address]];
@@ -296,16 +225,16 @@
 - (void)loadAddressesInContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-//        self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
         NSArray<DSAddressEntity *> *addresses = [derivationPathEntity.addresses sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]]];
         for (DSAddressEntity *e in addresses) {
             @autoreleasepool {
-                while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
-                if (!DIsValidDashAddress(DChar(e.address), self.wallet.chain.chainType)) {
+                while (e.index >= self.mOrderedAddresses.count)
+                    [self.mOrderedAddresses addObject:[NSNull null]];
+                if (!DIsValidDashAddress(DChar(e.address), self.chain.chainType)) {
 #if DEBUG
                     DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.chain.name, e.address);
 #else
-                        DSLog(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, @"<REDACTED>");
+                        DSLog(@"[%@] address %@ loaded but was not valid on chain", self.chain.name, @"<REDACTED>");
 #endif /* DEBUG */
                     continue;
                 }

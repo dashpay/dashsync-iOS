@@ -23,7 +23,6 @@
 //  THE SOFTWARE.
 
 #import "DSAccount.h"
-//#import "DSAuthenticationKeysDerivationPath.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSChain+Params.h"
@@ -58,7 +57,7 @@
 // MARK: - Derivation Path initialization
 
 + (instancetype)masterIdentityContactsDerivationPathForAccountNumber:(uint32_t)accountNumber
-                                                                       onChain:(DSChain *)chain {
+                                                             onChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber)};
     //todo full uint256 derivation
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
@@ -254,12 +253,10 @@
 
 - (BOOL)hasExtendedPublicKey {
     if (_extendedPublicKey) return YES;
-    if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
-        return hasKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
-    } else {
-        return hasKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
-    }
-    return NO;
+    NSString *location = self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)
+        ? [self walletBasedExtendedPublicKeyLocationString]
+        : [self standaloneExtendedPublicKeyLocationString];
+    return hasKeychainData(location, nil);
 }
 
 - (NSData *)extendedPublicKeyData {
@@ -273,9 +270,8 @@
     if (!_extendedPublicKey) {
         if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
             NSData *extendedPublicKeyData = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
-            if (extendedPublicKeyData) {
+            if (extendedPublicKeyData)
                 _extendedPublicKey = DMaybeOpaqueKeyWithExtendedPublicKeyData(self.signingAlgorithm, slice_ctor(extendedPublicKeyData));
-            }
         } else {
             NSData *extendedPublicKeyData = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
             _extendedPublicKey = DMaybeOpaqueKeyWithExtendedPublicKeyData(self.signingAlgorithm, slice_ctor(extendedPublicKeyData));
@@ -615,35 +611,7 @@
 }
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath {
-//    if ([self isKindOfClass:[DSAuthenticationKeysDerivationPath class]]) {
-//        DSAuthenticationKeysDerivationPath *authPath = (DSAuthenticationKeysDerivationPath *)self;
-//        BOOL hasHardenedDerivation = FALSE;
-//        for (NSInteger i = 0; i < [indexPath length]; i++) {
-//            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-//            hasHardenedDerivation |= ((derivation & BIP32_HARD) > 0);
-//            if (hasHardenedDerivation) break;
-//        }
-//        if (hasHardenedDerivation || self.reference == DSDerivationPathReference_ProviderPlatformNodeKeys) {
-//            if ([authPath hasExtendedPrivateKey]) {
-//                DMaybeOpaqueKey *result = [authPath privateKeyAtIndexPath:indexPath];
-//                if (!result) return nil;
-//                if (!result->ok) {
-//                    DMaybeOpaqueKeyDtor(result);
-//                    return nil;
-//                }
-//                NSData *data = [DSKeyManager publicKeyData:result->ok];
-//                DMaybeOpaqueKeyDtor(result);
-//                return data;
-//            } else {
-//                return nil;
-//            }
-//        } else {
-//            return [DSKeyManager publicKeyDataAtIndexPath:self.extendedPublicKey->ok indexPath:indexPath];
-//        }
-//
-//    } else {
-        return [DSKeyManager publicKeyDataAtIndexPath:self.extendedPublicKey->ok indexPath:indexPath];
-//    }
+    return [DSKeyManager publicKeyDataAtIndexPath:self.extendedPublicKey->ok indexPath:indexPath];
 }
 
 - (BOOL)hasExtendedPrivateKey {

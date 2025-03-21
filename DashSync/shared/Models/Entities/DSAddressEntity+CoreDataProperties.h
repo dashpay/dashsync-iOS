@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nonnull, nonatomic, retain) NSSet<DSTxInputEntity *> *usedInInputs;
 @property (nonnull, nonatomic, retain) NSSet<DSTxOutputEntity *> *usedInOutputs;
-//@property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntryEntity *> *usedInSimplifiedMasternodeEntries;
 @property (nonnull, nonatomic, retain) NSSet<DSSpecialTransactionEntity *> *usedInSpecialTransactions;
 
 @end
@@ -39,11 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeUsedInOutputsObject:(DSTxOutputEntity *)value;
 - (void)addUsedInOutputs:(NSSet<DSTxOutputEntity *> *)values;
 - (void)removeUsedInOutputs:(NSSet<DSTxOutputEntity *> *)values;
-
-//- (void)addUsedInSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
-//- (void)removeUsedInSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
-//- (void)addUsedInSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
-//- (void)removeUsedInSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
 
 - (void)addUsedInSpecialTransactionsObject:(DSSpecialTransactionEntity *)value;
 - (void)removeUsedInSpecialTransactionsObject:(DSSpecialTransactionEntity *)value;

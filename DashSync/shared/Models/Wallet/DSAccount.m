@@ -398,36 +398,29 @@
 - (void)removeDerivationPath:(DSDerivationPath *)derivationPath {
     NSParameterAssert(derivationPath);
     
-    if ([self.mFundDerivationPaths containsObject:derivationPath]) {
+    if ([self.mFundDerivationPaths containsObject:derivationPath])
         [self.mFundDerivationPaths removeObject:derivationPath];
-    }
 }
 
 - (void)removeIncomingDerivationPathForFriendshipWithIdentifier:(NSData *)friendshipIdentifier {
     NSParameterAssert(friendshipIdentifier);
     DSIncomingFundsDerivationPath *derivationPath = [self.mContactIncomingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
-    if (derivationPath) {
+    if (derivationPath)
         [self removeDerivationPath:derivationPath];
-    }
 }
 
 - (DSIncomingFundsDerivationPath *)derivationPathForFriendshipWithIdentifier:(NSData *)friendshipIdentifier {
     NSParameterAssert(friendshipIdentifier);
     DSIncomingFundsDerivationPath *derivationPath = [self.mContactIncomingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
-    if (derivationPath) return derivationPath;
-    derivationPath = [self.mContactOutgoingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
-    return derivationPath;
+    return derivationPath ?: [self.mContactOutgoingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
 }
 
 - (void)addDerivationPath:(DSDerivationPath *)derivationPath {
     NSParameterAssert(derivationPath);
-    
-    if (!_isViewOnlyAccount) {
+    if (!_isViewOnlyAccount)
         [self verifyAndAssignAddedDerivationPaths:@[derivationPath]];
-    }
-    if ([self verifyDerivationPathNotAlreadyPresent:derivationPath]) {
+    if ([self verifyDerivationPathNotAlreadyPresent:derivationPath])
         [self.mFundDerivationPaths addObject:derivationPath];
-    }
 }
 
 - (void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath
@@ -439,13 +432,14 @@
     derivationPath.account = self;
     [self addDerivationPath:derivationPath];
     [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    if ([derivationPath hasExtendedPublicKey]) {
+    if ([derivationPath hasExtendedPublicKey])
         [derivationPath loadAddressesInContext:context];
-    }
     [self updateBalance];
 }
 
-- (void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath forFriendshipIdentifier:(NSData *)friendshipIdentifier inContext:(NSManagedObjectContext *)context {
+- (void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath
+          forFriendshipIdentifier:(NSData *)friendshipIdentifier
+                        inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
     
@@ -453,17 +447,14 @@
     NSAssert(sourceIsLocal || !derivationPath.length, @"derivation path must not have a length unless it is on device");
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    if ([derivationPath hasExtendedPublicKey]) {
+    if ([derivationPath hasExtendedPublicKey])
         [derivationPath loadAddressesInContext:context];
-    }
 }
 
 - (void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
     NSParameterAssert(derivationPaths);
-    
-    if (!_isViewOnlyAccount) {
+    if (!_isViewOnlyAccount)
         [self verifyAndAssignAddedDerivationPaths:derivationPaths];
-    }
     for (DSDerivationPath *derivationPath in derivationPaths) {
         if ([self verifyDerivationPathNotAlreadyPresent:derivationPath]) {
             [self.mFundDerivationPaths addObject:derivationPath];
@@ -513,11 +504,9 @@
             NSUInteger registerGapLimit = [fundsDerivationPath shouldUseReducedGapLimit] ? unusedAccountGapLimit : (fundsDerivationPath.type == DSDerivationPathType_AnonymousFunds ? coinJoinGapLimit : gapLimit);
             NSArray *addresses = [fundsDerivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:registerGapLimit internal:internal] error:error];
             [mArray addObjectsFromArray:addresses];
-//            [mArray addObjectsFromArray:[fundsDerivationPath registerAddressesWithGapLimit:registerGapLimit internal:internal error:error]];
         } else if (!internal && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             NSArray *addresses = [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:dashpayGapLimit] error:error];
             [mArray addObjectsFromArray:addresses];
-//            [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
         }
     }
     return mArray;
