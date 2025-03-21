@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.homepage         = 'https://github.com/dashevo/dashsync-ios.git'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'quantumexplorer' => 'quantum@dash.org' }
-  s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/dashpay/dashsync-iOS.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '13.0'
   s.osx.deployment_target = '10.15'
@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'DashSharedCore', '0.4.19'
+  s.dependency 'DashSharedCore', '0.5.0'
   s.dependency 'CocoaLumberjack', '3.7.2'
   s.ios.dependency 'DWAlertController', '0.2.1'
   s.dependency 'DSDynamicOptions', '0.1.2'

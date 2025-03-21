@@ -1442,7 +1442,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if (!seed) {
                 if (completion) completion(NO, YES);
             } else {
-                BOOL success = [self collectPrivateKeySetsAndSignTransaction:usedDerivationPaths fromSeed:seed transaction:transaction];
+                BOOL success = [self collectPrivateKeySetsAndSignTransaction:usedDerivationPaths fromSeed:seed transaction:transaction anyoneCanPay:NO];
                 if (completion) completion(success, NO);
             }
         });
@@ -1500,30 +1500,30 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return [transaction signWithMaybePrivateKeySets:privkeys anyoneCanPay:anyoneCanPay];
 }
 
-- (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed {
-    return [self signTxWithDerivationPaths:usedDerivationPaths tx:tx seed:seed anyoneCanPay:NO];
-}
-
-- (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed anyoneCanPay:(BOOL)anyoneCanPay {
-    NSMutableArray *privkeys = [NSMutableArray array];
-    for (NSDictionary *dictionary in usedDerivationPaths) {
-        DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
-        NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
-        *internalIndexes = dictionary[@"internalIndexes"];
-        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-            [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-            [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
-        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-            DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-            [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
-        } else {
-            NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
-        }
-    }
-
-    return [tx signWithPrivateKeys:privkeys anyoneCanPay:anyoneCanPay];
-}
+//- (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed {
+//    return [self signTxWithDerivationPaths:usedDerivationPaths tx:tx seed:seed anyoneCanPay:NO];
+//}
+//
+//- (BOOL)signTxWithDerivationPaths:(NSArray *)usedDerivationPaths tx:(DSTransaction *)tx seed:(NSData *)seed anyoneCanPay:(BOOL)anyoneCanPay {
+//    NSMutableArray *privkeys = [NSMutableArray array];
+//    for (NSDictionary *dictionary in usedDerivationPaths) {
+//        DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
+//        NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+//        *internalIndexes = dictionary[@"internalIndexes"];
+//        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+//            DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+//            [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+//            [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+//        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+//            DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+//            [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
+//        } else {
+//            NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
+//        }
+//    }
+//
+//    return [tx signWithPrivateKeys:privkeys anyoneCanPay:anyoneCanPay];
+//}
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransactions:(NSArray<DSTransaction *> *)transactions

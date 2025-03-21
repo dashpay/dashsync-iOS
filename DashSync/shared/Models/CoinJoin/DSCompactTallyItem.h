@@ -26,8 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t amount;
 @property (strong, nonatomic) NSMutableArray<DSInputCoin *> *inputCoins;
 
-- (CompactTallyItem *)ffi_malloc:(ChainType)type;
-+ (void)ffi_free:(CompactTallyItem *)item;
+- (dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem *)ffi_malloc:(DChainType *)type;
++ (void)ffi_free:(dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem *)item;
 
 @end
 

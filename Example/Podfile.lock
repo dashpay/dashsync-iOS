@@ -3,10 +3,10 @@ PODS:
   - CocoaLumberjack (3.7.2):
     - CocoaLumberjack/Core (= 3.7.2)
   - CocoaLumberjack/Core (3.7.2)
-  - DashSharedCore (0.4.19)
+  - DashSharedCore (0.5.0)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
-    - DashSharedCore (= 0.4.19)
+    - DashSharedCore (= 0.5.0)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
   - DSDynamicOptions (0.1.2)
@@ -48,8 +48,8 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  DashSharedCore: f6643c79d0922f16a1d3b7a5a6f855e033618579
-  DashSync: 5efd440f01dda37065d06a82c8831d567527d7f4
+  DashSharedCore: 6010e7cd176984ba4b153fd984e69e1b397e666a
+  DashSync: 1f423727bb7398aeb288a42233fdb979b68a9542
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6

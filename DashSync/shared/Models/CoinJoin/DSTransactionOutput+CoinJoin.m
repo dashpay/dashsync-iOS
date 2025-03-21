@@ -22,41 +22,45 @@
 
 @implementation DSTransactionOutput (CoinJoin)
 
-- (TransactionOutput *)ffi_malloc:(ChainType)type {
-    TransactionOutput *transactionOutput = malloc(sizeof(TransactionOutput));
-    transactionOutput->amount = self.amount;
+- (DTxOut *)ffi_malloc:(DChainType *)type {
+    return DTxOutCtor(self.amount, DScriptBufCtor(bytes_ctor(self.outScript)));
     
-    NSUInteger length = self.outScript.length;
-    transactionOutput->script_length = (uintptr_t)length;
-    NSData *scriptData = self.outScript;
-    transactionOutput->script = data_malloc(scriptData);
-    
-    char *c_string = address_with_script_pubkey(self.outScript.bytes, self.outScript.length, type);
-
-    if (c_string) {
-        size_t addressLength = strlen(c_string);
-        transactionOutput->address_length = (uintptr_t)addressLength;
-        transactionOutput->address = (uint8_t *)c_string;
-    } else {
-        transactionOutput->address_length = 0;
-        transactionOutput->address = NULL;
-    }
-    
-    return transactionOutput;
+//    
+//    TransactionOutput *transactionOutput = malloc(sizeof(TransactionOutput));
+//    transactionOutput->amount = self.amount;
+//    
+//    NSUInteger length = self.outScript.length;
+//    transactionOutput->script_length = (uintptr_t)length;
+//    NSData *scriptData = self.outScript;
+//    transactionOutput->script = data_malloc(scriptData);
+//    
+//    char *c_string = address_with_script_pubkey(self.outScript.bytes, self.outScript.length, type);
+//
+//    if (c_string) {
+//        size_t addressLength = strlen(c_string);
+//        transactionOutput->address_length = (uintptr_t)addressLength;
+//        transactionOutput->address = (uint8_t *)c_string;
+//    } else {
+//        transactionOutput->address_length = 0;
+//        transactionOutput->address = NULL;
+//    }
+//    
+//    return transactionOutput;
 }
 
-+ (void)ffi_free:(TransactionOutput *)output {
-    if (!output) return;
-    
-    if (output->script) {
-        free(output->script);
-    }
-    
-    if (output->address) {
-        processor_destroy_string((char *)output->address);
-    }
-
-    free(output);
++ (void)ffi_free:(DTxOut *)output {
+    DTxOutDtor(output);
+//    if (!output) return;
+//    
+//    if (output->script) {
+//        free(output->script);
+//    }
+//    
+//    if (output->address) {
+//        processor_destroy_string((char *)output->address);
+//    }
+//
+//    free(output);
 }
 
 @end

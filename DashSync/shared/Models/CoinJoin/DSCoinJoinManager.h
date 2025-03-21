@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "dash_shared_core.h"
 #import "DSChain.h"
 #import "DSTransactionOutput.h"
 #import "DSCoinControl.h"
@@ -27,13 +28,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+
 @protocol DSCoinJoinManagerDelegate <NSObject>
 
-- (void)sessionStartedWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined;
-- (void)sessionCompleteWithId:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)sessionStartedWithId:(int32_t)baseId
+             clientSessionId:(UInt256)clientId
+                denomination:(uint32_t)denom
+                   poolState:(DPoolState *)state
+                 poolMessage:(DPoolMessage *)message
+                  poolStatus:(DPoolStatus *)status
+                   ipAddress:(UInt128)address
+                    isJoined:(BOOL)joined;
+- (void)sessionCompleteWithId:(int32_t)baseId
+              clientSessionId:(UInt256)clientId
+                 denomination:(uint32_t)denom
+                    poolState:(DPoolState *)state
+                  poolMessage:(DPoolMessage *)message
+                   poolStatus:(DPoolStatus *)status
+                    ipAddress:(UInt128)address
+                     isJoined:(BOOL)joined;
 - (void)mixingStarted;
-- (void)mixingComplete:(BOOL)withError errorStatus:(PoolStatus)errorStatus isInterrupted:(BOOL)isInterrupted;
-- (void)transactionProcessedWithId:(UInt256)txId type:(CoinJoinTransactionType)type;
+- (void)mixingComplete:(BOOL)withError
+           errorStatus:(DPoolStatus *)errorStatus
+         isInterrupted:(BOOL)isInterrupted;
+- (void)transactionProcessedWithId:(UInt256)txId
+                              type:(DCoinJoinTransactionType *)type;
 
 @end
 
@@ -41,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, nullable) DSChain *chain;
 @property (nonatomic, strong, nullable) DSMasternodeGroup *masternodeGroup;
-@property (nonatomic, assign, nullable) CoinJoinClientOptions *options;
+@property (nonatomic, assign, nullable) DCoinJoinClientOptions *options;
 @property (nonatomic, nullable, weak) id<DSCoinJoinManagerDelegate> managerDelegate;
 @property (nonatomic, assign) BOOL anonymizableTallyCachedNonDenom;
 @property (nonatomic, assign) BOOL anonymizableTallyCached;
@@ -63,9 +82,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSString *> *)getIssuedReceiveAddresses;
 - (NSArray<NSString *> *)getUsedReceiveAddresses;
 - (BOOL)commitTransactionForAmounts:(NSArray *)amounts outputs:(NSArray *)outputs coinControl:(DSCoinControl *)coinControl onPublished:(void (^)(UInt256 txId, NSError * _Nullable error))onPublished;
-- (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
-- (uint64_t)validMNCount;
-- (DSMasternodeList *)mnList;
+- (DMasternodeEntry *)masternodeEntryByHash:(UInt256)hash;
+- (uintptr_t)validMNCount;
+- (DMasternodeList *)mnList;
 - (BOOL)isMasternodeOrDisconnectRequested:(UInt128)ip port:(uint16_t)port;
 - (BOOL)disconnectMasternode:(UInt128)ip port:(uint16_t)port;
 - (BOOL)sendMessageOfType:(NSString *)messageType message:(NSData *)message withPeerIP:(UInt128)address port:(uint16_t)port warn:(BOOL)warn;
@@ -82,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)doAutomaticDenominatingWithDryRun:(BOOL)dryRun completion:(void (^)(BOOL success))completion;
 - (void)updateSuccessBlock;
 - (void)refreshUnusedKeys;
-- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
+- (DCoinJoinTransactionType *)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
 - (double)getMixingProgress;
 - (DSCoinControl *)selectCoinJoinUTXOs;
 - (uint64_t)getSmallestDenomination;
@@ -94,11 +113,25 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)initiateShutdown;
 
 // Events
-- (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined;
-- (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined;
+- (void)onSessionComplete:(int32_t)baseId
+          clientSessionId:(UInt256)clientId
+             denomination:(uint32_t)denom
+                poolState:(DPoolState *)state
+              poolMessage:(DPoolMessage *)message
+               poolStatus:(DPoolStatus *)status
+                ipAddress:(UInt128)address
+                 isJoined:(BOOL)joined;
+- (void)onSessionStarted:(int32_t)baseId
+         clientSessionId:(UInt256)clientId
+            denomination:(uint32_t)denom
+               poolState:(DPoolState *)state
+             poolMessage:(DPoolMessage *)message
+              poolStatus:(DPoolStatus *)status
+               ipAddress:(UInt128)address
+                isJoined:(BOOL)joined;
 - (void)onMixingStarted:(nonnull NSArray *)statuses;
 - (void)onMixingComplete:(nonnull NSArray *)statuses isInterrupted:(BOOL)isInterrupted;
-- (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type;
+- (void)onTransactionProcessed:(UInt256)txId type:(DCoinJoinTransactionType *)type;
 
 @end
 

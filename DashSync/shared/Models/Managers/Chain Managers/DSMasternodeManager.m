@@ -157,6 +157,10 @@
     BOOL result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_has_masternode_at_location(self.processor, addr, port);
     return result;
 }
+- (DMasternodeEntry *)masternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
+    SocketAddr *addr = dash_spv_masternode_processor_processing_socket_addr_v4_ctor(u128_ctor_u(IPAddress), port);
+    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_at_location(self.processor, addr);
+}
 
 - (NSUInteger)masternodeListRetrievalQueueCount {
     return [self.masternodeListDiffService retrievalQueueCount];
@@ -559,6 +563,7 @@
 
 - (void)tryToProcessQrInfo:(DSPeer *)peer message:(NSData *)message attempt:(uint8_t)attempt {
     //    uint32_t protocol_version = peer ? peer.version : self.chain.protocolVersion;
+    __block NSUInteger numOfAttempt = attempt;
         dispatch_async(self.processingQueue, ^{
             dispatch_group_enter(self.processingGroup);
             Slice_u8 *slice_msg = slice_ctor(message);
@@ -583,7 +588,7 @@
                                 // TODO: it can be tip so we can wait for 300ms and try again
                                 if (attempt < 3) {
                                     sleep(10);
-                                    attempt++;
+                                    numOfAttempt++;
                                     dispatch_group_leave(self.processingGroup);
                                     [self tryToProcessQrInfo:peer message:message attempt:attempt];
                                 }

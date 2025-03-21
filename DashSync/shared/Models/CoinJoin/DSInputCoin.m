@@ -31,28 +31,34 @@
     return self;
 }
 
-- (InputCoin *)ffi_malloc:(ChainType)type {
-    InputCoin *inputCoin = malloc(sizeof(InputCoin));
-    inputCoin->outpoint_index = self.outpointIndex;
-    inputCoin->outpoint_hash = uint256_malloc(self.outpointHash);
-    inputCoin->output = [self.output ffi_malloc:type];
-    inputCoin->effective_value = self.effectiveValue;
-    
-    return inputCoin;
+- (dash_spv_coinjoin_coin_selection_input_coin_InputCoin *)ffi_malloc:(DChainType *)type {
+    // TODO: check outpoint hash reverse or not
+    DTxid *txid = DTxidCtor(u256_ctor_u(self.outpointHash));
+    DOutPoint *outpoint = DOutPointCtor(txid, self.outpointIndex);
+    return dash_spv_coinjoin_coin_selection_input_coin_InputCoin_ctor(outpoint, [self.output ffi_malloc:type], self.effectiveValue);
+//    
+//    InputCoin *inputCoin = malloc(sizeof(InputCoin));
+//    inputCoin->outpoint_index = self.outpointIndex;
+//    inputCoin->outpoint_hash = uint256_malloc(self.outpointHash);
+//    inputCoin->output = [self.output ffi_malloc:type];
+//    inputCoin->effective_value = self.effectiveValue;
+//    
+//    return inputCoin;
 }
 
-+ (void)ffi_free:(InputCoin *)inputCoin {
++ (void)ffi_free:(dash_spv_coinjoin_coin_selection_input_coin_InputCoin *)inputCoin {
     if (!inputCoin) return;
-    
-    if (inputCoin->outpoint_hash) {
-        free(inputCoin->outpoint_hash);
-    }
-    
-    if (inputCoin->output) {
-        [DSTransactionOutput ffi_free:inputCoin->output];
-    }
+    dash_spv_coinjoin_coin_selection_input_coin_InputCoin_destroy(inputCoin);
 
-    free(inputCoin);
+//    if (inputCoin->outpoint_hash) {
+//        free(inputCoin->outpoint_hash);
+//    }
+//    
+//    if (inputCoin->output) {
+//        [DSTransactionOutput ffi_free:inputCoin->output];
+//    }
+//
+//    free(inputCoin);
 }
 
 @end

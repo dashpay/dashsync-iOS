@@ -16,8 +16,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSTransactionOutput.h"
 #import "BigIntTypes.h"
+#import "DSKeyManager.h"
+#import "DSTransactionOutput.h"
 #import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,8 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t effectiveValue;
 
 - (instancetype)initWithTx:(DSTransaction *)tx index:(int32_t)i;
-- (InputCoin *)ffi_malloc:(ChainType)type;
-+ (void)ffi_free:(InputCoin *)inputCoin;
+- (dash_spv_coinjoin_coin_selection_input_coin_InputCoin *)ffi_malloc:(DChainType *)type;
++ (void)ffi_free:(dash_spv_coinjoin_coin_selection_input_coin_InputCoin *)inputCoin;
 
 @end
 

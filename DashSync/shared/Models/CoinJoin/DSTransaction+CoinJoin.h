@@ -17,16 +17,16 @@
 
 #import <Foundation/Foundation.h>
 #import "DSTransaction.h"
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransaction (CoinJoin)
 
-- (DSTransaction *)initWithTransaction:(Transaction *)transaction onChain:(DSChain *)chain;
+- (DSTransaction *)initWithTransaction:(DTransaction *)transaction onChain:(DSChain *)chain;
 
-- (Transaction *)ffi_malloc:(ChainType)chainType;
-+ (void)ffi_free:(Transaction *)tx;
+- (DTransaction *)ffi_malloc:(DChainType *)chainType;
++ (void)ffi_free:(DTransaction *)tx;
 
 @end
 

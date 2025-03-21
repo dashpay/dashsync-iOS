@@ -27,7 +27,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransaction.h"
-#import "DSCoinControl.h"
+//#import "DSCoinControl.h"
 #import "NSData+Dash.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountFromTransactionNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromTransactionNotification;
 
-@class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSCoinbaseTransaction, DSPotentialOneWayFriendship;
+@class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSCoinbaseTransaction, DSCoinControl, DSPotentialOneWayFriendship;
 
 @interface DSAccount : NSObject
 

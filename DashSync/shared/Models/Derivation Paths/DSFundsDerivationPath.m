@@ -54,9 +54,15 @@
                                    onChain:chain];
 }
 + (instancetype _Nonnull)coinJoinDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain {
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long((uint64_t) chain_coin_type(chain.chainType)), uint256_from_long(FEATURE_PURPOSE_COINJOIN), uint256_from_long(accountNumber)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(FEATURE_PURPOSE_COINJOIN), uint256_from_long(accountNumber)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_AnonymousFunds signingAlgorithm:KeyKind_ECDSA reference:DSDerivationPathReference_CoinJoin onChain:chain];
+    return [self derivationPathWithIndexes:indexes
+                                  hardened:hardenedIndexes
+                                    length:4
+                                      type:DSDerivationPathType_AnonymousFunds
+                          signingAlgorithm:DKeyKindECDSA()
+                                 reference:DSDerivationPathReference_CoinJoin
+                                   onChain:chain];
 }
 
 

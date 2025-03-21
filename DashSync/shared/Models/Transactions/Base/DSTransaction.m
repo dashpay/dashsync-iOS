@@ -198,7 +198,10 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences
+- (instancetype)initWithInputHashes:(NSArray *)hashes
+                       inputIndexes:(NSArray *)indexes
+                       inputScripts:(NSArray *)scripts
+                     inputSequences:(NSArray *)inputSequences
                     outputAddresses:(NSArray *)addresses
                       outputAmounts:(NSArray *)amounts
                             onChain:(DSChain *)chain {
@@ -367,17 +370,6 @@
     self.cachedDashAmount = amount;
     
     return amount;
-}
-
-- (DSTransactionDirection)direction {
-    if (self.cachedDirection != DSTransactionDirection_NotAccountFunds) {
-        return self.cachedDirection;
-    }
-    
-    DSTransactionDirection direction = [self.chain directionOfTransaction: self];
-    self.cachedDirection = direction;
-    
-    return direction;
 }
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
@@ -664,7 +656,7 @@
             }
             // TODO: MAKE CORRECT MERGE
             NSData *inScript = transactionInput.inScript;
-            NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKeyValue:keys[keyIdx]];
+            NSData *sig = [DSTransaction signInput:data flags:sighashFlags inputScript:inScript withOpaqueKeyValue:keys[keyIdx]];
             transactionInput.signature = sig;
         }
         if (!self.isSigned) return NO;
@@ -673,7 +665,7 @@
     }
 }
 
-- (BOOL)signWithMaybePrivateKeySets:(NSArray *)keysSets {
+- (BOOL)signWithMaybePrivateKeySets:(NSArray *)keysSets anyoneCanPay:(BOOL)anyoneCanPay {
     @synchronized (self) {
         for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
@@ -683,8 +675,8 @@
                 if (maybe_opaque_keys->ok) {
                     DOpaqueKey *opaque_key = DOpaqueKeyUsedInTxInputScript(bytes_ctor(inScript), maybe_opaque_keys->ok, self.chain.chainType);
                     if (opaque_key) {
-                        NSData *data = [self toDataWithSubscriptIndex:i];
-                        NSData *sig = [DSTransaction signInput:data inputScript:inScript withOpaqueKey:opaque_key];
+                        NSData *data = [self toDataWithSubscriptIndex:i anyoneCanPay:anyoneCanPay];
+                        NSData *sig = [DSTransaction signInput:data flags:SIGHASH_ALL inputScript:inScript withOpaqueKey:opaque_key];
                         DOpaqueKeyDtor(opaque_key);
                         transactionInput.signature = sig;
                     }
@@ -702,7 +694,7 @@
     @synchronized (self) {
         for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSData *sig = [DSTransaction signInput:[self toDataWithSubscriptIndex:i anyoneCanPay:NO] inputScript:transactionInput.inScript withOpaqueKeyValue:keys[i]];
+            NSData *sig = [DSTransaction signInput:[self toDataWithSubscriptIndex:i anyoneCanPay:NO] flags:SIGHASH_ALL inputScript:transactionInput.inScript withOpaqueKeyValue:keys[i]];
             transactionInput.signature = sig;
         }
         if (!self.isSigned) return NO;
@@ -712,17 +704,19 @@
 }
 
 + (NSData *)signInput:(NSData *)data
+                flags:(uint8_t)flags
           inputScript:(NSData *)inputScript
    withOpaqueKeyValue:(NSValue *)keyValue {
     DMaybeOpaqueKey *key = ((DMaybeOpaqueKey *) keyValue.pointerValue);
-    return [self signInput:data inputScript:inputScript withOpaqueKey:key->ok];
+    return [self signInput:data flags:flags inputScript:inputScript withOpaqueKey:key->ok];
 }
 + (NSData *)signInput:(NSData *)data
+                flags:(uint8_t)flags
           inputScript:(NSData *)inputScript
    withOpaqueKey:(DOpaqueKey *)key {
     Slice_u8 *input = slice_ctor(data);
     Vec_u8 *tx_input_script = bytes_ctor(inputScript);
-    Vec_u8 *tx_sig = DOpaqueKeyCreateTxSig(key, input, tx_input_script);
+    Vec_u8 *tx_sig = DOpaqueKeyCreateTxSig(key, input, flags, tx_input_script);
     NSData *result = [DSKeyManager NSDataFrom:tx_sig];
     return result;
 }
@@ -976,24 +970,27 @@
 
 @implementation DSTransaction (Extensions)
 - (DSTransactionDirection)direction {
+    if (self.cachedDirection != DSTransactionDirection_NotAccountFunds) {
+        return self.cachedDirection;
+    }
+    DSTransactionDirection direction;
     const uint64_t sent = [_chain amountSentByTransaction:self];
     const uint64_t received = [_chain amountReceivedFromTransaction:self];
     const uint64_t fee = self.feeUsed;
     if (sent > 0 && (received + fee) == sent) {
         // moved
-        return DSTransactionDirection_Moved;
+        direction = DSTransactionDirection_Moved;
     } else if (sent > 0) {
         // sent
-        return DSTransactionDirection_Sent;
+        direction = DSTransactionDirection_Sent;
     } else if (received > 0) {
         // received
-        return DSTransactionDirection_Received;
+        direction = DSTransactionDirection_Received;
     } else {
         // no funds moved on this account
-        return DSTransactionDirection_NotAccountFunds;
+        direction = DSTransactionDirection_NotAccountFunds;
     }
-//
-//    
-//    return [_chain directionOfTransaction: self];
+    self.cachedDirection = direction;
+    return direction;
 }
 @end

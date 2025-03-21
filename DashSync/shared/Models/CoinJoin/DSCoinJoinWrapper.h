@@ -21,6 +21,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define DCompactTallyItem dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem
+#define DCompactTallyItems Vec_dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem
+#define DCompactTallyItemsCtor(count, values) Vec_dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem_ctor(count, values)
+#define DPoolState dash_spv_coinjoin_messages_pool_state_PoolState
+#define DPoolMessage dash_spv_coinjoin_messages_pool_message_PoolMessage
+#define DPoolStatus dash_spv_coinjoin_messages_pool_status_PoolStatus
+#define DCoinJoinTransactionType dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType
+#define DCoinJoinClientOptions dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions
+
 @class DSCoinJoinManager;
 
 @interface DSCoinJoinWrapper : NSObject
@@ -38,19 +47,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)startMixing;
 - (BOOL)doAutomaticDenominatingWithDryRun:(BOOL)dryRun;
 - (void)doMaintenance;
-- (void)registerCoinJoin:(CoinJoinClientOptions *)options;
+- (void)registerCoinJoin:(DCoinJoinClientOptions *)options;
 - (BOOL)isRegistered;
 - (BOOL)isMixingFeeTx:(UInt256)txId;
 - (void)refreshUnusedKeys;
 - (BOOL)isDenominatedAmount:(uint64_t)amount;
 - (BOOL)isFullyMixed:(DSUTXO)utxo;
 - (void)initiateShutdown;
-+ (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
-+ (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account;
++ (DCoinJoinTransactionType *)coinJoinTxTypeForTransaction:(DSTransaction *)transaction;
++ (DCoinJoinTransactionType *)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account;
 - (void)unlockOutputs:(DSTransaction *)transaction;
 - (uint64_t)getAnonymizableBalance:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed;
 - (uint64_t)getSmallestDenomination;
-- (void)updateOptions:(CoinJoinClientOptions *)options;
+- (void)updateOptions:(DCoinJoinClientOptions *)options;
 - (NSArray<NSNumber *> *)getStandardDenominations;
 - (uint64_t)getCollateralAmount;
 - (uint64_t)getMaxCollateralAmount;

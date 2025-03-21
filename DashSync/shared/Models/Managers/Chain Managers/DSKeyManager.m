@@ -124,7 +124,7 @@
 
 + (NSString *_Nullable)addressWithScriptPubKey:(NSData *)script forChain:(nonnull DSChain *)chain {
     Vec_u8 *vec = bytes_ctor(script);
-    char *c_string = dash_spv_apple_bindings_address_addresses_address_with_script_pubkey(vec, chain.chainType);
+    char *c_string = DAddressWithScriptPubKeyData(vec, chain.chainType);
     return [DSKeyManager NSStringFrom:c_string];
 }
 

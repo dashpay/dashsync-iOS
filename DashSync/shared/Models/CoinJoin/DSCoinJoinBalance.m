@@ -43,24 +43,17 @@
     return balance;
 }
 
-- (Balance *)ffi_malloc {
-    Balance *balance = malloc(sizeof(Balance));
-    balance->my_trusted = self.myTrusted;
-    balance->denominated_trusted = self.denominatedTrusted;
-    balance->anonymized = self.anonymized;
-    balance->my_immature = self.myImmature;
-    balance->my_untrusted_pending = self.myUntrustedPending;
-    balance->denominated_untrusted_pending = self.denominatedUntrustedPending;
-    balance->watch_only_trusted = self.watchOnlyTrusted;
-    balance->watch_only_untrusted_pending = self.watchOnlyUntrustedPending;
-    balance->watch_only_immature = self.watchOnlyImmature;
-    
-    return balance;
+@end
+
+@implementation DSCoinJoinBalance (FFI)
+
++ (DBalance *)ffi_to:(DSCoinJoinBalance *)obj {
+    return DBalanceCtor(obj.myTrusted, obj.myUntrustedPending, obj.myImmature, obj.watchOnlyTrusted, obj.watchOnlyUntrustedPending, obj.watchOnlyImmature, obj.anonymized, obj.denominatedTrusted, obj.denominatedUntrustedPending);
+
+}
++ (void)ffi_destroy:(DBalance *)ffi_ref {
+    if (ffi_ref)
+        dash_spv_coinjoin_models_balance_Balance_destroy(ffi_ref);
 }
 
-+ (void)ffi_free:(Balance *)balance {
-    if (balance) {
-        free(balance);
-    }
-}
 @end

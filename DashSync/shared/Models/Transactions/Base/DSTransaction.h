@@ -188,8 +188,5 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
 - (int32_t)getBlocksToMaturity;
 
 @end
-//typedef NSUInteger DSTransactionDirection;
-
-@end
 
 NS_ASSUME_NONNULL_END

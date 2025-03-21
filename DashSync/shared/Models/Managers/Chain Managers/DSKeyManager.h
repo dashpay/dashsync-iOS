@@ -285,7 +285,7 @@
 #define DOpaqueKeyHashAndSign(key, data) dash_spv_crypto_keys_key_OpaqueKey_hash_and_sign(key, data)
 #define DOpaqueKeyCreateIdentifier(key) dash_spv_crypto_keys_key_OpaqueKey_create_identifier(key)
 #define DOpaqueKeyCreateAccountRef(src_key, dst_key, acc_number) dash_spv_crypto_keys_key_OpaqueKey_create_account_reference(src_key, dst_key, acc_number)
-#define DOpaqueKeyCreateTxSig(key, input, in_script) dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key, input, in_script)
+#define DOpaqueKeyCreateTxSig(key, input, flags, in_script) dash_spv_crypto_keys_key_OpaqueKey_create_tx_signature(key, input, flags, in_script)
 #define DOpaqueKeyHasPrivateKey(key) dash_spv_crypto_keys_key_OpaqueKey_has_private_key(key)
 #define DOpaqueKeyForgetPrivateKey(key) dash_spv_crypto_keys_key_OpaqueKey_forget_private_key(key)
 #define DOpaqueKeyDerivateTo256WithOffset(key, path, offset) dash_spv_crypto_keys_key_OpaqueKey_public_derive_to_256_path_with_offset(key, path, offset)
@@ -304,7 +304,7 @@
 
 #define DScriptPubKeyForAddress(address, chain_type) dash_spv_apple_bindings_address_addresses_script_pubkey_for_address(address, chain_type)
 #define DIsValidDashAddress(address, chain_type) dash_spv_apple_bindings_address_addresses_is_valid_dash_address_for_chain(address, chain_type)
-
+#define DAddressWithScriptPubKeyData(data, chain_type) dash_spv_apple_bindings_address_addresses_address_with_script_pubkey(data, chain_type)
 #define DMaybeOpaqueKeyFromSeed(kind, seed) dash_spv_crypto_keys_key_KeyKind_key_with_seed_data(kind, seed)
 #define DMaybeDeriveOpaqueKeyFromExtendedPrivateKeyDataForIndexPath(kind, data, index_path) dash_spv_crypto_keys_key_KeyKind_derive_key_from_extended_private_key_data_for_index_path(kind, data, index_path)
 #define DMaybeOpaqueKeyWithPrivateKeyData(kind, data) dash_spv_crypto_keys_key_KeyKind_key_with_private_key_data(kind, data)
@@ -550,6 +550,35 @@
 #define DMessageVerificationResult Result_ok_bool_err_dashcore_sml_message_verification_error_MessageVerificationError
 #define DMessageVerificationResultDtor(ptr) Result_ok_bool_err_dashcore_sml_message_verification_error_MessageVerificationError_destroy(ptr)
 #endif
+
+#define DScriptBuf dashcore_blockdata_script_owned_ScriptBuf
+#define DScriptBufCtor(bytes) dashcore_blockdata_script_owned_ScriptBuf_ctor(bytes)
+#define DScriptBufDtor(ptr) dashcore_blockdata_script_owned_ScriptBuf_destroy(ptr)
+
+#define DTxIn dashcore_blockdata_transaction_txin_TxIn
+#define DTxInCtor(prev_output, script_sig, sequence, witness) dashcore_blockdata_transaction_txin_TxIn_ctor(prev_output, script_sig, sequence, nil)
+#define DTxInDtor(ptr) dashcore_blockdata_transaction_txin_TxIn_destroy(ptr)
+
+#define DTxOut dashcore_blockdata_transaction_txout_TxOut
+#define DTxOutCtor(amount, script) dashcore_blockdata_transaction_txout_TxOut_ctor(amount, script)
+#define DTxOutDtor(ptr) dashcore_blockdata_transaction_txout_TxOut_destroy(ptr)
+
+#define DTxid dashcore_hash_types_Txid
+#define DTxidCtor(data) dashcore_hash_types_Txid_ctor(data)
+#define DTxidDtor(ptr) dashcore_hash_types_Txid_destroy(ptr)
+
+#define DOutPoint dashcore_blockdata_transaction_outpoint_OutPoint
+#define DOutPointCtor(txid, vout) dashcore_blockdata_transaction_outpoint_OutPoint_ctor(txid, vout)
+#define DOutPointDtor(ptr) dashcore_blockdata_transaction_outpoint_OutPoint_destroy(ptr)
+
+#define DBalance dash_spv_coinjoin_models_balance_Balance
+#define DBalanceCtor(myTrusted, myUntrustedPending, myImmature, watchOnlyTrusted, watchOnlyUntrustedPending, watchOnlyImmature, anonymized, denominatedTrusted, denominatedUntrustedPending) dash_spv_coinjoin_models_balance_Balance_ctor(myTrusted, myUntrustedPending, myImmature, watchOnlyTrusted, watchOnlyUntrustedPending, watchOnlyImmature, anonymized, denominatedTrusted, denominatedUntrustedPending)
+#define DBalanceDtor(ptr) dash_spv_coinjoin_models_balance_Balance_destroy(ptr)
+
+#define DTransaction dashcore_blockdata_transaction_Transaction
+#define DTransactionCtor(version, lock_time, inputs, outputs, special_payload) dashcore_blockdata_transaction_Transaction_ctor(version, lock_time, inputs, outputs, special_payload);
+#define DTransactionDtor(ptr) dashcore_blockdata_transaction_Transaction_destroy(ptr)
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSDerivationPath;

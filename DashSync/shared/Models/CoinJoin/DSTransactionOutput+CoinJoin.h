@@ -16,15 +16,16 @@
 //
 
 #import "DSTransactionOutput.h"
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransactionOutput (CoinJoin)
 
-- (TransactionOutput *)ffi_malloc:(ChainType) type;
-+ (void)ffi_free:(TransactionOutput *)output;
+- (DTxOut *)ffi_malloc:(DChainType *)type;
+
++ (void)ffi_free:(DTxOut *)output;
 
 @end
 

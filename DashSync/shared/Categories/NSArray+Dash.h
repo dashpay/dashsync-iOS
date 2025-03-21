@@ -60,4 +60,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (std_collections_BTreeSet_dashcore_hash_types_BlockHash *)ffi_to_block_hash_btree_set:(NSArray<NSData *> *)obj;
 + (void)ffi_destroy_block_hash_btree_set:(std_collections_BTreeSet_dashcore_hash_types_BlockHash *)ffi_ref;
 @end
+
+
 NS_ASSUME_NONNULL_END

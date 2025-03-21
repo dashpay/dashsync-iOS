@@ -16,6 +16,7 @@
 #import "DSChain+Wallet.h"
 #import "DSChain+Transaction.h"
 #import "DSCheckpoint.h"
+#import "DSCoinJoinManager.h"
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"
 #import "DSReachabilityManager.h"

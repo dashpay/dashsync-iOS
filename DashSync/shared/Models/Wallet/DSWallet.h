@@ -35,8 +35,8 @@ typedef void (^SecureSeedRequestBlock)(NSString *_Nullable authprompt, uint64_t 
 
 FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
-#define DUFFS 100000000LL
-#define MAX_MONEY (21000000LL * DUFFS)
+//#define DUFFS 100000000LL
+//#define MAX_MONEY (21000000LL * DUFFS)
 
 @class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSSpecialTransactionsWalletHolder, DSInvitation;
 
