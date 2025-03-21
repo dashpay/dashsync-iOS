@@ -35,7 +35,7 @@
         
 //        DSChainEntity *chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:context];
         DSChainEntity *chainEntity = [chainLock.chain chainEntityInContext:context];
-        if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(chainLock.lock)) {
+        if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < DChainLockBlockHeight(chainLock.lock)) {
             chainEntity.lastChainLock = chainLockEntity;
         }
     }

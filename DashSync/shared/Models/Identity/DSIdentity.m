@@ -40,6 +40,7 @@
 #import "NSError+Platform.h"
 #import "NSIndexPath+Dash.h"
 #import "NSManagedObject+Sugar.h"
+#import "NSMutableData+Dash.h"
 #import "NSObject+Notification.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
@@ -1313,7 +1314,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     return isLock ? [self createInstantProof:isLock.lock] : [self createChainProof];
 }
 
-- (DAssetLockProof *)createInstantProof:(dashcore_ephemerealdata_instant_lock_InstantLock *)isLock {
+- (DAssetLockProof *)createInstantProof:(DInstantLock *)isLock {
     uint16_t tx_version = self.registrationAssetLockTransaction.version;
     uint32_t lock_time = self.registrationAssetLockTransaction.lockTime;
     NSArray *inputs = self.registrationAssetLockTransaction.inputs;
@@ -1321,9 +1322,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     DTxIn **tx_inputs = malloc(sizeof(DTxIn *) * inputsCount);
     for (int i = 0; i < inputs.count; i++) {
         DSTransactionInput *o = inputs[i];
-        u256 *input_hash = u256_ctor_u(o.inputHash);
         DScriptBuf *script = o.signature ? DScriptBufCtor(bytes_ctor(o.signature)) : o.inScript ? DScriptBufCtor(bytes_ctor(o.inScript)) : NULL;
-        DOutPoint *prev_output = DOutPointCtor(DTxidCtor(input_hash), o.index);
+        DOutPoint *prev_output = DOutPointCtorU(o.inputHash, o.index);
         tx_inputs[i] = DTxInCtor(prev_output, script, o.sequence);
     }
     
@@ -1344,9 +1344,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         credit_outputs[i] = DTxOutCtor(o.amount, DScriptBufCtor(o.outScript ? bytes_ctor(o.outScript) : bytes_ctor([NSData data])));
     }
 
-    Vec_dashcore_blockdata_transaction_txin_TxIn *input_vec = Vec_dashcore_blockdata_transaction_txin_TxIn_ctor(inputsCount, tx_inputs);
-    Vec_dashcore_blockdata_transaction_txout_TxOut *output_vec = Vec_dashcore_blockdata_transaction_txout_TxOut_ctor(outputsCount, tx_outputs);
-    Vec_dashcore_blockdata_transaction_txout_TxOut *credit_output_vec = Vec_dashcore_blockdata_transaction_txout_TxOut_ctor(creditOutputsCount, credit_outputs);
+    DTxInputs *input_vec = DTxInputsCtor(inputsCount, tx_inputs);
+    DTxOutputs *output_vec = DTxOutputsCtor(outputsCount, tx_outputs);
+    DTxOutputs *credit_output_vec = DTxOutputsCtor(creditOutputsCount, credit_outputs);
     uint32_t output_index = (uint32_t ) self.registrationAssetLockTransaction.lockedOutpoint.n;
     
     return dash_spv_platform_transition_instant_proof(output_index, isLock, tx_version, lock_time, input_vec, output_vec, asset_lock_payload_version, credit_output_vec);
@@ -2066,6 +2066,20 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 
 - (BOOL)isDashpayReady {
     return self.activeKeyCount > 0 && self.isRegistered;
+}
+
+- (UInt256)contractIdIfRegistered:(DDataContract *)contract {
+    NSMutableData *mData = [NSMutableData data];
+    [mData appendUInt256:self.uniqueID];
+    DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:self.wallet];
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.sharedContractsObj, contract);
+    NSData *serializedHash = NSDataFromPtr(result->ok);
+    Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
+    NSMutableData *entropyData = [serializedHash mutableCopy];
+    [entropyData appendUInt256:self.uniqueID];
+    [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    [mData appendData:uint256_data([entropyData SHA256])];
+    return [mData SHA256_2]; //this is the contract ID
 }
 
 - (DIdentityRegistrationStatus *)registrationStatus {

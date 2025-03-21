@@ -259,8 +259,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             
         if (mixingMasternodeInfo) {
             SocketAddr *addr = mixingMasternodeInfo->masternode_list_entry->service_address;
-            u128 *ip = dash_spv_masternode_processor_processing_socket_addr_ip(addr);
-            uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(addr);
+            u128 *ip = DSocketAddrIp(addr);
+            uint16_t port = DSocketAddrPort(addr);
             UInt128 ipAddress = u128_cast(ip);
             DSPeer *peer = [self peerForLocation:ipAddress port:port];
                 
@@ -370,8 +370,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
             DMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
             if (mixingMasternodeAddress) {
                 SocketAddr *addr = mixingMasternodeAddress->masternode_list_entry->service_address;
-                u128 *ip = dash_spv_masternode_processor_processing_socket_addr_ip(addr);
-                uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(addr);
+                u128 *ip = DSocketAddrIp(addr);
+                uint16_t port = DSocketAddrPort(addr);
                 UInt128 ipAddress = u128_cast(ip);
                     
                 if (uint128_eq(ipAddress, peer.address) && port == peer.port) {

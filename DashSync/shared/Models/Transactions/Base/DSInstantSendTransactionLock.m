@@ -22,7 +22,7 @@
 @interface DSInstantSendTransactionLock ()
 
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, assign) dashcore_ephemerealdata_instant_lock_InstantLock *lock;
+@property (nonatomic, assign) DInstantLock *lock;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
 @property (nonatomic, assign) BOOL saved;
@@ -33,7 +33,7 @@
 
 - (void)dealloc {
     if (_lock) {
-        dashcore_ephemerealdata_instant_lock_InstantLock_destroy(_lock);
+        DInstantLockDtor(_lock);
         _lock = NULL;
     }
 }
@@ -92,11 +92,11 @@
     return data;
 }
 
-- (Vec_dashcore_blockdata_transaction_outpoint_OutPoint *)inputOutpoints {
+- (DOutPoints *)inputOutpoints {
     return dash_spv_masternode_processor_processing_instant_lock_outpoints(self.lock);
 }
 
-- (dashcore_blockdata_transaction_outpoint_OutPoint *)inputOutpointAtIndex:(uintptr_t)index {
+- (DOutPoint *)inputOutpointAtIndex:(uintptr_t)index {
     return dash_spv_masternode_processor_processing_instant_lock_outpoint_at_index(self.lock, index);
 }
 
@@ -120,16 +120,16 @@
                                 onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
     NSUInteger inputsCount = inputOutpoints.count;
-    dashcore_blockdata_transaction_outpoint_OutPoint **values = malloc(sizeof(dashcore_blockdata_transaction_outpoint_OutPoint *) * inputsCount);
+    DOutPoint **values = malloc(sizeof(DOutPoint *) * inputsCount);
     for (int i = 0; i < inputsCount; i++) {
         NSData *inputBytes = inputOutpoints[i];
-        values[i] = dash_spv_masternode_processor_processing_outpoint_from_message(slice_ctor(inputBytes));
+        values[i] = DOutPointFromMessage(slice_ctor(inputBytes));
     }
-    Vec_dashcore_blockdata_transaction_outpoint_OutPoint *inputs = Vec_dashcore_blockdata_transaction_outpoint_OutPoint_ctor(inputsCount, values);
+    DOutPoints *inputs = DOutPointsCtor(inputsCount, values);
     
-    dashcore_hash_types_Txid *txid = dashcore_hash_types_Txid_ctor(u256_ctor(transactionHash));
-    dashcore_hash_types_CycleHash *chash = dashcore_hash_types_CycleHash_ctor(u256_ctor(cycleHash));
-    self.lock = dashcore_ephemerealdata_instant_lock_InstantLock_ctor(version, inputs, txid, chash, dashcore_bls_sig_utils_BLSSignature_ctor(u768_ctor(signature)));
+    DTxid *txid = DTxidCtor(u256_ctor(transactionHash));
+    DCycleHash *chash = dashcore_hash_types_CycleHash_ctor(u256_ctor(cycleHash));
+    self.lock = DInstantLockCtor(version, inputs, txid, chash, DBLSSignatureCtor(u768_ctor(signature)));
     self.signatureVerified = signatureVerified;
     self.quorumVerified = quorumVerified;
     self.saved = YES; //this is coming already from the persistant store and not from the network

@@ -54,11 +54,6 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 
 - (instancetype)init NS_UNAVAILABLE;
 
-//- (BOOL)isDocumentDefinedForType:(NSString *)type;
-//- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type;
-//- (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type;
-//- (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
-
 - (void)registerCreator:(DSIdentity *)identity;
 - (void)unregisterCreator;
 
@@ -66,8 +61,6 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 + (DPContract *)localDPNSContractForChain:(DSChain *)chain;
 //+ (DPContract *)localDashThumbnailContractForChain:(DSChain *)chain;
 
-
-- (UInt256)contractIdIfRegisteredByIdentity:(DSIdentity *)identity;
 
 @end
 

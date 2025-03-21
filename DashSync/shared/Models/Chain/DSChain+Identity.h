@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSIdentity *_Nullable)identityForUniqueId:(UInt256)uniqueId;
 
 /*! @brief Returns a blockchain identity that could have created this contract.  */
-- (DSIdentity *_Nullable)identityThatCreatedContract:(DPContract *)contract
+- (DSIdentity *_Nullable)identityThatCreatedContract:(DDataContract *)contract
                                       withContractId:(UInt256)contractId
                                        foundInWallet:(DSWallet *_Nullable *_Nullable)foundInWallet;
 

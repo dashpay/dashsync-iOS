@@ -93,6 +93,14 @@ static dispatch_once_t platformChainToken = 0;
     return _dpnsContract;
 }
 
+- (DDataContract *)dashPayRawContract {
+    return [self dashPayContract].raw_contract;
+}
+
+- (DDataContract *)dpnsRawContract {
+    return [self dpnsContract].raw_contract;
+}
+
 //- (DPContract *)dashThumbnailContract {
 //    if (!_dashThumbnailContract) {
 //        _dashThumbnailContract = [DPContract localDashThumbnailContractForChain:self.chain];

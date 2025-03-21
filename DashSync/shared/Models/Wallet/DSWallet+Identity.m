@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-#import "DPContract.h"
 #import "DSAccount.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSAssetLockTransactionEntity+CoreDataClass.h"
@@ -217,13 +216,13 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
     self.defaultIdentity = nil;
 }
 
-- (DSIdentity *_Nullable)identityThatCreatedContract:(DPContract *)contract
+- (DSIdentity *_Nullable)identityThatCreatedContract:(DDataContract *)contract
                                       withContractId:(UInt256)contractId {
     NSParameterAssert(contract);
     NSAssert(uint256_is_not_zero(contractId), @"contractId must not be null");
     DSIdentity *foundIdentity = nil;
     for (DSIdentity *identity in [self.mIdentities allValues]) {
-        if (uint256_eq([contract contractIdIfRegisteredByIdentity:identity], contractId))
+        if (uint256_eq([identity contractIdIfRegistered:contract], contractId))
             foundIdentity = identity;
     }
     return foundIdentity;

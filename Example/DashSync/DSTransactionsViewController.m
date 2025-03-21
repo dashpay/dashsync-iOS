@@ -366,7 +366,7 @@ NSString *dateFormat(NSString *_template) {
     }
     
     DCoinJoinTransactionType *type = [[DSCoinJoinManager sharedInstanceForChain:self.chainManager.chain] coinJoinTxTypeForTransaction:tx];
-    dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType type_index = dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_index(type);
+    DCoinJoinTransactionType type_index = DCoinJoinTransactionTypeIndex(type);
     if (type_index != dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_None) {
         NSString *typeString = @"";
 

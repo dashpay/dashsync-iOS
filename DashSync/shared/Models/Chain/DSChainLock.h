@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainLock : NSObject
 
-@property (nonatomic, readonly) dashcore_ephemerealdata_chain_lock_ChainLock *lock;
+@property (nonatomic, readonly) DChainLock *lock;
 @property (nonatomic, readonly) DSChain *chain;
 //@property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) UInt256 blockHash;

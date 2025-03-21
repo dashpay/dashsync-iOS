@@ -140,6 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DAssetLockProof *)createProof:(DSInstantSendTransactionLock *_Nullable)isLock;
 
+- (UInt256)contractIdIfRegistered:(DDataContract *)contract;
+
 @end
 
 NS_ASSUME_NONNULL_END

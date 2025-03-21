@@ -1303,7 +1303,7 @@ static dispatch_once_t devnetToken = 0;
             return TRUE;
         }
         
-        if (h <= dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(self.lastChainLock.lock)) {
+        if (h <= DChainLockBlockHeight(self.lastChainLock.lock)) {
             DSLog(@"%@ ignoring block on fork when main chain is chainlocked: %d, blockHash: %@", prefix, h, blockHash);
             return TRUE;
         }

@@ -174,6 +174,7 @@
 
 #define MaybePubKey Result_ok_u8_arr_48_err_drive_proof_verifier_error_ContextProviderError
 #define MaybePubKeyDtor Result_ok_u8_arr_48_err_drive_proof_verifier_error_ContextProviderError_destroy
+#define DDataContract dpp_data_contract_DataContract
 #define MaybeDataContract Result_ok_Option_std_sync_Arc_dpp_data_contract_DataContract_err_drive_proof_verifier_error_ContextProviderError
 #define MaybeDataContractDtor Result_ok_Option_std_sync_Arc_dpp_data_contract_DataContract_err_drive_proof_verifier_error_ContextProviderError_destroy
 #define MaybeSignedData Result_ok_platform_value_types_binary_data_BinaryData_err_dpp_errors_protocol_error_ProtocolError
@@ -545,6 +546,17 @@
 #define DUsernameStatuses std_collections_Map_keys_String_values_dash_spv_platform_identity_model_UsernameStatusInfo
 #define DUsernameStatusesDtor(ptr) std_collections_Map_keys_String_values_dash_spv_platform_identity_model_UsernameStatusInfo_destroy(ptr)
 
+#define DBLSSignature dashcore_bls_sig_utils_BLSSignature
+#define DBLSSignatureCtor(sig) dashcore_bls_sig_utils_BLSSignature_ctor(sig)
+
+#define DChainLock dashcore_ephemerealdata_chain_lock_ChainLock
+#define DChainLockCtor(height, block_hash, sig) dashcore_ephemerealdata_chain_lock_ChainLock_ctor(height, block_hash, sig)
+#define DChainLockBlockHeight(ptr) dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(ptr)
+#define DChainLockSignature(ptr) dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(ptr)
+#define DChainLockDtor(ptr) dashcore_ephemerealdata_chain_lock_ChainLock_destroy(ptr)
+#define DInstantLock dashcore_ephemerealdata_instant_lock_InstantLock
+#define DInstantLockCtor(version, inputs, txid, cycle_hash, sig) dashcore_ephemerealdata_instant_lock_InstantLock_ctor(version, inputs, txid, cycle_hash, sig)
+#define DInstantLockDtor(ptr) dashcore_ephemerealdata_instant_lock_InstantLock_destroy(ptr)
 #define DMaybeInstantLock Result_ok_dashcore_ephemerealdata_instant_lock_InstantLock_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError
 #if (defined(DASHCORE_MESSAGE_VERIFICATION))
 #define DMessageVerificationResult Result_ok_bool_err_dashcore_sml_message_verification_error_MessageVerificationError
@@ -558,10 +570,15 @@
 #define DTxIn dashcore_blockdata_transaction_txin_TxIn
 #define DTxInCtor(prev_output, script_sig, sequence) dashcore_blockdata_transaction_txin_TxIn_ctor(prev_output, script_sig, sequence, dashcore_blockdata_witness_Witness_ctor(bytes_ctor([NSData data]), 0, 0))
 #define DTxInDtor(ptr) dashcore_blockdata_transaction_txin_TxIn_destroy(ptr)
+#define DTxInputs Vec_dashcore_blockdata_transaction_txin_TxIn
+#define DTxInputsCtor(count, values) Vec_dashcore_blockdata_transaction_txin_TxIn_ctor(count, values)
+#define DTxInputsDtor(ptr) Vec_dashcore_blockdata_transaction_txin_TxIn_destroy(ptr)
 
 #define DTxOut dashcore_blockdata_transaction_txout_TxOut
 #define DTxOutCtor(amount, script) dashcore_blockdata_transaction_txout_TxOut_ctor(amount, script)
 #define DTxOutDtor(ptr) dashcore_blockdata_transaction_txout_TxOut_destroy(ptr)
+#define DTxOutputs Vec_dashcore_blockdata_transaction_txout_TxOut
+#define DTxOutputsCtor(count, values) Vec_dashcore_blockdata_transaction_txout_TxOut_ctor(count, values)
 
 #define DTxid dashcore_hash_types_Txid
 #define DTxidCtor(data) dashcore_hash_types_Txid_ctor(data)
@@ -569,7 +586,12 @@
 
 #define DOutPoint dashcore_blockdata_transaction_outpoint_OutPoint
 #define DOutPointCtor(txid, vout) dashcore_blockdata_transaction_outpoint_OutPoint_ctor(txid, vout)
+#define DOutPointCtorU(u, i) DOutPointCtor(DTxidCtor(u256_ctor_u(u)), i)
+#define DOutPointFromUTXO(utxo) DOutPointCtorU(utxo.hash, (uint32_t) utxo.n)
+#define DOutPointFromMessage(msg) dash_spv_masternode_processor_processing_outpoint_from_message(msg)
 #define DOutPointDtor(ptr) dashcore_blockdata_transaction_outpoint_OutPoint_destroy(ptr)
+#define DOutPoints Vec_dashcore_blockdata_transaction_outpoint_OutPoint
+#define DOutPointsCtor(count, values) Vec_dashcore_blockdata_transaction_outpoint_OutPoint_ctor(count, values)
 
 #define DBalance dash_spv_coinjoin_models_balance_Balance
 #define DBalanceCtor(myTrusted, myUntrustedPending, myImmature, watchOnlyTrusted, watchOnlyUntrustedPending, watchOnlyImmature, anonymized, denominatedTrusted, denominatedUntrustedPending) dash_spv_coinjoin_models_balance_Balance_ctor(myTrusted, myUntrustedPending, myImmature, watchOnlyTrusted, watchOnlyUntrustedPending, watchOnlyImmature, anonymized, denominatedTrusted, denominatedUntrustedPending)
@@ -578,6 +600,13 @@
 #define DTransaction dashcore_blockdata_transaction_Transaction
 #define DTransactionCtor(version, lock_time, inputs, outputs, special_payload) dashcore_blockdata_transaction_Transaction_ctor(version, lock_time, inputs, outputs, special_payload);
 #define DTransactionDtor(ptr) dashcore_blockdata_transaction_Transaction_destroy(ptr)
+
+#define DSocketAddrFrom(ip, port) dash_spv_masternode_processor_processing_socket_addr_v4_ctor(ip, port)
+#define DSocketAddrIp(addr) dash_spv_masternode_processor_processing_socket_addr_ip(addr)
+#define DSocketAddrPort(addr) dash_spv_masternode_processor_processing_socket_addr_port(addr)
+
+#define DBlockHash dashcore_hash_types_BlockHash
+#define DCycleHash dashcore_hash_types_CycleHash
 
 NS_ASSUME_NONNULL_BEGIN
 

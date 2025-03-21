@@ -37,7 +37,11 @@
 #define DSelectCoins Fn_ARGS_std_os_raw_c_void_bool_bool_bool_i32_dash_spv_coinjoin_wallet_ex_WalletEx_RTRN_Vec_dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem
 #define DInputsWithAmount Fn_ARGS_std_os_raw_c_void_u64_RTRN_u32
 #define DFreshCoinjoinAddress Fn_ARGS_std_os_raw_c_void_bool_RTRN_String
+#define DAvailableCoins Fn_ARGS_std_os_raw_c_void_bool_dash_spv_coinjoin_models_coin_control_CoinControl_dash_spv_coinjoin_wallet_ex_WalletEx_RTRN_Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin
 #define DCommitTransaction Fn_ARGS_std_os_raw_c_void_Vec_dashcore_blockdata_transaction_txout_TxOut_dash_spv_coinjoin_models_coin_control_CoinControl_bool_Arr_u8_32_RTRN_bool
+#define DSessionLifecycle Fn_ARGS_std_os_raw_c_void_bool_i32_Arr_u8_32_u32_dash_spv_coinjoin_messages_pool_state_PoolState_dash_spv_coinjoin_messages_pool_message_PoolMessage_dash_spv_coinjoin_messages_pool_status_PoolStatus_Option_std_net_SocketAddr_bool_RTRN_
+#define DMixingLifecycle Fn_ARGS_std_os_raw_c_void_bool_bool_Vec_dash_spv_coinjoin_messages_pool_status_PoolStatus_RTRN_
+#define DMasternodeByHash Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Option_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry
 
 @implementation DSCoinJoinWrapper
 
@@ -111,19 +115,19 @@
             Fn_ARGS_std_os_raw_c_void_RTRN_bool is_waiting_for_new_block = {
                 .caller = &isWaitingForNewBlock
             };
-            Fn_ARGS_std_os_raw_c_void_bool_i32_Arr_u8_32_u32_dash_spv_coinjoin_messages_pool_state_PoolState_dash_spv_coinjoin_messages_pool_message_PoolMessage_dash_spv_coinjoin_messages_pool_status_PoolStatus_Option_std_net_SocketAddr_bool_RTRN_ session_lifecycle_listener = {
+            DSessionLifecycle session_lifecycle_listener = {
                 .caller = &sessionLifecycleListener
             };
-            Fn_ARGS_std_os_raw_c_void_bool_bool_Vec_dash_spv_coinjoin_messages_pool_status_PoolStatus_RTRN_ mixing_lifecycle_listener = {
+            DMixingLifecycle mixing_lifecycle_listener = {
                 .caller = &mixingLifecycleListener
             };
-            Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Option_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry masternode_by_hash = {
+            DMasternodeByHash masternode_by_hash = {
                 .caller = &masternodeByHash
             };
             Fn_ARGS_std_os_raw_c_void_RTRN_usize valid_mns_count = {
                 .caller = &validMNCount
             };
-            Fn_ARGS_std_os_raw_c_void_bool_dash_spv_coinjoin_models_coin_control_CoinControl_dash_spv_coinjoin_wallet_ex_WalletEx_RTRN_Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin available_coins = {
+            DAvailableCoins available_coins = {
                 .caller = &availableCoins
             };
             WalletEx *wallet_ex = dash_spv_coinjoin_wallet_ex_WalletEx_new(AS_RUST(self), options, get_wallet_transaction, sign_transaction, is_mine_input, available_coins, select_coins, inputs_with_amount, fresh_coinjoin_address, commit_transaction, is_synced, is_masternode_or_disconnect_requested, disconnect_masternode, send_message, add_pending_masternode, start_manager_async, get_coinjoin_keys);
@@ -187,21 +191,21 @@
 
 - (BOOL)isFullyMixed:(DSUTXO)utxo {
     @synchronized (self) {
-        DOutPoint *outpoint = DOutPointCtor(dashcore_hash_types_Txid_ctor(u256_ctor_u(utxo.hash)), (uint32_t) utxo.n);
+        DOutPoint *outpoint = DOutPointFromUTXO(utxo);
         return dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_check_if_is_fully_mixed(self.clientManager, outpoint);
     }
 }
 
 - (void)processDSQueueFrom:(DSPeer *)peer message:(NSData *)message {
     @synchronized (self) {
-        SocketAddr *addr = dash_spv_masternode_processor_processing_socket_addr_v4_ctor(u128_ctor_u(peer.address), peer.port);
+        SocketAddr *addr = DSocketAddrFrom(u128_ctor_u(peer.address), peer.port);
         dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_process_ds_queue(self.clientManager, addr, slice_ctor(message));
     }
 }
 
 - (void)processMessageFrom:(DSPeer *)peer message:(NSData *)message type:(NSString *)type {
     @synchronized (self) {
-        SocketAddr *addr = dash_spv_masternode_processor_processing_socket_addr_v4_ctor(u128_ctor_u(peer.address), peer.port);
+        SocketAddr *addr = DSocketAddrFrom(u128_ctor_u(peer.address), peer.port);
         dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_process_raw_message(self.clientManager, addr, slice_ctor(message), DChar(type));
     }
 }
@@ -228,22 +232,11 @@
 + (DCoinJoinTransactionType *)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account {
     NSArray *amountsSent = [account amountsSentByTransaction:transaction];
     DTransaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
-    
-//    Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
     uint64_t *inputValues = malloc(amountsSent.count * sizeof(uint64_t));
-
     for (uintptr_t i = 0; i < amountsSent.count; i++) {
         inputValues[i] = [amountsSent[i] unsignedLongLongValue];
     }
-    
     return dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_from_tx(tx, Vec_u64_ctor(amountsSent.count, inputValues));
-    
-    
-//    DCoinJoinTransactionType type = get_coinjoin_tx_type(tx, inputValues, amountsSent.count);
-//    [DSTransaction ffi_free:tx];
-//    free(inputValues);
-//    
-//    return type;
 }
 
 - (void)unlockOutputs:(DSTransaction *)transaction {
@@ -295,27 +288,26 @@
 
 - (int32_t)getRealOutpointCoinJoinRounds:(DSUTXO)utxo {
     @synchronized (self) {
-        UInt256 hash = utxo.hash;
-        DOutPoint *outpoint = DOutPointCtor(DTxidCtor(u256_ctor_u(utxo.hash)), (uint32_t) utxo.n);
+        DOutPoint *outpoint = DOutPointFromUTXO(utxo);
         return dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_get_real_outpoint_coinjoin_rounds(_clientManager, outpoint, 0);
     }
 }
 
 - (NSArray<NSNumber *> *)getSessionStatuses {
     @synchronized (self) {
-        Vec_dash_spv_coinjoin_messages_pool_status_PoolStatus *statuses = dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_get_sessions_status(_clientManager);
+        DPoolStatuses *statuses = dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_get_sessions_status(_clientManager);
         NSMutableArray<NSNumber *> *statusArray = [NSMutableArray arrayWithCapacity:statuses->count];
         for (int i = 0; i < statuses->count; i++) {
-            [statusArray addObject:@(dash_spv_coinjoin_messages_pool_status_PoolStatus_value(statuses->values[i]))];
+            [statusArray addObject:@(DPoolStatusValue(statuses->values[i]))];
         }
-        Vec_dash_spv_coinjoin_messages_pool_status_PoolStatus_destroy(statuses);
+        DPoolStatusesDtor(statuses);
         return statusArray;
     }
 }
 
 - (BOOL)isLockedCoin:(DSUTXO)utxo {
     @synchronized (self) {
-        DOutPoint *outpoint = DOutPointCtor(DTxidCtor(u256_ctor_u(utxo.hash)), (uint32_t) utxo.n);
+        DOutPoint *outpoint = DOutPointFromUTXO(utxo);
         return dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_is_locked_coin(self.clientManager, outpoint);
     }
 }
@@ -371,13 +363,11 @@ DTransaction *getTransaction(const void *context, u256 *tx_hash) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *transaction = [wrapper.chain transactionForHash:txHash];
-        
-        if (transaction) {
-            return [transaction ffi_malloc:wrapper.chain.chainType];
-        }
+        if (transaction)
+            tx = [transaction ffi_malloc:wrapper.chain.chainType];
     }
     
-    return NULL;
+    return tx;
 }
 
 bool isMineInput(const void *context, DOutPoint *outpoint) {
@@ -392,14 +382,12 @@ bool isMineInput(const void *context, DOutPoint *outpoint) {
     return result;
 }
 
-Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin* availableCoins(
-                                                                          const void *context,
-                                                                          bool onlySafe,
-                                                                          dash_spv_coinjoin_models_coin_control_CoinControl *coinControl,
-                                                                          WalletEx *walletEx) {
-    Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin *gatheredOutputs;
-    
-//    Fn_ARGS_std_os_raw_c_void_bool_dash_spv_coinjoin_models_coin_control_CoinControl_dash_spv_coinjoin_wallet_ex_WalletEx_RTRN_Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin
+DInputCoins* availableCoins(
+                            const void *context,
+                            bool onlySafe,
+                            DCoinControl *coinControl,
+                            WalletEx *walletEx) {
+    DInputCoins *gatheredOutputs;
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DChainType *chainType = wrapper.chain.chainType;
@@ -413,17 +401,16 @@ Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin* availableCoins(
                                                            maximumCount:0];
         
         NSUInteger count = coins.count;
-        dash_spv_coinjoin_coin_selection_input_coin_InputCoin **values = malloc(count * sizeof(dash_spv_coinjoin_coin_selection_input_coin_InputCoin *));
+        DInputCoin **values = malloc(count * sizeof(DInputCoin *));
         for (NSUInteger i = 0; i < count; i++) {
             values[i] = [coins[i] ffi_malloc:chainType];
         }
-        gatheredOutputs = Vec_dash_spv_coinjoin_coin_selection_input_coin_InputCoin_ctor(count, values);
+        gatheredOutputs = DInputCoinsCtor(count, values);
     }
     
     return gatheredOutputs;
 }
 
-//Fn_ARGS_std_os_raw_c_void_bool_bool_bool_i32_RTRN_Vec_dash_spv_coinjoin_coin_selection_compact_tally_item_CompactTallyItem
 DCompactTallyItems* selectCoinsGroupedByAddresses(const void *context,
                                                   bool skipDenominated,
                                                   bool anonymizable,
@@ -448,56 +435,11 @@ DCompactTallyItems* selectCoinsGroupedByAddresses(const void *context,
     
 }
 
-//void destroyInputValue(InputValue *value) {
-//    if (value) {
-//        free(value);
-//    }
-//}
-//
-//void destroyTransaction(DTransaction *value) {
-//    if (value) {
-//        [DSTransaction ffi_free:value];
-//    }
-//}
-//
-//void destroySelectedCoins(SelectedCoins *selectedCoins) {
-//    if (!selectedCoins) {
-//        return;
-//    }
-//    
-//    if (selectedCoins->items) {
-//        for (int i = 0; i < selectedCoins->item_count; i++) {
-//            [DSCompactTallyItem ffi_free:selectedCoins->items[i]];
-//        }
-//        
-//        free(selectedCoins->items);
-//    }
-//    
-//    free(selectedCoins);
-//}
-//
-//void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
-//    if (!gatheredOutputs) {
-//        return;
-//    }
-//    
-//    if (gatheredOutputs->items) {
-//        for (int i = 0; i < gatheredOutputs->item_count; i++) {
-//            [DSInputCoin ffi_free:gatheredOutputs->items[i]];
-//        }
-//        
-//        free(gatheredOutputs->items);
-//    }
-//    
-//    free(gatheredOutputs);
-//}
-
 DTransaction* signTransaction(const void *context, DTransaction *transaction, bool anyoneCanPay) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
         BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx anyoneCanPay:anyoneCanPay];
-        
         if (isSigned) {
             return [tx ffi_malloc:wrapper.chain.chainType];
         }
@@ -521,8 +463,8 @@ char *freshCoinJoinAddress(const void *context, bool internal) {
 }
 
 bool commitTransaction(const void *context,
-                       Vec_dashcore_blockdata_transaction_txout_TxOut *items,
-                       dash_spv_coinjoin_models_coin_control_CoinControl *coin_control,
+                       DTxOutputs *items,
+                       DCoinControl *coin_control,
                        bool is_denominating,
                        u256 *client_session_id) {
     NSMutableArray *amounts = [NSMutableArray array];
@@ -583,14 +525,6 @@ DMasternodeEntry* masternodeByHash(const void *context, u256 *hash) {
     return masternode;
 }
 
-//void destroyMasternodeEntry(DMasternodeEntry *masternodeEntry) {
-//    if (!masternodeEntry) {
-//        return;
-//    }
-//    
-//    [DSSimplifiedMasternodeEntry ffi_free:masternodeEntry];
-//}
-//
 uintptr_t validMNCount(const void *context) {
     @synchronized (context) {
         return [AS_OBJC(context).manager validMNCount];
@@ -604,14 +538,6 @@ DMasternodeList* getMNList(const void *context) {
     }
 }
 
-//void destroyMNList(MasternodeList *masternodeList) { // TODO: check destroyMasternodeList
-//    if (!masternodeList) {
-//        return;
-//    }
-//    
-//    [DSMasternodeList ffi_free:masternodeList];
-//}
-//
 bool isBlockchainSynced(const void *context) {
     @synchronized (context) {
         return AS_OBJC(context).manager.isChainSynced;
@@ -619,8 +545,8 @@ bool isBlockchainSynced(const void *context) {
 }
 
 bool isMasternodeOrDisconnectRequested(const void *context, SocketAddr *addr) {
-    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(addr);
-    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(addr);
+    u128 *ip_address = DSocketAddrIp(addr);
+    uint16_t port = DSocketAddrPort(addr);
     UInt128 ipAddress = u128_cast(ip_address);
     u128_dtor(ip_address);
     // TODO: SocketAddr_destroy
@@ -630,8 +556,8 @@ bool isMasternodeOrDisconnectRequested(const void *context, SocketAddr *addr) {
 }
 
 bool disconnectMasternode(const void *context, SocketAddr *addr) {
-    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(addr);
-    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(addr);
+    u128 *ip_address = DSocketAddrIp(addr);
+    uint16_t port = DSocketAddrPort(addr);
     UInt128 ipAddress = u128_cast(ip_address);
     u128_dtor(ip_address);
     // TODO: SocketAddr_destroy
@@ -643,12 +569,12 @@ bool disconnectMasternode(const void *context, SocketAddr *addr) {
 bool sendMessage(const void *context, char *message_type, Vec_u8 *message, SocketAddr *addr, bool warn) {
     NSString *messageType = NSStringFromPtr(message_type);
     str_destroy(message_type);
-    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(addr);
-    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(addr);
+    u128 *ip_address = DSocketAddrIp(addr);
+    uint16_t port = DSocketAddrPort(addr);
     // TODO: SocketAddr_destroy
     UInt128 ipAddress = u128_cast(ip_address);
     NSData *data = NSDataFromPtr(message);
-    Vec_u8_destroy(message);
+    bytes_dtor(message);
     @synchronized (context) {
         return [AS_OBJC(context).manager sendMessageOfType:messageType message:data withPeerIP:ipAddress port:port warn:warn];
     }
@@ -691,16 +617,13 @@ void sessionLifecycleListener(const void *context,
                               DPoolMessage *message,
                               DPoolStatus *status,
                               SocketAddr *addr,
-//                              uint8_t (*ip_address)[16],
                               bool joined
                               ) {
-//    Fn_ARGS_std_os_raw_c_void_bool_i32_Arr_u8_32_u32_dash_spv_coinjoin_messages_pool_state_PoolState_dash_spv_coinjoin_messages_pool_message_PoolMessage_dash_spv_coinjoin_messages_pool_status_PoolStatus_Option_std_net_SocketAddr_bool_RTRN_
     @synchronized (context) {
         UInt256 clientSessionId = u256_cast(client_session_id);
-        u128 *ip = dash_spv_masternode_processor_processing_socket_addr_ip(addr);
+        u128 *ip = DSocketAddrIp(addr);
         UInt128 ipAddress = u128_cast(ip);
         u256_dtor(client_session_id);
-        
         if (is_complete) {
             [AS_OBJC(context).manager onSessionComplete:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message poolStatus:status ipAddress:ipAddress isJoined:joined];
         } else {
@@ -712,13 +635,13 @@ void sessionLifecycleListener(const void *context,
 void mixingLifecycleListener(const void *context,
                              bool is_complete,
                              bool is_interrupted,
-                             Vec_dash_spv_coinjoin_messages_pool_status_PoolStatus *pool_statuses) {
+                             DPoolStatuses *pool_statuses) {
     @synchronized (context) {
         NSMutableArray *statuses = [NSMutableArray array];
         for (uintptr_t i = 0; i < pool_statuses->count; i++) {
-            [statuses addObject:@(dash_spv_coinjoin_messages_pool_status_PoolStatus_value(pool_statuses->values[i]))];
+            [statuses addObject:@(DPoolStatusValue(pool_statuses->values[i]))];
         }
-        Vec_dash_spv_coinjoin_messages_pool_status_PoolStatus_destroy(pool_statuses);
+        DPoolStatusesDtor(pool_statuses);
         if (is_complete || is_interrupted) {
             [AS_OBJC(context).manager onMixingComplete:statuses isInterrupted:is_interrupted];
         } else {
@@ -734,21 +657,5 @@ Vec_String* getCoinJoinKeys(const void *context, bool used) {
         return [NSArray ffi_to_vec_of_string:addresses];
     }
 }
-
-//void destroyCoinJoinKeys(struct CoinJoinKeys *coinjoin_keys) {
-//    if (coinjoin_keys == NULL) {
-//        return;
-//    }
-//    
-//    for (uintptr_t i = 0; i < coinjoin_keys->item_count; i++) {
-//        if (coinjoin_keys->items[i] != NULL) {
-//            free(coinjoin_keys->items[i]->ptr);
-//            free(coinjoin_keys->items[i]);
-//        }
-//    }
-//    
-//    free(coinjoin_keys->items);
-//    free(coinjoin_keys);
-//}
 
 @end

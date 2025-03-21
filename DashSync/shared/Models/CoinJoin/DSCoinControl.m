@@ -19,10 +19,10 @@
 
 @implementation DSCoinControl
 
-- (instancetype)initWithFFICoinControl:(dash_spv_coinjoin_models_coin_control_CoinControl *)coinControl
+- (instancetype)initWithFFICoinControl:(DCoinControl *)coinControl
                              chainType:(DChainType *)chainType {
     if (!(self = [super init])) return nil;
-    self.coinType = dash_spv_coinjoin_models_coin_control_CoinType_index(coinControl->coin_type);
+    self.coinType = DCoinTypeIndex(coinControl->coin_type);
     self.minDepth = coinControl->min_depth;
     self.maxDepth = coinControl->max_depth;
     self.avoidAddressReuse = coinControl->avoid_address_reuse;
@@ -32,7 +32,7 @@
         self.destChange = [DSKeyManager NSStringFrom:DAddressWithScriptPubKeyData(coinControl->dest_change, chainType)];
     NSMutableOrderedSet *setSelected = [NSMutableOrderedSet orderedSetWithCapacity:coinControl->set_selected->count];
     for (int i = 0; i < coinControl->set_selected->count; i++) {
-        dashcore_blockdata_transaction_outpoint_OutPoint *outpoint = coinControl->set_selected->values[i];
+        DOutPoint *outpoint = coinControl->set_selected->values[i];
         [setSelected addObject:dsutxo_obj(((DSUTXO){u256_cast(dashcore_hash_types_Txid_inner(outpoint->txid)), outpoint->vout}))];
     }
     return self;

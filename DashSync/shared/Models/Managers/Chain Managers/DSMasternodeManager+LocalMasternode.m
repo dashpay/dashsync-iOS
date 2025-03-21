@@ -166,9 +166,9 @@ NSString const *localMasternodesDictionaryKey = @"localMasternodesDictionaryKey"
     uint32_t platformNodeIndex;
     DSWallet *platformNodeWallet = [chain walletHavingPlatformNodeAuthenticationHash:platformNodeID foundAtIndex:&platformNodeIndex];
 
-    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(entry->service_address);
+    u128 *ip_address = DSocketAddrIp(entry->service_address);
     UInt128 ipAddress = u128_cast(ip_address);
-    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(entry->service_address);
+    uint16_t port = DSocketAddrPort(entry->service_address);
     return votingWallet || operatorWallet
         ? [[DSLocalMasternode alloc] initWithIPAddress:ipAddress
                                                 onPort:port

@@ -191,8 +191,8 @@
     dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry *qualified_entry = self.masternodeList->masternodes->values[indexPath.row];
     
     dashcore_sml_masternode_list_entry_MasternodeListEntry *entry = qualified_entry->masternode_list_entry;
-    u128 *ip_address = dash_spv_masternode_processor_processing_socket_addr_ip(entry->service_address);
-    uint16_t port = dash_spv_masternode_processor_processing_socket_addr_port(entry->service_address);
+    u128 *ip_address = DSocketAddrIp(entry->service_address);
+    uint16_t port = DSocketAddrPort(entry->service_address);
     UInt128 ipAddress = u128_cast(ip_address);
 
     char s[INET6_ADDRSTRLEN];

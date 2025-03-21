@@ -158,7 +158,7 @@
     return result;
 }
 - (DMasternodeEntry *)masternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
-    SocketAddr *addr = dash_spv_masternode_processor_processing_socket_addr_v4_ctor(u128_ctor_u(IPAddress), port);
+    SocketAddr *addr = DSocketAddrFrom(u128_ctor_u(IPAddress), port);
     return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_at_location(self.processor, addr);
 }
 
@@ -584,7 +584,7 @@
                     case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_QuorumValidationError:
                         switch (result->error->quorum_validation_error->tag) {
                             case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockNotPresent: {
-//                                dashcore_hash_types_BlockHash *unknown_block_hash = result->error->quorum_validation_error->required_block_not_present;
+//                                DBlockHash *unknown_block_hash = result->error->quorum_validation_error->required_block_not_present;
                                 // TODO: it can be tip so we can wait for 300ms and try again
                                 if (attempt < 3) {
                                     sleep(10);

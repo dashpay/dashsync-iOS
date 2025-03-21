@@ -198,7 +198,7 @@
 }
 + (std_collections_BTreeSet_dashcore_hash_types_BlockHash *)ffi_to_block_hash_btree_set:(NSArray<NSData *> *)obj {
     NSUInteger count = obj.count;
-    dashcore_hash_types_BlockHash **values = malloc(sizeof(dashcore_hash_types_BlockHash *) * count);
+    DBlockHash **values = malloc(sizeof(DBlockHash *) * count);
     for (int i = 0; i < count; i++) {
         values[i] = dashcore_hash_types_BlockHash_ctor(u256_ctor(obj[i]));
     }

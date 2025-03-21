@@ -18,12 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) uint8_t version;
 @property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) dashcore_ephemerealdata_instant_lock_InstantLock *lock;
+@property (nonatomic, readonly) DInstantLock *lock;
 
-//@property (nonatomic, readonly) dashcore_hash_types_Txid *transactionHash;
-//@property (nonatomic, readonly) dashcore_bls_sig_utils_BLSSignature *signature;
-//@property (nonatomic, readonly) Vec_dashcore_blockdata_transaction_outpoint_OutPoint *inputOutpoints;
-//@property (nonatomic, readonly) dashcore_hash_types_CycleHash *cycleHash;
 @property (nonatomic, readonly) NSData *transactionHashData;
 @property (nonatomic, readonly) NSData *signatureData;
 @property (nonatomic, readonly) NSData *cycleHashData;

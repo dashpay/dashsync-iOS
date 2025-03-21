@@ -269,11 +269,11 @@ DMaybeCLSignature *get_cl_signature_by_block_hash_caller(const void *context, u2
     DSChainLock *chainLock = [core.chain.chainManager chainLockForBlockHash:blockHash];
     DSChainLock *chainLockRev = [core.chain.chainManager chainLockForBlockHash:blockHashRev];
     if (chainLock) {
-        dashcore_bls_sig_utils_BLSSignature *bls_sig = dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(chainLock.lock);
+        DBLSSignature *bls_sig = DChainLockSignature(chainLock.lock);
         DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = %@", uint256_hex(blockHash), u768_hex(bls_sig->_0));
         return DMaybeCLSignatureCtor(bls_sig, NULL);
     } else if (chainLockRev) {
-        dashcore_bls_sig_utils_BLSSignature *bls_sig = dashcore_ephemerealdata_chain_lock_ChainLock_get_signature(chainLockRev.lock);
+        DBLSSignature *bls_sig = DChainLockSignature(chainLockRev.lock);
         DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = %@", uint256_hex(blockHashRev), u768_hex(bls_sig->_0));
         return DMaybeCLSignatureCtor(bls_sig, NULL);
     } else {

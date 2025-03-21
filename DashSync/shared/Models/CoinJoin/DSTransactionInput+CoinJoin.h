@@ -29,9 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface NSArray (Vec_dashcore_blockdata_transaction_txin_TxIn)
-//+ (NSArray<DSTransactionInput *> *)ffi_from_tx_inputs:(Vec_dashcore_blockdata_transaction_txin_TxIn *)ffi_ref;
-+ (Vec_dashcore_blockdata_transaction_txin_TxIn *)ffi_to_tx_inputs:(NSArray<DSTransactionInput *> *)obj;
-+ (void)ffi_destroy_tx_inputs:(Vec_dashcore_blockdata_transaction_txin_TxIn *)ffi_ref;
++ (DTxInputs *)ffi_to_tx_inputs:(NSArray<DSTransactionInput *> *)obj;
++ (void)ffi_destroy_tx_inputs:(DTxInputs *)ffi_ref;
 @end
 
 

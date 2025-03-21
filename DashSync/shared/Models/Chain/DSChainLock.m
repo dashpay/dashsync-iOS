@@ -39,7 +39,7 @@
 
 @interface DSChainLock ()
 
-@property (nonatomic, assign) dashcore_ephemerealdata_chain_lock_ChainLock *lock;
+@property (nonatomic, assign) DChainLock *lock;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
@@ -50,7 +50,7 @@
 @implementation DSChainLock
 - (void)dealloc {
     if (_lock != NULL) {
-        dashcore_ephemerealdata_chain_lock_ChainLock_destroy(_lock);
+        DChainLockDtor(_lock);
         _lock = NULL;
     }
 }
@@ -85,9 +85,9 @@
     if (!(self = [self initOnChain:chain])) return nil;
     u256 *hash = blockHash ? u256_ctor(blockHash) : u256_ctor_u(UINT256_ZERO);
     u768 *sig = signature ? u768_ctor(signature) : u768_ctor_u(UINT768_ZERO);
-    dashcore_hash_types_BlockHash *block_hash = dashcore_hash_types_BlockHash_ctor(hash);
-    dashcore_bls_sig_utils_BLSSignature *bls_signature = dashcore_bls_sig_utils_BLSSignature_ctor(sig);
-    self.lock = dashcore_ephemerealdata_chain_lock_ChainLock_ctor(height, block_hash, bls_signature);
+    DBlockHash *block_hash = dashcore_hash_types_BlockHash_ctor(hash);
+    DBLSSignature *bls_signature = DBLSSignatureCtor(sig);
+    self.lock = DChainLockCtor(height, block_hash, bls_signature);
     self.signatureVerified = signatureVerified;
     self.quorumVerified = quorumVerified;
     self.saved = YES; //this is coming already from the persistant store and not from the network
@@ -173,7 +173,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<DSChainLock:%@:%u:%@>", self.chain.name, dashcore_ephemerealdata_chain_lock_ChainLock_get_block_height(self.lock), self.signatureVerified ? @"Verified" : @"Not Verified"];
+    return [NSString stringWithFormat:@"<DSChainLock:%@:%u:%@>", self.chain.name, DChainLockBlockHeight(self.lock), self.signatureVerified ? @"Verified" : @"Not Verified"];
 }
 
 

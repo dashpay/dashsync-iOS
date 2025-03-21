@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) DPContract *dpnsContract;
 //@property (readonly, strong, nonatomic) DPContract *dashThumbnailContract;
 @property (readonly, strong, nonatomic) NSMutableDictionary *knownContracts;
+- (DDataContract *)dashPayRawContract;
+- (DDataContract *)dpnsRawContract;
 
 @property (readonly, strong, nonatomic) DSChain *chain;
 

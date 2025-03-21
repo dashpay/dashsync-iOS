@@ -32,7 +32,7 @@
 
 - (IBAction)registerTLD:(id)sender {
     DSChain *chain = self.identity.wallet.chain;
-    DPContract *dpnsContract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
+    DDataContract *dpnsContract = [DSDashPlatform sharedInstanceForChain:chain].dpnsRawContract;
     DSIdentity *dpnsIdentity = [chain identityThatCreatedContract:dpnsContract withContractId:chain.dpnsContractID foundInWallet:nil];
     if (self.identity == dpnsIdentity) {
         [self.identity addUsername:self.topLevelDomainTextField.text inDomain:@"" save:YES];

@@ -66,7 +66,7 @@
     return [self identityForUniqueId:uniqueId foundInWallet:foundInWallet includeForeignIdentities:NO];
 }
 
-- (DSIdentity *_Nullable)identityThatCreatedContract:(DPContract *)contract
+- (DSIdentity *_Nullable)identityThatCreatedContract:(DDataContract *)contract
                                       withContractId:(UInt256)contractId
                                        foundInWallet:(DSWallet **)foundInWallet {
     NSAssert(uint256_is_not_zero(contractId), @"contractId must not be null");
