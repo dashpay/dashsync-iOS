@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (double)getMixingProgress;
 - (DSCoinControl *)selectCoinJoinUTXOs;
 - (uint64_t)getSmallestDenomination;
-- (void)hasCollateralInputsWithOnlyConfirmed:(BOOL)onlyConfirmed completion:(void (^)(BOOL balance))completion;
+//- (void)hasCollateralInputsWithOnlyConfirmed:(BOOL)onlyConfirmed completion:(void (^)(BOOL balance))completion;
 - (void)calculateAnonymizableBalanceWithSkipDenominated:(BOOL)skipDenominated skipUnconfirmed:(BOOL)skipUnconfirmed completion:(void (^)(uint64_t balance))completion;
 - (void)minimumAnonymizableBalanceWithCompletion:(void (^)(uint64_t balance))completion;
 - (void)updateOptionsWithAmount:(uint64_t)amount;

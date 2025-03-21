@@ -884,8 +884,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
 - (void)sortTransactions {
     @synchronized (self) {
-        BOOL (^isAscending)(id, id);
-        __block __weak BOOL (^_isAscending)(id, id) = isAscending = ^BOOL(DSTransaction *tx1, DSTransaction *tx2) {
+        __block BOOL (^isAscending)(id, id) = ^BOOL(DSTransaction *tx1, DSTransaction *tx2) {
             if (!tx1 || !tx2) return NO;
             if (tx1.blockHeight > tx2.blockHeight) return YES;
             if (tx1.blockHeight < tx2.blockHeight) return NO;
@@ -1090,6 +1089,27 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                              toOutputScripts:@[[NSData assetLockOutputScript]]
                                                      withFee:fee
                                                     sortType:DSTransactionSortType_BIP69];
+}
+- (nonnull DSTransaction *)transactionForAmounts:(nonnull NSArray *)amounts
+                                 toOutputScripts:(nonnull NSArray *)scripts
+                                         withFee:(BOOL)fee
+                                     coinControl:(nonnull DSCoinControl *)coinControl {
+    return [self transactionForAmounts:amounts
+                       toOutputScripts:scripts
+                               withFee:fee
+                   toShapeshiftAddress:nil
+                           coinControl:coinControl];
+
+}
+- (DSTransaction * _Nullable)transactionForAmounts:(nonnull NSArray *)amounts
+                                   toOutputScripts:(nonnull NSArray *)scripts
+                                           withFee:(BOOL)fee
+                               toShapeshiftAddress:(NSString * _Nullable)shapeshiftAddress {
+    return [self transactionForAmounts:amounts
+                       toOutputScripts:scripts
+                               withFee:fee
+                   toShapeshiftAddress:shapeshiftAddress
+                           coinControl:nil];
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
@@ -2088,5 +2108,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         completion(tx, feeAmount, nil);
     }];
 }
+
+
 
 @end

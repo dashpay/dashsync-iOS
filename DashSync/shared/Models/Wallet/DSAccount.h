@@ -27,7 +27,6 @@
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransaction.h"
-//#import "DSCoinControl.h"
 #import "NSData+Dash.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
@@ -159,13 +158,17 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
                                   toOutputScripts:(NSArray *)scripts
                                           withFee:(BOOL)fee;
 
-- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee coinControl:(DSCoinControl *)coinControl;
+- (DSTransaction *)transactionForAmounts:(NSArray *)amounts
+                         toOutputScripts:(NSArray *)scripts
+                                 withFee:(BOOL)fee
+                             coinControl:(DSCoinControl *)coinControl;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *_Nullable)transactionForAmounts:(NSArray *)amounts
                                   toOutputScripts:(NSArray *)scripts
                                           withFee:(BOOL)fee
                               toShapeshiftAddress:(NSString *_Nullable)shapeshiftAddress;
+
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction
                           forAmounts:(NSArray *)amounts
                      toOutputScripts:(NSArray *)scripts

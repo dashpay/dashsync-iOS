@@ -673,7 +673,7 @@
 
         BOOL usingBiometricAuthentication = amount ? [[DSAuthenticationManager sharedInstance] canUseBiometricAuthenticationForAmount:amount] : NO;
 
-        __weak typeof(self) weakSelf = self;
+//        __weak typeof(self) weakSelf = self;
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt
                                             usingBiometricAuthentication:usingBiometricAuthentication
                                                           alertIfLockout:YES
