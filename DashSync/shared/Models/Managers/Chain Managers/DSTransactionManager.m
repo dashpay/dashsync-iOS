@@ -1306,7 +1306,6 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     }
 
     BOOL isNewIdentity = FALSE;
-//    DSIdentity *identity = nil;
 
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
@@ -1318,26 +1317,6 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         if (registered) {
             if ([transaction isKindOfClass:[DSAssetLockTransaction class]]) {
                 isNewIdentity = registered;
-//                DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
-//                NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: Registered AssetLockTX: creditBurnPublicKeyHash: %@, txHash: %@", self.logPrefix, uint160_hex(assetLockTransaction.creditBurnPublicKeyHash), uint256_hex(assetLockTransaction.txHash)];
-//                uint32_t index;
-//                DSWallet *wallet = [self.chain walletHavingIdentityAssetLockRegistrationHash:assetLockTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
-//                if (wallet) {
-//                    identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
-//                    [debugString appendFormat:@" (Found wallet: %@, identity: %@)", wallet.uniqueIDString, identity];
-//                }
-//                if (!identity) {
-//                    [self.chain triggerUpdatesForLocalReferences:assetLockTransaction];
-//                    if (wallet) {
-//                        identity = [wallet identityForUniqueId:assetLockTransaction.creditBurnIdentityIdentifier];
-//                        [debugString appendFormat:@" (Found wallet after trigger updates: %@, identity: %@)", wallet.uniqueIDString, identity];
-//                        if (identity) isNewIdentity = TRUE;
-//                    }
-//                } else if (identity && !identity.registrationAssetLockTransaction) {
-//                    [debugString appendFormat:@" (identity: %@ is known but has no asset lock tx)", identity];
-//                    identity.registrationAssetLockTransactionHash = assetLockTransaction.txHash;
-//                }
-//                DSLog(@"%@:", debugString);
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
             }
