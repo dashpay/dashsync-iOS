@@ -995,24 +995,31 @@ static dispatch_once_t managerChainToken = 0;
 - (void)onSessionStarted:(int32_t)baseId
          clientSessionId:(UInt256)clientId
             denomination:(uint32_t)denom
-               poolState:(DPoolState *)state
-             poolMessage:(DPoolMessage *)message
-              poolStatus:(DPoolStatus *)status
+               poolState:(DPoolState)state
+             poolMessage:(DPoolMessage)message
+              poolStatus:(DPoolStatus)status
                ipAddress:(UInt128)address
                 isJoined:(BOOL)joined {
-    DSLog(@"[%@] CoinJoin: onSessionStarted: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, DPoolStateValue(state), DPoolMessageValue(message), [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
-    [self.managerDelegate sessionStartedWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
+    DSLog(@"[%@] CoinJoin: onSessionStarted: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
+    [self.managerDelegate sessionStartedWithId:baseId
+                               clientSessionId:clientId
+                                  denomination:denom
+                                     poolState:state
+                                   poolMessage:message
+                                    poolStatus:status
+                                     ipAddress:address
+                                      isJoined:joined];
 }
 
 - (void)onSessionComplete:(int32_t)baseId
           clientSessionId:(UInt256)clientId
              denomination:(uint32_t)denom
-                poolState:(DPoolState *)state
-              poolMessage:(DPoolMessage *)message
-               poolStatus:(DPoolStatus *)status
+                poolState:(DPoolState)state
+              poolMessage:(DPoolMessage)message
+               poolStatus:(DPoolStatus)status
                 ipAddress:(UInt128)address
                  isJoined:(BOOL)joined {
-    DSLog(@"[%@] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, status: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, DPoolStateValue(state), DPoolStatusValue(status), DPoolMessageValue(message), [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
+    DSLog(@"[%@] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, status: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, status, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
     [self.managerDelegate sessionCompleteWithId:baseId
                                 clientSessionId:clientId
                                    denomination:denom

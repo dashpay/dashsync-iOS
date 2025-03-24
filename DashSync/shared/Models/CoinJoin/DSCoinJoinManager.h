@@ -34,17 +34,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sessionStartedWithId:(int32_t)baseId
              clientSessionId:(UInt256)clientId
                 denomination:(uint32_t)denom
-                   poolState:(DPoolState *)state
-                 poolMessage:(DPoolMessage *)message
-                  poolStatus:(DPoolStatus *)status
+                   poolState:(DPoolState)state
+                 poolMessage:(DPoolMessage)message
+                  poolStatus:(DPoolStatus)status
                    ipAddress:(UInt128)address
                     isJoined:(BOOL)joined;
 - (void)sessionCompleteWithId:(int32_t)baseId
               clientSessionId:(UInt256)clientId
                  denomination:(uint32_t)denom
-                    poolState:(DPoolState *)state
-                  poolMessage:(DPoolMessage *)message
-                   poolStatus:(DPoolStatus *)status
+                    poolState:(DPoolState)state
+                  poolMessage:(DPoolMessage)message
+                   poolStatus:(DPoolStatus)status
                     ipAddress:(UInt128)address
                      isJoined:(BOOL)joined;
 - (void)mixingStarted;
@@ -116,17 +116,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onSessionComplete:(int32_t)baseId
           clientSessionId:(UInt256)clientId
              denomination:(uint32_t)denom
-                poolState:(DPoolState *)state
-              poolMessage:(DPoolMessage *)message
-               poolStatus:(DPoolStatus *)status
+                poolState:(DPoolState)state
+              poolMessage:(DPoolMessage)message
+               poolStatus:(DPoolStatus)status
                 ipAddress:(UInt128)address
                  isJoined:(BOOL)joined;
 - (void)onSessionStarted:(int32_t)baseId
          clientSessionId:(UInt256)clientId
             denomination:(uint32_t)denom
-               poolState:(DPoolState *)state
-             poolMessage:(DPoolMessage *)message
-              poolStatus:(DPoolStatus *)status
+               poolState:(DPoolState)state
+             poolMessage:(DPoolMessage)message
+              poolStatus:(DPoolStatus)status
                ipAddress:(UInt128)address
                 isJoined:(BOOL)joined;
 - (void)onMixingStarted:(nonnull NSArray *)statuses;

@@ -579,6 +579,7 @@
 #define DTxOutDtor(ptr) dashcore_blockdata_transaction_txout_TxOut_destroy(ptr)
 #define DTxOutputs Vec_dashcore_blockdata_transaction_txout_TxOut
 #define DTxOutputsCtor(count, values) Vec_dashcore_blockdata_transaction_txout_TxOut_ctor(count, values)
+#define DTxOutputsDtor(ptr) Vec_dashcore_blockdata_transaction_txout_TxOut_destroy(ptr)
 
 #define DTxid dashcore_hash_types_Txid
 #define DTxidCtor(data) dashcore_hash_types_Txid_ctor(data)

@@ -338,7 +338,9 @@ int64_t getInputValueByPrevoutHash(const void *context, u256 *tx_hash, uint32_t 
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSWallet *wallet = [wrapper.chain.wallets firstObject];
-        return [wallet inputValue:u256_cast(tx_hash) inputIndex:index];
+        UInt256 txHash = u256_cast(tx_hash);
+        u256_dtor(tx_hash);
+        return [wallet inputValue:txHash inputIndex:index];
     }
 }
 
@@ -374,7 +376,7 @@ bool isMineInput(const void *context, DOutPoint *outpoint) {
     UInt256 txHash = u256_cast(dashcore_hash_types_Txid_inner(outpoint->txid));
     uint32_t index = outpoint->vout;
     BOOL result = NO;
-    
+    DOutPointDtor(outpoint);
     @synchronized (context) {
         result = [AS_OBJC(context).manager isMineInput:txHash index:index];
     }
@@ -382,11 +384,7 @@ bool isMineInput(const void *context, DOutPoint *outpoint) {
     return result;
 }
 
-DInputCoins* availableCoins(
-                            const void *context,
-                            bool onlySafe,
-                            DCoinControl *coinControl,
-                            WalletEx *walletEx) {
+DInputCoins* availableCoins(const void *context, bool onlySafe, DCoinControl *coinControl, WalletEx *walletEx) {
     DInputCoins *gatheredOutputs;
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
@@ -399,7 +397,7 @@ DInputCoins* availableCoins(
                                                           maximumAmount:MAX_MONEY
                                                        minimumSumAmount:MAX_MONEY
                                                            maximumCount:0];
-        
+        DCoinControlDtor(coinControl);
         NSUInteger count = coins.count;
         DInputCoin **values = malloc(count * sizeof(DInputCoin *));
         for (NSUInteger i = 0; i < count; i++) {
@@ -439,6 +437,7 @@ DTransaction* signTransaction(const void *context, DTransaction *transaction, bo
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
+        DTransactionDtor(transaction);
         BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx anyoneCanPay:anyoneCanPay];
         if (isSigned) {
             return [tx ffi_malloc:wrapper.chain.chainType];
@@ -475,12 +474,13 @@ bool commitTransaction(const void *context,
         NSData *script = NSDataFromPtr(recipient->script_pubkey->_0);
         [scripts addObject:script];
     }
-    
+    DTxOutputsDtor(items);
     bool result = false;
     
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coin_control chainType:wrapper.chain.chainType];
+        DCoinControlDtor(coin_control);
         result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts coinControl:cc onPublished:^(UInt256 txId, NSError * _Nullable error) {
             @synchronized (context) {
                 if (error) {
@@ -493,11 +493,8 @@ bool commitTransaction(const void *context,
                     #endif
                     bool isFinished = dash_spv_coinjoin_coinjoin_client_manager_CoinJoinClientManager_finish_automatic_denominating(wrapper.clientManager, client_session_id);
                     
-                    if (!isFinished) {
+                    if (!isFinished)
                         DSLog(@"[%@] CoinJoin: auto_denom not finished", wrapper.chain.name);
-                    }
-                    
-//                    processor_destroy_block_hash(client_session_id);
                     [wrapper.manager onTransactionProcessed:txId type:dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_CreateDenomination_ctor()];
                 } else {
                     #if DEBUG
@@ -507,6 +504,7 @@ bool commitTransaction(const void *context,
                     #endif
                     [wrapper.manager onTransactionProcessed:txId type:dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MakeCollateralInputs_ctor()];
                 }
+                u256_dtor(client_session_id);
             }
         }];
     }
@@ -517,7 +515,7 @@ bool commitTransaction(const void *context,
 DMasternodeEntry* masternodeByHash(const void *context, u256 *hash) {
     UInt256 mnHash = u256_cast(hash);
     DMasternodeEntry *masternode;
-    
+    u256_dtor(hash);
     @synchronized (context) {
         masternode = [AS_OBJC(context).manager masternodeEntryByHash:mnHash];
     }
@@ -549,7 +547,7 @@ bool isMasternodeOrDisconnectRequested(const void *context, SocketAddr *addr) {
     uint16_t port = DSocketAddrPort(addr);
     UInt128 ipAddress = u128_cast(ip_address);
     u128_dtor(ip_address);
-    // TODO: SocketAddr_destroy
+    SocketAddr_destroy(addr);
     @synchronized (context) {
         return [AS_OBJC(context).manager isMasternodeOrDisconnectRequested:ipAddress port:port];
     }
@@ -560,8 +558,8 @@ bool disconnectMasternode(const void *context, SocketAddr *addr) {
     uint16_t port = DSocketAddrPort(addr);
     UInt128 ipAddress = u128_cast(ip_address);
     u128_dtor(ip_address);
-    // TODO: SocketAddr_destroy
-    
+    SocketAddr_destroy(addr);
+
     @synchronized (context) {
         return [AS_OBJC(context).manager disconnectMasternode:ipAddress port:port];
     }
@@ -571,8 +569,8 @@ bool sendMessage(const void *context, char *message_type, Vec_u8 *message, Socke
     str_destroy(message_type);
     u128 *ip_address = DSocketAddrIp(addr);
     uint16_t port = DSocketAddrPort(addr);
-    // TODO: SocketAddr_destroy
     UInt128 ipAddress = u128_cast(ip_address);
+    SocketAddr_destroy(addr);
     NSData *data = NSDataFromPtr(message);
     bytes_dtor(message);
     @synchronized (context) {
@@ -624,10 +622,32 @@ void sessionLifecycleListener(const void *context,
         u128 *ip = DSocketAddrIp(addr);
         UInt128 ipAddress = u128_cast(ip);
         u256_dtor(client_session_id);
+        DPoolState state_index = DPoolStateValue(state);
+        DPoolMessage message_index = DPoolMessageValue(message);
+        DPoolStatus status_index = DPoolStatusValue(status);
+        DPoolStateDtor(state);
+        DPoolMessageDtor(message);
+        DPoolStatusDtor(status);
+        SocketAddr_destroy(addr);
+
         if (is_complete) {
-            [AS_OBJC(context).manager onSessionComplete:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message poolStatus:status ipAddress:ipAddress isJoined:joined];
+            [AS_OBJC(context).manager onSessionComplete:base_session_id
+                                        clientSessionId:clientSessionId
+                                           denomination:denomination
+                                              poolState:state_index
+                                            poolMessage:message_index
+                                             poolStatus:status_index
+                                              ipAddress:ipAddress
+                                               isJoined:joined];
         } else {
-            [AS_OBJC(context).manager onSessionStarted:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message poolStatus:status ipAddress:ipAddress isJoined:joined];
+            [AS_OBJC(context).manager onSessionStarted:base_session_id
+                                       clientSessionId:clientSessionId
+                                          denomination:denomination
+                                             poolState:state_index
+                                           poolMessage:message_index
+                                            poolStatus:status_index
+                                             ipAddress:ipAddress
+                                              isJoined:joined];
         }
     }
 }
