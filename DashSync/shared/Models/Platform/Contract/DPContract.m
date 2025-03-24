@@ -147,7 +147,8 @@ NS_ASSUME_NONNULL_BEGIN
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
     NSMutableData *entropyData = [serializedHash mutableCopy];
     [entropyData appendUInt256:identity.uniqueID];
-    [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    [entropyData appendData:[derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:UINT32_MAX - 1]]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+
     self.entropy = [entropyData SHA256];
 }
 

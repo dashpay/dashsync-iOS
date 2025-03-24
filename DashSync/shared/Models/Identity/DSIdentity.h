@@ -122,11 +122,11 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 
 @interface DSIdentity : NSObject
 
-/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO (as of dpp v10). Returned as a 256 bit number */
+/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the asset lock transaction credit burn UTXO (as of dpp v10). Returned as a 256 bit number */
 @property (nonatomic, readonly) UInt256 uniqueID;
-/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO (as of dpp v10). Returned as a base 58 string of a 256 bit number */
+/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the asset lock transaction credit burn UTXO (as of dpp v10). Returned as a base 58 string of a 256 bit number */
 @property (nonatomic, readonly) NSString *uniqueIdString;
-/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO (as of dpp v10). Returned as a NSData of a 256 bit number */
+/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the asset lock transaction credit burn UTXO (as of dpp v10). Returned as a NSData of a 256 bit number */
 @property (nonatomic, readonly) NSData *uniqueIDData;
 /*! @brief This is the outpoint of the registration credit funding transaction. It is used to determine the unique ID by double SHA256 its value. Returned as a UTXO { .hash , .n } */
 @property (nonatomic, readonly) DSUTXO lockedOutpoint;
@@ -143,7 +143,6 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 /*! @brief This is TRUE only if the blockchain identity is contained within a wallet. It could be in a cleanup phase where it was removed from the wallet but still being help in memory by callbacks. */
 @property (nonatomic, readonly) BOOL isActive;
 /*! @brief This references transient Dashpay user info if on a transient blockchain identity. */
-//@property (nonatomic, readonly, nullable) DMaybeTransientUser *transientDashpayUser;
 @property (nonatomic, readonly) DSTransientDashpayUser *transientDashpayUser;
 /*! @brief This is the bitwise steps that the identity has already performed in registration. */
 @property (nonatomic, readonly) DSIdentityRegistrationStep stepsCompleted;

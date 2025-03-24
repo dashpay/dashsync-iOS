@@ -91,7 +91,7 @@
                     if (!seed) {
                         [self raiseIssue:@"Error" message:cancelled ? @"Transaction was cancelled." : @"Transaction was not signed."];
                     } else {
-                        DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndex:(uint32_t)index fromSeed:seed];
+                        DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
                         BOOL signedSuccessfully = [reclaimTransaction signWithPrivateKeys:@[[NSValue valueWithPointer:key]]];
                         if (signedSuccessfully) {
                             [self.localMasternode.providerRegistrationTransaction.chain.chainManager.transactionManager publishTransaction:reclaimTransaction

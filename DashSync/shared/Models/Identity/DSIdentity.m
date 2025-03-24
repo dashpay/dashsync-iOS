@@ -1039,13 +1039,6 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     return [derivationPath privateKeyAtIndexPath:[indexPath hardenAllItems]];
 }
 
-//- (DMaybeOpaqueKey *)privateKeyAtIndex:(uint32_t)index ofType:(DKeyKind *)type forSeed:(NSData *)seed {
-//    if (!_isLocal) return nil;
-//    NSIndexPath *indexPath = [self indexPathForIndex:index];
-//    DSAuthenticationKeysDerivationPath *derivationPath = [self derivationPathForType:type];
-//    return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
-//}
-
 - (DMaybeOpaqueKey *_Nullable)publicKeyAtIndex:(uint32_t)index ofType:(DKeyKind *)type {
     if (!_isLocal) return nil;
     NSIndexPath *hardenedIndexPath = [self indexPathForIndex:index];
@@ -1119,14 +1112,6 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                                                             andPurpose:(DPurpose *)purpose {
     return dash_spv_platform_identity_model_IdentityModel_first_identity_public_key(self.identity_model, security_level, purpose);
 }
-
-//- (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type
-//                       atIndex:(uint32_t)index {
-//    if (!_isLocal) return nil;
-//    NSIndexPath *hardenedIndexPath = [self indexPathForIndex:index];
-//    DSAuthenticationKeysDerivationPath *derivationPath = [self derivationPathForType:type];
-//    return [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
-//}
 
 - (void)addKey:(DOpaqueKey *)key
  securityLevel:(DSecurityLevel *)security_level
@@ -1250,10 +1235,10 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     if (self.registrationAssetLockTransaction) {
         return [DSKeyManager addressFromHash160:self.registrationAssetLockTransaction.creditBurnPublicKeyHash forChain:self.chain];
     } else {
-        DSAssetLockDerivationPath *derivationPathRegistrationFunding = self.isOutgoingInvitation
+        DSAssetLockDerivationPath *path = self.isOutgoingInvitation
             ? [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:self.wallet]
             : [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:self.wallet];
-        return [derivationPathRegistrationFunding addressAtIndex:self.index];
+        return [path addressAtIndexPath:[NSIndexPath indexPathWithIndex:self.index]];
     }
 }
 
@@ -1511,7 +1496,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: CREATE AND PUBLISH IDENTITY TOPUP TRANSITION", self.logPrefix];
     DSLog(@"%@", debugInfo);
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityTopupFundingDerivationPathForWallet:self.wallet];
-    NSString *topupAddress = [path addressAtIndex:self.index];
+    NSString *topupAddress = [path addressAtIndexPath:[NSIndexPath indexPathWithIndex:self.index]];
     DSAssetLockTransaction *assetLockTransaction = [fundingAccount assetLockTransactionFor:amount to:topupAddress withFee:YES];
     if (!assetLockTransaction) {
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, ERROR_FUNDING_TX_CREATION); });
@@ -2077,7 +2062,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
     NSMutableData *entropyData = [serializedHash mutableCopy];
     [entropyData appendUInt256:self.uniqueID];
-    [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    [entropyData appendData:[derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:UINT32_MAX - 1]]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     [mData appendData:uint256_data([entropyData SHA256])];
     return [mData SHA256_2]; //this is the contract ID
 }

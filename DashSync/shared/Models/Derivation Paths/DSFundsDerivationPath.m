@@ -127,8 +127,8 @@
         [self loadAddressesInContext:self.managedObjectContext];
         self.addressesLoaded = TRUE;
         uintptr_t gapLimit = self.shouldUseReducedGapLimit ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : (self.type == DSDerivationPathType_AnonymousFunds ? SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN : SEQUENCE_GAP_LIMIT_INITIAL);
-        [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:gapLimit internal:YES] error:nil];
-        [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:gapLimit internal:NO] error:nil];
+        [self registerAddressesWithSettings:[DSGapLimitFunds internal:gapLimit]];
+        [self registerAddressesWithSettings:[DSGapLimitFunds external:gapLimit]];
     }
 }
 
@@ -139,9 +139,9 @@
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
             DSGapLimit *gapLimit = [self.allChangeAddresses containsObject:address]
-                ? [DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES]
-                : [DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-            [self registerAddressesWithSettings:gapLimit error:nil];
+                ? [DSGapLimitFunds internal:SEQUENCE_GAP_LIMIT_INTERNAL]
+                : [DSGapLimitFunds external:SEQUENCE_GAP_LIMIT_EXTERNAL];
+            [self registerAddressesWithSettings:gapLimit];
         }
         return TRUE;
     }
@@ -153,11 +153,10 @@
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
 - (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
-                                 inContext:(NSManagedObjectContext *)context
-                                     error:(NSError **)error {
-    DSGapLimitInternal *gapLimitSettings = (DSGapLimitInternal *)settings;
+                                 inContext:(NSManagedObjectContext *)context {
+    DSGapLimitFunds *gapLimitSettings = (DSGapLimitFunds *)settings;
     uintptr_t gapLimit = gapLimitSettings.gapLimit;
-    BOOL internal = gapLimitSettings.internal;
+    BOOL internal = (gapLimitSettings.direction & DSGapLimitFundsDirection_Internal) == DSGapLimitFundsDirection_Internal;
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
@@ -195,12 +194,11 @@
         NSMutableDictionary *addAddresses = [NSMutableDictionary dictionary];
 
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
+            NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:(const NSUInteger[]){(internal ? 1 : 0), n} length:2];
+            NSData *pubKey = [self publicKeyDataAtIndexPath:indexPath];
             NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
             if (!addr) {
                 DSLog(@"[%@] error generating keys", self.account.wallet.chain.name);
-                if (error)
-                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 return nil;
             }
 
@@ -222,42 +220,35 @@
 - (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange {
     NSMutableArray *addresses = [NSMutableArray array];
     for (NSUInteger i = exportInternalRange.location; i < exportInternalRange.length + exportInternalRange.location; i++) {
-        NSString *addr = [self addressAtIndex:(uint32_t)i internal:YES];
+        NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:(const NSUInteger[]){1, i} length:2]];
+        NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
         [addresses addObject:addr];
     }
 
     for (NSUInteger i = exportExternalRange.location; i < exportExternalRange.location + exportExternalRange.length; i++) {
-        NSString *addr = [self addressAtIndex:(uint32_t)i internal:NO];
+        NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:(const NSUInteger[]){0, i} length:2]];
+        NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
         [addresses addObject:addr];
     }
 
     return [addresses copy];
 }
 
-// gets an address at an index path
-- (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal {
-    NSData *pubKey = [self publicKeyDataAtIndex:index internal:internal];
-    NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
-    return addr;
-}
-
 // returns the first unused external address
 - (NSString *)receiveAddress {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:1 internal:NO] error:nil].lastObject;
-    return (addr) ? addr : self.allReceiveAddresses.lastObject;
+    return [self registerAddressesWithSettings:[DSGapLimitFunds externalSingle]].lastObject ?: self.allReceiveAddresses.lastObject;
 }
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:offset + 1 internal:NO] error:nil].lastObject;
-    return (addr) ? addr : self.allReceiveAddresses.lastObject;
+    return [self registerAddressesWithSettings:[DSGapLimitFunds external:offset + 1]].lastObject ?: self.allReceiveAddresses.lastObject;
 }
 
 // returns the first unused internal address
 - (NSString *)changeAddress {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return [self registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:1 internal:YES] error:nil].lastObject;
+    return [self registerAddressesWithSettings:[DSGapLimitFunds internalSingle]].lastObject;
 }
 
 // all previously generated external addresses
@@ -290,11 +281,6 @@
     NSMutableSet *intersection = [NSMutableSet setWithArray:self.allChangeAddresses];
     [intersection intersectSet:self.mUsedAddresses];
     return [intersection allObjects];
-}
-
-- (NSData *)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal {
-    NSUInteger indexes[] = {(internal ? 1 : 0), n};
-    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
 }
 
 - (NSIndexPath *)indexPathForKnownAddress:(NSString *)address {

@@ -96,15 +96,6 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
                                            forChain:(DSChain *)chain
                                     storeSeedPhrase:(BOOL)storeSeedPhrase
                                         isTransient:(BOOL)isTransient;
-+ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain
-                                                  storeSeedPhrase:(BOOL)store
-                                                      isTransient:(BOOL)isTransient;
-+ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language
-                                                           forChain:(DSChain *)chain
-                                                    storeSeedPhrase:(BOOL)store
-                                                        isTransient:(BOOL)isTransient;
-+ (DSWallet *_Nullable)transientWalletWithDerivedKeyData:(NSData *)derivedData
-                                                forChain:(DSChain *)chain;
 
 - (instancetype)initWithUniqueID:(NSString *_Nonnull)uniqueID
                         forChain:(DSChain *_Nonnull)chain;
@@ -154,12 +145,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
 - (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
-                     unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit
-                           dashpayGapLimit:(NSUInteger)dashpayGapLimit
-                          coinJoinGapLimit:(NSUInteger)coinJoinGapLimit
-                                  internal:(BOOL)internal
-                                     error:(NSError *_Nullable *_Nullable)error;
+- (NSArray<NSString *> *)allAddresses;
+- (NSArray *_Nullable)registerAddressesWithInitialGapLimit;
+- (NSArray *_Nullable)registerAddressesWithProlongGapLimit;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
@@ -237,10 +225,10 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)registerPlatformNode:(DSLocalMasternode *)masternode
                      withKey:(DOpaqueKey *)key; //will use defined key
 
-- (BOOL)containsProviderVotingAuthenticationHash:(UInt160)hash;
-- (BOOL)containsProviderOwningAuthenticationHash:(UInt160)hash;
-- (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
-- (BOOL)containsIdentityBLSAuthenticationHash:(UInt160)hash;
+//- (BOOL)containsProviderVotingAuthenticationHash:(UInt160)hash;
+//- (BOOL)containsProviderOwningAuthenticationHash:(UInt160)hash;
+//- (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+//- (BOOL)containsIdentityBLSAuthenticationHash:(UInt160)hash;
 - (BOOL)containsHoldingAddress:(NSString *)holdingAddress;
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)hash;

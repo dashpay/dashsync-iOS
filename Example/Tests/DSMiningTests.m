@@ -24,6 +24,7 @@
 #import "DSChainManager+Mining.h"
 #import "DSFullBlock.h"
 #import "DSWallet.h"
+#import "DSWallet+Tests.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSString+Dash.h"

@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSMasternodeHoldingsDerivationPath : DSSimpleIndexedDerivationPath
 
 + (instancetype)providerFundsDerivationPathForWallet:(DSWallet *)wallet;
-//- (NSString *)receiveAddress;
 
 @end
 

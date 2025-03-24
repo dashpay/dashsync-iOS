@@ -28,6 +28,7 @@
 #import "DSMerkleBlock.h"
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSWallet+Protected.h"
+#import "DSWallet+Tests.h"
 #import "DashSync.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"

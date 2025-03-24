@@ -166,7 +166,7 @@
         }];
 
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithSettings:[DSGapLimit initWithLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL] inContext:context error:nil];
+        [self registerAddressesWithSettings:[DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL] inContext:context];
     }
 }
 
@@ -180,7 +180,7 @@
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
-            [self registerAddressesWithSettings:[DSGapLimit initWithLimit:SEQUENCE_GAP_LIMIT_EXTERNAL] error:nil];
+            [self registerAddressesWithSettings:[DSGapLimit withLimit:SEQUENCE_GAP_LIMIT_EXTERNAL]];
         }
         return TRUE;
     }
@@ -201,8 +201,7 @@
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
 - (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
-                                 inContext:(NSManagedObjectContext *)context
-                                     error:(NSError **)error {
+                                 inContext:(NSManagedObjectContext *)context {
     uintptr_t gapLimit = settings.gapLimit;
     NSAssert(self.account, @"Account must be set");
     if (!self.account.wallet.isTransient) {
@@ -244,12 +243,10 @@
 
         NSUInteger upperLimit = gapLimit;
         while (a.count < upperLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self publicKeyDataAtIndex:n];
+            NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:(const NSUInteger[]){n} length:1]];
             NSString *address = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
             if (!address) {
                 DSLog(@"[%@] error generating keys", self.chain.name);
-                if (error)
-                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 return nil;
             }
 
@@ -285,10 +282,8 @@
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset inContext:(NSManagedObjectContext *)context {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithSettings:[DSGapLimit initWithLimit:offset + 1] inContext:context error:nil].lastObject;
-//    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 inContext:context error:nil].lastObject;
-    
-    return (addr) ? addr : self.allReceiveAddresses.lastObject;
+    NSString *addr = [self registerAddressesWithSettings:[DSGapLimit withLimit:offset + 1] inContext:context].lastObject;
+    return addr ?: self.allReceiveAddresses.lastObject;
 }
 
 // all previously generated external addresses
@@ -300,11 +295,6 @@
     NSMutableSet *intersection = [NSMutableSet setWithArray:self.allReceiveAddresses];
     [intersection intersectSet:self.mUsedAddresses];
     return [intersection allObjects];
-}
-
-- (NSData *)publicKeyDataAtIndex:(uint32_t)n {
-    NSUInteger indexes[] = {n};
-    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:1]];
 }
 
 - (NSIndexPath *)indexPathForKnownAddress:(NSString *)address {

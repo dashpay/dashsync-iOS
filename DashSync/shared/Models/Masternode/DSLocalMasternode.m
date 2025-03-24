@@ -456,10 +456,10 @@
         // based on protocol_version?
         DMaybeOpaqueKey *platformNodeKey;
         if (self.platformNodeWalletIndex == UINT32_MAX) {
-            self.platformNodeWalletIndex = (uint32_t)[platformNodeKeysDerivationPath firstUnusedIndex];
+            self.platformNodeWalletIndex = [platformNodeKeysDerivationPath firstUnusedIndex];
             platformNodeKey = [platformNodeKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         } else {
-            platformNodeKey = [platformNodeKeysDerivationPath privateKeyAtIndex:self.platformNodeWalletIndex fromSeed:seed];
+            platformNodeKey = [platformNodeKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.platformNodeWalletIndex] fromSeed:seed];
         }
         
         UInt256 platformNodeHash = [DSKeyManager publicKeyData:platformNodeKey->ok].SHA256;
@@ -467,10 +467,10 @@
 
         DMaybeOpaqueKey *ownerKey;
         if (self.ownerWalletIndex == UINT32_MAX) {
-            self.ownerWalletIndex = (uint32_t)[providerOwnerKeysDerivationPath firstUnusedIndex];
+            self.ownerWalletIndex = [providerOwnerKeysDerivationPath firstUnusedIndex];
             ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         } else {
-            ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:self.ownerWalletIndex fromSeed:seed];
+            ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.ownerWalletIndex] fromSeed:seed];
         }
 
         UInt160 votingKeyHash;
@@ -483,10 +483,10 @@
                 [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueIDString];
             }
             if (self.votingWalletIndex == UINT32_MAX) {
-                self.votingWalletIndex = (uint32_t)[providerVotingKeysDerivationPath firstUnusedIndex];
+                self.votingWalletIndex = [providerVotingKeysDerivationPath firstUnusedIndex];
                 votingKeyHash = [providerVotingKeysDerivationPath firstUnusedPublicKey].hash160;
             } else {
-                votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:self.votingWalletIndex].hash160;
+                votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:self.votingWalletIndex]].hash160;
             }
         } else {
             votingKeyHash = ownerKeyHash;
@@ -495,17 +495,15 @@
 
         UInt384 operatorKey;
         if (self.operatorWalletIndex == UINT32_MAX) {
-            self.operatorWalletIndex = (uint32_t)[providerOperatorKeysDerivationPath firstUnusedIndex];
+            self.operatorWalletIndex = [providerOperatorKeysDerivationPath firstUnusedIndex];
             operatorKey = [providerOperatorKeysDerivationPath firstUnusedPublicKey].UInt384;
         } else {
-            operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:self.operatorWalletIndex].UInt384;
+            operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:self.operatorWalletIndex]].UInt384;
         }
         uint16_t operatorKeyVersion = DKeyKindIndex(providerOperatorKeysDerivationPath.signingAlgorithm) == dash_spv_crypto_keys_key_KeyKind_BLS ? 1 : 2;
         DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:2 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash platformNodeID:platformNodeID operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
         if (dsutxo_is_zero(collateral)) {
-            
-            NSString *holdingAddress = [providerFundsDerivationPath registerAddressesWithSettings:[DSGapLimit initWithLimit:1] error:nil].lastObject;
-//            NSString *holdingAddress = [providerFundsDerivationPath registerAddressesWithGapLimit:1 error:nil].lastObject;
+            NSString *holdingAddress = [providerFundsDerivationPath registerAddressesWithSettings:[DSGapLimit single]].lastObject;
             NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
             [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[scriptPayout] withFee:YES];
 

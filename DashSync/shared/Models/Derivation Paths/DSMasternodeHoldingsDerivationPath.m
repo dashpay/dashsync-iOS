@@ -36,11 +36,8 @@
                                    onChain:chain];
 }
 
-//- (NSUInteger)defaultGapLimit {
-//    return 5;
-//}
 - (DSGapLimit *)defaultGapSettings {
-    return [DSGapLimit initWithLimit:5];
+    return [DSGapLimit withLimit:5];
 }
 
 @end

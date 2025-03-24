@@ -90,16 +90,12 @@
 }
 
 - (NSString *)receiveAddress {
-    NSString *addr = [self registerAddressesWithSettings:[DSGapLimit initWithLimit:1] error:nil].lastObject;
-//    NSString *addr = [self registerAddressesWithGapLimit:1 error:nil].lastObject;
-    return addr ? addr : self.mOrderedAddresses.lastObject;
+    NSString *addr = [self registerAddressesWithSettings:[DSGapLimit single]].lastObject;
+    return addr ?: self.mOrderedAddresses.lastObject;
 }
 
-//- (NSUInteger)defaultGapLimit {
-//    return 5;
-//}
 - (DSGapLimit *)defaultGapSettings {
-    return [DSGapLimit initWithLimit:5];
+    return [DSGapLimit withLimit:5];
 }
 
 @end

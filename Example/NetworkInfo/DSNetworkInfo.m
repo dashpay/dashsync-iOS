@@ -18,6 +18,7 @@
 #import "DSNetworkInfo.h"
 #import <DashSync/DashSync.h>
 #import "DSChain+Protected.h"
+#import "DSWallet+Tests.h"
 
 @interface DSNetworkInfo ()
 
@@ -57,8 +58,9 @@
     [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
     
     void (^currentMasternodeListDidChangeBlock)(NSNotification *note) = ^(NSNotification *note) {
-        DSMasternodeList *masternodeList = [note userInfo][DSMasternodeManagerNotificationMasternodeListKey];
+        NSValue *masternodeList = [note userInfo][DSMasternodeManagerNotificationMasternodeListKey];
         if (![masternodeList isEqual:[NSNull null]]) {
+            DMasternodeList *list = masternodeList.pointerValue;
             DSLogPrivate(@"Finished sync");
             [[DashSync sharedSyncController] stopSyncForChain:self.testnetChain];
             
@@ -75,20 +77,28 @@
                 double totalPingTime = 0;
                 
                 for (NSData *data in pingTimes) {
-                    UInt256 hash = data.reverse.UInt256;
-                    DSSimplifiedMasternodeEntry *masternode = [masternodeList masternodeForRegistrationHash:hash];
-                    NSString *ipAddress = masternode.ipAddressString;
-                    totalPingTime += [pingTimes[data] doubleValue];
-                    [pingDictionary setObject:@([pingTimes[data] unsignedLongValue]) forKey:ipAddress];
+                    DMasternodeEntry *masternode = [self.testnetChain.masternodeManager masternodeHavingProviderRegistrationTransactionHash:data.reverse];
+                    if (masternode) {
+                        u128 *ip_addr = dash_spv_masternode_processor_processing_socket_addr_ip(masternode->masternode_list_entry->service_address);
+                        UInt128 ip = u128_cast(ip_addr);
+                        char s[INET6_ADDRSTRLEN];
+                        NSString *ipAddress = @(inet_ntop(AF_INET, &ip.u32[3], s, sizeof(s)));
+                        totalPingTime += [pingTimes[data] doubleValue];
+                        [pingDictionary setObject:@([pingTimes[data] unsignedLongValue]) forKey:ipAddress];
+                    }
                 }
                 
                 NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
                 
                 for (NSData *data in errors) {
-                    UInt256 hash = data.reverse.UInt256;
-                    DSSimplifiedMasternodeEntry *masternode = [masternodeList masternodeForRegistrationHash:hash];
-                    NSString *ipAddress = masternode.ipAddressString;
-                    [errorDictionary setObject:[errors[data] localizedDescription] forKey:ipAddress];
+                    DMasternodeEntry *masternode = [self.testnetChain.masternodeManager masternodeHavingProviderRegistrationTransactionHash:data.reverse];
+                    if (masternode) {
+                        u128 *ip_addr = dash_spv_masternode_processor_processing_socket_addr_ip(masternode->masternode_list_entry->service_address);
+                        UInt128 ip = u128_cast(ip_addr);
+                        char s[INET6_ADDRSTRLEN];
+                        NSString *ipAddress = @(inet_ntop(AF_INET, &ip.u32[3], s, sizeof(s)));
+                        [errorDictionary setObject:[errors[data] localizedDescription] forKey:ipAddress];
+                    }
                 }
                 
                 NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];

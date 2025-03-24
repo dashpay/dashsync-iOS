@@ -25,6 +25,7 @@
 #import "DSDerivationPathFactory.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSWallet.h"
+#import "DSWallet+Tests.h"
 #import "DashSync.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"

@@ -382,9 +382,9 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
 }
 
 
-- (NSUInteger)indexOfIdentityAuthenticationHash:(UInt160)hash {
-    return [[DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:self] indexOfKnownAddressHash:hash];
-}
+//- (NSUInteger)indexOfIdentityAuthenticationHash:(UInt160)hash {
+//    return [[DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:self] indexOfKnownAddressHash:hash];
+//}
 
 - (NSUInteger)indexOfIdentityAssetLockRegistrationHash:(UInt160)hash {
     return [[DSAssetLockDerivationPath identityRegistrationFundingDerivationPathForWallet:self] indexOfKnownAddressHash:hash];

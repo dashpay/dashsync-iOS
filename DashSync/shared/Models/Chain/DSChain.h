@@ -248,6 +248,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Returns a bloom filter with the given false positive rate tweaked with the value tweak. The value tweak is generally peer specific. */
 - (DSBloomFilter *)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
+/*! @brief Returns possibly new addresses for bloom filter, checks that at least the next <gap limit>. */
+- (NSArray<NSString *> *)newAddressesForBloomFilter;
+
 
 // MARK: - Governance
 

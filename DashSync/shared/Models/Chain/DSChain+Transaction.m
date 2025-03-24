@@ -119,6 +119,8 @@
         
         //BLOCKCHAIN USERS
     }
+    // TODO: asset locks/unlocks/transitions?
+
     //    else if ([transaction isKindOfClass:[DSIdentityRegistrationTransition class]]) {
     //        DSIdentityRegistrationTransition * identityRegistrationTransaction = (DSIdentityRegistrationTransition *)transaction;
     //        if ([self walletHavingIdentityAuthenticationHash:identityRegistrationTransaction.pubkeyHash foundAtIndex:nil]) return TRUE;

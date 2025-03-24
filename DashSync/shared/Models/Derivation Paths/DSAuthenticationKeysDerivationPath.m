@@ -47,11 +47,11 @@
     return [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet];
 }
 
-//- (NSUInteger)defaultGapLimit {
-//    return 10;
-//}
 - (DSGapLimit *)defaultGapSettings {
-    return [DSGapLimit initWithLimit:10];
+    // TODO: identityID always 0??
+    return self.type == DSDerivationPathType_SingleUserAuthentication
+        ? [super defaultGapSettings]
+        : [DSGapLimitIdentity withLimit:10 identityID:0];
 }
 
 - (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length
@@ -59,16 +59,16 @@
                signingAlgorithm:(DKeyKind *)signingAlgorithm
                       reference:(DSDerivationPathReference)reference
                         onChain:(DSChain *)chain {
-    DSAuthenticationKeysDerivationPath *authenticationKeysDerivationPath = [super initWithIndexes:indexes
-                                                                                         hardened:hardenedIndexes
-                                                                                           length:length
-                                                                                             type:type
-                                                                                 signingAlgorithm:signingAlgorithm
-                                                                                        reference:reference
-                                                                                          onChain:chain];
-    authenticationKeysDerivationPath.shouldStoreExtendedPrivateKey = NO;
+    DSAuthenticationKeysDerivationPath *path = [super initWithIndexes:indexes
+                                                             hardened:hardenedIndexes
+                                                               length:length
+                                                                 type:type
+                                                     signingAlgorithm:signingAlgorithm
+                                                            reference:reference
+                                                              onChain:chain];
+    path.shouldStoreExtendedPrivateKey = NO;
     self.addressesByIdentity = [NSMutableDictionary dictionary];
-    return authenticationKeysDerivationPath;
+    return path;
 }
 
 + (instancetype _Nullable)derivationPathWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length
@@ -76,15 +76,15 @@
                                    signingAlgorithm:(DKeyKind *)signingAlgorithm
                                           reference:(DSDerivationPathReference)reference
                                             onChain:(DSChain *)chain {
-    DSAuthenticationKeysDerivationPath *derivationPath = [super derivationPathWithIndexes:indexes
-                                                                                 hardened:hardenedIndexes
-                                                                                   length:length
-                                                                                     type:type
-                                                                         signingAlgorithm:signingAlgorithm
-                                                                                reference:reference
-                                                                                  onChain:chain];
-    derivationPath.shouldStoreExtendedPrivateKey = NO;
-    return derivationPath;
+    DSAuthenticationKeysDerivationPath *path = [super derivationPathWithIndexes:indexes
+                                                                       hardened:hardenedIndexes
+                                                                         length:length
+                                                                           type:type
+                                                               signingAlgorithm:signingAlgorithm
+                                                                      reference:reference
+                                                                        onChain:chain];
+    path.shouldStoreExtendedPrivateKey = NO;
+    return path;
 }
 
 + (instancetype)providerVotingKeysDerivationPathForChain:(DSChain *)chain {
@@ -102,19 +102,37 @@
 + (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(3), uint256_from_long(2)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_ProviderOwnerKeys onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes
+                                                                hardened:hardenedIndexes
+                                                                  length:4
+                                                                    type:DSDerivationPathType_SingleUserAuthentication
+                                                        signingAlgorithm:DKeyKindECDSA()
+                                                               reference:DSDerivationPathReference_ProviderOwnerKeys
+                                                                 onChain:chain];
 }
 
 + (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(3), uint256_from_long(3)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DKeyKindBLS() reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes
+                                                                hardened:hardenedIndexes
+                                                                  length:4
+                                                                    type:DSDerivationPathType_SingleUserAuthentication
+                                                        signingAlgorithm:DKeyKindBLS()
+                                                               reference:DSDerivationPathReference_ProviderOperatorKeys
+                                                                 onChain:chain];
 }
 
 + (instancetype)platformNodeKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(3), uint256_from_long(4)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    DSAuthenticationKeysDerivationPath *path = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DKeyKindED25519() reference:DSDerivationPathReference_ProviderPlatformNodeKeys onChain:chain];
+    DSAuthenticationKeysDerivationPath *path = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes
+                                                                                                    hardened:hardenedIndexes
+                                                                                                      length:4
+                                                                                                        type:DSDerivationPathType_SingleUserAuthentication
+                                                                                            signingAlgorithm:DKeyKindED25519()
+                                                                                                   reference:DSDerivationPathReference_ProviderPlatformNodeKeys
+                                                                                                     onChain:chain];
     path.shouldStoreExtendedPrivateKey = YES;
     path.usesHardenedKeys = YES;
     return path;
@@ -123,53 +141,43 @@
 + (instancetype)identityECDSAKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES, YES};
-    DSAuthenticationKeysDerivationPath *identityECDSAKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_MultipleUserAuthentication signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Identities onChain:chain];
-    identityECDSAKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;
-    identityECDSAKeysDerivationPath.usesHardenedKeys = YES;
-    return identityECDSAKeysDerivationPath;
+    DSAuthenticationKeysDerivationPath *path = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes
+                                                                                                    hardened:hardenedIndexes
+                                                                                                      length:5
+                                                                                                        type:DSDerivationPathType_MultipleUserAuthentication
+                                                                                            signingAlgorithm:DKeyKindECDSA()
+                                                                                                   reference:DSDerivationPathReference_Identities
+                                                                                                     onChain:chain];
+    path.shouldStoreExtendedPrivateKey = YES;
+    path.usesHardenedKeys = YES;
+    return path;
 }
 
 + (instancetype)identityBLSKeysDerivationPathForChain:(DSChain *)chain {
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(chain.coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION), uint256_from_long(1)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES, YES};
-    DSAuthenticationKeysDerivationPath *identityBLSKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes
-                                                                                                                             hardened:hardenedIndexes
-                                                                                                                               length:5
-                                                                                                                                 type:DSDerivationPathType_MultipleUserAuthentication
-                                                                                                                     signingAlgorithm:DKeyKindBLS()
-                                                                                                                            reference:DSDerivationPathReference_Identities
-                                                                                                                              onChain:chain];
-    identityBLSKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;
-    identityBLSKeysDerivationPath.usesHardenedKeys = YES;
-    return identityBLSKeysDerivationPath;
-}
-
-- (void)loadAddresses {
-    @synchronized(self) {
-        if (!self.addressesLoaded) {
-            [self loadAddressesInContext:self.managedObjectContext];
-            self.addressesLoaded = TRUE;
-            DSGapLimit *gapLimit = self.type == DSDerivationPathType_SingleUserAuthentication
-                ? [DSGapLimit initWithLimit:10]
-                : [DSGapLimitIdentity initWithLimit:10 identityID:0];
-            [self registerAddressesWithSettings:gapLimit error:nil];
-        }
-    }
+    DSAuthenticationKeysDerivationPath *path = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes
+                                                                                                    hardened:hardenedIndexes
+                                                                                                      length:5
+                                                                                                        type:DSDerivationPathType_MultipleUserAuthentication
+                                                                                            signingAlgorithm:DKeyKindBLS()
+                                                                                                   reference:DSDerivationPathReference_Identities
+                                                                                                     onChain:chain];
+    path.shouldStoreExtendedPrivateKey = YES;
+    path.usesHardenedKeys = YES;
+    return path;
 }
 
 - (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
-                                 inContext:(NSManagedObjectContext *)context
-                                     error:(NSError **)error {
+                                 inContext:(NSManagedObjectContext *)context {
     if (self.type == DSDerivationPathType_SingleUserAuthentication) {
-       return [super registerAddressesWithSettings:settings inContext:context error:error];
+       return [super registerAddressesWithSettings:settings inContext:context];
     } else {
         DSGapLimitIdentity *identitySettings = (DSGapLimitIdentity *)settings;
         uint32_t identityIndex = identitySettings.identityID;
         uintptr_t gapLimit = identitySettings.gapLimit;
-        if (!self.account.wallet.isTransient) {
+        if (!self.account.wallet.isTransient)
             NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
-        }
-        NSAssert(self.type != DSDerivationPathType_SingleUserAuthentication, @"This should not be called for single user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error' instead.");
 
         if (self.usesHardenedKeys && !self.hasExtendedPrivateKey)
             return [NSArray array];
@@ -208,11 +216,9 @@
                 const NSUInteger softIndexes[] = {identityIndex, n};
                 const NSUInteger *indexes = self.usesHardenedKeys ? hardenedIndexes : softIndexes;
                 NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-                NSString *addr = [DSKeyManager NSStringFrom:dash_spv_crypto_util_address_address_with_public_key_data(slice_ctor(pubKey), self.chain.chainType)];
+                NSString *addr = [DSKeyManager NSStringFrom:DAddressWithPubKeyData(slice_ctor(pubKey), self.chain.chainType)];
                 if (!addr) {
                     DSLog(@"[%@] error generating keys", self.chain.name);
-                    if (error)
-                        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                     return nil;
                 }
                 if (!self.account.wallet.isTransient)
@@ -229,11 +235,13 @@
 }
 
 - (NSData *)firstUnusedPublicKey {
-    return [self publicKeyDataAtIndex:(uint32_t)[self firstUnusedIndex]];
+    uint32_t index = [self firstUnusedIndex];
+    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
 - (DMaybeOpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed {
-    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:[self firstUnusedIndex]] fromSeed:seed];
+    uint32_t index = [self firstUnusedIndex];
+    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
 }
 
 - (DMaybeOpaqueKey *)privateKeyForHash160:(UInt160)hash160
@@ -244,7 +252,7 @@
 
 - (NSData *)publicKeyDataForHash160:(UInt160)hash160 {
     uint32_t index = (uint32_t)[self indexOfKnownAddressHash:hash160];
-    return [self publicKeyDataAtIndex:index];
+    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
 - (DMaybeOpaqueKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed

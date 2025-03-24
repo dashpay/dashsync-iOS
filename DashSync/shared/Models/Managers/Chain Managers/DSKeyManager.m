@@ -112,7 +112,7 @@
 }
 
 + (NSString *)addressWithPublicKeyData:(NSData *)data forChain:(nonnull DSChain *)chain {
-    char *c_string = dash_spv_crypto_util_address_address_with_public_key_data(slice_ctor(data), chain.chainType);
+    char *c_string = DAddressWithPubKeyData(slice_ctor(data), chain.chainType);
     return [DSKeyManager NSStringFrom:c_string];
 }
 

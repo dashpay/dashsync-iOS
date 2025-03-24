@@ -164,7 +164,7 @@
     NSLog(@"creditBurnPublicKeyHash: %@", uint160_hex(creditBurnPublicKeyHash));
     NSLog(@"address: %@", address);
     for (int i = 0; i < 30; i++) {
-        NSString *address = [registrationFundingDerivationPath addressAtIndex:i];
+        NSString *address = [registrationFundingDerivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndex:i]];
         NSLog(@"[%i] %@", i, address);
     }
     

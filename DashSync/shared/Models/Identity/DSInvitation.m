@@ -408,10 +408,9 @@
                     rCancelled = cancelled;
                     if (seed) {
                         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                            DSAssetLockDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:self.wallet];
+                            DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:self.wallet];
                             // TODO: cleanup?
-                            registrationFundingPrivateKey = [derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index]
-                                                                                                            fromSeed:seed];
+                            registrationFundingPrivateKey = [path privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index] fromSeed:seed];
                             dispatch_semaphore_signal(sem);
                         });
                     } else {

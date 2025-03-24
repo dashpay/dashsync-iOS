@@ -131,15 +131,15 @@
     return UINT160_ZERO;
 }
 - (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index {
-    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:wallet];
+    DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
-    return [[registrationFundingDerivationPath addressAtIndex:index] isEqualToString:address];
+    return [[path addressAtIndexPath:[NSIndexPath indexPathWithIndex:index]] isEqualToString:address];
 }
 
 - (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index {
-    DSAssetLockDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
+    DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
-    return [[registrationFundingDerivationPath addressAtIndex:index] isEqualToString:address];
+    return [[path addressAtIndexPath:[NSIndexPath indexPathWithIndex:index]] isEqualToString:address];
 }
 
 
@@ -147,23 +147,20 @@
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [path registerTransactionAddress:address];
-    [path registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
-//    [path registerAddressesWithGapLimit:10 error:nil];
+    [path registerAddressesWithSettings:[DSGapLimit withLimit:10]];
 }
 
 - (void)markAddressAsUsedInWallet:(DSWallet *)wallet {
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityRegistrationFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [path registerTransactionAddress:address];
-    [path registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
-//    [path registerAddressesWithGapLimit:10 error:nil];
+    [path registerAddressesWithSettings:[DSGapLimit withLimit:10]];
 }
 - (void)markTopUpAddressAsUsedInWallet:(DSWallet *)wallet {
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityTopupFundingDerivationPathForWallet:wallet];
     NSString *address = [DSKeyManager addressFromHash160:[self creditBurnPublicKeyHash] forChain:self.chain];
     [path registerTransactionAddress:address];
-    [path registerAddressesWithSettings:[DSGapLimit initWithLimit:10] error:nil];
-//    [path registerAddressesWithGapLimit:10 error:nil];
+    [path registerAddressesWithSettings:[DSGapLimit withLimit:10]];
 }
 
 - (Class)entityClass {

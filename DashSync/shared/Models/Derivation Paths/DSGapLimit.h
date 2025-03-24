@@ -19,19 +19,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSGapLimitFundsDirection) {
+    DSGapLimitFundsDirection_Internal = 1,
+    DSGapLimitFundsDirection_External = 2,
+    DSGapLimitFundsDirection_Both = DSGapLimitFundsDirection_Internal | DSGapLimitFundsDirection_External,
+};
+
+
 @interface DSGapLimit : NSObject
-@property (nonatomic, readwrite) uintptr_t gapLimit;
-+ (instancetype)initWithLimit:(uintptr_t)limit;
+@property (readwrite, nonatomic, assign) uintptr_t gapLimit;
++ (instancetype)withLimit:(uintptr_t)limit;
++ (instancetype)single;
 @end
 
-@interface DSGapLimitInternal : DSGapLimit
-@property (nonatomic, readwrite) BOOL internal;
-+ (instancetype)initWithLimit:(uintptr_t)limit internal:(BOOL)internal;
+@interface DSGapLimitFunds : DSGapLimit
+@property (readwrite, nonatomic) DSGapLimitFundsDirection direction;
++ (instancetype)withLimit:(uintptr_t)limit direction:(DSGapLimitFundsDirection)direction;
++ (instancetype)internalSingle;
++ (instancetype)externalSingle;
++ (instancetype)internal:(uintptr_t)limit;
++ (instancetype)external:(uintptr_t)limit;
 @end
 
 @interface DSGapLimitIdentity : DSGapLimit
-@property (nonatomic, readwrite) uint32_t identityID;
-+ (instancetype)initWithLimit:(uintptr_t)limit identityID:(uint32_t)identityID;
+@property (readwrite, nonatomic, assign) uint32_t identityID;
++ (instancetype)withLimit:(uintptr_t)limit identityID:(uint32_t)identityID;
 @end
 
 

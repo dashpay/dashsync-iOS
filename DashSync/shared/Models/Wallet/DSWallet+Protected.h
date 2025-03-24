@@ -29,7 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-@property (nonatomic, strong) NSData *transientDerivedKeyData;
+- (instancetype)initWithUniqueID:(NSString *)uniqueID
+                     andAccounts:(NSArray<DSAccount *> *)accounts
+                        forChain:(DSChain *)chain
+                 storeSeedPhrase:(BOOL)store
+                     isTransient:(BOOL)isTransient;
+
 
 //this is used from the account to help determine best start sync position for future resync
 - (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;

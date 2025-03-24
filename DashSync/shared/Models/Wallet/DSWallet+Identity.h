@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSIdentity *_Nullable)identityForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key;
 - (DMaybeOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key;
 
-- (NSUInteger)indexOfIdentityAuthenticationHash:(UInt160)hash;
+//- (NSUInteger)indexOfIdentityAuthenticationHash:(UInt160)hash;
 - (NSUInteger)indexOfIdentityAssetLockRegistrationHash:(UInt160)hash;
 - (NSUInteger)indexOfIdentityAssetLockTopupHash:(UInt160)hash;
 - (NSUInteger)indexOfIdentityAssetLockInvitationHash:(UInt160)hash;

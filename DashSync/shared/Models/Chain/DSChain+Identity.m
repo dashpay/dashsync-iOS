@@ -142,7 +142,7 @@
     }];
 }
 
-
+// TODO: should we revive this?
 //
 //-(BOOL)registerBlockchainIdentityRegistrationTransaction:(DSIdentityRegistrationTransition*)identityRegistrationTransaction {
 //    DSWallet * identityWallet = [self walletHavingIdentityAuthenticationHash:identityRegistrationTransaction.pubkeyHash foundAtIndex:nil];

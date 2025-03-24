@@ -1043,31 +1043,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
 
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
-    NSMutableArray *allAddressesArray = [NSMutableArray array];
-
-    for (DSWallet *wallet in self.chain.wallets) {
-        // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
-        // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-        // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL unusedAccountGapLimit:SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING coinJoinGapLimit:SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN internal:NO error:nil];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL unusedAccountGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING coinJoinGapLimit:SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN internal:YES error:nil];
-        NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
-        [allAddressesArray addObjectsFromArray:[addresses allObjects]];
-
-        [allAddressesArray addObjectsFromArray:[wallet providerOwnerAddresses]];
-        [allAddressesArray addObjectsFromArray:[wallet providerVotingAddresses]];
-        [allAddressesArray addObjectsFromArray:[wallet providerOperatorAddresses]];
-        [allAddressesArray addObjectsFromArray:[wallet platformNodeAddresses]];
-    }
-
-    for (DSFundsDerivationPath *derivationPath in self.chain.standaloneDerivationPaths) {
-        [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO] error:nil];
-        [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES] error:nil];
-//        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
-//        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
-        NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
-        [allAddressesArray addObjectsFromArray:addresses];
-    }
+    NSArray *allAddressesArray = [self.chain newAddressesForBloomFilter];
 
     for (NSString *address in allAddressesArray) {
         NSData *hash = address.addressToHash160;

@@ -104,25 +104,25 @@
     DSChain *chain = self.wallet.chain;
     uint32_t addAccountNumber = self.wallet.lastAccountNumber + 1;
     NSArray *derivationPaths = [self.wallet.chain standardDerivationPathsForAccountNumber:addAccountNumber];
-    DSAccount *addAccount = [DSAccount accountWithAccountNumber:addAccountNumber withDerivationPaths:derivationPaths inContext:self.wallet.chain.chainManagedObjectContext];
+    DSAccount *addAccount = [DSAccount accountWithAccountNumber:addAccountNumber
+                                            withDerivationPaths:derivationPaths
+                                                      inContext:self.wallet.chain.chainManagedObjectContext];
     [self.wallet seedPhraseAfterAuthenticationWithPrompt:@"Add account?"
                                               completion:^(NSString *_Nullable seedPhrase) {
-                                                  NSData *derivedKeyData = (seedPhrase) ? [[DSBIP39Mnemonic sharedInstance]
-                                                                                              deriveKeyFromPhrase:seedPhrase
-                                                                                                   withPassphrase:nil] :
-                                                                                          nil;
-                                                  for (DSDerivationPath *derivationPath in addAccount.fundDerivationPaths) {
-                                                      [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:self.wallet.uniqueIDString];
-                                                  }
-                                                  if ([chain isEvolutionEnabled]) {
-                                                      [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:self.wallet.uniqueIDString];
-                                                  }
+        NSData *derivedKeyData = seedPhrase ? [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil] : nil;
+        for (DSDerivationPath *derivationPath in addAccount.fundDerivationPaths) {
+            [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
+                                     storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+        }
+        if ([chain isEvolutionEnabled])
+            [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
+                                                              storeUnderWalletUniqueId:self.wallet.uniqueIDString];
 
-                                                  [self.wallet addAccount:addAccount];
-                                                  [addAccount loadDerivationPaths];
-                                                  self.accounts = nil; // It will reload from wallet with Lazy loading.
-                                                  [self.tableView reloadData];
-                                              }];
+        [self.wallet addAccount:addAccount];
+        [addAccount loadDerivationPaths];
+        self.accounts = nil; // It will reload from wallet with Lazy loading.
+        [self.tableView reloadData];
+    }];
 }
 
 

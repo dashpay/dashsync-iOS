@@ -302,7 +302,7 @@
 #define DOpaqueKeyHasKind(key, kind) dash_spv_crypto_keys_key_OpaqueKey_has_kind(key, kind)
 #define DOpaqueKeyDecrypt(prv_key, pub_key, data) dash_spv_crypto_keys_key_OpaqueKey_decrypt_data_vec(prv_key, pub_key, data)
 #define DOpaqueKeyPubAddress(key, chain_type) dash_spv_crypto_keys_key_OpaqueKey_address_with_public_key_data(key, chain_type)
-
+#define DAddressWithPubKeyData(data, chain_type) dash_spv_crypto_util_address_address_with_public_key_data(data, chain_type)
 #define DScriptPubKeyForAddress(address, chain_type) dash_spv_apple_bindings_address_addresses_script_pubkey_for_address(address, chain_type)
 #define DIsValidDashAddress(address, chain_type) dash_spv_apple_bindings_address_addresses_is_valid_dash_address_for_chain(address, chain_type)
 #define DAddressWithScriptPubKeyData(data, chain_type) dash_spv_apple_bindings_address_addresses_address_with_script_pubkey(data, chain_type)

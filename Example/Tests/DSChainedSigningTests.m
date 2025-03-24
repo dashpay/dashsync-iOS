@@ -25,6 +25,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSKeyManager.h"
 #import "DSWallet.h"
+#import "DSWallet+Tests.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -70,10 +71,10 @@
 
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:wallet];
 
-    DMaybeOpaqueKey *key0 = [derivationPath privateKeyAtIndex:0 fromSeed:seed];
-//    DOpaqueKey *key1 = [derivationPath privateKeyAtIndex:1 fromSeed:seed];
-//    DOpaqueKey *key2 = [derivationPath privateKeyAtIndex:2 fromSeed:seed];
-//    DOpaqueKey *key3 = [derivationPath privateKeyAtIndex:3 fromSeed:seed];
+    DMaybeOpaqueKey *key0 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+//    DOpaqueKey *key1 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:1] fromSeed:seed];
+//    DOpaqueKey *key2 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:2] fromSeed:seed];
+//    DOpaqueKey *key3 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:3] fromSeed:seed];
 //    UInt256 randomInput0 = uint256_from_long(77777);
     UInt256 randomInput0 = uint256_random;
 //    UInt256 randomInput1 = uint256_random;

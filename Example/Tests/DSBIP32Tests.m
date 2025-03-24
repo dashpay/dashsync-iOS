@@ -17,6 +17,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSKeyManager.h"
 #import "DSWallet+Identity.h"
+#import "DSWallet+Tests.h"
 #import "NSData+Encryption.h"
 #import "NSIndexPath+FFI.h"
 #import "NSMutableData+Dash.h"
@@ -442,8 +443,8 @@
     DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:@"000102030405060708090a0b0c0d0e0f".hexToData forChain:self.chain];
 
     DSAccount *account = [wallet accountWithNumber:0];
-
-    NSData *pub = [account.bip32DerivationPath publicKeyDataAtIndex:0 internal:NO];
+    NSUInteger indexes[] = {0, 0};
+    NSData *pub = [account.bip32DerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
 
@@ -699,10 +700,10 @@
     UInt256 sourceUser1 = @"01".hexToData.SHA256;
     UInt256 destinationUser2 = @"02".hexToData.SHA256;
     DSDerivationPath *masterContactsDerivationPath = [account masterContactsDerivationPath];
-    DSIncomingFundsDerivationPath *incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationIdentityUniqueId:destinationUser2 sourceIdentityUniqueId:sourceUser1 forAccount:account onChain:self.chain];
-    DMaybeOpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    DSIncomingFundsDerivationPath *path = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationIdentityUniqueId:destinationUser2 sourceIdentityUniqueId:sourceUser1 forAccount:account onChain:self.chain];
+    DMaybeOpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [path generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     NSData *extendedPublicKeyFromMasterContactDerivationPathData = [DSKeyManager extendedPublicKeyData:extendedPublicKeyFromMasterContactDerivationPath->ok];
-    DMaybeOpaqueKey *extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    DMaybeOpaqueKey *extendedPublicKeyFromSeed = [path generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     NSData *extendedPublicKeyFromSeedData = [DSKeyManager extendedPublicKeyData:extendedPublicKeyFromSeed->ok];
     XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPathData.hexString,
                           extendedPublicKeyFromSeedData.hexString,
@@ -710,8 +711,9 @@
     XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPathData.hexString,
                           @"351973adaa8073a0ac848c08ba1c6df9a14d3c52033febe9bf4c5b365546a163bac5c8180240b908657221ebdc8fde7cd3017531159a7c58b955db380964c929dc6a85ac86",
                           @"Incorrect value for extended public key");
-    NSData *pubKey = [incomingFundsDerivationPath publicKeyDataAtIndex:0];
-    XCTAssertEqualObjects([DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:incomingFundsDerivationPath.chain.chainType],
+    NSData *pubKey = [path publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:(const NSUInteger[]){0} length:1]];
+
+    XCTAssertEqualObjects([DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:path.chain.chainType],
                           @"Xs8zNYNY5hT38KFb8tq8EbnPn7GCNaqr45",
                           @"First address should match expected value");
 }
@@ -731,7 +733,7 @@
     DKeyKind *kind = DKeyKindBLS();
     DMaybeOpaqueKey *bobKeyPairBLS = DMaybeOpaqueKeyFromSeed(kind, seed_slice);
 //    DOpaqueKey *bobKeyPairBLS = key_with_seed_data((uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10}, 10, (int16_t) KeyKind_BLS);
-    DMaybeOpaqueKey *privateKeyBLS = [derivationPath privateKeyAtIndex:0 fromSeed:self.seed];
+    DMaybeOpaqueKey *privateKeyBLS = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     NSData *extendedPublicKeyFromMasterContactDerivationPathData = [DSKeyManager extendedPublicKeyData:extendedPublicKeyFromMasterContactDerivationPath->ok];
     NSData *encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyBLS->ok forPublicKey:bobKeyPairBLS->ok];
     XCTAssertEqual([encryptedDataBLS.base64String length], 128, @"The size of the base64 should be 128");
@@ -756,7 +758,7 @@
     
     DMaybeOpaqueKey *bobKeyPairECDSA = DMaybeOpaqueKeyWithPrivateKeyData(DKeyKindECDSA(), bob_secret_slice);
     
-    DMaybeOpaqueKey *privateKeyECDSA = [derivationPath privateKeyAtIndex:0 fromSeed:self.seed];
+    DMaybeOpaqueKey *privateKeyECDSA = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     NSData *encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyECDSA->ok forPublicKey:bobKeyPairECDSA->ok];
     XCTAssertEqual([encryptedDataECDSA.base64String length], 128, @"The size of the base64 should be 128");
     

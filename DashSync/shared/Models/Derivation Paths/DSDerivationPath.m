@@ -302,7 +302,7 @@
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath {
     NSData *pubKey = [self publicKeyDataAtIndexPath:indexPath];
-    return [DSKeyManager NSStringFrom:dash_spv_crypto_util_address_address_with_public_key_data(slice_ctor(pubKey), self.chain.chainType)];
+    return [DSKeyManager NSStringFrom:DAddressWithPubKeyData(slice_ctor(pubKey), self.chain.chainType)];
 }
 
 // true if the address is controlled by the wallet
@@ -624,12 +624,11 @@
     return getKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
 }
 
-- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
-                                     error:(NSError **)error {
-    return [self registerAddressesWithSettings:settings inContext:self.managedObjectContext error:error];
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings {
+    return [self registerAddressesWithSettings:settings inContext:self.managedObjectContext];
 }
 
-- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings inContext:(NSManagedObjectContext *)context error:(NSError **)error {
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings inContext:(NSManagedObjectContext *)context {
     NSAssert(FALSE, @"This must be implemented in subclasses");
     return nil;
 }

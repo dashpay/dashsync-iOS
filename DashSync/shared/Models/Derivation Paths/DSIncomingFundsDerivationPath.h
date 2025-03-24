@@ -50,8 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 // used external addresses
 @property (nonatomic, readonly) NSArray *usedReceiveAddresses;
 
-- (NSData *_Nullable)publicKeyDataAtIndex:(uint32_t)n;
-
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
 
 - (NSIndexPath *_Nullable)indexPathForKnownAddress:(NSString *)address;

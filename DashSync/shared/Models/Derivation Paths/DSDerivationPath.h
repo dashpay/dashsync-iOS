@@ -218,12 +218,14 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 - (BOOL)isHardenedAtPosition:(NSUInteger)position;
 - (BOOL)isDerivationPathEqual:(id)object;
 
-- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
-                                     error:(NSError **)error;
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings;
 
+// Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
+// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
+// following the last used address in the chain. The internal chain is used for change addresses and the external chain
+// for receive addresses.  These have a hardened purpose scheme depending on the derivation path
 - (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
-                                 inContext:(NSManagedObjectContext *)context
-                                     error:(NSError **)error;
+                                 inContext:(NSManagedObjectContext *)context;
 
 @end
 

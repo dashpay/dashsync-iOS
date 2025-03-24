@@ -87,12 +87,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // has an extended public key missing in one of the account derivation paths
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit
-                              unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit
-                                    dashpayGapLimit:(NSUInteger)dashpayGapLimit
-                                   coinJoinGapLimit:(NSUInteger)coinJoinGapLimit
-                                           internal:(BOOL)internal
-                                              error:(NSError **)error;
+- (NSArray *_Nullable)registerAddressesWithInitialGapLimit;
+- (NSArray *_Nullable)registerAddressesWithProlongGapLimit;
 
 + (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber
                     withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths
@@ -118,7 +114,6 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 - (void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath
           forFriendshipIdentifier:(NSData *)friendshipIdentifier
                         inContext:(NSManagedObjectContext *)context;
-- (void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 
 // largest amount that can be sent from the account after fees
 @property (nonatomic, readonly) uint64_t maxOutputAmount;

@@ -18,24 +18,61 @@
 #import "DSGapLimit.h"
 
 @implementation DSGapLimit
-+ (instancetype)initWithLimit:(uintptr_t)limit {
++ (instancetype)withLimit:(uintptr_t)limit {
     DSGapLimit *inst = [[self alloc] init];
     inst.gapLimit = limit;
     return inst;
 }
-@end
-
-@implementation DSGapLimitInternal
-+ (instancetype)initWithLimit:(uintptr_t)limit internal:(BOOL)internal {
-    DSGapLimitInternal *inst = [DSGapLimitInternal initWithLimit:limit];
-    inst.internal = internal;
-    return inst;
++ (instancetype)single {
+    return [DSGapLimit withLimit:1];
 }
 @end
 
+@implementation DSGapLimitFunds
+
++ (instancetype)withLimit:(uintptr_t)limit {
+    DSGapLimitFunds *inst = [[self alloc] init];
+    inst.gapLimit = limit;
+    return inst;
+}
+
++ (instancetype)withLimit:(uintptr_t)limit direction:(DSGapLimitFundsDirection)direction {
+    DSGapLimitFunds *inst = [DSGapLimitFunds withLimit:limit];
+    inst.direction = direction;
+    return inst;
+}
++ (instancetype)internalSingle {
+    DSGapLimitFunds *inst = [DSGapLimitFunds withLimit:1];
+    inst.direction = DSGapLimitFundsDirection_Internal;
+    return inst;
+}
++ (instancetype)externalSingle {
+    DSGapLimitFunds *inst = [DSGapLimitFunds withLimit:1];
+    inst.direction = DSGapLimitFundsDirection_External;
+    return inst;
+}
++ (instancetype)internal:(uintptr_t)limit {
+    DSGapLimitFunds *inst = [DSGapLimitFunds withLimit:limit];
+    inst.direction = DSGapLimitFundsDirection_Internal;
+    return inst;
+}
++ (instancetype)external:(uintptr_t)limit {
+    DSGapLimitFunds *inst = [DSGapLimitFunds withLimit:limit];
+    inst.direction = DSGapLimitFundsDirection_External;
+    return inst;
+}
+
+@end
+
 @implementation DSGapLimitIdentity
-+ (instancetype)initWithLimit:(uintptr_t)limit identityID:(uint32_t)identityID {
-    DSGapLimitIdentity *inst = [DSGapLimitIdentity initWithLimit:limit];
++ (instancetype)withLimit:(uintptr_t)limit {
+    DSGapLimitIdentity *inst = [[self alloc] init];
+    inst.gapLimit = limit;
+    return inst;
+}
+
++ (instancetype)withLimit:(uintptr_t)limit identityID:(uint32_t)identityID {
+    DSGapLimitIdentity *inst = [DSGapLimitIdentity withLimit:limit];
     inst.identityID = identityID;
     return inst;
 }

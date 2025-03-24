@@ -307,13 +307,10 @@
     } else {
         for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
             if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                [derivationPath registerAddressesWithSettings:[DSGapLimit initWithLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL] error:nil];
-//                [derivationPath registerAddressesWithGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:NO error:nil];
+                [derivationPath registerAddressesWithSettings:[DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL]];
             } else {
-                [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES] error:nil];
-                [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO] error:nil];
-//                [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
-//                [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
+                [derivationPath registerAddressesWithSettings:[DSGapLimitFunds internal:SEQUENCE_GAP_LIMIT_INITIAL]];
+                [derivationPath registerAddressesWithSettings:[DSGapLimitFunds external:SEQUENCE_GAP_LIMIT_INITIAL]];
             }
         }
     }
@@ -451,17 +448,6 @@
         [derivationPath loadAddressesInContext:context];
 }
 
-- (void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
-    NSParameterAssert(derivationPaths);
-    if (!_isViewOnlyAccount)
-        [self verifyAndAssignAddedDerivationPaths:derivationPaths];
-    for (DSDerivationPath *derivationPath in derivationPaths) {
-        if ([self verifyDerivationPathNotAlreadyPresent:derivationPath]) {
-            [self.mFundDerivationPaths addObject:derivationPath];
-        }
-    }
-}
-
 - (NSArray *)fundDerivationPaths {
     return [self.mFundDerivationPaths copy];
 }
@@ -491,25 +477,42 @@
     return NO;
 }
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
-                     unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit
-                           dashpayGapLimit:(NSUInteger)dashpayGapLimit
-                          coinJoinGapLimit:(NSUInteger)coinJoinGapLimit
-                                  internal:(BOOL)internal
-                                     error:(NSError **)error {
+- (NSArray *)registerAddressesWithInitialGapLimit {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-            NSUInteger registerGapLimit = [fundsDerivationPath shouldUseReducedGapLimit] ? unusedAccountGapLimit : (fundsDerivationPath.type == DSDerivationPathType_AnonymousFunds ? coinJoinGapLimit : gapLimit);
-            NSArray *addresses = [fundsDerivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:registerGapLimit internal:internal] error:error];
+            DSFundsDerivationPath *path = (DSFundsDerivationPath *)derivationPath;
+            BOOL useReduced = [path shouldUseReducedGapLimit];
+            BOOL isAnonymous = path.type == DSDerivationPathType_AnonymousFunds;
+            NSUInteger limit = useReduced ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : (isAnonymous ? SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN : SEQUENCE_GAP_LIMIT_INITIAL);
+            [mArray addObjectsFromArray:[path registerAddressesWithSettings:[DSGapLimitFunds external:limit]]];
+            [mArray addObjectsFromArray:[path registerAddressesWithSettings:[DSGapLimitFunds internal:limit]]];
+        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            NSArray *addresses = [derivationPath registerAddressesWithSettings:[DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL]];
             [mArray addObjectsFromArray:addresses];
-        } else if (!internal && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-            NSArray *addresses = [derivationPath registerAddressesWithSettings:[DSGapLimitInternal initWithLimit:dashpayGapLimit] error:error];
+        }
+    }
+    return [mArray copy];
+}
+
+- (NSArray *)registerAddressesWithProlongGapLimit {
+    NSMutableArray *mArray = [NSMutableArray array];
+    for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            DSFundsDerivationPath *path = (DSFundsDerivationPath *)derivationPath;
+            BOOL useReduced = [path shouldUseReducedGapLimit];
+            BOOL isAnonymous = path.type == DSDerivationPathType_AnonymousFunds;
+            NSUInteger externalLimit = useReduced ? SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL : (isAnonymous ? SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN : SEQUENCE_GAP_LIMIT_EXTERNAL);
+            NSUInteger internalLimit = useReduced ? SEQUENCE_GAP_LIMIT_INTERNAL : (isAnonymous ? SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN : SEQUENCE_GAP_LIMIT_INTERNAL);
+            [mArray addObjectsFromArray:[path registerAddressesWithSettings:[DSGapLimitFunds external:externalLimit]]];
+            [mArray addObjectsFromArray:[path registerAddressesWithSettings:[DSGapLimitFunds internal:internalLimit]]];
+        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            NSArray *addresses = [derivationPath registerAddressesWithSettings:[DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING]];
             [mArray addObjectsFromArray:addresses];
         }
     }
     return mArray;
+
 }
 
 // all previously generated external addresses
@@ -980,16 +983,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 return YES;
         }
         if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
-            DSProviderRegistrationTransaction *providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-            if ([self containsAddress:providerRegistrationTransaction.payoutAddress]) return YES;
+            DSProviderRegistrationTransaction *tx = (DSProviderRegistrationTransaction *)transaction;
+            if ([self containsAddress:tx.payoutAddress]) return YES;
         } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
-            DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-            NSString *payoutAddress = providerUpdateServiceTransaction.payoutAddress;
+            DSProviderUpdateServiceTransaction *tx = (DSProviderUpdateServiceTransaction *)transaction;
+            NSString *payoutAddress = tx.payoutAddress;
             if (payoutAddress && [self containsAddress:payoutAddress]) return YES;
         } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
-            DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
-            if ([self containsAddress:providerUpdateRegistrarTransaction.payoutAddress]) return YES;
+            DSProviderUpdateRegistrarTransaction *tx = (DSProviderUpdateRegistrarTransaction *)transaction;
+            if ([self containsAddress:tx.payoutAddress]) return YES;
         }
+        // TODO: asset locks/unlocks/transitions?
 //        else if ([transaction isKindOfClass:[DSAs]])
 
         return NO;
@@ -1033,19 +1037,22 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
-    for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
-        if ([derivationPath type] & DSDerivationPathType_IsForFunds) {
-            NSString *firstAddress;
-            if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                firstAddress = [(DSFundsDerivationPath *)derivationPath addressAtIndex:0 internal:NO];
-            } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                NSData *pubKey = [(DSIncomingFundsDerivationPath *)derivationPath publicKeyDataAtIndex:0];
-                firstAddress = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:derivationPath.chain.chainType];
+    for (DSDerivationPath *path in self.fundDerivationPaths) {
+        if ([path type] & DSDerivationPathType_IsForFunds) {
+            NSIndexPath *indexPath;
+            if ([path isKindOfClass:[DSFundsDerivationPath class]]) {
+                indexPath = [NSIndexPath indexPathWithIndexes:(const NSUInteger[]){0, 0} length:2];
+            } else if ([path isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+                indexPath = [NSIndexPath indexPathWithIndexes:(const NSUInteger[]){0} length:1];
             }
-            if ([transaction.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-                return [obj.address isEqual:firstAddress];
-            }] != NSNotFound) {
-                return TRUE;
+            if (indexPath) {
+                NSData *firstPubKeyData = [path publicKeyDataAtIndexPath:indexPath];
+                NSString *firstAddress = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:firstPubKeyData forChainType:path.chain.chainType];
+                if ([transaction.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+                    return [obj.address isEqual:firstAddress];
+                }] != NSNotFound) {
+                    return TRUE;
+                }
             }
         }
     }

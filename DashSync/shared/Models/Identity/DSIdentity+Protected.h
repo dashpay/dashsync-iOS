@@ -102,9 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
                                          ofType:(DKeyKind *)type;
-//- (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
-//                                         ofType:(DKeyKind *)type
-//                                        forSeed:(NSData *)seed;
 - (void)deletePersistentObjectAndSave:(BOOL)save
                             inContext:(NSManagedObjectContext *)context;
 

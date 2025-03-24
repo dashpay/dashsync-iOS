@@ -28,6 +28,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSKeyManager.h"
 #import "DSTransactionManager.h"
+#import "DSWallet+Tests.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"

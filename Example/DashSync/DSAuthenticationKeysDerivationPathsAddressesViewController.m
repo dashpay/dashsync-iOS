@@ -129,8 +129,8 @@
     DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u", self.derivationPath.stringRepresentation, addressEntity.index];
-    cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndex:addressEntity.index].hexString;
-    DMaybeOpaqueKey *maybeKey = [self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed];
+    cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:addressEntity.index]].hexString;
+    DMaybeOpaqueKey *maybeKey = [self.derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:addressEntity.index] fromSeed:self.seed];
     if (!maybeKey || !maybeKey->ok) return;
     
     cell.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:maybeKey->ok chainType:self.derivationPath.chain.chainType];

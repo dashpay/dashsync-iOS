@@ -151,9 +151,9 @@
         [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
 
-    DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
-    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
-    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].hash160;
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].UInt384;
     uint16_t operatorKeyVersion = 1; // BLS legacy
     NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
 
@@ -242,9 +242,9 @@
         [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
 
-    DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
-    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
-    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].hash160;
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].UInt384;
 
     uint16_t operatorKeyVersion = 1; // BLS legacy
     DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
@@ -312,8 +312,8 @@
         [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
     }
     UInt384 operatorKeyNeeded = [NSData dataFromHexString:@"157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfa"].UInt384;
-    DMaybeOpaqueKey *privateKey = [providerOperatorKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed]; // BLS
-    NSData *operatorKeyData = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0];
+    DMaybeOpaqueKey *privateKey = [providerOperatorKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed]; // BLS
+    NSData *operatorKeyData = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]];
     XCTAssertEqualObjects(operatorKeyData.hexString, [NSData dataWithUInt384:operatorKeyNeeded].hexString, @"operator keys don't match");
     DMaybeOpaqueKey *operatorBLSKey = DMaybeOpaqueKeyWithPublicKeyData(DKeyKindBLS(), slice_ctor(operatorKeyData));
     UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
