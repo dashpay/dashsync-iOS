@@ -6,7 +6,6 @@
 //
 
 #import "BigIntTypes.h"
-//#import "dash_shared_core.h"
 #import "DSKeyManager.h"
 #import "DSTransaction.h"
 

@@ -5,7 +5,7 @@
 //  Created by Sam Westrich on 6/12/18.
 //
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSGovernanceVote.h"
 #import "DSChain.h"
 #import "DSChain+Params.h"

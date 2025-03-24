@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSChain+Params.h"
 #import "DSKeyManager.h"
 #import "NSData+Dash.h"

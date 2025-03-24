@@ -16,7 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

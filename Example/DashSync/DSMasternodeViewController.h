@@ -7,7 +7,7 @@
 //
 
 #import <DashSync/DashSync.h>
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import <UIKit/UIKit.h>
 
 @interface DSMasternodeViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>

@@ -27,7 +27,7 @@
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 @interface DSIncomingFundsDerivationPath ()
 

@@ -16,7 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSAccount.h"
 #import "DSAssetLockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"

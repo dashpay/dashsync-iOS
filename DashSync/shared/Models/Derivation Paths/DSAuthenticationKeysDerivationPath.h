@@ -5,7 +5,7 @@
 //  Created by Sam Westrich on 2/10/19.
 //
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSSimpleIndexedDerivationPath.h"
 

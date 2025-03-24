@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSChainConstants.h"
 #import "DSDashSharedCore.h"
 #import "DSTransaction.h"

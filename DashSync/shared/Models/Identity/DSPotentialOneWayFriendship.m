@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSPotentialOneWayFriendship.h"
 #import "DSAccount.h"
 #import "DSIdentity+Protected.h"

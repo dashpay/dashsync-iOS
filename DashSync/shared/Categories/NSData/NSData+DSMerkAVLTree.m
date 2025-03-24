@@ -20,7 +20,7 @@
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
 #import "NSError+Dash.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 @implementation NSData (DSMerkAVLTree)
 

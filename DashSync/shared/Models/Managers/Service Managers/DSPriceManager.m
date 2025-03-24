@@ -52,7 +52,7 @@
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSString+Dash.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 #define TICKER_REFRESH_TIME 60.0
 #define VOLATILE_RATES_CUTTOFF_PERIOD 7 * 24 * 60 * 60 // 7 Days

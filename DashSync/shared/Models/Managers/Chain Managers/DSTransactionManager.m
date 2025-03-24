@@ -685,21 +685,47 @@
     if (!tx) { // tx is nil if there were insufficient wallet funds
         if (authenticationManager.didAuthenticate) {
             //the fee puts us over the limit
-            [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication mixedOnly:mixedOnly requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+            [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest
+                                                                fromAccount:account
+                                                                  forAmount:amount
+                                                                  toAddress:address
+                                       requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+                                keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+                                                                  mixedOnly:mixedOnly
+                                                   requestingAdditionalInfo:additionalInfoRequest
+                                                           presentChallenge:challenge
+                                              transactionCreationCompletion:transactionCreationCompletion
+                                                           signedCompletion:signedCompletion
+                                                        publishedCompletion:publishedCompletion
+                                                     requestRelayCompletion:requestRelayCompletion
+                                                     errorNotificationBlock:errorNotificationBlock];
         } else {
             [authenticationManager seedWithPrompt:promptMessage
                                         forWallet:account.wallet
                                         forAmount:amount
                               forceAuthentication:NO
                                        completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                           if (seed) {
-                                               //the fee puts us over the limit
-                                               [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication mixedOnly:mixedOnly requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
-                                           } else {
-                                               additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);
-                                           }
-                                           if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
-                                       }];
+                if (seed) {
+                    //the fee puts us over the limit
+                    [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest
+                                                                        fromAccount:account
+                                                                          forAmount:amount
+                                                                          toAddress:address
+                                               requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+                                        keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+                                                                          mixedOnly:mixedOnly
+                                                           requestingAdditionalInfo:additionalInfoRequest
+                                                                   presentChallenge:challenge
+                                                      transactionCreationCompletion:transactionCreationCompletion
+                                                                   signedCompletion:signedCompletion
+                                                                publishedCompletion:publishedCompletion
+                                                             requestRelayCompletion:requestRelayCompletion
+                                                             errorNotificationBlock:errorNotificationBlock];
+                } else {
+                    additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);
+                }
+                if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
+            }];
         }
     } else {
         NSString *displayedPrompt = promptMessage;
@@ -1429,9 +1455,10 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                 object:nil
-                                                              userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                  DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                  DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
+                                                              userInfo:@{
+                DSChainManagerNotificationChainKey: self.chain,
+                DSTransactionManagerNotificationTransactionKey: transaction,
+                DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
         });
     }

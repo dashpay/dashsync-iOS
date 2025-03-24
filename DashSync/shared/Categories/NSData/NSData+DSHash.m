@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSKeyManager.h"
 #import "NSData+DSHash.h"
 

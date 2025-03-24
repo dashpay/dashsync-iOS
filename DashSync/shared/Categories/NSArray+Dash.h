@@ -6,7 +6,7 @@
 //
 
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSKeyManager.h"
 #import "NSData+Dash.h"
 #import <Foundation/Foundation.h>

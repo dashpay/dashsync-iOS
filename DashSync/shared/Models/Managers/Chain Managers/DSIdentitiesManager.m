@@ -41,7 +41,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 #define ERROR_UNKNOWN_KEYS [NSError errorWithCode:500 localizedDescriptionKey:@"Identity has unknown keys"]
 #define ERROR_CONTRACT_SETUP [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]

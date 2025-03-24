@@ -6,7 +6,7 @@
 //  Copyright © 2019 dashcore. All rights reserved.
 //
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSError.h"
 
 #import "DSIdentity.h"

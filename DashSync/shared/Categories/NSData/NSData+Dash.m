@@ -33,7 +33,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
     NSCParameterAssert(key);
