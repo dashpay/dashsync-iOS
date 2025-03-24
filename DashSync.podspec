@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'DashSharedCore', '0.5.0'
+  s.dependency 'DashSharedCore', '0.5.1'
   s.dependency 'CocoaLumberjack', '3.7.2'
   s.ios.dependency 'DWAlertController', '0.2.1'
   s.dependency 'DSDynamicOptions', '0.1.2'
