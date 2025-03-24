@@ -494,7 +494,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 
-- (void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion {
+- (void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nullable error))completion {
     __block DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
     if (![self hasBlockchainIdentityExtendedPublicKeys]) {
         if (completion) {

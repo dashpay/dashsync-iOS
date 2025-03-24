@@ -227,7 +227,7 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 // MARK: - Identity
 
-- (void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)account forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion;
+- (void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)account forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nullable error))completion;
 
 - (void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount pinPrompt:(NSString *)prompt stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion;
 
