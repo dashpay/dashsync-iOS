@@ -170,9 +170,9 @@
     }
 }
 
-//- (NSUInteger)accountNumber {
-//    return [self indexAtPosition:[self length] - 3].u64[0] & ~BIP32_HARD;
-//}
+- (NSUInteger)accountNumber {
+    return [self indexAtPosition:[self length] - 3].u64[0] & ~BIP32_HARD;
+}
 
 // MARK: - Derivation Path Addresses
 
