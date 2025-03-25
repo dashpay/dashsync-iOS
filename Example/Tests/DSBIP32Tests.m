@@ -15,6 +15,7 @@
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSGapLimit.h"
 #import "DSKeyManager.h"
 #import "DSWallet+Identity.h"
 #import "DSWallet+Tests.h"
@@ -804,5 +805,30 @@
     
 }
 
+- (void)testAddressRegistration {
+    NSLog(@"SEED: %@ ", self.seed.hexString);
+    DSAccount *account = [self.wallet accountWithNumber:0];
+//    [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil];
+    UInt256 sourceUser1 = @"01".hexToData.SHA256;
+    UInt256 destinationUser2 = @"02".hexToData.SHA256;
+    DSDerivationPath *masterContactsDerivationPath = [account masterContactsDerivationPath];
+
+    DSIncomingFundsDerivationPath *incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationIdentityUniqueId:destinationUser2
+                                                                                                                                   sourceIdentityUniqueId:sourceUser1
+                                                                                                                                               forAccount:account
+                                                                                                                                                  onChain:self.chain];
+
+//    incomingFundsDerivationPath.account = account;
+    DMaybeOpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+
+    DSGapLimit *limit = [DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL];
+    
+    NSArray *addresses = [incomingFundsDerivationPath registerAddressesWithSettings:limit];
+    for (NSString *address in addresses) {
+        NSLog(@"IncomingFunds Address: %@", address);
+    }
+
+
+}
 
 @end
