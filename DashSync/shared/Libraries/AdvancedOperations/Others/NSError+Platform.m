@@ -108,7 +108,7 @@
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredRotatedChainLockSigNotPresent: {
             uint8_t index = ffi_ref->required_rotated_chain_lock_sig_not_present._0;
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_rotated_chain_lock_sig_not_present._1);
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Rotated ChainLock Signtature at index: %u: %@ (%@) not present", nil, index, u256_hex(block_hash), u256_reversed_hex(block_hash))];
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Rotated ChainLock Signature at index: %u: %@ (%@) not present", nil, index, u256_hex(block_hash), u256_reversed_hex(block_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredRotatedChainLockSigsNotPresent: {
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_rotated_chain_lock_sigs_not_present);

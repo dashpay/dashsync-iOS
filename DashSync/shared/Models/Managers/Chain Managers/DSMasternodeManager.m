@@ -47,6 +47,7 @@
 #define ENGINE_STORAGE_LOCATION(chain) [NSString stringWithFormat:@"MNL_ENGINE_%@.dat", chain.name]
 
 #define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
+#define SAVE_ERROR_STATE (1 && DEBUG)
 
 
 @interface DSMasternodeManager ()
@@ -102,20 +103,7 @@
 
 
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-//    BOOL has_last_queried_list_at_tip = dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_has_last_queried_qr_masternode_list_at_h(self.cache);
-//    uintptr_t mndiff_count = DMnDiffQueueCount(self.cache);
-//    uintptr_t qrinfo_count = DQrInfoQueueCount(self.cache);
-//    DSLog(@"%@ Masternode List Service emptied retrieval queue: mndiff: %lu, qrinfo: %lu tip queried? %u ", self.logPrefix, mndiff_count, qrinfo_count, has_last_queried_list_at_tip);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-//    dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_description(self.cache);
-//    DSLog(@"•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-//    if (!mndiff_count) {
-//        if (!qrinfo_count)
-//            [self.store removeOldMasternodeLists];
-//        if (has_last_queried_list_at_tip) {
-//            [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
-//        }
-//    }
+    [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
 }
 
 
@@ -192,6 +180,10 @@
     NSString *filePath = [bundle pathForResource:location ofType:@"dat"];
     return filePath ? [NSData dataWithContentsOfFile:filePath] : nil;
 }
+- (void)writeToDisk:(NSString *)location data:(NSData *)data {
+    DSLog(@"%@ •-• File %@ saved", self.logPrefix, location);
+    [data saveToFile:location inDirectory:NSCachesDirectory];
+}
 
 - (BOOL)restoreEngine {
     NSData *engineBytes = [self readFromDisk:ENGINE_STORAGE_LOCATION(self.chain)];
@@ -236,6 +228,7 @@
     BOOL restored = [self restoreEngine];
     if (!restored) {
         DSLog(@"%@ No Engine Stored", self.logPrefix);
+        // TODO: checkpoints don't work anymore, since old protocol version support was dropped
 //        restored = [self restoreFromCheckpoint];
 //        if (!restored)
 //            DSLog(@"%@ No Checkpoint Stored", self.logPrefix);
@@ -288,52 +281,9 @@
     return hasBlock;
 }
 
-
-//- (DMasternodeList *)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-//    DProcessorClear(self.processor);
-//    [self.chain.chainManager notifyMasternodeSyncStateChange:UINT32_MAX storedCount:0];
-//
-//    return [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
-//}
-
 - (DMasternodeList *)currentMasternodeList {
     return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list(self.processor);
 }
-
-//- (void)loadFileDistributedMasternodeLists {
-//    BOOL syncMasternodeLists = [[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList;
-//    BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
-//    if (!syncMasternodeLists || !useCheckpointMasternodeLists)
-//        return;
-//    DMasternodeList *list = self.currentMasternodeList;
-//    if (list) {
-//        DMasternodeListDtor(list);
-//        return;
-//    }
-//    DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
-//    if (!checkpoint ||
-//        self.chain.lastTerminalBlockHeight < checkpoint.height ||
-//        [self masternodeListForBlockHash:checkpoint.blockHash withBlockHeightLookup:nil]) {
-//        return;
-//    }
-//    DSLog(@"%@ processRequestFromFileForBlockHash -> %@", self.logPrefix, uint256_hex(checkpoint.blockHash));
-//    BOOL exist = [self processRequestFromFileForBlockHash:checkpoint.blockHash];
-//    if (exist) {
-////        TODO: re-implement
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification
-//                                                                object:nil
-//                                                              userInfo:@{
-//                DSChainManagerNotificationChainKey: self.chain,
-//                DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList
-//                ? [NSValue valueWithPointer:dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_get_last_queried_mn_masternode_list(self.processorCache)]
-//                    : [NSNull null]
-//            }];
-//        });
-//
-////        self.masternodeListDiffService.currentMasternodeList = result->ok->masternode_list;
-//    }
-//}
 
 - (void)wipeMasternodeInfo {
     DSLog(@"%@ wipeMasternodeInfo", self.logPrefix);
@@ -478,8 +428,6 @@
         //no need to remove local masternodes
         [self.masternodeListDiffService cleanListsRetrievalQueue];
         [self.quorumRotationService cleanListsRetrievalQueue];
-//        [self.store deleteAllOnChain];
-//        [self.store removeOldMasternodeLists];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self.chain.masternodeManager getRecentMasternodeList];
     } else {
@@ -559,11 +507,6 @@
     });
 }
 
-- (void)saveMessage:(NSData *)message name:(NSString *)fileName {
-    DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
-    [message saveToFile:fileName inDirectory:NSCachesDirectory];
-}
-
 - (void)tryToProcessQrInfo:(DSPeer *)peer message:(NSData *)message attempt:(uint8_t)attempt {
     //    uint32_t protocol_version = peer ? peer.version : self.chain.protocolVersion;
     __block NSUInteger numOfAttempt = attempt;
@@ -604,12 +547,22 @@
                     default:
                         break;
                 }
-    //        #if SAVE_MASTERNODE_DIFF_TO_FILE
-    //                NSString *fileName = [NSString stringWithFormat:@"QRINFO_ERR_%d.dat", peer.version];
-    //                DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
-    //                [message saveToFile:fileName inDirectory:NSCachesDirectory];
-    //        #endif
-
+            #if SAVE_MASTERNODE_DIFF_TO_FILE
+                    NSString *fileName = [NSString stringWithFormat:@"QRINFO_ERR_%d.dat", peer.version];
+                    DSLog(@"%@ •-• File %@ saved", self.logPrefix, fileName);
+                    [message saveToFile:fileName inDirectory:NSCachesDirectory];
+            #endif
+            #if SAVE_ERROR_STATE
+                Result_ok_Vec_u8_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError *bincode = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_serialize_engine(self.processor);
+                if (bincode->error) {
+                    NSError *error = [NSError ffi_from_processing_error:bincode->error];
+                    DSLog(@"%@ Engine: Error: %@", self.logPrefix, error);
+                } else {
+                    [self writeToDisk:ENGINE_STORAGE_LOCATION(self.chain) data:NSDataFromPtr(bincode->ok)];
+                }
+                Result_ok_Vec_u8_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_destroy(bincode);
+            #endif
+                
                 DQRInfoResultDtor(result);
                 dispatch_group_leave(self.processingGroup);
                 return;
@@ -656,6 +609,7 @@
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context
                                          withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
+    // TODO: this is not supported yet
 //    __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
 //    [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
 //                                                          completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
