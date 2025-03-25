@@ -1756,7 +1756,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     BOOL verified = [chainLock verifySignature];
     UInt256 clBlockHash = uint256_reverse(chainLock.blockHash);
     DSMerkleBlock *block = [self.chain blockForBlockHash:clBlockHash];
-    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
+    DSLog(@"[%@: %@:%d] relayed chain lock %@ (verified: %u)", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash), verified);
 
     if (block) {
         [self.chain addChainLock:chainLock];
