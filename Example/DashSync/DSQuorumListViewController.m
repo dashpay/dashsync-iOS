@@ -7,13 +7,11 @@
 //
 
 #import "DSQuorumListViewController.h"
-//#import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSQuorumTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
 
 @interface DSQuorumListViewController ()
-//@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 @property (nonatomic, strong) NSString *searchString;
 @property (nonatomic, assign) DMasternodeList *masternode_list;
 @end

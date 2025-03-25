@@ -33,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 @property (nullable, nonatomic, retain) NSSet<DSGovernanceObjectHashEntity *> *governanceObjectHashes;
 @property (nullable, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
-//@property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *quorums;
-//@property (nullable, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntryEntity *> *simplifiedMasternodeEntries;
 @property (nullable, nonatomic, retain) NSSet<DSSporkHashEntity *> *sporks;
 @property (nullable, nonatomic, retain) NSSet<DSTransactionHashEntity *> *transactionHashes;
 @property (nullable, nonatomic, retain) NSSet<DSGovernanceVoteHashEntity *> *votes;
@@ -75,16 +73,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addPeers:(NSSet<DSPeerEntity *> *)values;
 - (void)removePeers:(NSSet<DSPeerEntity *> *)values;
 
-//- (void)addQuorumsObject:(DSQuorumEntryEntity *)value;
-//- (void)removeQuorumsObject:(DSQuorumEntryEntity *)value;
-//- (void)addQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
-//- (void)removeQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
-//
-//- (void)addSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
-//- (void)removeSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
-//- (void)addSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
-//- (void)removeSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
-//
 - (void)addSporksObject:(DSSporkHashEntity *)value;
 - (void)removeSporksObject:(DSSporkHashEntity *)value;
 - (void)addSporks:(NSSet<DSSporkHashEntity *> *)values;

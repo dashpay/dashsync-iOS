@@ -21,7 +21,6 @@
 #import "DSProviderUpdateRevocationTransactionEntity+CoreDataProperties.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataProperties.h"
-//#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSWallet.h"
 #import "NSData+Dash.h"
@@ -64,8 +63,6 @@
     self.holdingKeysIndex = localMasternode.holdingWalletIndex;
     DSProviderRegistrationTransactionEntity *providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.providerRegistrationTransaction = providerRegistrationTransactionEntity;
-//    DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
-//    self.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity;
 
     for (DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction in localMasternode.providerUpdateServiceTransactions) {
         DSProviderUpdateServiceTransactionEntity *providerUpdateServiceTransactionEntity = [DSProviderUpdateServiceTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(providerUpdateServiceTransaction.txHash)];

@@ -9,7 +9,6 @@
 #import "DSSpecialTransactionEntity+CoreDataClass.h"
 #import <Foundation/Foundation.h>
 
-@class DSQuorumEntryEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

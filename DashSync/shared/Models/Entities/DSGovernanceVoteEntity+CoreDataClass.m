@@ -12,7 +12,6 @@
 #import "DSGovernanceVote.h"
 #import "DSGovernanceVoteEntity+CoreDataClass.h"
 #import "DSGovernanceVoteHashEntity+CoreDataClass.h"
-//#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 

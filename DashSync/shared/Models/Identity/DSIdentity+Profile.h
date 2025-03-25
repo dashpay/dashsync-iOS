@@ -82,8 +82,6 @@ NS_ASSUME_NONNULL_BEGIN
                             avatarURLString:(NSString *)avatarURLString
                                  avatarHash:(NSData *)avatarHash
                           avatarFingerprint:(NSData *)avatarFingerprint;
-//- (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext *)context
-//                                  withCompletion:(void (^)(DSTransition *transition, BOOL cancelled, NSError *error))completion;
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion;
 
 

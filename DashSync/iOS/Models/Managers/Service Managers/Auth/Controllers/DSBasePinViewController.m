@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)defaultTitle {
     return DSLocalizedFormat(@"PIN for %@", nil, DISPLAY_NAME);
-//    return [NSString stringWithFormat:DSLocalizedString(@"PIN for %@", nil), DISPLAY_NAME];
 }
 
 - (void)viewDidLoad {

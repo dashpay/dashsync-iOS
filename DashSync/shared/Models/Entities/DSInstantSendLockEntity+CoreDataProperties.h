@@ -20,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) uint8_t version;
 @property (assign, nonatomic) BOOL validSignature;
 @property (nullable, nonatomic, retain) DSTransactionEntity *transaction;
-//@property (nullable, nonatomic, retain) DSQuorumEntryEntity *quorum;
 
 @end
 

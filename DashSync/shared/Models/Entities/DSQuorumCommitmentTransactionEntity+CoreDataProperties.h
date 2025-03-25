@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSQuorumCommitmentTransactionEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, copy) NSNumber *quorumCommitmentHeight;
-@property (nullable, nonatomic, retain) DSQuorumEntryEntity *entry;
 
 @end
 

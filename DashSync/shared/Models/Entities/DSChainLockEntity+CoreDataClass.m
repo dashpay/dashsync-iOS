@@ -13,7 +13,6 @@
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-//#import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -29,11 +28,7 @@
     chainLockEntity.validSignature = chainLock.signatureVerified;
     chainLockEntity.signature = chainLock.signatureData;
     chainLockEntity.merkleBlock = merkleBlockEntity;
-//    chainLockEntity.quorum = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@", chainLock.intendedQuorumPublicKey];
-//    chainLockEntity.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
     if (chainLock.signatureVerified) {
-        
-//        DSChainEntity *chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:context];
         DSChainEntity *chainEntity = [chainLock.chain chainEntityInContext:context];
         if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < DChainLockBlockHeight(chainLock.lock)) {
             chainEntity.lastChainLock = chainLockEntity;

@@ -22,7 +22,6 @@
 #import "DSChain+Protected.h"
 #import "DSChain+Wallet.h"
 #import "DSCoinJoinManager.h"
-//#import "DSSimplifiedMasternodeEntry.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
 #import "DSSendCoinJoinQueue.h"

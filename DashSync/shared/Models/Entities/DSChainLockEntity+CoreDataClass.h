@@ -9,7 +9,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSMerkleBlockEntity, DSQuorumEntryEntity, DSChain, DSChainLock, DSChainEntity;
+@class DSMerkleBlockEntity, DSChain, DSChainLock, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

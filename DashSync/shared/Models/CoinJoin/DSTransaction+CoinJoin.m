@@ -20,7 +20,6 @@
 #import "DSTransaction.h"
 #import "DSTransaction+CoinJoin.h"
 #import "DSTransactionInput+CoinJoin.h"
-#import "DSTransactionOutput+CoinJoin.h"
 #import "NSData+Dash.h"
 #import "DSKeyManager.h"
 
@@ -84,7 +83,8 @@
     }
     
     for (uintptr_t i = 0; i < outputsCount; ++i) {
-        output_values[i] = [self.outputs[i] ffi_malloc:chainType];
+        DSTransactionOutput *output = self.outputs[i];
+        output_values[i] = DTxOutCtor(output.amount, DScriptBufCtor(bytes_ctor(output.outScript)));
     }
     DTransaction *transaction = DTransactionCtor(self.version, self.lockTime, DTxInputsCtor(inputsCount, input_values), DTxOutputsCtor(outputsCount, output_values), NULL);
     return transaction;

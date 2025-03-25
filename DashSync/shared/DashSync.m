@@ -212,10 +212,6 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     [context performBlockAndWait:^{
         DSChainEntity *chainEntity = [chain chainEntityInContext:context];
         [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
-//        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
-//        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-//        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-//        [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
         DSChainManager *chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager wipeMasternodeInfo];
         [context ds_save];

@@ -137,14 +137,6 @@
     return self;
 }
 
-//- (DMasternodeEntry *)masternode {
-//    if (!_masternode) {
-//        /// WTF? old fields ?
-//       self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@", [NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash], @(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
-//    }
-//    return _masternode;
-//}
-//
 - (void)signWithKey:(DOpaqueKey *)key {
     NSParameterAssert(key);
     // ECDSA

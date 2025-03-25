@@ -18,7 +18,6 @@
 #import "DSCoinJoinManager.h"
 #import "DSWallet.h"
 #import "DSTransaction+CoinJoin.h"
-#import "DSTransactionOutput+CoinJoin.h"
 #import "DSAccount.h"
 #import "DSChain+Params.h"
 #import "DSChain+Transaction.h"

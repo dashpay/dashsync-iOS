@@ -17,33 +17,6 @@
 
 #import "NSIndexPath+FFI.h"
 
-//@implementation NSIndexPath (FFI)
-//
-//- (Vec *)ffi_malloc {
-//    DIndexPathU32 *obj = malloc(sizeof(dash_spv_crypto_keys_key_IndexPathU32));
-//    NSUInteger *indexes = calloc(self.length, sizeof(NSUInteger));
-//    [self getIndexes:indexes];
-//    obj->indexes = Vec_u32_ctor(self.length, (uint32_t *) indexes);
-////    obj->len = self.length;
-//    return obj;
-//}
-//
-//+ (void)ffi_free:(DIndexPathU32 *)entry {
-//    if (entry->indexes > 0) {
-//        free((void *) entry->indexes);
-//    }
-//    if (entry->hardened > 0) {
-//        free((void *) entry->hardened);
-//    }
-//    free(entry);
-////    if (entry->len > 0) {
-////        free((void *) entry->indexes);
-////    }
-////    free(entry);
-//}
-//
-//@end
-
 @implementation NSIndexPath (Vec_u32)
 
 + (NSIndexPath *)ffi_from:(Vec_u32 *)ffi_ref {

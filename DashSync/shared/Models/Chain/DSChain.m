@@ -2043,10 +2043,6 @@ static dispatch_once_t devnetToken = 0;
     DSLog(@"[%@] Wiping Masternode Info", self.name);
     DSChainEntity *chainEntity = [self chainEntityInContext:context];
     [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
-//    [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
-//    [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-//    [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-//    [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
     [self.chainManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", self.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
 }

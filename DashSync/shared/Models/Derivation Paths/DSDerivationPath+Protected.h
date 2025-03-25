@@ -20,10 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *standaloneExtendedPublicKeyUniqueID;
 @property (nonatomic, weak) DSWallet *wallet;
 @property (nonatomic, nullable, readonly) NSString *standaloneExtendedPublicKeyLocationString;
-//@property (nonatomic, readonly) DSDerivationPathEntity *derivationPathEntity;
 @property (nonatomic, strong, readonly) NSData *extendedPrivateKeyData;
 
-//- (DSDerivationPathEntity *)derivationPathEntityInContext:(NSManagedObjectContext *)context;
 - (NSString *)walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:(NSString *)uniqueID;
 - (NSString *)createIdentifierForDerivationPath;
 

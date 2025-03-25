@@ -9,7 +9,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSQuorumEntryEntity, DSTransactionEntity, DSInstantSendTransactionLock, DSChain;
+@class DSTransactionEntity, DSInstantSendTransactionLock, DSChain;
 
 NS_ASSUME_NONNULL_BEGIN
 

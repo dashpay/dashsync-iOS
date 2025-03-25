@@ -232,9 +232,7 @@ void callback_can_sign_dtor(bool result) {}
 uint32_t get_block_height_by_hash_caller(const void *context, u256 *block_hash) {
     DSDashSharedCore *core = AS_OBJC(context);
     UInt256 blockHash = u256_cast(block_hash);
-//    UInt256 revBlockHash = uint256_reverse(blockHash);
     uint32_t height = [core.chain heightForBlockHash:blockHash];
-//    uint32_t rev_height = [core.chain heightForBlockHash:revBlockHash];
     
     if (height == UINT32_MAX && core.chain.allowInsightBlocksForVerification) {
         [core.chain blockUntilGetInsightForBlockHash:blockHash];
@@ -314,7 +312,6 @@ void notify_sync_state_caller(const void *context, DMNSyncState *state) {
                 break;
         }
         DMNSyncStateDtor(state);
-//        /*dash_spv_masternode_processor_processing_processor_cache_MasternodeProcessorCache_print_queue_description*/(core.chain.sharedCacheObj);
         [core.chain.chainManager notifySyncStateChanged];
     }
 }
