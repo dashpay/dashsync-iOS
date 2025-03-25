@@ -254,9 +254,12 @@
 }
 
 - (NSSet<NSData *> *)blockHashesUsedByMasternodeLists {
-    Vec_u8_32 *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_used_block_hashes(self.processor);
-    NSSet<NSData *> *blockHashes = [NSSet ffi_from_vec_u256:result];
-    Vec_u8_32_destroy(result);
+    std_collections_Map_keys_u32_values_u8_arr_32 *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_known_block_hashes(self.processor);
+    NSMutableSet<NSData *> *blockHashes = [NSMutableSet setWithCapacity:result->count];
+    for (int i = 0; i < result->count; i++) {
+        [blockHashes addObject:NSDataFromPtr(result->values[i])];
+    }
+    std_collections_Map_keys_u32_values_u8_arr_32_destroy(result);
     return blockHashes;
 }
 
@@ -568,7 +571,7 @@
             dispatch_group_enter(self.processingGroup);
             Slice_u8 *slice_msg = slice_ctor(message);
             
-            DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_qr_info_result_from_message(self.processor, slice_msg, true);
+            DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_qr_info_result_from_message(self.processor, slice_msg, true, true);
             if (result->error) {
                 NSError *error = [NSError ffi_from_processing_error:result->error];
                 DSLog(@"%@ qrinfo: Error: %@", self.logPrefix, error);
