@@ -137,7 +137,6 @@
     } else {
         return NO;
     }
-    //return [self verifySignatureWithQuorumOffset:8];
 }
 
 - (void)saveInitial {

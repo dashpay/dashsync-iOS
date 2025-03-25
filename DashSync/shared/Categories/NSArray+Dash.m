@@ -69,33 +69,6 @@
 
 @end
 
-//@implementation NSArray (HashSet_u8_32)
-//
-//+ (NSArray<NSData *> *)ffi_from_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref {
-//    NSMutableArray<NSData *> *arr = [NSMutableArray arrayWithCapacity:ffi_ref->count];
-//    for (int i = 0; i < ffi_ref->count; i++) {
-//        u256 *chunk = ffi_ref->values[i];
-//        NSData *data = NSDataFromPtr(chunk);
-//        [arr addObject:data];
-//    }
-//    return arr;
-//}
-//+ (std_collections_HashSet_u8_32 *)ffi_to_hash_set:(NSArray<NSData *> *)obj {
-//    std_collections_HashSet_u8_32 *set = malloc(sizeof(std_collections_HashSet_u8_32));
-//    u256 **values = malloc(obj.count * sizeof(u256 *));
-//    for (NSUInteger i = 0; i < obj.count; i++) {
-//        NSData *data = obj[i];
-//        values[i] = u256_ctor(data);
-//    }
-//    set->count = obj.count;
-//    set->values = values;
-//    return set;
-//}
-//+ (void)ffi_destroy_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref {
-//    std_collections_HashSet_u8_32_destroy(ffi_ref);
-//}
-//@end
-
 @implementation NSArray (_)
 
 + (NSArray<NSString *> *)ffi_from_vec:(Vec_ *)ffi_ref {

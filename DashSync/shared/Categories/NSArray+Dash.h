@@ -25,12 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-//@interface NSArray (HashSet_u8_32)
-//+ (NSArray<NSData *> *)ffi_from_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref;
-//+ (std_collections_HashSet_u8_32 *)ffi_to_hash_set:(NSArray<NSData *> *)obj;
-//+ (void)ffi_destroy_hash_set:(std_collections_HashSet_u8_32 *)ffi_ref;
-//@end
-
 @interface NSArray (_)
 + (NSArray<NSString *> *)ffi_from_vec:(Vec_ *)ffi_ref;
 + (Vec_ *)ffi_to_vec:(NSArray<NSString *> *)obj;

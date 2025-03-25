@@ -25,9 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)removeAllTransactions;
 
-
-//- (DSCreditFundingTransaction *)creditFundingTransactionForIdentityUniqueId:(UInt256)identityUniqueId;
-
 //// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
 //- (DSIdentityRegistrationTransition*)identityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 //

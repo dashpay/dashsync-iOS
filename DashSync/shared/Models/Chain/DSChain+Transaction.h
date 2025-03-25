@@ -31,9 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief Returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered) */
 - (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;
 
-///*! @brief Returns the direction of a transaction for the chain (Sent - Received - Moved - Not Account Funds) */
-//- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
-
 /*! @brief Returns the amount received globally from the transaction (total outputs to change and/or receive addresses) */
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
 

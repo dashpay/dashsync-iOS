@@ -284,10 +284,6 @@
     }];
 }
 
-//- (DSCreditFundingTransaction *)creditFundingTransactionForIdentityUniqueId:(UInt256)identityUniqueId {
-//    return [self.creditFundingTransactions objectForKey:uint256_data(identityUniqueId)];
-//}
-//
 //// MARK: == Blockchain Identities Transaction Retrieval
 //
 //-(DSIdentityRegistrationTransition*)identityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {

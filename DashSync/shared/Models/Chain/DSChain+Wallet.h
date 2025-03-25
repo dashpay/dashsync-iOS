@@ -85,7 +85,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*! @brief Returns all accounts to which the given transaction is or can be associated with (even if it hasn't been registered)  */
 - (NSArray *)accountsThatCanContainTransaction:(DSTransaction *_Nonnull)transaction;
-//- (NSArray *)accountsThatCanContainRustTransaction:(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *_Nonnull)transaction;
 
 /*! @brief Returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet.  */
 - (DSAccount *_Nullable)firstAccountForTransactionHash:(UInt256)txHash

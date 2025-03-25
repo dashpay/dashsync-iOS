@@ -43,14 +43,6 @@ FOUNDATION_EXPORT NSString *const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString *const DSChainInitialHeadersDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString *const DSChainBlocksDidFinishSyncingNotification;
 
-//typedef NS_ENUM(NSUInteger, DSTransactionDirection)
-//{
-//    DSTransactionDirection_Sent,
-//    DSTransactionDirection_Received,
-//    DSTransactionDirection_Moved,
-//    DSTransactionDirection_NotAccountFunds,
-//};
-
 typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 {
     DSChainSyncPhase_Offline = 0,
@@ -82,8 +74,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, nullable) DArcProcessor *sharedProcessor;
 @property (nonatomic, nullable) DProcessor *sharedProcessorObj;
 /*! @brief Masternode Processor Cache Reference  */
-//@property (nonatomic, nullable) DArcCache *sharedCache;
-//@property (nonatomic, nullable) DCache *sharedCacheObj;
 @property (nonatomic, nullable) DArcPlatformSDK *sharedPlatform;
 @property (nonatomic, nullable) PlatformSDK *sharedPlatformObj;
 @property (nonatomic, nullable) ContactRequestManager *sharedContactsObj;
@@ -98,13 +88,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief The managed object context of the chain.  */
 @property (nonatomic, readonly) NSManagedObjectContext *chainManagedObjectContext;
-
-// MARK: - L1 Network Chain Info
-
-///*! @brief An array of known hard coded checkpoints for the chain.  */
-//@property (nonatomic, readonly) NSArray<DSCheckpoint *> *checkpoints;
-
-
 
 
 // MARK: - DashSync Chain Info

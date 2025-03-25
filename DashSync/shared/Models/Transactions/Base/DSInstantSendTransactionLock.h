@@ -25,9 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSData *cycleHashData;
 
 @property (nonatomic, readonly) BOOL signatureVerified; //verifies the signature and quorum together
-//@property (nonatomic, readonly) NSData *intendedQuorumPublicKey;
 @property (nonatomic, readonly) BOOL saved;
-//@property (nonatomic, readonly) UInt256 requestID;
 
 @property (nonatomic, readonly, getter=isDeterministic) BOOL deterministic;
 

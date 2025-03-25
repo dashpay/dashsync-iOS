@@ -34,14 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) DChainLock *lock;
 @property (nonatomic, readonly) DSChain *chain;
-//@property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) NSData *blockHashData;
 @property (nonatomic, readonly) UInt768 signature;
 @property (nonatomic, readonly) NSData *signatureData;
 @property (nonatomic, readonly) BOOL signatureVerified;
 @property (nonatomic, readonly) BOOL saved;
-//@property (nonatomic, readonly) NSData *intendedQuorumPublicKey;
 
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain;

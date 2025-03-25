@@ -141,7 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isCore19Active;
 - (BOOL)isCore20Active;
 - (BOOL)isCore20ActiveAtHeight:(uint32_t)height;
-//- (KeyKind)activeBLSType;
 
 @end
 
