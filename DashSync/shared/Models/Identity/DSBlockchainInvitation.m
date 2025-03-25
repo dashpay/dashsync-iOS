@@ -297,7 +297,7 @@
         }];
 }
 
-- (void)createInvitationFullLinkFromIdentity:(DSBlockchainIdentity *)identity completion:(void (^_Nullable)(BOOL cancelled, NSString *invitationFullLink))completion {
+- (void)createInvitationFullLinkFromIdentity:(DSBlockchainIdentity *)identity completion:(void (^_Nullable)(BOOL cancelled, NSString * _Nullable invitationFullLink))completion {
     if (!self.identity.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing) {
         if (completion) {
             completion(NO, nil);

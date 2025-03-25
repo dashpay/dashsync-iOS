@@ -88,7 +88,7 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 /*! @brief Create the invitation full link and mark the "fromIdentity" as the source of the invitation.
     @param identity The source of the invitation.
 */
-- (void)createInvitationFullLinkFromIdentity:(DSBlockchainIdentity *)identity completion:(void (^_Nullable)(BOOL cancelled, NSString *invitationFullLink))completion;
+- (void)createInvitationFullLinkFromIdentity:(DSBlockchainIdentity *)identity completion:(void (^_Nullable)(BOOL cancelled, NSString * _Nullable invitationFullLink))completion;
 
 
 @end
