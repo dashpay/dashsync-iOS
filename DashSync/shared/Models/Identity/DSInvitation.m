@@ -383,7 +383,7 @@
 }
 
 - (void)createInvitationFullLinkFromIdentity:(DSIdentity *)identity
-                                  completion:(void (^_Nullable)(BOOL cancelled, NSString *invitationFullLink))completion {
+                                  completion:(void (^_Nullable)(BOOL cancelled, NSString *_Nullable invitationFullLink))completion {
     if (!self.identity.registrationAssetLockTransaction.instantSendLockAwaitingProcessing) {
         if (completion) completion(NO, nil);
         return;

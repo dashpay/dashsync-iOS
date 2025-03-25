@@ -57,27 +57,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityQueryStep)
     DSIdentityQueryStep_Cancelled = 1 << 30
 };
 
-//typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStatus)
-//{
-//    DSIdentityRegistrationStatus_Unknown = 0,
-//    DSIdentityRegistrationStatus_Registered = 1,
-//    DSIdentityRegistrationStatus_Registering = 2,
-//    DSIdentityRegistrationStatus_NotRegistered = 3, //sent to DAPI, not yet confirmed
-//};
-
-//typedef NS_ENUM(NSUInteger, DSIdentityUsernameStatus)
-//{
-//    DSIdentityUsernameStatus_NotPresent = 0,
-//    DSIdentityUsernameStatus_Initial = 1,
-//    DSIdentityUsernameStatus_PreorderRegistrationPending = 2,
-//    DSIdentityUsernameStatus_Preordered = 3,
-//    DSIdentityUsernameStatus_RegistrationPending = 4, //sent to DAPI, not yet confirmed
-//    DSIdentityUsernameStatus_Confirmed = 5,
-//    DSIdentityUsernameStatus_TakenOnNetwork = 6,
-//    DSIdentityUsernameStatus_VotingPeriod = 7,
-//    DSIdentityUsernameStatus_Locked = 8,
-//};
-
 typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
 {
     DSIdentityFriendshipStatus_Unknown = NSUIntegerMax,
@@ -86,20 +65,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityFriendshipStatus)
     DSIdentityFriendshipStatus_Incoming = 2,
     DSIdentityFriendshipStatus_Friends = DSIdentityFriendshipStatus_Outgoing | DSIdentityFriendshipStatus_Incoming,
 };
-
-//typedef NS_ENUM(NSUInteger, DSIdentityKeyStatus)
-//{
-//    DSIdentityKeyStatus_Unknown = 0,
-//    DSIdentityKeyStatus_Registered = 1,
-//    DSIdentityKeyStatus_Registering = 2,
-//    DSIdentityKeyStatus_NotRegistered = 3,
-//    DSIdentityKeyStatus_Revoked = 4,
-//};
-
-//#define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
-//#define BLOCKCHAIN_USERNAME_PROPER @"BLOCKCHAIN_USERNAME_PROPER"
-//#define BLOCKCHAIN_USERNAME_DOMAIN @"BLOCKCHAIN_USERNAME_DOMAIN"
-//#define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
 #define ERROR_MEM_ALLOC [NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]
 #define ERROR_MALFORMED_RESPONSE [NSError errorWithCode:501 localizedDescriptionKey:@"Malformed platform response"]
@@ -218,13 +183,6 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
 
-//- (BOOL)verifySignature:(NSData *)signature
-//            forKeyIndex:(uint32_t)keyIndex
-//                 ofType:(DKeyKind *)signingAlgorithm
-//       forMessageDigest:(UInt256)messageDigest;
-//- (BOOL)verifySignature:(NSData *)signature
-//                 ofType:(DKeyKind *)signingAlgorithm
-//       forMessageDigest:(UInt256)messageDigest;
 - (void)createFundingPrivateKeyWithPrompt:(NSString *)prompt
                                completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
 - (void)createFundingPrivateKeyForInvitationWithPrompt:(NSString *)prompt
@@ -235,11 +193,6 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                  fundedByAccount:(DSAccount *)fundingAccount
                                        pinPrompt:(NSString *)prompt
                                   withCompletion:(void (^)(BOOL, NSError *_Nullable))completion;
-
-
-//- (NSData *)encryptData:(NSData *)data
-//         withKeyAtIndex:(uint32_t)index
-//        forRecipientKey:(DOpaqueKey *)recipientPublicKey;
 
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
 */
@@ -273,7 +226,6 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                          purpose:(DPurpose *)purpose
                                          saveKey:(BOOL)saveKey
                                      returnIndex:(uint32_t *)rIndex;
-//- (DMaybeOpaqueKey *)keyOfType:(DKeyKind *)type atIndex:(uint32_t)rIndex;
 - (BOOL)containsPublicKey:(DIdentityPublicKey *)identity_public_key;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error;
