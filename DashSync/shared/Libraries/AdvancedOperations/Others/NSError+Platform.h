@@ -38,5 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSError *)ffi_from_processing_error:(DProcessingError *)ffi_ref;
 @end
 
+@interface NSError (dashcore_sml_error_SmlError)
++ (NSError *)ffi_from_sml_error:(dashcore_sml_error_SmlError *)ffi_ref;
+@end
 
 NS_ASSUME_NONNULL_END

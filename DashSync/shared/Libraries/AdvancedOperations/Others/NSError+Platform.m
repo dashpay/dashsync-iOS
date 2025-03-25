@@ -93,10 +93,7 @@
     switch (ffi_ref->tag) {
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockNotPresent: {
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_block_not_present);
-            NSString *blockHashString = u256_hex(block_hash);
-            NSString *blockHashRevString = u256_reversed_hex(block_hash);
-//            u256_dtor(block_hash);
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required block %@ (%@) not present", nil, blockHashString, blockHashRevString)];
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required block %@ (%@) not present", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockHeightNotPresent:
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required block height (%u) not present", nil, ffi_ref->required_block_height_not_present->_0)];
@@ -106,10 +103,16 @@
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required MasternodeList (%u) not present", nil, ffi_ref->required_masternode_list_not_present->_0)];
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredChainLockNotPresent: {
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_chain_lock_not_present._1);
-            NSString *blockHashString = u256_hex(block_hash);
-            NSString *blockHashRevString = u256_reversed_hex(block_hash);
-//            u256_dtor(block_hash);
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required ChainLock %u: %@ (%@) not present", nil, ffi_ref->required_chain_lock_not_present._0->_0, blockHashString, blockHashRevString)];
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required ChainLock %u: %@ (%@) not present", nil, ffi_ref->required_chain_lock_not_present._0->_0, u256_hex(block_hash), u256_reversed_hex(block_hash))];
+        }
+        case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredRotatedChainLockSigNotPresent: {
+            uint8_t index = ffi_ref->required_rotated_chain_lock_sig_not_present._0;
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_rotated_chain_lock_sig_not_present._1);
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Rotated ChainLock Signtature at index: %u: %@ (%@) not present", nil, index, u256_hex(block_hash), u256_reversed_hex(block_hash))];
+        }
+        case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredRotatedChainLockSigsNotPresent: {
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_rotated_chain_lock_sigs_not_present);
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required ChainLock Signatures %@ (%@) not present", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_InsufficientSigners:
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Insufficient Signers (%llu/%llu)", nil, ffi_ref->insufficient_signers.found, ffi_ref->insufficient_signers.required)];
@@ -135,25 +138,19 @@
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Commitment Hash not present", nil)];
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredSnapshotNotPresent: {
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_snapshot_not_present);
-            NSString *blockHashString = u256_hex(block_hash);
-//            u256_dtor(block_hash);
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Snapshot (%@) not present", nil, blockHashString)];
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Snapshot (%@) not present", nil, u256_hex(block_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_SMLError:
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SML Error", nil)];
+            return [NSError ffi_from_sml_error:ffi_ref->sml_error];
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredQuorumIndexNotPresent: {
             u256 *quorum_hash = dashcore_hash_types_QuorumHash_inner(ffi_ref->required_quorum_index_not_present);
-            NSString *quorumHashString = u256_hex(quorum_hash);
-//            u256_dtor(quorum_hash);
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Quorum Index (%@) not present", nil, quorumHashString)];
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Required Quorum Index (%@) not present", nil, u256_hex(quorum_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_CorruptedCodeExecution:
             return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Corruped Code Execution (%@)", nil, NSStringFromPtr(ffi_ref->all_commitment_aggregated_signature_not_valid))];
         case dashcore_sml_quorum_validation_error_QuorumValidationError_ExpectedOnlyRotatedQuorums: {
             u256 *quorum_hash = dashcore_hash_types_QuorumHash_inner(ffi_ref->expected_only_rotated_quorums._0);
-            NSString *quorumHashString = u256_hex(quorum_hash);
-//            u256_dtor(quorum_hash);
-            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Expected Only Rotated Quorums (%u: %@)", nil, dashcore_sml_llmq_type_LLMQType_index(ffi_ref->expected_only_rotated_quorums._1), quorumHashString)];
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"Expected Only Rotated Quorums (%u: %@)", nil, dashcore_sml_llmq_type_LLMQType_index(ffi_ref->expected_only_rotated_quorums._1), u256_hex(quorum_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_ClientDataRetrievalError:
             return [NSError ffi_from_client_data_retrieval_error:ffi_ref->client_data_retrieval_error];
@@ -212,4 +209,42 @@
     }
 }
 @end
+
+@implementation NSError (dashcore_sml_error_SmlError)
++ (NSError *)ffi_from_sml_error:(dashcore_sml_error_SmlError *)ffi_ref {
+    switch (ffi_ref->tag) {
+        case dashcore_sml_error_SmlError_BaseBlockNotGenesis: {
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->base_block_not_genesis);
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::BaseBlockNotGenesis %@ (%@)", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
+        }
+        case dashcore_sml_error_SmlError_BlockHashLookupFailed: {
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->block_hash_lookup_failed);
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::BlockHashLookupFailed %@ (%@)", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
+        }
+        case dashcore_sml_error_SmlError_IncompleteMnListDiff:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::IncompleteMnListDiff", nil)];
+        case dashcore_sml_error_SmlError_MissingStartMasternodeList: {
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->missing_start_masternode_list);
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::MissingStartMasternodeList %@ (%@)", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
+        }
+        case dashcore_sml_error_SmlError_BaseBlockHashMismatch: {
+            u256 *block_hash_expected = dashcore_hash_types_BlockHash_inner(ffi_ref->base_block_hash_mismatch.expected);
+            u256 *block_hash_found = dashcore_hash_types_BlockHash_inner(ffi_ref->base_block_hash_mismatch.found);
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::BaseBlockHashMismatch: expected: %@ (%@), found: %@ (%@)", nil, u256_hex(block_hash_expected), u256_hex(block_hash_expected), u256_hex(block_hash_found), u256_hex(block_hash_found))];
+        }
+        case dashcore_sml_error_SmlError_UnknownError:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::UnknownError", nil)];
+        case dashcore_sml_error_SmlError_CorruptedCodeExecution:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::CorruptedCodeExecution: %@", nil, NSStringFromPtr(ffi_ref->corrupted_code_execution))];
+        case dashcore_sml_error_SmlError_FeatureNotTurnedOn:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::FeatureNotTurnedOn: %@", nil, NSStringFromPtr(ffi_ref->feature_not_turned_on))];
+        case dashcore_sml_error_SmlError_InvalidIndexInSignatureSet:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::InvalidIndexInSignatureSet: %u", nil, ffi_ref->invalid_index_in_signature_set)];
+        case dashcore_sml_error_SmlError_IncompleteSignatureSet:
+            return [NSError errorWithCode:0 localizedDescriptionKey:DSLocalizedFormat(@"SmlError::IncompleteSignatureSet", nil)];
+    }
+}
+@end
+
+
 
