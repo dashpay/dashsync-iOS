@@ -1754,13 +1754,9 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
 
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
-    UInt256 clBlockHash = chainLock.blockHash;
-    UInt256 clBlockHashRev = uint256_reverse(clBlockHash);
-    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
-
+    UInt256 clBlockHash = uint256_reverse(chainLock.blockHash);
     DSMerkleBlock *block = [self.chain blockForBlockHash:clBlockHash];
-    if (!block)
-        block = [self.chain blockForBlockHash:clBlockHashRev];
+    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
 
     if (block) {
         [self.chain addChainLock:chainLock];
