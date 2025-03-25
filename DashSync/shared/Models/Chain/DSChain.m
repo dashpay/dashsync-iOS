@@ -2189,9 +2189,9 @@ static dispatch_once_t devnetToken = 0;
             NSSet<NSData *> *blockSet = [[self.masternodeManager blockHashesUsedByMasternodeLists] setByAddingObjectsFromArray:blocks.allKeys];
             NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blockSet];
 //            NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
-            for (DSMerkleBlockEntity *e in oldBlockHeaders) {
-                DSLog(@"[%@] remove MerkleBlockEntity: %u: %@", self.name, e.height, e.blockHash.hexString);
-            }
+//            for (DSMerkleBlockEntity *e in oldBlockHeaders) {
+//                DSLog(@"[%@] remove MerkleBlockEntity: %u: %@", self.name, e.height, e.blockHash.hexString);
+//            }
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];
