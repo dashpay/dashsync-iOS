@@ -7,13 +7,11 @@
 
 #import "DSInstantSendTransactionLock.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSInstantSendLockEntity+CoreDataClass.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
-#import "DSQuorumEntry.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSSporkManager.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
@@ -24,27 +22,28 @@
 @interface DSInstantSendTransactionLock ()
 
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, assign) uint8_t version;
-@property (nonatomic, assign) UInt256 transactionHash;
-@property (nonatomic, assign) UInt256 requestID;
-@property (nonatomic, assign) UInt256 cycleHash;
-@property (nonatomic, strong) NSArray *inputOutpoints;
+@property (nonatomic, assign) DInstantLock *lock;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
-@property (nonatomic, strong) DSQuorumEntry *intendedQuorum;
 @property (nonatomic, assign) BOOL saved;
-@property (nonatomic, assign) UInt768 signature;
 
 @end
 
 @implementation DSInstantSendTransactionLock
 
+- (void)dealloc {
+    if (_lock) {
+        DInstantLockDtor(_lock);
+        _lock = NULL;
+    }
+}
+
 + (instancetype)instantSendTransactionLockWithNonDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
-    return [[self alloc] initWithNonDeterministicMessage:message onChain:chain];
+    return [[self alloc] initWithMessage:message onChain:chain];
 }
 
 + (instancetype)instantSendTransactionLockWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
-    return [[self alloc] initWithDeterministicMessage:message onChain:chain];
+    return [[self alloc] initWithMessage:message onChain:chain];
 }
 
 - (instancetype)init {
@@ -61,181 +60,96 @@
     return self;
 }
 
-//transaction hash (32)
-//transaction outpoint (36)
-//masternode outpoint (36)
-//if spork 15 is active
-//  quorum hash 32
-//  confirmed hash 32
-//masternode signature
-//   size - varint
-//   signature 65 or 96 depending on spork 15
-- (instancetype)initWithNonDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
     if (![chain.chainManager.sporkManager deterministicMasternodeListEnabled] || ![chain.chainManager.sporkManager llmqInstantSendEnabled]) return nil;
-    uint32_t off = 0;
-    NSNumber *l = 0;
-    uint64_t count = 0;
-    self.signatureVerified = NO;
-    self.quorumVerified = NO;
-    @autoreleasepool {
-        self.chain = chain;
-        count = [message varIntAtOffset:off length:&l]; // input count
-        off += l.unsignedIntegerValue;
-        NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
-        for (NSUInteger i = 0; i < count; i++) { // inputs
-            DSUTXO outpoint = [message transactionOutpointAtOffset:off];
-            off += 36;
-            [mutableInputOutpoints addObject:dsutxo_data(outpoint)];
-        }
-        self.inputOutpoints = [mutableInputOutpoints copy];
-
-        self.transactionHash = [message UInt256AtOffset:off]; // tx
-        //DSLogPrivate(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
-        off += sizeof(UInt256);
-
-        self.signature = [message UInt768AtOffset:off];
-        NSAssert(uint768_is_not_zero(self.signature), @"signature must be set");
-    }
-
+    self.lock = dash_spv_masternode_processor_processing_instant_lock_from_message(slice_ctor(message));
     return self;
 }
 
-- (instancetype)initWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
-    if (!(self = [self initOnChain:chain])) return nil;
-    if (![chain.chainManager.sporkManager deterministicMasternodeListEnabled] || ![chain.chainManager.sporkManager llmqInstantSendEnabled]) return nil;
-    NSUInteger off = 0;
-    NSNumber *l = 0;
-    uint64_t count = 0;
-    self.version = [message readUInt8AtOffset:&off];
-    self.signatureVerified = NO;
-    self.quorumVerified = NO;
-    @autoreleasepool {
-        self.chain = chain;
-        count = [message varIntAtOffset:off length:&l]; // input count
-        off += l.unsignedIntegerValue;
-        NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
-        for (NSUInteger i = 0; i < count; i++) { // inputs
-            DSUTXO outpoint = [message transactionOutpointAtOffset:off];
-            off += 36;
-            [mutableInputOutpoints addObject:dsutxo_data(outpoint)];
-        }
-        self.inputOutpoints = [mutableInputOutpoints copy];
+- (uint8_t)version {
+    return dashcore_ephemerealdata_instant_lock_InstantLock_get_version(self.lock);
+}
 
-        self.transactionHash = [message readUInt256AtOffset:&off]; // tx
-        //DSLogPrivate(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
+- (NSData *)transactionHashData {
+    u256 *tx_hash = dash_spv_masternode_processor_processing_instant_lock_tx_hash(self.lock);
+    NSData *data = NSDataFromPtr(tx_hash);
+    u256_dtor(tx_hash);
+    return data;
+}
 
-        self.cycleHash = [message readUInt256AtOffset:&off]; // tx
-        
-        self.signature = [message UInt768AtOffset:off];
-        NSAssert(uint768_is_not_zero(self.signature), @"signature must be set");
-    }
+- (NSData *)signatureData {
+    u768 *sig = dash_spv_masternode_processor_processing_instant_lock_signature(self.lock);
+    NSData *data = NSDataFromPtr(sig);
+    u768_dtor(sig);
+    return data;
+}
 
-    return self;
+- (NSData *)cycleHashData {
+    u256 *cycle_hash = dash_spv_masternode_processor_processing_instant_lock_cycle_hash(self.lock);
+    NSData *data = NSDataFromPtr(cycle_hash);
+    u256_dtor(cycle_hash);
+    return data;
+}
+
+- (DOutPoints *)inputOutpoints {
+    return dash_spv_masternode_processor_processing_instant_lock_outpoints(self.lock);
+}
+
+- (DOutPoint *)inputOutpointAtIndex:(uintptr_t)index {
+    return dash_spv_masternode_processor_processing_instant_lock_outpoint_at_index(self.lock, index);
 }
 
 - (NSData *)toData {
-    NSMutableData *mData = [NSMutableData data];
-    [mData appendVarInt:self.inputOutpoints.count];
-    for (NSData *inputOutpoints in self.inputOutpoints) {
-        [mData appendUTXO:inputOutpoints.transactionOutpoint];
+    if (self.lock) {
+        Vec_u8 *result = dash_spv_masternode_processor_processing_instant_lock_to_message(self.lock);
+        NSData *data = NSDataFromPtr(result);
+        Vec_u8_destroy(result);
+        return data;
     }
-    [mData appendUInt256:self.transactionHash];
-    [mData appendUInt768:self.signature];
-    return [mData copy];
+    return nil;
 }
 
-- (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray *)inputOutpoints signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain {
+- (instancetype)initWithTransactionHash:(NSData *)transactionHash
+                     withInputOutpoints:(NSArray *)inputOutpoints
+                                version:(uint8_t)version
+                              signature:(NSData *)signature
+                              cycleHash:(NSData *)cycleHash
+                      signatureVerified:(BOOL)signatureVerified
+                         quorumVerified:(BOOL)quorumVerified
+                                onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
-    self.transactionHash = transactionHash;
-    self.inputOutpoints = inputOutpoints;
+    NSUInteger inputsCount = inputOutpoints.count;
+    DOutPoint **values = malloc(sizeof(DOutPoint *) * inputsCount);
+    for (int i = 0; i < inputsCount; i++) {
+        NSData *inputBytes = inputOutpoints[i];
+        values[i] = DOutPointFromMessage(slice_ctor(inputBytes));
+    }
+    DOutPoints *inputs = DOutPointsCtor(inputsCount, values);
+    
+    DTxid *txid = DTxidCtor(u256_ctor(transactionHash));
+    DCycleHash *chash = dashcore_hash_types_CycleHash_ctor(u256_ctor(cycleHash));
+    self.lock = DInstantLockCtor(version, inputs, txid, chash, DBLSSignatureCtor(u768_ctor(signature)));
     self.signatureVerified = signatureVerified;
-    self.signature = signature;
     self.quorumVerified = quorumVerified;
     self.saved = YES; //this is coming already from the persistant store and not from the network
     return self;
 }
 
 
-- (UInt256)requestID {
-    if (uint256_is_not_zero(_requestID)) return _requestID;
-    NSMutableData *data = [NSMutableData data];
-    [data appendString:@"islock"];
-    [data appendVarInt:self.inputOutpoints.count];
-    for (NSData *input in self.inputOutpoints) {
-        [data appendData:input];
-    }
-    _requestID = [data SHA256_2];
-    DSLogPrivate(@"[%@] the request ID is %@", self.chain.name, uint256_hex(_requestID));
-    return _requestID;
-}
-
-- (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
-    NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:quorum_type_for_is_locks(self.chain.chainType)];
-    [data appendUInt256:quorumEntry.quorumHash];
-    [data appendUInt256:self.requestID];
-    [data appendUInt256:self.transactionHash];
-    return [data SHA256_2];
-}
-
-- (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
-    UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    return key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
-}
-
-- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
-    DSQuorumEntry *foundQuorum = nil;
-    LLMQType ISLockQuorumType = quorum_type_for_is_locks(self.chain.chainType);
-    for (DSMasternodeList *masternodeList in [self.chain.chainManager.masternodeManager.recentMasternodeLists copy]) {
-        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:ISLockQuorumType] allValues]) {
-            BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
-            if (signatureVerified) {
-                foundQuorum = quorumEntry;
-                if (returnMasternodeList) *returnMasternodeList = masternodeList;
-                break;
-            }
-        }
-        if (foundQuorum) break;
-    }
-    return foundQuorum;
-}
-
-- (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
-    if (quorumEntry && quorumEntry.verified) {
-        self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
-        if (!self.signatureVerified) {
-            DSLog(@"[%@] unable to verify IS signature with offset %d", self.chain.name, offset);
-        } else {
-            DSLog(@"[%@] IS signature verified with offset %d", self.chain.name, offset);
-        }
-
-    } else if (quorumEntry) {
-        DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, uint256_hex(quorumEntry.quorumHash));
-    } else {
-        DSLog(@"[%@] no quorum entry found", self.chain.name);
-    }
-    if (self.signatureVerified) {
-        self.intendedQuorum = quorumEntry;
-    } else if (quorumEntry.verified && offset == 8) {
-        //try again a few blocks more in the past
-        DSLog(@"[%@] trying with offset 0", self.chain.name);
-        return [self verifySignatureWithQuorumOffset:0];
-    } else if (quorumEntry.verified && offset == 0) {
-        //try again a few blocks more in the future
-        DSLog(@"[%@] trying with offset 16", self.chain.name);
-        return [self verifySignatureWithQuorumOffset:16];
-    }
-    DSLog(@"[%@] returning signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
-    return self.signatureVerified;
-}
-
 - (BOOL)verifySignature {
-    // TODO: Need to implement
-    return TRUE;
-    //
-    return [self verifySignatureWithQuorumOffset:8];
+    if (self.lock) {
+#if defined(DASHCORE_MESSAGE_VERIFICATION)
+        DMessageVerificationResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_verify_is_lock(self.chain.sharedProcessorObj, self.lock);
+        BOOL verified = result->ok;
+        DMessageVerificationResultDtor(result);
+        return verified;
+#else
+        return YES;
+#endif
+    } else {
+        return NO;
+    }
 }
 
 - (void)saveInitial {
@@ -244,7 +158,7 @@
     NSManagedObjectContext *context = self.chain.chainManagedObjectContext;
     //saving here will only create, not update.
     [context performBlockAndWait:^{ // add the transaction to core data
-        if ([DSInstantSendLockEntity countObjectsInContext:context matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
+        if ([DSInstantSendLockEntity countObjectsInContext:context matching:@"transaction.transactionHash.txHash == %@", [self transactionHashData]] == 0) {
             [DSInstantSendLockEntity instantSendLockEntityFromInstantSendLock:self inContext:context];
             [context ds_save];
         }
@@ -260,8 +174,7 @@
     //saving here will only create, not update.
     NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     [context performBlockAndWait:^{ // add the transaction to core data
-        NSArray *instantSendLocks = [DSInstantSendLockEntity objectsInContext:context matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)];
-
+        NSArray *instantSendLocks = [DSInstantSendLockEntity objectsInContext:context matching:@"transaction.transactionHash.txHash == %@", [self transactionHashData]];
         DSInstantSendLockEntity *instantSendLockEntity = [instantSendLocks firstObject];
         if (instantSendLockEntity) {
             instantSendLockEntity.validSignature = TRUE;

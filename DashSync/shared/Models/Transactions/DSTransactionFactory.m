@@ -8,18 +8,12 @@
 #import "DSAssetLockTransaction.h"
 #import "DSAssetUnlockTransaction.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityCloseTransition.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityTopupTransition.h"
-#import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSCoinbaseTransaction.h"
-#import "DSCreditFundingTransaction.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSQuorumCommitmentTransaction.h"
-#import "DSTransition.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 
@@ -40,14 +34,8 @@
         type = [message UInt16AtOffset:2];
     }
     switch (type) {
-        case DSTransactionType_Classic: {
-            DSTransaction *transaction = [DSTransaction transactionWithMessage:message onChain:chain];
-            if ([transaction isCreditFundingTransaction]) {
-                //replace with credit funding transaction
-                transaction = [DSCreditFundingTransaction transactionWithMessage:message onChain:chain];
-            }
-            return transaction;
-        }
+        case DSTransactionType_Classic:
+            return [DSTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_Coinbase:
             return [DSCoinbaseTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderRegistration:

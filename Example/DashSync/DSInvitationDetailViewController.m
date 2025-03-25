@@ -26,35 +26,37 @@
 @property (strong, nonatomic) IBOutlet UILabel *keyCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
-@property (strong, nonatomic) id blockchainIdentityNameObserver;
-@property (strong, nonatomic) id blockchainIdentityRegistrationStatusObserver;
-@property (readonly, nonatomic) DSBlockchainIdentity *blockchainIdentity;
+@property (strong, nonatomic) id identityNameObserver;
+@property (strong, nonatomic) id identityRegistrationStatusObserver;
+@property (readonly, nonatomic) DSIdentity *identity;
 
 @end
 
 @implementation DSInvitationDetailViewController
 
-- (DSBlockchainIdentity *)blockchainIdentity {
+- (DSIdentity *)identity {
     return self.invitation.identity;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self loadProfileInitial];
-    if (self.blockchainIdentity.registered && self.blockchainIdentity.currentDashpayUsername && [self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername] == DSBlockchainIdentityUsernameStatus_Confirmed) {
-        [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success, NSError *error) {
+    DUsernameStatus *username_status = [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername];
+    if (self.identity.registered && self.identity.currentDashpayUsername && dash_spv_platform_document_usernames_UsernameStatus_is_confirmed(username_status)) {
+        [self.identity fetchProfileWithCompletion:^(BOOL success, NSError *error) {
             if (success) {
                 [self updateProfile];
             }
         }];
     }
-
+    DUsernameStatusDtor(username_status);
+    
     [self reloadKeyInfo];
 
     __weak typeof(self) weakSelf = self;
 
-    self.blockchainIdentityNameObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateUsernameStatusNotification
+    self.identityNameObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSIdentityDidUpdateUsernameStatusNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
@@ -62,13 +64,13 @@
                                                           if (!strongSelf) {
                                                               return;
                                                           }
-                                                          if ([note.userInfo[DSBlockchainIdentityKey] isEqual:strongSelf.blockchainIdentity]) {
+                                                          if ([note.userInfo[DSIdentityKey] isEqual:strongSelf.identity]) {
                                                               [strongSelf reloadRegistrationInfo];
                                                           }
                                                       }];
 
-    self.blockchainIdentityRegistrationStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateNotification
+    self.identityRegistrationStatusObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSIdentityDidUpdateNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
@@ -76,11 +78,11 @@
                                                           if (!strongSelf) {
                                                               return;
                                                           }
-                                                          if ([note.userInfo[DSBlockchainIdentityKey] isEqual:strongSelf.blockchainIdentity]) {
-                                                              if ([note.userInfo[DSBlockchainIdentityUpdateEvents] containsObject:DSBlockchainIdentityUpdateEventRegistration]) {
+                                                          if ([note.userInfo[DSIdentityKey] isEqual:strongSelf.identity]) {
+                                                              if ([note.userInfo[DSIdentityUpdateEvents] containsObject:DSIdentityUpdateEventRegistration]) {
                                                                   [strongSelf reloadRegistrationInfo];
                                                               }
-                                                              if ([note.userInfo[DSBlockchainIdentityUpdateEvents] containsObject:DSBlockchainIdentityUpdateEventKeyUpdate]) {
+                                                              if ([note.userInfo[DSIdentityUpdateEvents] containsObject:DSIdentityUpdateEventKeyUpdate]) {
                                                                   [strongSelf reloadKeyInfo];
                                                               }
                                                           }
@@ -88,75 +90,84 @@
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentityNameObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentityRegistrationStatusObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.identityNameObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.identityRegistrationStatusObserver];
 }
 
 - (void)reloadRegistrationInfo {
-    if (!self.blockchainIdentity.registered) {
+    DUsernameStatus *username_status = [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername];
+
+    if (!self.identity.registered) {
         self.aboutMeLabel.text = @"Not registered";
         self.usernameStatusLabel.text = @"";
-    } else if (!self.blockchainIdentity.currentDashpayUsername) {
+    } else if (!self.identity.currentDashpayUsername) {
         self.aboutMeLabel.text = @"No Username";
         self.usernameStatusLabel.text = @"";
-    } else if ([self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
+    } else if (!dash_spv_platform_document_usernames_UsernameStatus_is_confirmed(username_status)) {
         self.aboutMeLabel.text = @"Username Process";
-        switch ([self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername]) {
-            case DSBlockchainIdentityUsernameStatus_Initial:
+        switch (DUsernameStatusIndex(username_status)) {
+            case dash_spv_platform_document_usernames_UsernameStatus_Initial:
                 self.usernameStatusLabel.text = @"Initial";
                 break;
-            case DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending:
+            case dash_spv_platform_document_usernames_UsernameStatus_PreorderRegistrationPending:
                 self.usernameStatusLabel.text = @"Preorder Registration Pending";
                 break;
-            case DSBlockchainIdentityUsernameStatus_Preordered:
+            case dash_spv_platform_document_usernames_UsernameStatus_Preordered:
                 self.usernameStatusLabel.text = @"Preordered";
                 break;
-            case DSBlockchainIdentityUsernameStatus_RegistrationPending:
+            case dash_spv_platform_document_usernames_UsernameStatus_RegistrationPending:
                 self.usernameStatusLabel.text = @"Registration Pending";
+                break;
+            case dash_spv_platform_document_usernames_UsernameStatus_VotingPeriod:
+                self.usernameStatusLabel.text = @"Voting Period";
+                break;
+            case dash_spv_platform_document_usernames_UsernameStatus_Locked:
+                self.usernameStatusLabel.text = @"Locked";
                 break;
             default:
                 self.usernameStatusLabel.text = @"";
                 break;
         }
-    } else if (!self.blockchainIdentity.matchingDashpayUserInViewContext.remoteProfileDocumentRevision) {
+    } else if (!self.identity.matchingDashpayUserInViewContext.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
         self.usernameStatusLabel.text = @"";
     } else {
-        self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
-        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath]];
+        self.aboutMeLabel.text = self.identity.matchingDashpayUserInViewContext.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.identity.matchingDashpayUserInViewContext.avatarPath]];
         self.usernameStatusLabel.text = @"";
     }
+    DUsernameStatusDtor(username_status);
 }
 
 - (void)loadProfileInitial {
-    self.title = self.blockchainIdentity.currentDashpayUsername;
+    self.title = self.identity.currentDashpayUsername;
     [self reloadRegistrationInfo];
 
-    self.indexLabel.text = [NSString stringWithFormat:@"%d", self.blockchainIdentity.index];
+    self.indexLabel.text = [NSString stringWithFormat:@"%d", self.identity.index];
 
-    self.uniqueIdLabel.text = self.blockchainIdentity.uniqueIdString;
+    self.uniqueIdLabel.text = self.identity.uniqueIdString;
 }
 
 - (void)updateProfile {
-    self.title = self.blockchainIdentity.currentDashpayUsername;
-    if (!self.blockchainIdentity.matchingDashpayUserInViewContext.remoteProfileDocumentRevision) {
+    self.title = self.identity.currentDashpayUsername;
+    if (!self.identity.matchingDashpayUserInViewContext.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
     } else {
-        if (!self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage) {
+        if (!self.identity.matchingDashpayUserInViewContext.publicMessage) {
             self.aboutMeLabel.text = @"No message set!";
             self.aboutMeLabel.textColor = [UIColor grayColor];
         } else {
-            self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
+            self.aboutMeLabel.text = self.identity.matchingDashpayUserInViewContext.publicMessage;
             self.aboutMeLabel.textColor = [UIColor darkTextColor];
         }
-        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath]];
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.identity.matchingDashpayUserInViewContext.avatarPath]];
     }
 }
 
 - (void)reloadKeyInfo {
-    self.keyCountLabel.text = [NSString stringWithFormat:@"%u/%u", self.blockchainIdentity.activeKeyCount, self.blockchainIdentity.totalKeyCount];
+    self.keyCountLabel.text = [NSString stringWithFormat:@"%lu/%lu", self.identity.activeKeyCount, self.identity.totalKeyCount];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -181,7 +192,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 }
 
-- (void)viewController:(UIViewController *)controller didChooseIdentity:(DSBlockchainIdentity *)identity {
+- (void)viewController:(UIViewController *)controller didChooseIdentity:(DSIdentity *)identity {
     [self.invitation createInvitationFullLinkFromIdentity:identity
                                                completion:^(BOOL cancelled, NSString *_Nonnull invitationFullLink) {
                                                    NSLog(@"invitation full link %@", invitationFullLink);

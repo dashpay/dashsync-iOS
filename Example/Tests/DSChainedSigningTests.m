@@ -25,6 +25,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSKeyManager.h"
 #import "DSWallet.h"
+#import "DSWallet+Tests.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -68,18 +69,19 @@
                                               storeSeedPhrase:NO
                                                   isTransient:YES];
 
-    DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:wallet];
+    DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:wallet];
 
-    OpaqueKey *key0 = [derivationPath privateKeyAtIndex:0 fromSeed:seed];
-//    OpaqueKey *key1 = [derivationPath privateKeyAtIndex:1 fromSeed:seed];
-//    OpaqueKey *key2 = [derivationPath privateKeyAtIndex:2 fromSeed:seed];
-//    OpaqueKey *key3 = [derivationPath privateKeyAtIndex:3 fromSeed:seed];
-
+    DMaybeOpaqueKey *key0 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+//    DOpaqueKey *key1 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:1] fromSeed:seed];
+//    DOpaqueKey *key2 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:2] fromSeed:seed];
+//    DOpaqueKey *key3 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:3] fromSeed:seed];
+//    UInt256 randomInput0 = uint256_from_long(77777);
     UInt256 randomInput0 = uint256_random;
 //    UInt256 randomInput1 = uint256_random;
 //    UInt256 randomInput2 = uint256_random;
 //    UInt256 randomInput3 = uint256_random;
 
+//    UInt256 randomOutput0 = uint256_from_long(999999);
     UInt256 randomOutput0 = uint256_random;
 //    UInt256 randomOutput1 = uint256_random;
 //    UInt256 randomOutput2 = uint256_random;
@@ -94,8 +96,10 @@
 //    UInt256 hash1 = [[NSData dataWithUInt512:concat1] SHA256_2];
 //    UInt256 hash2 = [[NSData dataWithUInt512:concat2] SHA256_2];
 //    UInt256 hash3 = [[NSData dataWithUInt512:concat3] SHA256_2];
-
-    NSData *signatureData0 = [DSKeyManager NSDataFrom:key_sign_message_digest(key0, hash0.u8)];
+    Slice_u8 *hash0_slice = slice_u256_ctor_u(hash0);
+    Vec_u8 *signature_data0 = DOpaqueKeySign(key0->ok, hash0_slice);
+    NSData *signatureData0 = [DSKeyManager NSDataFrom:signature_data0];
+    NSLog(@"signatureData0: %@", signatureData0.hexString);
 //    UInt768 signature0 = [key0 signDigest:hash0];
     //    UInt768 signature1 = [key1 signDigest:hash1];
     //    UInt768 signature2 = [key2 signDigest:hash2];
@@ -110,7 +114,7 @@
 //    NSArray<DSBLSKey *> *quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; // simulate 10 quorums
     NSArray<NSValue *> *quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; // simulate 10 quorums
 
-    UInt256 signingSession = uint256_random;
+//    UInt256 signingSession = uint256_random;
 
 //    NSData *signatureData0 = uint768_data(signature0);
     NSArray *keysForDH0 = [@[[NSValue valueWithPointer:key0]] arrayByAddingObjectsFromArray:quorums];

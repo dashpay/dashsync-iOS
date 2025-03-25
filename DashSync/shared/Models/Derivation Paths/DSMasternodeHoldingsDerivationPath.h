@@ -14,10 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)providerFundsDerivationPathForWallet:(DSWallet *)wallet;
 
-- (NSString *)receiveAddress;
-
-- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
-
 @end
 
 NS_ASSUME_NONNULL_END

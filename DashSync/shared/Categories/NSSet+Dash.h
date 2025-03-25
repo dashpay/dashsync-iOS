@@ -16,7 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "DSKeyManager.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSSet (Dash)
@@ -26,5 +26,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSSet *)filter:(BOOL (^)(id obj))block;
 
 @end
+
+@interface NSSet (Vec_u8_32)
+
++ (NSSet<NSData *> *)ffi_from_vec_u256:(Vec_u8_32 *)ffi_ref;
++ (Vec_u8_32 *)ffi_to_vec_u256:(NSSet<NSData *> *)obj;
++ (void)ffi_destroy_vec_u256:(Vec_u8_32 *)ffi_ref;
+@end
+
+
 
 NS_ASSUME_NONNULL_END

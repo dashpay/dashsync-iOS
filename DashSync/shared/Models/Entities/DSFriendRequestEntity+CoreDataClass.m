@@ -90,7 +90,7 @@
 
     // TODO: MOCK_DASHPAY mixed only?
     [account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
-                                                    usingUserBlockchainIdentity:nil
+                                                    usingUserIdentity:nil
                                                                     fromAccount:account
                                                           acceptInternalAddress:NO
                                                            acceptReusingAddress:YES

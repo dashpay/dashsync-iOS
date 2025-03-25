@@ -23,14 +23,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSKeyManager.h"
 #import "NSData+DSHash.h"
 
 @implementation NSData (DSHash)
 
 - (NSData *)blake3Data {
-    return [DSKeyManager NSDataFrom:processor_blake3(self.bytes, self.length)];
+    Slice_u8 *slice = slice_ctor(self);
+    u256 *result = dash_spv_crypto_blake3(slice);
+    NSData *data = NSDataFromPtr(result);
+    u256_dtor(result);
+    return data;
 }
 
 

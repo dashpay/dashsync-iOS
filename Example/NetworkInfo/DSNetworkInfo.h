@@ -20,7 +20,7 @@
 @interface DSNetworkInfo : NSObject
 
 -(void)getTestnetInfo:(NSString*)outputDirectory;
--(void)getMainnetInfo:(NSString*)outputDirectory;
+//-(void)getMainnetInfo:(NSString*)outputDirectory;
 
 @end
 

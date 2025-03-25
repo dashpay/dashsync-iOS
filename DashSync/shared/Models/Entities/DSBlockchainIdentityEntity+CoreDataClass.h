@@ -9,13 +9,13 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSBlockchainIdentityKeyPathEntity, DSChainEntity, DSDashpayUserEntity, DSCreditFundingTransactionEntity, DSTransitionEntity, DSBlockchainIdentityUsernameEntity, DSBlockchainIdentity, DSBlockchainInvitationEntity;
+@class DSBlockchainIdentityKeyPathEntity, DSChainEntity, DSDashpayUserEntity, DSTransitionEntity, DSBlockchainIdentityUsernameEntity, DSIdentity, DSBlockchainInvitationEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentityEntity : NSManagedObject
 
-- (DSBlockchainIdentity *)blockchainIdentity;
+- (DSIdentity *)identity;
 
 + (void)deleteBlockchainIdentitiesOnChainEntity:(DSChainEntity *)chainEntity;
 

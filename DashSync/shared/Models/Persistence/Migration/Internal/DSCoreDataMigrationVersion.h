@@ -42,6 +42,7 @@ typedef NS_ENUM(NSInteger, DSCoreDataMigrationVersionValue)
     DSCoreDataMigrationVersionValue_19 = 19,
     DSCoreDataMigrationVersionValue_20 = 20,
     DSCoreDataMigrationVersionValue_21 = 21,
+    DSCoreDataMigrationVersionValue_22 = 22,
 };
 
 @interface DSCoreDataMigrationVersion : NSObject

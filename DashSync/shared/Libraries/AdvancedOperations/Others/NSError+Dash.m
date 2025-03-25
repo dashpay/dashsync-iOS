@@ -35,4 +35,12 @@
     return [NSError errorWithDomain:NSOSStatusErrorDomain code:code userInfo:nil];
 }
 
++ (NSString *)errorsDescription:(NSArray<NSError *> *)errors {
+    NSMutableString *description = [NSMutableString string];
+    for (NSError *error in errors) {
+        [description appendFormat:@"%@\n", error.localizedDescription];
+    }
+    return description;
+}
+
 @end

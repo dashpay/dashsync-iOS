@@ -6,7 +6,7 @@
 //
 
 #import "CompressingLogFileManager.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import <zlib.h>
 
 // We probably shouldn't be using DDLog() statements within the DDLog implementation.

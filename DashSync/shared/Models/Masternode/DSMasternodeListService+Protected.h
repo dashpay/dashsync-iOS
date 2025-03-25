@@ -15,20 +15,26 @@
 //  limitations under the License.
 //
 
-#import "DSMasternodeListStore.h"
-#import "DSMnDiffProcessingResult.h"
+#import "DSKeyManager.h"
+#import "DSMasternodeListService.h"
 #import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListService (Protected)
 
-@property (nonatomic, readonly) DSMasternodeListStore *store;
+//@property (nonatomic, assign) NSMutableOrderedSet<NSData *> *retrievalQueue;
 
-- (void)checkWaitingForQuorums;
-- (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer;
-- (BOOL)shouldProcessDiffResult:(DSMnDiffProcessingResult *)diffResult skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
-- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
+- (NSString *)logPrefix;
+
+//- (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer;
+- (BOOL)shouldProcessDiffResult:(u256 *)block_hash
+                        isValid:(BOOL)isValid
+        skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
+//- (BOOL)shouldProcessDiffResult:(DSMnDiffProcessingResult *)diffResult skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
+//- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
+- (UInt256)closestKnownBlockHashForBlockHeight:(uint32_t)blockHeight;
+- (void)startTimeOutObserver;
 
 @end
 

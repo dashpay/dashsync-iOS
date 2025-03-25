@@ -79,30 +79,30 @@ NSString *const DPContractDidUpdateNotification = @"DPContractDidUpdateNotificat
 
 NSString *const DSContractUpdateNotificationKey = @"DSContractUpdateNotificationKey";
 
-NSString *const DSBlockchainIdentityDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
+NSString *const DSIdentityDidUpdateNotification = @"DSIdentitiesDidUpdateNotification";
 
-NSString *const DSBlockchainIdentityDidUpdateUsernameStatusNotification = @"DSBlockchainIdentityDidUpdateUsernameStatusNotification";
+NSString *const DSIdentityDidUpdateUsernameStatusNotification = @"DSIdentityDidUpdateUsernameStatusNotification";
 
-NSString *const DSBlockchainIdentityKey = @"DSBlockchainIdentityKey";
+NSString *const DSIdentityKey = @"DSIdentityKey";
 
-NSString *const DSBlockchainIdentityUsernameKey = @"DSBlockchainIdentityUsernameKey";
+NSString *const DSIdentityUsernameKey = @"DSIdentityUsernameKey";
 
-NSString *const DSBlockchainIdentityUsernameDomainKey = @"DSBlockchainIdentityUsernameDomainKey";
+NSString *const DSIdentityUsernameDomainKey = @"DSIdentityUsernameDomainKey";
 
-NSString *const DSBlockchainIdentityUpdateEvents = @"DSBlockchainIdentityUpdateEvents";
+NSString *const DSIdentityUpdateEvents = @"DSIdentityUpdateEvents";
 
-NSString *const DSBlockchainIdentityUpdateEventKeyUpdate = @"DSBlockchainIdentityUpdateEventKeyUpdate";
+NSString *const DSIdentityUpdateEventKeyUpdate = @"DSIdentityUpdateEventKeyUpdate";
 
-NSString *const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
+NSString *const DSIdentityUpdateEventRegistration = @"DSIdentityUpdateEventRegistration";
 
-NSString *const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
+NSString *const DSIdentityUpdateEventCreditBalance = @"DSIdentityUpdateEventCreditBalance";
 
-NSString *const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash = @"DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash";
+NSString *const DSIdentityUpdateEventDashpaySyncronizationBlockHash = @"DSIdentityUpdateEventDashpaySyncronizationBlockHash";
 
-NSString *const DSBlockchainInvitationDidUpdateNotification = @"DSBlockchainInvitationDidUpdateNotification";
+NSString *const DSInvitationDidUpdateNotification = @"DSInvitationDidUpdateNotification";
 
-NSString *const DSBlockchainInvitationKey = @"DSBlockchainInvitationKey";
+NSString *const DSInvitationKey = @"DSInvitationKey";
 
-NSString *const DSBlockchainInvitationUpdateEvents = @"DSBlockchainInvitationUpdateEvents";
+NSString *const DSInvitationUpdateEvents = @"DSInvitationUpdateEvents";
 
-NSString *const DSBlockchainInvitationUpdateEventLink = @"DSBlockchainInvitationUpdateEventLink";
+NSString *const DSInvitationUpdateEventLink = @"DSInvitationUpdateEventLink";

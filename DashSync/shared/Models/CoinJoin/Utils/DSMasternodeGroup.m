@@ -15,11 +15,13 @@
 //  limitations under the License.
 //
 
+#import "NSData+Dash.h"
 #import "DSMasternodeGroup.h"
 #import "DSChainManager.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSCoinJoinManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
 #import "DSSendCoinJoinQueue.h"
@@ -252,11 +254,13 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         
     for (NSValue *sessionValue in self.pendingSessions) {
         [sessionValue getValue:&sessionId];
-        DSSimplifiedMasternodeEntry *mixingMasternodeInfo = [self mixingMasternodeAddressFor:sessionId];
+        DMasternodeEntry *mixingMasternodeInfo = [self mixingMasternodeAddressFor:sessionId];
             
         if (mixingMasternodeInfo) {
-            UInt128 ipAddress = mixingMasternodeInfo.address;
-            uint16_t port = mixingMasternodeInfo.port;
+            SocketAddr *addr = mixingMasternodeInfo->masternode_list_entry->service_address;
+            u128 *ip = DSocketAddrIp(addr);
+            uint16_t port = DSocketAddrPort(addr);
+            UInt128 ipAddress = u128_cast(ip);
             DSPeer *peer = [self peerForLocation:ipAddress port:port];
                 
             if (peer == nil) {
@@ -290,7 +294,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     return peerWithLeastBackoff;
 }
 
-- (DSSimplifiedMasternodeEntry *)mixingMasternodeAddressFor:(UInt256)sessionId {
+- (DMasternodeEntry *)mixingMasternodeAddressFor:(UInt256)sessionId {
     NSValue *sessionIdKey = [NSValue value:&sessionId withObjCType:@encode(UInt256)];
     NSValue *proTxHashValue = [self.sessionMap objectForKey:sessionIdKey];
     
@@ -354,7 +358,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
 
 - (void)checkMasternodesWithoutSessions {
     NSMutableArray *masternodesToDrop = [NSMutableArray array];
-    NSArray *pendingSessions = self.pendingSessions;
+    NSSet *pendingSessions = self.pendingSessions;
     
     for (DSPeer *peer in self.connectedPeers) {
         BOOL found = false;
@@ -362,11 +366,12 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         for (NSValue *value in pendingSessions) {
             UInt256 sessionId;
             [value getValue:&sessionId];
-            DSSimplifiedMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
-                
+            DMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
             if (mixingMasternodeAddress) {
-                UInt128 ipAddress = mixingMasternodeAddress.address;
-                uint16_t port = mixingMasternodeAddress.port;
+                SocketAddr *addr = mixingMasternodeAddress->masternode_list_entry->service_address;
+                u128 *ip = DSocketAddrIp(addr);
+                uint16_t port = DSocketAddrPort(addr);
+                UInt128 ipAddress = u128_cast(ip);
                     
                 if (uint128_eq(ipAddress, peer.address) && port == peer.port) {
                     found = YES;
@@ -386,8 +391,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
     DSLogPrivate(@"CoinJoin: need to drop %lu masternodes", (unsigned long)masternodesToDrop.count);
     
     for (DSPeer *peer in masternodesToDrop) {
-        DSSimplifiedMasternodeEntry *mn = [self.chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
-        DSLog(@"[%@] CoinJoin: masternode will be disconnected: %@: %@", self.chain.name, peer.location, uint256_hex(mn.providerRegistrationTransactionHash));
+        DMasternodeEntry *mn = [self.chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
+        DSLog(@"[%@] CoinJoin: masternode will be disconnected: %@: %@", self.chain.name, peer.location, u256_hex(dashcore_hash_types_ProTxHash_inner(mn->masternode_list_entry->pro_reg_tx_hash)));
         
         @synchronized (self.mutablePendingClosingMasternodes) {
             [self.mutablePendingClosingMasternodes addObject:peer];
@@ -419,11 +424,11 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         return NO; // do not connect to the same peer again
     }
     
-    DSSimplifiedMasternodeEntry *mn = [_chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
+    DMasternodeEntry *mn = [_chain.chainManager.masternodeManager masternodeAtLocation:peer.address port:peer.port];
     UInt256 sessionId = UINT256_ZERO;
-    
+    UInt256 proTxHash = u256_cast(dashcore_hash_types_ProTxHash_inner(mn->masternode_list_entry->pro_reg_tx_hash));
+
     @synchronized (self.masternodeMap) {
-        UInt256 proTxHash = mn.providerRegistrationTransactionHash;
         NSValue *proTxHashKey = [NSValue value:&proTxHash withObjCType:@encode(UInt256)];
         NSValue *sessionObject = [self.masternodeMap objectForKey:proTxHashKey];
         
@@ -437,16 +442,21 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         return NO;
     }
     
-    DSSimplifiedMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
+    DMasternodeEntry *mixingMasternodeAddress = [self mixingMasternodeAddressFor:sessionId];
     
     if (!mixingMasternodeAddress) {
         DSLog(@"[%@] CoinJoin: session is not connected to a masternode, sessionId: %@", self.chain.name, uint256_hex(sessionId));
         return NO;
     }
     
-    DSLog(@"[%@] CoinJoin: masternode[connecting] %@: %@; %@", self.chain.name, peer.location, uint256_hex(mn.providerRegistrationTransactionHash), uint256_hex(sessionId));
+    DSLog(@"[%@] CoinJoin: masternode[connecting] %@: %@; %@", self.chain.name, peer.location, uint256_hex(proTxHash), uint256_hex(sessionId));
     
-    [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.chain.chainManager.transactionManager governanceDelegate:self.chain.chainManager.governanceSyncManager sporkDelegate:self.chain.chainManager.sporkManager masternodeDelegate:self.chain.chainManager.masternodeManager queue:self.networkingQueue];
+    [peer setChainDelegate:self.chain.chainManager
+              peerDelegate:self transactionDelegate:self.chain.chainManager.transactionManager
+        governanceDelegate:self.chain.chainManager.governanceSyncManager
+             sporkDelegate:self.chain.chainManager.sporkManager
+        masternodeDelegate:self.chain.chainManager.masternodeManager
+                     queue:self.networkingQueue];
     peer.earliestKeyTime = self.chain.earliestWalletCreationTime;;
 
     @synchronized (self.peersLock) {
@@ -534,8 +544,8 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         @synchronized (self.mutablePendingClosingMasternodes) {
             [self.mutablePendingClosingMasternodes removeObject:masternode];
         }
-        
-        UInt256 proTxHash = [self.chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port].providerRegistrationTransactionHash;
+        DMasternodeEntry *mn = [self.chain.chainManager.masternodeManager masternodeAtLocation:masternode.address port:masternode.port];
+        UInt256 proTxHash = u256_cast(dashcore_hash_types_ProTxHash_inner(mn->masternode_list_entry->pro_reg_tx_hash));
         NSValue *proTxHashKey = [NSValue valueWithBytes:&proTxHash objCType:@encode(UInt256)];
         NSValue *sessionIdObject = [self.masternodeMap objectForKey:proTxHashKey];
             

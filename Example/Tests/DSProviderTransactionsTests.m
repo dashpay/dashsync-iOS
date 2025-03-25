@@ -8,8 +8,11 @@
 
 #import <XCTest/XCTest.h>
 
+#import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSDerivationPath.h"
@@ -20,7 +23,6 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSSporkManager.h"
 #import "DSTransaction.h"
 #import "DSTransactionFactory.h"
@@ -30,6 +32,7 @@
 #import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
+#import "NSString+Dash.h"
 #include <arpa/inet.h>
 
 @interface DSProviderTransactionsTests : XCTestCase
@@ -104,7 +107,10 @@
     DSAccount *inputAccount = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:inputAddress0];
     DSFundsDerivationPath *inputDerivationPath = (DSFundsDerivationPath *)[inputAccount derivationPathContainingAddress:inputAddress0];
 
-    OpaqueKey *inputPrivateKey = [inputDerivationPath privateKeyForKnownAddress:inputAddress0 fromSeed:seed];
+    NSIndexPath *indexPathForAddress = [inputDerivationPath indexPathForKnownAddress:inputAddress0];
+    DMaybeOpaqueKey *inputPrivateKey = [inputDerivationPath privateKeyAtIndexPath:indexPathForAddress fromSeed:seed];
+
+//    DMaybeOpaqueKey *inputPrivateKey = [inputDerivationPath privateKeyForKnownAddress:inputAddress0 fromSeed:seed];
 
     NSMutableData *stringMessageData = [NSMutableData data];
     [stringMessageData appendString:DASH_MESSAGE_MAGIC];
@@ -145,9 +151,9 @@
         [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
 
-    OpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
-    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
-    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].hash160;
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].UInt384;
     uint16_t operatorKeyVersion = 1; // BLS legacy
     NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
 
@@ -160,15 +166,12 @@
 
     NSData *inputScript = [DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain];
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey->ok].hash160 operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
 
 
     providerRegistrationTransaction.payloadSignature = signatureData;
-
     [providerRegistrationTransaction signWithPrivateKeys:@[[NSValue valueWithPointer:inputPrivateKey]]];
-
     [providerRegistrationTransactionFromMessage setInputAddress:inputAddress0 atIndex:0];
-
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadData, providerRegistrationTransactionFromMessage.payloadData, @"Provider payload data doesn't match up");
 
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString, @"Provider payload collateral strings don't match up");
@@ -216,12 +219,12 @@
     NSString *outputAddress0 = @"yRPMHZKviaWgqPaNP7XURemxtf7EyXNN1k";
     NSString *outputAddress1 = @"yWcZ7ePLX3yLkC3Aj9KaZvxRQkkZC6VPL8";
     NSString *payoutAddress = @"yRPMHZKviaWgqPaNP7XURemxtf7EyXNN1k";
-    OpaqueKey *inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
-    OpaqueKey *inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
-    OpaqueKey *inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
-    NSString *checkInputAddress0 = [DSKeyManager addressForKey:inputPrivateKey0 forChainType:chain.chainType];
-    NSString *checkInputAddress1 = [DSKeyManager addressForKey:inputPrivateKey1 forChainType:chain.chainType];
-    NSString *checkInputAddress2 = [DSKeyManager addressForKey:inputPrivateKey2 forChainType:chain.chainType];
+    DMaybeOpaqueKey *inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
+    DMaybeOpaqueKey *inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
+    DMaybeOpaqueKey *inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
+    NSString *checkInputAddress0 = [DSKeyManager addressForKey:inputPrivateKey0->ok forChainType:chain.chainType];
+    NSString *checkInputAddress1 = [DSKeyManager addressForKey:inputPrivateKey1->ok forChainType:chain.chainType];
+    NSString *checkInputAddress2 = [DSKeyManager addressForKey:inputPrivateKey2->ok forChainType:chain.chainType];
     XCTAssertEqualObjects(checkInputAddress0, inputAddress0, @"Private key does not match input address");
     XCTAssertEqualObjects(checkInputAddress1, inputAddress1, @"Private key does not match input address");
     XCTAssertEqualObjects(checkInputAddress2, inputAddress2, @"Private key does not match input address");
@@ -239,9 +242,9 @@
         [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
 
-    OpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
-    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
-    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    DMaybeOpaqueKey *ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].hash160;
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]].UInt384;
 
     uint16_t operatorKeyVersion = 1; // BLS legacy
     DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
@@ -265,7 +268,7 @@
         [DSKeyManager scriptPubKeyForAddress:inputAddress2 forChain:chain]
     ];
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey].hash160 operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:[DSKeyManager publicKeyData:ownerKey->ok].hash160 operatorKey:operatorKey operatorKeyVersion:operatorKeyVersion votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
 
 
     [providerRegistrationTransaction updateInputsHash];
@@ -297,10 +300,10 @@
     NSData *hexData = [NSData dataFromHexString:@"03000200018f3fe6683e36326669b6e34876fb2a2264e8327e822f6fec304b66f47d61b3e1010000006b48304502210082af6727408f0f2ec16c7da1c42ccf0a026abea6a3a422776272b03c8f4e262a022033b406e556f6de980b2d728e6812b3ae18ee1c863ae573ece1cbdf777ca3e56101210351036c1192eaf763cd8345b44137482ad24b12003f23e9022ce46752edf47e6effffffff0180220e43000000001976a914123cbc06289e768ca7d743c8174b1e6eeb610f1488ac00000000b501003a72099db84b1c1158568eec863bea1b64f90eccee3304209cebe1df5e7539fd00000000000000000000ffff342440944e1f00e6725f799ea20480f06fb105ebe27e7c4845ab84155e4c2adf2d6e5b73a998b1174f9621bbeda5009c5a6487bdf75edcf602b67fe0da15c275cc91777cb25f5fd4bb94e84fd42cb2bb547c83792e57c80d196acd47020e4054895a0640b7861b3729c41dd681d4996090d5750f65c4b649a5cd5b2bdf55c880459821e53d91c9"];
     DSUTXO input0 = (DSUTXO){.hash = @"e1b3617df4664b30ec6f2f827e32e864222afb7648e3b6696632363e68e63f8f".hexToData.reverse.UInt256, .n = 1};
     NSString *inputAddress0 = @"yhmDZGmiwjCPJrTFFiBFZJw31PhvJFJAwq";
-    OpaqueKey *inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
+    DMaybeOpaqueKey *inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
     NSString *outputAddress0 = @"yMysmZV5ftuBzuvDMHWn3tMpWg7BJownRE";
     UInt256 providerTransactionHash = @"fd39755edfe1eb9c200433eecc0ef9641bea3b86ec8e5658111c4bb89d09723a".hexToData.reverse.UInt256;
-    NSString *checkInputAddress0 = [DSKeyManager addressForKey:inputPrivateKey0 forChainType:chain.chainType];
+    NSString *checkInputAddress0 = [DSKeyManager addressForKey:inputPrivateKey0->ok forChainType:chain.chainType];
     XCTAssertEqualObjects(checkInputAddress0, inputAddress0, @"Private key does not match input address");
     DSProviderUpdateServiceTransaction *providerUpdateServiceTransactionFromMessage = [[DSProviderUpdateServiceTransaction alloc] initWithMessage:hexData onChain:chain];
     XCTAssertEqualObjects(providerUpdateServiceTransactionFromMessage.toData, hexData, @"Provider update service transaction does not match it's data");
@@ -309,24 +312,32 @@
         [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
     }
     UInt384 operatorKeyNeeded = [NSData dataFromHexString:@"157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfa"].UInt384;
-    OpaqueKey *privateKey = [providerOperatorKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed]; // BLS
-    NSData *operatorKeyData = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0];
+    DMaybeOpaqueKey *privateKey = [providerOperatorKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed]; // BLS
+    NSData *operatorKeyData = [providerOperatorKeysDerivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:0]];
     XCTAssertEqualObjects(operatorKeyData.hexString, [NSData dataWithUInt384:operatorKeyNeeded].hexString, @"operator keys don't match");
-    OpaqueKey *operatorBLSKey = [DSKeyManager keyWithPublicKeyData:operatorKeyData ofType:KeyKind_BLS];
+    DMaybeOpaqueKey *operatorBLSKey = DMaybeOpaqueKeyWithPublicKeyData(DKeyKindBLS(), slice_ctor(operatorKeyData));
     UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
-    UInt768 signatureFromDigest = [DSKeyManager signMesasageDigest:privateKey digest:payloadHash].UInt768;
+    Slice_u8 *payload_hash_slice = slice_u256_ctor_u(payloadHash);
+    Vec_u8 *signature_from_digest = DOpaqueKeySign(privateKey->ok, payload_hash_slice);
     NSData *txPayloadForHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash;
-    BLSKey *bls;
-    if (privateKey->tag == OpaqueKey_BLSBasic)
-        bls = privateKey->bls_basic;
-    else
-        bls = privateKey->bls_legacy;
-    NSData *signatureFromData = [DSKeyManager NSDataFrom:key_bls_sign_data(bls, txPayloadForHash.bytes, txPayloadForHash.length)];
-    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], signatureFromData, @"payload signature doesn't match");
-    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], providerUpdateServiceTransactionFromMessage.payloadSignature, @"payload signature doesn't match");
-    BOOL verified = [DSKeyManager verifyMessageDigest:privateKey digest:payloadHash signature:signatureFromData];
-    XCTAssertTrue(verified, @"The signature is not signed correctly");
-    XCTAssertTrue([providerUpdateServiceTransactionFromMessage checkPayloadSignature:operatorBLSKey], @"The payload is not signed correctly");
+    BLSKey *bls = privateKey->ok->bls;
+    Slice_u8 *tx_payload_slice = slice_ctor(txPayloadForHash);
+    u768 *sig = DBLSKeySignData(bls, tx_payload_slice);
+    XCTAssertTrue(uint768_eq(u768_cast(signature_from_digest), u768_cast(sig)), @"payload signature doesn't match");
+    XCTAssertEqualObjects(NSDataFromPtr(signature_from_digest), providerUpdateServiceTransactionFromMessage.payloadSignature, @"payload signature doesn't match");
+    Slice_u8 *sig_slice = Slice_u8_ctor(sig->count, sig->values);
+    DKeyVerificationResult *verified = DOpaqueKeyVerify(privateKey->ok, payload_hash_slice, sig_slice);
+    XCTAssertTrue(verified->ok[0], @"The signature is not signed correctly");
+    DKeyVerificationResultDtor(verified);
+    UInt256 servicePayloadHash = [providerUpdateServiceTransactionFromMessage payloadHash];
+    NSData *servicePayloadSignature = [providerUpdateServiceTransactionFromMessage payloadSignature];
+
+    Slice_u8 *servicePayloadHash_slice = slice_u256_ctor_u(servicePayloadHash);
+    Slice_u8 *servicePayloadSignature_slice = slice_ctor(servicePayloadSignature);
+
+    BOOL service_verified = DOpaqueKeyVerify(operatorBLSKey->ok, servicePayloadHash_slice, servicePayloadSignature_slice);
+    DMaybeOpaqueKeyDtor(operatorBLSKey);
+    XCTAssertTrue(service_verified, @"The payload is not signed correctly");
     UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
     struct in_addr addrV4;
     if (inet_aton([@"52.36.64.148" UTF8String], &addrV4) != 0) {
@@ -338,7 +349,7 @@
     NSArray *inputScripts = @[[DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain]];
     DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash ipAddress:ipAddress port:19999 scriptPayout:[NSData data] onChain:chain];
     [providerUpdateServiceTransaction updateInputsHash];
-    [providerUpdateServiceTransaction signPayloadWithKey:privateKey];
+    [providerUpdateServiceTransaction signPayloadWithKey:privateKey->ok];
     [providerUpdateServiceTransaction signWithPrivateKeys:@[[NSValue valueWithPointer:inputPrivateKey0]]];
     XCTAssertEqualObjects(providerUpdateServiceTransaction.toData, hexData, @"Provider transaction does not match it's data");
 }
@@ -356,38 +367,40 @@
     NSString *txIdString = @"bd98378ca37d3ae6f4850b82e77be675feb3c9bc6e33cb0c23de1b38a08034c7";
     DSUTXO input0 = (DSUTXO){.hash = @"0d262b1bb1d9946002d63ad212ad0caf8c9ce36fa0129bb4f996ddc8da76dec7".hexToData.reverse.UInt256, .n = 0};
     NSString *inputAddress0 = @"yabJKtPXkYc8ZXQNYjdKxwG7TcpdyJN1Ns";
-//    key_create
-//    ECDSAKey *inputPrivateKey = [DSKeyManager ecdsaKeyWithPrivateKey:@"cRfAz5ZmPN9eGSkXrGk3VYjJWt8gWffLCKTy7BtAgpQZj8YPvXwU" forChainType:chain.chainType];
-    OpaqueKey *inputPrivateKey = [DSKeyManager keyWithPrivateKeyString:@"cRfAz5ZmPN9eGSkXrGk3VYjJWt8gWffLCKTy7BtAgpQZj8YPvXwU" ofKeyType:KeyKind_ECDSA forChainType:chain.chainType];
+    DMaybeOpaqueKey *inputPrivateKey = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(@"cRfAz5ZmPN9eGSkXrGk3VYjJWt8gWffLCKTy7BtAgpQZj8YPvXwU"), chain.chainType);
     NSString *outputAddress0 = @"yR6MpzaykeioS25qZWrTWx2ruHCecYjMwa";
     NSString *votingAddress = @"yWEZQmGADmdSk6xCai7TPcmiSZuY65hBmo";
     NSString *payoutAddress = @"yUE5KLX1HNA4BkjN1Zgtwq6hQ16Cvo7hrX";
-    NSString *privateOwnerKeyString = @"cQpV2b9hNQd5Xs7REcrkPXmuCNDVvx6mSndr2ZgXKhfAhWDUUznB";
-    NSString *privateOperatorKey = @"0fc63f4e6d7572a6c33465525b5c3323f57036873dd37c98c393267c58b50533";
-    OpaqueKey *operatorKey = [DSKeyManager keyWithPrivateKeyString:privateOperatorKey ofKeyType:KeyKind_BLS forChainType:chain.chainType];
+    DMaybeOpaqueKey *operatorKey = DMaybeOpaqueKeyWithPrivateKey(DKeyKindBLS(), DChar(@"0fc63f4e6d7572a6c33465525b5c3323f57036873dd37c98c393267c58b50533"), chain.chainType);
     UInt256 providerTransactionHash = @"3dbb7de94e219e8f7eaea4f3c01cf97d77372e10152734c1959f17302369aa49".hexToData.reverse.UInt256;
     DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransactionFromMessage = [[DSProviderUpdateRegistrarTransaction alloc] initWithMessage:hexData registrationTransaction:providerRegistrationTransactionFromMessage onChain:chain];
     XCTAssertEqualObjects(providerUpdateRegistrarTransactionFromMessage.toData, hexData, @"Provider update registrar transaction does not match it's data");
-    OpaqueKey *privateKey = [DSKeyManager keyWithPrivateKeyString:privateOwnerKeyString ofKeyType:KeyKind_ECDSA forChainType:chain.chainType];
+    DMaybeOpaqueKey *privateKey = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(@"cQpV2b9hNQd5Xs7REcrkPXmuCNDVvx6mSndr2ZgXKhfAhWDUUznB"), chain.chainType);
     UInt256 payloadHash = providerUpdateRegistrarTransactionFromMessage.payloadHash;
-    NSData *compactSignature = [DSKeyManager NSDataFrom:key_ecdsa_compact_sign(privateKey->ecdsa, payloadHash.u8)];
-
+    Slice_u8 *payload_hash = slice_u256_ctor_u(payloadHash);
+    Arr_u8_65 *compact_sig = DECDSAKeyCompactSign(privateKey->ok->ecdsa, payload_hash);
+    NSData *compactSignature = NSDataFromPtr(compact_sig);
     XCTAssertEqualObjects(compactSignature.hexString, providerUpdateRegistrarTransactionFromMessage.payloadSignature.hexString, @"payload signature doesn't match");
+    Slice_u8 *payload_hash_slice = Slice_u8_ctor(payload_hash->count, payload_hash->values);
+    Slice_u8 *compact_sig_slice = Slice_u8_ctor(compact_sig->count, compact_sig->values);
+    DKeyVerificationResult *verified = DOpaqueKeyVerify(privateKey->ok, payload_hash_slice, compact_sig_slice);
+    XCTAssertTrue(verified->ok[0], @"The signature is not signed correctly");
+    DKeyVerificationResultDtor(verified);
+    u160 *owner_key_hash = u160_ctor_u(providerUpdateRegistrarTransactionFromMessage.providerRegistrationTransaction.ownerKeyHash);
 
-    BOOL verified = [DSKeyManager verifyMessageDigest:privateKey digest:payloadHash signature:compactSignature];
+    BOOL result = DOpaqueKeyCheckPayloadSignature(privateKey->ok, owner_key_hash);
 
-    XCTAssertTrue(verified, @"The signature is not signed correctly");
-    XCTAssertTrue([providerUpdateRegistrarTransactionFromMessage checkPayloadSignature:privateKey], @"The payload is not signed correctly");
+    XCTAssertTrue(result, @"The payload is not signed correctly");
 
     NSArray *inputHashes = @[uint256_obj(input0.hash)];
     NSArray *inputIndexes = @[@(input0.n)];
     NSArray *inputScripts = @[[DSKeyManager scriptPubKeyForAddress:inputAddress0 forChain:chain]];
     NSData *scriptPayout = [DSKeyManager scriptPubKeyForAddress:payoutAddress forChain:chain];
-    NSData *operatorPublicKey = [DSKeyManager NSDataFrom:key_bls_public_key(operatorKey->bls_legacy)];
-
-    DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(29266822857)] providerUpdateRegistrarTransactionVersion:1 providerTransactionHash:providerTransactionHash mode:0 operatorKey:operatorPublicKey.UInt384 votingKeyHash:votingAddress.addressToHash160.UInt160 scriptPayout:scriptPayout onChain:chain];
+    
+    Vec_u8 *operator_public_key_data = DBLSKeyPublicKeyData(operatorKey->ok->bls);
+    DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(29266822857)] providerUpdateRegistrarTransactionVersion:1 providerTransactionHash:providerTransactionHash mode:0 operatorKey:u384_cast(operator_public_key_data) votingKeyHash:votingAddress.addressToHash160.UInt160 scriptPayout:scriptPayout onChain:chain];
     [providerUpdateRegistrarTransaction updateInputsHash];
-    [providerUpdateRegistrarTransaction signPayloadWithKey:privateKey];
+    [providerUpdateRegistrarTransaction signPayloadWithKey:privateKey->ok];
     [providerUpdateRegistrarTransaction signWithPrivateKeys:@[[NSValue valueWithPointer:inputPrivateKey]]];
 
     XCTAssertEqualObjects(providerUpdateRegistrarTransaction.toData.hexString, hexData.hexString, @"Provider transaction does not match it's data");

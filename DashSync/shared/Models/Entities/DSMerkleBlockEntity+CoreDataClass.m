@@ -21,8 +21,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSChain+Checkpoint.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSChainLock.h"
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSCheckpoint.h"
 #import "DSMerkleBlock.h"
@@ -147,9 +149,8 @@
     }];
 }
 
-+ (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(blockHash)];
-    return merkleBlockEntity;
++ (instancetype)merkleBlockEntityForBlockHash:(NSData *)blockHash inContext:(NSManagedObjectContext *)context {
+    return [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", blockHash];
 }
 
 + (instancetype)merkleBlockEntityForBlockHashFromCheckpoint:(UInt256)blockHash chain:(DSChain *)chain inContext:(NSManagedObjectContext *)context {
@@ -162,15 +163,24 @@
     return nil;
 }
 
-+ (instancetype)createMerkleBlockEntityForBlockHash:(UInt256)blockHash
++ (instancetype)createMerkleBlockEntityForBlockHash:(NSData *)blockHash
                                         blockHeight:(uint32_t)blockHeight
                                         chainEntity:(DSChainEntity *)chainEntity
                                           inContext:(NSManagedObjectContext *)context {
     DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
-    merkleBlockEntity.blockHash = uint256_data(blockHash);
+    merkleBlockEntity.blockHash = blockHash;
     merkleBlockEntity.height = blockHeight;
     merkleBlockEntity.chain = chainEntity;
     return merkleBlockEntity;
+}
+
++ (BOOL)hasBlocksWithHash:(UInt256)blockHash
+                inContext:(NSManagedObjectContext *)context {
+    __block BOOL hasBlock = NO;
+    [context performBlockAndWait:^{
+        hasBlock = !![DSMerkleBlockEntity countObjectsInContext:context matching:@"blockHash == %@", uint256_data(blockHash)];
+    }];
+    return hasBlock;
 }
 
 @end

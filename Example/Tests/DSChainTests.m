@@ -28,6 +28,7 @@
 #import "DSMerkleBlock.h"
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSWallet+Protected.h"
+#import "DSWallet+Tests.h"
 #import "DashSync.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
@@ -43,7 +44,7 @@
 @implementation DSChainTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:DevnetType_Mobile2 protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:dash_spv_crypto_network_chain_type_DevnetType_Mobile2_ctor() protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
     for (DSWallet *wallet in [self.chain.wallets copy]) {
         if ([wallet.transientDerivedKeyData isEqualToData:@"000102030405060708090a0b0c0d0e0f".hexToData]) {
             [self.chain unregisterWallet:wallet];
@@ -475,7 +476,12 @@
     DSMerkleBlock *merkleBlockFork108 = [DSMerkleBlock merkleBlockWithMessage:header108Data onChain:self.chain];
     [self.chain addBlock:merkleBlockFork108 receivedAsHeader:YES fromPeer:nil];
 
-    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork108.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork108.blockHash)
+                                                             height:merkleBlockFork108.height
+                                                          signature:uint768_data(UINT768_ZERO)
+                                                  signatureVerified:YES
+                                                     quorumVerified:YES
+                                                            onChain:self.chain];
 
     [self.chain addChainLock:chainLock];
 
@@ -797,7 +803,12 @@
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 150);
 
-    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork108.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork108.blockHash)
+                                                             height:merkleBlockFork108.height
+                                                          signature:uint768_data(UINT768_ZERO)
+                                                  signatureVerified:YES
+                                                     quorumVerified:YES
+                                                            onChain:self.chain];
 
     [self.chain addChainLock:chainLock];
 
@@ -1299,15 +1310,30 @@
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 150);
 
-    DSChainLock *chainLock106 = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork106.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock106 = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork106.blockHash)
+                                                                height:merkleBlockFork106.height
+                                                             signature:uint768_data(UINT768_ZERO)
+                                                     signatureVerified:YES
+                                                        quorumVerified:YES
+                                                               onChain:self.chain];
 
     [self.chain addChainLock:chainLock106];
 
-    DSChainLock *chainLock110 = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork110.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock110 = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork110.blockHash)
+                                                                height:merkleBlockFork110.height
+                                                             signature:uint768_data(UINT768_ZERO)
+                                                     signatureVerified:YES
+                                                        quorumVerified:YES
+                                                               onChain:self.chain];
 
     [self.chain addChainLock:chainLock110];
 
-    DSChainLock *chainLock109 = [[DSChainLock alloc] initWithBlockHash:merkleBlockFork109.blockHash signature:UINT768_ZERO signatureVerified:YES quorumVerified:YES onChain:self.chain];
+    DSChainLock *chainLock109 = [[DSChainLock alloc] initWithBlockHash:uint256_data(merkleBlockFork109.blockHash)
+                                                                height:merkleBlockFork109.height
+                                                             signature:uint768_data(UINT768_ZERO)
+                                                     signatureVerified:YES
+                                                        quorumVerified:YES
+                                                               onChain:self.chain];
 
     [self.chain addChainLock:chainLock109];
 

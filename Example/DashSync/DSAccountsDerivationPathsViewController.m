@@ -95,7 +95,7 @@
     } else {
         derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
     }
-    cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
+    cell.xPublicKeyLabel.text = [DSDerivationPathFactory serializedExtendedPublicKey:derivationPath];
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
     cell.referenceNameLabel.text = derivationPath.referenceName;

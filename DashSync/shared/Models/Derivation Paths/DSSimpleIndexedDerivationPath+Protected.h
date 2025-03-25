@@ -14,7 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSMutableArray *mOrderedAddresses;
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError *_Nullable *_Nullable)error;
+- (DSGapLimit *)defaultGapSettings;
+
+- (void)loadAddressesInContext:(NSManagedObjectContext *)context;
 
 @end
 

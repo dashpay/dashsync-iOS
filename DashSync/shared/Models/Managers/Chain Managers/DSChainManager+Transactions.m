@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSChain+Params.h"
 #import "DSChainManager+Protected.h"
 #import "DSChainManager+Transactions.h"
 #import "DSWallet+Protected.h"
@@ -33,10 +34,10 @@ NSString const *chainSynchronizationBlockZonesKey = @"chainSynchronizationBlockZ
 
 @property (nonatomic, strong) NSData *maxTransactionsInfoData;
 @property (nonatomic, strong) RHIntervalTree *heightTransactionZones;
-@property (nonatomic, assign) uint32_t maxTransactionsInfoDataFirstHeight;
-@property (nonatomic, assign) uint32_t maxTransactionsInfoDataLastHeight;
 @property (nonatomic, strong) NSData *chainSynchronizationFingerprint;
 @property (nonatomic, strong) NSOrderedSet *chainSynchronizationBlockZones;
+@property (nonatomic, assign) uint32_t maxTransactionsInfoDataFirstHeight;
+@property (nonatomic, assign) uint32_t maxTransactionsInfoDataLastHeight;
 
 @end
 
@@ -56,10 +57,17 @@ NSString const *chainSynchronizationBlockZonesKey = @"chainSynchronizationBlockZ
     return objc_getAssociatedObject(self, &heightTransactionZonesKey);
 }
 
+- (void)setChainSynchronizationFingerprint:(NSData *)chainSynchronizationFingerprint {
+    objc_setAssociatedObject(self, &chainSynchronizationFingerprintKey, chainSynchronizationFingerprint, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+- (NSData *)chainSynchronizationFingerprint {
+    return objc_getAssociatedObject(self, &chainSynchronizationFingerprintKey);
+}
 
 - (void)setChainSynchronizationBlockZones:(NSOrderedSet *)chainSynchronizationBlockZones {
     objc_setAssociatedObject(self, &chainSynchronizationBlockZonesKey, chainSynchronizationBlockZones, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
+
 - (NSOrderedSet *)chainSynchronizationBlockZones {
     NSOrderedSet *obj = objc_getAssociatedObject(self, &chainSynchronizationBlockZonesKey);
     if (!obj) {
@@ -67,8 +75,26 @@ NSString const *chainSynchronizationBlockZonesKey = @"chainSynchronizationBlockZ
         [self setChainSynchronizationBlockZones:obj];
     }
     return obj;
-
 }
+
+- (void)setMaxTransactionsInfoDataFirstHeight:(uint32_t)maxTransactionsInfoDataFirstHeight {
+    objc_setAssociatedObject(self, &maxTransactionsInfoDataFirstHeightKey, @(maxTransactionsInfoDataFirstHeight), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (uint32_t)maxTransactionsInfoDataFirstHeight {
+    NSNumber *value = objc_getAssociatedObject(self, &maxTransactionsInfoDataFirstHeightKey);
+    return value ? [value unsignedIntValue] : 0;
+}
+
+- (void)setMaxTransactionsInfoDataLastHeight:(uint32_t)maxTransactionsInfoDataLastHeight {
+    objc_setAssociatedObject(self, &maxTransactionsInfoDataLastHeightKey, @(maxTransactionsInfoDataLastHeight), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (uint32_t)maxTransactionsInfoDataLastHeight {
+    NSNumber *value = objc_getAssociatedObject(self, &maxTransactionsInfoDataLastHeightKey);
+    return value ? [value unsignedIntValue] : 0;
+}
+
 
 - (void)loadHeightTransactionZones {
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
@@ -151,12 +177,10 @@ NSString const *chainSynchronizationBlockZonesKey = @"chainSynchronizationBlockZ
         }
         i++;
     }
-    if (rAverage) {
+    if (rAverage)
         *rAverage = currentAverage;
-    }
-    if (rAverages) {
+    if (rAverages)
         *rAverages = averagesAtHeights;
-    }
     return checkHeight;
 }
 

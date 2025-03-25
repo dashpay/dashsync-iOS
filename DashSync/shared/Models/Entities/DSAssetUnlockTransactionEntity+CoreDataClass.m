@@ -45,6 +45,7 @@
 - (DSTransaction *)transactionForChain:(DSChain *)chain {
     DSAssetUnlockTransaction *tx = (DSAssetUnlockTransaction *)[super transactionForChain:chain];
     tx.type = DSTransactionType_AssetUnlock;
+    tx.version = SPECIAL_TX_VERSION;
     [self.managedObjectContext performBlockAndWait:^{
         tx.specialTransactionVersion = self.specialTransactionVersion;
         tx.index = self.index;

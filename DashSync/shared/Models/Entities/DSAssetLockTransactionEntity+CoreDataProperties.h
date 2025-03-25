@@ -16,6 +16,7 @@
 //
 
 #import "DSAssetLockTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSAssetLockTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSAssetLockTransactionEntity *> *)fetchRequest;
+
+@property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *identity;
 
 @property (nonatomic, retain) NSOrderedSet<DSTxOutputEntity *> *creditOutputs;
 

@@ -16,16 +16,22 @@
 //
 
 #import "DSTransactionInput.h"
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransactionInput (CoinJoin)
 
-- (TransactionInput *)ffi_malloc;
-+ (void)ffi_free:(TransactionInput *)input;
+- (DTxIn *)ffi_malloc;
++ (void)ffi_free:(DTxIn *)input;
 
 @end
+
+@interface NSArray (Vec_dashcore_blockdata_transaction_txin_TxIn)
++ (DTxInputs *)ffi_to_tx_inputs:(NSArray<DSTransactionInput *> *)obj;
++ (void)ffi_destroy_tx_inputs:(DTxInputs *)ffi_ref;
+@end
+
 
 NS_ASSUME_NONNULL_END

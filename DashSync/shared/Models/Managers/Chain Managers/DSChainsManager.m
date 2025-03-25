@@ -23,8 +23,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DPContract+Protected.h"
 #import "DSChainsManager.h"
+#import "DSChain+Checkpoint.h"
+#import "DSChain+Identity.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"
 #import "DSDashPlatform.h"
@@ -188,24 +193,29 @@
         chain.dpnsContractID = dpnsContractID;
         DPContract *contract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
         if (uint256_is_not_zero(dpnsContractID)) {
-            DSBlockchainIdentity *blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDPNSContractForChain:chain] withContractId:dpnsContractID foundInWallet:nil];
-            if (blockchainIdentity) {
-                [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
+            DSIdentity *identity = [chain identityThatCreatedContract:[DPContract localDPNSContractForChain:chain].raw_contract withContractId:dpnsContractID foundInWallet:nil];
+            if (identity) {
+                [contract registerCreator:identity];
+                [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
             }
         } else {
-            [contract unregisterCreatorInContext:[NSManagedObjectContext platformContext]];
+            [contract unregisterCreator];
+            [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
         }
     }
     if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
         chain.dashpayContractID = dashpayContractID;
         DPContract *contract = [DSDashPlatform sharedInstanceForChain:chain].dashPayContract;
         if (uint256_is_not_zero(dashpayContractID)) {
-            DSBlockchainIdentity *blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDashpayContractForChain:chain] withContractId:dashpayContractID foundInWallet:nil];
-            if (blockchainIdentity) {
-                [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
+            DSIdentity *identity = [chain identityThatCreatedContract:[DPContract localDashpayContractForChain:chain].raw_contract withContractId:dashpayContractID foundInWallet:nil];
+            if (identity) {
+                [contract registerCreator:identity];
+                [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
             }
         } else {
-            [contract unregisterCreatorInContext:[NSManagedObjectContext platformContext]];
+            [contract unregisterCreator];
+            [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
+
         }
     }
     for (NSString *serviceLocation in serviceLocations) {
@@ -233,7 +243,7 @@
     }
 }
 
-- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(DevnetType)devnetType
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType
                                     forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations
                             withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
                                            standardPort:(uint32_t)standardPort
@@ -287,7 +297,8 @@
     NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
 
     if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
-    NSString *devnetIdentifier = [DSKeyManager NSStringFrom:chain_devnet_identifier(devnetType)];
+    char *devnet_id = dash_spv_crypto_network_chain_type_ChainType_devnet_identifier(chain.chainType);
+    NSString *devnetIdentifier = [DSKeyManager NSStringFrom:devnet_id];
     if (![[registeredDevnetsDictionary allKeys] containsObject:devnetIdentifier]) {
         [registeredDevnetsDictionary setObject:chain.checkpoints forKey:devnetIdentifier];
         setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
@@ -309,8 +320,6 @@
             NSError *error = nil;
             DSChainManager *chainManager = [self chainManagerForChain:chain];
             DSPeerManager *peerManager = chainManager.peerManager;
-            DSMasternodeManager *masternodeManager = chainManager.masternodeManager;
-            [masternodeManager destroyProcessors];
             [peerManager clearRegisteredPeers];
             NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
 

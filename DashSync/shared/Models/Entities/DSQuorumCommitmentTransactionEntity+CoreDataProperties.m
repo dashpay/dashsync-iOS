@@ -15,6 +15,5 @@
 }
 
 @dynamic quorumCommitmentHeight;
-@dynamic entry;
 
 @end

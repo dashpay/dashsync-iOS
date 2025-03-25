@@ -17,7 +17,8 @@
 #import <DashSync/DashSync.h>
 
 @interface DSMasternodeListsViewController ()
-@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
+//@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
+@property (nonatomic, assign) std_collections_Map_keys_dashcore_prelude_CoreBlockHeight_values_dashcore_sml_masternode_list_MasternodeList *lists;
 @property (strong, nonatomic) IBOutlet UITextField *blockHeightTextField;
 @property (strong, nonatomic) IBOutlet UIButton *fetchButton;
 @property (strong, nonatomic) NSMutableDictionary<NSData *, NSNumber *> *validMerkleRootDictionary;
@@ -29,6 +30,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     _validMerkleRootDictionary = [NSMutableDictionary dictionary];
+    [self updateMasternodeLists];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self updateMasternodeLists];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -36,46 +43,52 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)updateMasternodeLists {
+    if (self.lists)
+        std_collections_Map_keys_dashcore_prelude_CoreBlockHeight_values_dashcore_sml_masternode_list_MasternodeList_destroy(self.lists);
+    self.lists = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_lists(self.chain.sharedProcessorObj);
+}
+
 #pragma mark - Automation KVO
 
-- (NSManagedObjectContext *)managedObjectContext {
-    return [NSManagedObjectContext viewContext];
-}
-
-- (NSFetchedResultsController *)fetchedResultsController {
-    if (_fetchedResultsController) return _fetchedResultsController;
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSMasternodeListEntity" inManagedObjectContext:self.managedObjectContext];
-    [fetchRequest setEntity:entity];
-
-    // Set the batch size to a suitable number.
-    [fetchRequest setFetchBatchSize:20];
-
-    // Edit the sort key as appropriate.
-    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"block.height" ascending:NO];
-    NSArray *sortDescriptors = @[heightSortDescriptor];
-
-    [fetchRequest setSortDescriptors:sortDescriptors];
-
-    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]];
-    [fetchRequest setPredicate:filterPredicate];
-
-    // Edit the section name key path and cache name if appropriate.
-    // nil for section name key path means "no sections".
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
-    _fetchedResultsController = aFetchedResultsController;
-    aFetchedResultsController.delegate = self;
-    NSError *error = nil;
-    if (![aFetchedResultsController performFetch:&error]) {
-        // Replace this implementation with code to handle the error appropriately.
-        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
-
-    return aFetchedResultsController;
-}
+//- (NSManagedObjectContext *)managedObjectContext {
+//    return [NSManagedObjectContext viewContext];
+//}
+//
+//- (NSFetchedResultsController *)fetchedResultsController {
+//    if (_fetchedResultsController) return _fetchedResultsController;
+//    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+//    // Edit the entity name as appropriate.
+//    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSMasternodeListEntity" inManagedObjectContext:self.managedObjectContext];
+//    [fetchRequest setEntity:entity];
+//
+//    // Set the batch size to a suitable number.
+//    [fetchRequest setFetchBatchSize:20];
+//
+//    // Edit the sort key as appropriate.
+//    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"block.height" ascending:NO];
+//    NSArray *sortDescriptors = @[heightSortDescriptor];
+//
+//    [fetchRequest setSortDescriptors:sortDescriptors];
+//
+//    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]];
+//    [fetchRequest setPredicate:filterPredicate];
+//
+//    // Edit the section name key path and cache name if appropriate.
+//    // nil for section name key path means "no sections".
+//    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
+//    _fetchedResultsController = aFetchedResultsController;
+//    aFetchedResultsController.delegate = self;
+//    NSError *error = nil;
+//    if (![aFetchedResultsController performFetch:&error]) {
+//        // Replace this implementation with code to handle the error appropriately.
+//        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+//        abort();
+//    }
+//
+//    return aFetchedResultsController;
+//}
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     [self.tableView beginUpdates];
@@ -123,8 +136,9 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-    return [sectionInfo numberOfObjects];
+    return self.lists ? self.lists->count : 0;
+//    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
+//    return [sectionInfo numberOfObjects];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -144,26 +158,34 @@
 
 
 // Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [self.tableView beginUpdates];
-        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        [masternodeListEntity deleteObjectAndWait];
-        [masternodeListEntity.managedObjectContext ds_saveInBlockAndWait];
-        [self.chain.chainManager.masternodeManager reloadMasternodeLists];
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        [self.tableView endUpdates];
-    }
-}
+//- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+//    if (editingStyle == UITableViewCellEditingStyleDelete) {
+//        // Delete the row from the data source
+//        [self.tableView beginUpdates];
+//        dashcore_sml_masternode_list_MasternodeList *list = self.lists->values[indexPath.row];
+//        // TODO: delete list from engine
+//        [masternodeListEntity deleteObjectAndWait];
+//        [masternodeListEntity.managedObjectContext ds_saveInBlockAndWait];
+////        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+////        [masternodeListEntity deleteObjectAndWait];
+////        [masternodeListEntity.managedObjectContext ds_saveInBlockAndWait];
+//        [self.chain.chainManager.masternodeManager reloadMasternodeLists];
+//        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+//        [self.tableView endUpdates];
+//    }
+//}
 
 
 - (void)configureCell:(DSMasternodeListTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     if (cell) {
-        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        cell.heightLabel.text = [NSString stringWithFormat:@"%u", masternodeListEntity.block.height];
-        cell.countLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)masternodeListEntity.masternodes.count];
-        NSNumber *valid = [self.validMerkleRootDictionary objectForKey:masternodeListEntity.block.blockHash];
+        dashcore_sml_masternode_list_MasternodeList *list = self.lists->values[indexPath.row];
+        u256 *block_hash = dashcore_hash_types_BlockHash_inner(list->block_hash);
+        NSData *blockHashData = NSDataFromPtr(block_hash);
+        u256_dtor(block_hash);
+//        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        cell.heightLabel.text = [NSString stringWithFormat:@"%u", list->known_height];
+        cell.countLabel.text = [NSString stringWithFormat:@"%lu", list->masternodes->count];
+        NSNumber *valid = [self.validMerkleRootDictionary objectForKey:blockHashData];
         [cell.validButton setTitle:valid ? ([valid boolValue] ? @"V" : @"X") : @"?" forState:UIControlStateNormal];
     }
 }
@@ -172,7 +194,7 @@
     uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""]) ? [self.blockHeightTextField.text intValue] : self.chain.lastSyncBlock.height;
 
     NSError *error = nil;
-    [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
+    //[self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
@@ -181,12 +203,14 @@
 }
 
 - (IBAction)fetchNextMasternodeList:(id)sender {
-    int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
-    if (lastKnownBlockHeight + 24 > self.chain.lastSyncBlock.height) return;
-    uint32_t blockHeight = lastKnownBlockHeight + 24;
+    
+    DMasternodeList *list = [self.chain.masternodeManager currentMasternodeList];
+//    int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
+    if (list->known_height + 24 > self.chain.lastSyncBlock.height) return;
+    uint32_t blockHeight = list->known_height + 24;
 
     NSError *error = nil;
-    [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
+    //[self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
@@ -198,30 +222,16 @@
     [self.chain.chainManager.masternodeManager reloadMasternodeLists];
 }
 
-- (void)masternodeListTableViewCellRequestsValidation:(DSMasternodeListTableViewCell *)tableViewCell {
-    NSIndexPath *indexPath = [self.tableView indexPathForCell:tableViewCell];
-    DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    UInt256 hash = masternodeListEntity.block.blockHash.UInt256;
-    // could be moved into rust lib [blockHash, masternodeMerkleRoot,]
-    DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
-    BOOL equal = uint256_eq(masternodeListEntity.masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
-    [self.validMerkleRootDictionary setObject:@(equal) forKey:uint256_data(masternodeList.blockHash)];
-    [tableViewCell.validButton setTitle:(equal ? @"V" : @"X") forState:UIControlStateNormal];
-    if (!equal) {
-        DSLogPrivate(@"The merkle roots are not equal, from disk we have <%@> calculated we have <%@>", masternodeListEntity.masternodeListMerkleRoot.hexString, uint256_hex([masternodeList masternodeMerkleRoot]));
-    }
-}
-
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         NSIndexPath *indexPath = self.tableView.indexPathForSelectedRow;
-        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        dashcore_sml_masternode_list_MasternodeList *list = self.lists->values[indexPath.row];
+
+//        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         DSMasternodeViewController *masternodeViewController = (DSMasternodeViewController *)segue.destinationViewController;
         masternodeViewController.chain = self.chain;
-        UInt256 hash = masternodeListEntity.block.blockHash.UInt256;
-        // could be moved into rust lib [height]
-        DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
-        masternodeViewController.masternodeList = masternodeList;
+        masternodeViewController.masternodeList = list;
+//        masternodeViewController.masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListEntity.block.blockHash.UInt256];
     }
 }
 

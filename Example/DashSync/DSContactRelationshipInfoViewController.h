@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactRelationshipInfoViewController : UITableViewController
 
-@property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
+@property (strong, nonatomic) DSIdentity *identity;
 @property (strong, nonatomic) DSFriendRequestEntity *incomingFriendRequest;
 @property (strong, nonatomic) DSFriendRequestEntity *outgoingFriendRequest;
 

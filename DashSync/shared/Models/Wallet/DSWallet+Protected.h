@@ -29,7 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-@property (nonatomic, strong) NSData *transientDerivedKeyData;
+- (instancetype)initWithUniqueID:(NSString *)uniqueID
+                     andAccounts:(NSArray<DSAccount *> *)accounts
+                        forChain:(DSChain *)chain
+                 storeSeedPhrase:(BOOL)store
+                     isTransient:(BOOL)isTransient;
+
 
 //this is used from the account to help determine best start sync position for future resync
 - (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
@@ -43,8 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSOrderedSet *_Nullable)blockZonesFromChainSynchronizationFingerprint:(NSData *)chainSynchronizationFingerprint rVersion:(uint8_t *_Nullable)rVersion rChainHeight:(uint32_t *_Nullable)rChainHeight;
 
 + (NSData *)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight;
-
-- (void)loadBlockchainIdentities;
 
 - (NSData *_Nullable)requestSeedNoAuth;
 

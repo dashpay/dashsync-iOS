@@ -16,7 +16,7 @@
 
 @dynamic signature;
 @dynamic validSignature;
-@dynamic quorum;
+//@dynamic quorum;
 @dynamic merkleBlock;
 @dynamic chainIfLastChainLock;
 

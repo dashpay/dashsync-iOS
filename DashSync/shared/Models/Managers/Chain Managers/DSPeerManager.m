@@ -26,10 +26,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+//#import "dash_spv_apple_bindings.h"
 #import "DSAccount.h"
 #import "DSBackgroundManager.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"
 #import "DSDerivationPath.h"
@@ -37,7 +40,6 @@
 #import "DSGovernanceObject.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceVote.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
@@ -78,6 +80,11 @@
 
 #define SYNC_COUNT_INFO @"SYNC_COUNT_INFO"
 
+#define ERROR_NO_PEERS [NSError errorWithCode:1 localizedDescriptionKey:@"No peers found"]
+#define ERROR_SYNC_TIMEOUT [NSError errorWithCode:500 descriptionKey:DSLocalizedString(@"Synchronization Timeout", @"An error message for notifying that chain sync has timed out")]
+#define ERROR_NO_SERVICE(host) [NSError errorWithCode:500 descriptionKey:DSLocalizedFormat(@"Node at host %@ does not service network", nil, host)]
+#define ERROR_NO_BLOOM(host) [NSError errorWithCode:500 descriptionKey:DSLocalizedFormat(@"Node at host %@ does not support bloom filtering", nil, host)]
+
 @interface DSPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
@@ -90,7 +97,7 @@
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
 @property (nonatomic, assign) uint64_t masternodeListConnectivityNonce;
-@property (nonatomic, strong) DSMasternodeList *masternodeList;
+@property (nonatomic, assign) DMasternodeList *masternodeList;
 @property (nonatomic, readonly) dispatch_queue_t networkingQueue;
 
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
@@ -128,6 +135,8 @@
 - (void)dealloc {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
+    if (_masternodeList)
+        DMasternodeListDtor(_masternodeList);
 }
 
 - (dispatch_queue_t)networkingQueue {
@@ -193,19 +202,21 @@
     return [self.downloadPeer.host stringByAppendingFormat:@":%d", self.downloadPeer.port];
 }
 
-- (NSArray *)dnsSeeds {
-    switch (self.chain.chainType.tag) {
-        case ChainType_MainNet:
-            return MAINNET_DNS_SEEDS;
-        case ChainType_TestNet:
-            return TESTNET_DNS_SEEDS;
-        case ChainType_DevNet:
-            return nil; //no dns seeds for devnets
-        default:
-            break;
-    }
-    return nil;
-}
+//- (NSArray *)dnsSeeds {
+//    struct Vec_String *vec = dash_spv_crypto_network_chain_type_ChainType_dns_seeds(self.chain.chainType);
+//    
+//    switch (self.chain.chainType.tag) {
+//        case ChainType_MainNet:
+//            return MAINNET_DNS_SEEDS;
+//        case ChainType_TestNet:
+//            return TESTNET_DNS_SEEDS;
+//        case ChainType_DevNet:
+//            return nil; //no dns seeds for devnets
+//        default:
+//            break;
+//    }
+//    return nil;
+//}
 
 // MARK: - Peers
 + (DSPeer *)peerFromString:(NSString *)string forChain:(DSChain *)chain {
@@ -244,6 +255,17 @@
         _peers = nil;
     }
 }
+- (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce {
+    Vec_Tuple_Arr_u8_16_u16 *vec = dash_spv_masternode_processor_processing_peer_addresses_with_connectivity_nonce(self.masternodeList, connectivityNonce, peerCount);
+    
+    NSMutableArray *mArray = [NSMutableArray array];
+    for (int i = 0; i < vec->count; i++) {
+        Tuple_Arr_u8_16_u16 *pair = vec->values[i];
+        [mArray addObject:[[DSPeer alloc] initWithAddress:u128_cast(pair->o_0) andPort:pair->o_1 onChain:self.chain]];
+    }
+    Vec_Tuple_Arr_u8_16_u16_destroy(vec);
+    return mArray;
+}
 
 - (NSMutableOrderedSet *)peers {
     if (_fixedPeer) return [NSMutableOrderedSet orderedSetWithObject:_fixedPeer];
@@ -270,7 +292,7 @@
             [_peers addObjectsFromArray:[self registeredDevnetPeers]];
 
             if (self.masternodeList) {
-                NSArray *masternodePeers = [self.masternodeList peers:8 withConnectivityNonce:self.masternodeListConnectivityNonce];
+                NSArray *masternodePeers = [self peers:8 withConnectivityNonce:self.masternodeListConnectivityNonce];
                 [_peers addObjectsFromArray:masternodePeers];
             }
 
@@ -279,7 +301,7 @@
         }
 
         if (self.masternodeList) {
-            NSArray *masternodePeers = [self.masternodeList peers:500 withConnectivityNonce:self.masternodeListConnectivityNonce];
+            NSArray *masternodePeers = [self peers:500 withConnectivityNonce:self.masternodeListConnectivityNonce];
             [_peers addObjectsFromArray:masternodePeers];
             [self sortPeers];
             return _peers;
@@ -288,20 +310,22 @@
         // DNS peer discovery
         NSTimeInterval now = [NSDate timeIntervalSince1970];
         NSMutableArray *peers = [NSMutableArray arrayWithObject:[NSMutableArray array]];
-        NSArray *dnsSeeds = [self dnsSeeds];
+        Vec_String *dns_seeds = dash_spv_crypto_network_chain_type_ChainType_dns_seeds(self.chain.chainType);
         if (_peers.count < PEER_MAX_CONNECTIONS || ((DSPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3 * DAY_TIME_INTERVAL < now) {
-            while (peers.count < dnsSeeds.count) [peers addObject:[NSMutableArray array]];
+            while (peers.count < dns_seeds->count) [peers addObject:[NSMutableArray array]];
         }
 
         if (peers.count > 0) {
-            if ([dnsSeeds count]) {
+            if (dns_seeds->count) {
                 dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
                     NSString *servname = @(self.chain.standardPort).stringValue;
                     struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL}, *servinfo, *p;
                     UInt128 addr = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
+                    
+                    char *dns_seed = dns_seeds->values[i];
 
-                    DSLog(@"[%@] [DSPeerManager] DNS lookup %@", self.chain.name, [dnsSeeds objectAtIndex:i]);
-                    NSString *dnsSeed = [dnsSeeds objectAtIndex:i];
+                    DSLog(@"[%@] [DSPeerManager] DNS lookup %s", self.chain.name, dns_seed);
+                    NSString *dnsSeed = [NSString stringWithUTF8String:dns_seed];
                     if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
                         for (p = servinfo; p != NULL; p = p->ai_next) {
                             if (p->ai_family == AF_INET) {
@@ -326,7 +350,7 @@
 
                         freeaddrinfo(servinfo);
                     } else {
-                        DSLog(@"[%@] [DSPeerManager] failed getaddrinfo for %@", self.chain.name, dnsSeeds[i]);
+                        DSLog(@"[%@] [DSPeerManager] failed getaddrinfo for %s", self.chain.name, dns_seed);
                     }
                 });
             }
@@ -335,6 +359,7 @@
 
             if (![self.chain isMainnet] && ![self.chain isTestnet]) {
                 [self sortPeers];
+                Vec_String_destroy(dns_seeds);
                 return _peers;
             }
             // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
@@ -376,7 +401,7 @@
 
             [self sortPeers];
         }
-
+        Vec_String_destroy(dns_seeds);
         return _peers;
     }
 }
@@ -410,7 +435,7 @@
                 _peers = nil;
             }
 
-            [peer disconnectWithError:[NSError errorWithCode:500 localizedDescriptionKey:errorMessage]];
+            [peer disconnectWithError:ERROR_500(errorMessage)];
             DSLog(@"[%@] [DSPeerManager] peerMisbehaving -> peerManager::connect", self.chain.name);
             [self connect];
         }
@@ -641,14 +666,15 @@
 
 // MARK: - Using Masternode List for connectivitity
 
-- (void)useMasternodeList:(DSMasternodeList *)masternodeList withConnectivityNonce:(uint64_t)connectivityNonce {
+- (void)useMasternodeList:(DMasternodeList *)masternodeList
+    withConnectivityNonce:(uint64_t)connectivityNonce {
     self.masternodeList = masternodeList;
     self.masternodeListConnectivityNonce = connectivityNonce;
 
     BOOL connected = self.connected;
 
 
-    NSArray *peers = [masternodeList peers:500 withConnectivityNonce:connectivityNonce];
+    NSArray *peers = [self peers:500 withConnectivityNonce:connectivityNonce];
 
     @synchronized(self) {
         if (!_peers) {
@@ -766,10 +792,9 @@
             [self chainSyncStopped];
             DSLog(@"[%@] [DSPeerManager] No peers found -> SyncFailed", self.chain.name);
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSError *error = [NSError errorWithCode:1 localizedDescriptionKey:@"No peers found"];
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                     object:nil
-                                                                  userInfo:@{@"error": error, DSChainManagerNotificationChainKey: self.chain}];
+                                                                  userInfo:@{@"error": ERROR_NO_PEERS, DSChainManagerNotificationChainKey: self.chain}];
             });
         }
     });
@@ -806,7 +831,7 @@
         }
 
     });
-    [self disconnectDownloadPeerForError:[NSError errorWithCode:500 descriptionKey:DSLocalizedString(@"Synchronization Timeout", @"An error message for notifying that chain sync has timed out")] withCompletion:nil];
+    [self disconnectDownloadPeerForError:ERROR_SYNC_TIMEOUT withCompletion:nil];
 }
 - (void)restartSyncTimeout:(NSTimeInterval)afterDelay {
     [self cancelSyncTimeout];
@@ -836,13 +861,13 @@
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
     if (!(peer.services & SERVICES_NODE_NETWORK) || peer.lastBlockHeight + 10 < self.chain.lastSyncBlockHeight) {
-        [peer disconnectWithError:[NSError errorWithCode:500 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not service network", nil), peer.host]]];
+        [peer disconnectWithError:ERROR_NO_SERVICE(peer.host)];
         return;
     }
 
     // drop peers that don't support SPV filtering
     if (peer.version >= 70206 && !(peer.services & SERVICES_NODE_BLOOM)) {
-        [peer disconnectWithError:[NSError errorWithCode:500 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not support bloom filtering", nil), peer.host]]];
+        [peer disconnectWithError:ERROR_NO_BLOOM(peer.host)];
         return;
     }
 

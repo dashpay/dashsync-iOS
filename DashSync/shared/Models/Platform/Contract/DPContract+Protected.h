@@ -17,15 +17,13 @@
 
 #import "DPContract.h"
 
-@class DSBlockchainIdentity;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContract ()
 
-- (void)setContractState:(DPContractState)contractState inContext:(NSManagedObjectContext *)context;
+@property (assign, nonatomic) DPContractState contractState;
 
-- (DSContractTransition *)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)saveAndWaitInContext:(NSManagedObjectContext *)context;
 
 @end
 

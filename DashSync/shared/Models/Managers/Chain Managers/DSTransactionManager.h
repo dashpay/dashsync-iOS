@@ -77,7 +77,13 @@ typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction *tx, DSPa
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError * _Nullable error))completion;
 
-- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest usingUserBlockchainIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity fromAccount:(DSAccount *)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest
+            usingUserIdentity:(DSIdentity *_Nullable)identity
+                  fromAccount:(DSAccount *)account
+        acceptInternalAddress:(BOOL)acceptInternalAddress
+         acceptReusingAddress:(BOOL)acceptReusingAddress
+      addressIsFromPasteboard:(BOOL)addressIsFromPasteboard
+requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt
     keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
                        requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
                                presentChallenge:(DSTransactionChallengeBlock)challenge

@@ -53,7 +53,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncFinishedNotificatio
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncStateDidChangeNotification;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBackgroundManager, DSBloomFilter, DSBlock, DSFullBlock, DSKeyManager, DSSyncState;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSTransactionManager, DSIdentitiesManager, DSBackgroundManager, DSBloomFilter, DSBlock, DSFullBlock, DSKeyManager, DSSyncState;
 
 typedef void (^BlockMiningCompletionBlock)(DSFullBlock *_Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError *_Nullable error);
 typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block, NSArray<NSNumber *> *attempts, NSTimeInterval timeUsed, NSError *_Nullable error);
@@ -64,13 +64,11 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 @property (nonatomic, readonly) DSSporkManager *sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager *masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager *governanceSyncManager;
-@property (nonatomic, readonly) DSDAPIClient *DAPIClient;
 @property (nonatomic, readonly) DSIdentitiesManager *identitiesManager;
 @property (nonatomic, readonly) DSTransactionManager *transactionManager;
 @property (nonatomic, readonly) DSPeerManager *peerManager;
 @property (nonatomic, readonly) DSKeyManager *keyManager;
 @property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
 @property (nonatomic, readonly, getter = isSynced) BOOL synced;
 @property (nonatomic, readonly) double combinedSyncProgress;
 

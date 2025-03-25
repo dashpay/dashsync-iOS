@@ -33,27 +33,23 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
     NSCParameterAssert(key);
     if (!key) return NO;
-
     id accessible = (authenticated) ? (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly : (__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly;
     NSDictionary *query = @{(__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrService: SEC_ATTR_SERVICE,
         (__bridge id)kSecAttrAccount: key};
-
     if (SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL) == errSecItemNotFound) {
         if (!data) return YES;
-
         NSDictionary *item = @{(__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
             (__bridge id)kSecAttrService: SEC_ATTR_SERVICE,
             (__bridge id)kSecAttrAccount: key,
             (__bridge id)kSecAttrAccessible: accessible,
             (__bridge id)kSecValueData: data};
         OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
-
         if (status == noErr) return YES;
         DSLogPrivate(@"SecItemAdd error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
         return NO;
@@ -61,16 +57,13 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
 
     if (!data) {
         OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
-
         if (status == noErr) return YES;
         DSLogPrivate(@"SecItemDelete error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
         return NO;
     }
-
     NSDictionary *update = @{(__bridge id)kSecAttrAccessible: accessible,
         (__bridge id)kSecValueData: data};
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
-
     if (status == noErr) return YES;
     DSLogPrivate(@"SecItemUpdate error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
     return NO;
@@ -79,14 +72,12 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
 BOOL hasKeychainData(NSString *key, NSError **error) {
     NSCParameterAssert(key);
     if (!key) return NO;
-
     NSDictionary *query = @{(__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrService: SEC_ATTR_SERVICE,
         (__bridge id)kSecAttrAccount: key,
         (__bridge id)kSecReturnRef: @YES};
     CFDataRef result = nil;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
-
     if (status == errSecItemNotFound) return NO;
     if (status == noErr) return YES;
     DSLogPrivate(@"SecItemCopyMatching error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
@@ -101,7 +92,6 @@ NSData *getKeychainData(NSString *key, NSError **error) {
         (__bridge id)kSecReturnData: @YES};
     CFDataRef result = nil;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
-
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
     DSLogPrivate(@"SecItemCopyMatching error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
@@ -112,7 +102,6 @@ NSData *getKeychainData(NSString *key, NSError **error) {
 BOOL setKeychainInt(int64_t i, NSString *key, BOOL authenticated) {
     @autoreleasepool {
         NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(int64_t)];
-
         *(int64_t *)d.mutableBytes = i;
         return setKeychainData(d, key, authenticated);
     }
@@ -121,7 +110,6 @@ BOOL setKeychainInt(int64_t i, NSString *key, BOOL authenticated) {
 int64_t getKeychainInt(NSString *key, NSError **error) {
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
-
         return (d.length == sizeof(int64_t)) ? *(int64_t *)d.bytes : 0;
     }
 }
@@ -131,7 +119,6 @@ BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated) {
         NSData *d = (s) ? CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)s,
                               kCFStringEncodingUTF8, 0)) :
                           nil;
-
         return setKeychainData(d, key, authenticated);
     }
 }
@@ -139,7 +126,6 @@ BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated) {
 NSString *getKeychainString(NSString *key, NSError **error) {
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
-
         return (d) ? CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)d,
                          kCFStringEncodingUTF8)) :
                      nil;
@@ -149,32 +135,27 @@ NSString *getKeychainString(NSString *key, NSError **error) {
 BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated) {
     @autoreleasepool {
         NSData *d = (dict) ? [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil] : nil;
-
         return setKeychainData(d, key, authenticated);
     }
 }
 
 NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error) {
-    //@autoreleasepool {
-    NSData *d = getKeychainData(key, error);
-    if (d == nil) return nil;
-    NSSet *set = [NSSet setWithArray:@[
-        [NSDictionary class],
-        [NSMutableDictionary class]
-    ]];
-    set = [set setByAddingObjectsFromArray:classes];
-    NSDictionary *dictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
-    if (*error) {
-        DSLogPrivate(@"error retrieving dictionary from keychain %@", *error);
+    @autoreleasepool {
+        NSData *d = getKeychainData(key, error);
+        if (d == nil) return nil;
+        NSSet *set = [NSSet setWithArray:@[[NSDictionary class], [NSMutableDictionary class]]];
+        set = [set setByAddingObjectsFromArray:classes];
+        NSDictionary *dictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
+        if (*error) {
+            DSLogPrivate(@"error retrieving dictionary from keychain %@", *error);
+        }
+        return dictionary;
     }
-    return dictionary;
-    //}
 }
 
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated) {
     @autoreleasepool {
         NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array requiringSecureCoding:NO error:nil] : nil;
-
         return setKeychainData(d, key, authenticated);
     }
 }
@@ -199,7 +180,6 @@ NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error) {
 NSOrderedSet *getKeychainOrderedSet(NSString *key, NSError **error) {
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
-
         return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSOrderedSet class] fromData:d error:nil] : nil;
     }
 }
@@ -207,7 +187,6 @@ NSOrderedSet *getKeychainOrderedSet(NSString *key, NSError **error) {
 BOOL setKeychainOrderedSet(NSOrderedSet *orderedSet, NSString *key, BOOL authenticated) {
     @autoreleasepool {
         NSData *d = (orderedSet) ? [NSKeyedArchiver archivedDataWithRootObject:orderedSet requiringSecureCoding:NO error:nil] : nil;
-
         return setKeychainData(d, key, authenticated);
     }
 }
@@ -1593,6 +1572,18 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     NSMutableData *data = [NSMutableData data];
     [data appendScriptPubKeyForAddress:address forChain:chain];
     return [data copy];
+}
++ (NSData *)assetLockOutputScript {
+    NSMutableData *data = [NSMutableData data];
+    [data appendUInt8:OP_RETURN];
+    [data appendUInt8:0];
+    return [data copy];
+}
+
++ (NSData *)creditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
+    NSMutableData *script = [NSMutableData data];
+    [script appendCreditBurnScriptPubKeyForAddress:address forChain:chain];
+    return [script copy];
 }
 
 + (NSData *)merkleRootFromHashes:(NSArray *)hashes {

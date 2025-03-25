@@ -9,6 +9,7 @@
 #import "DSAccount.h"
 #import "DSAuthenticationManager+UpdateSecureTime.h"
 #import "DSBIP39Mnemonic.h"
+#import "DSChain+Wallet.h"
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSDerivationPathFactory.h"

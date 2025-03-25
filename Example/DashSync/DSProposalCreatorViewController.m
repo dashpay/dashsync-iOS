@@ -92,7 +92,7 @@
 }
 
 - (NSString *)currentAddress {
-    if ([DSKeyManager isValidDashAddress:self.addressTextField.text forChain:self.chainManager.chain]) {
+    if (DIsValidDashAddress(DChar(self.addressTextField.text), self.chainManager.chain.chainType)) {
         return self.addressTextField.text;
     } else {
         return self.account.defaultDerivationPath.receiveAddress;

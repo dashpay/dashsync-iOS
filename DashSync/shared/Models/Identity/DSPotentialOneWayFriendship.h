@@ -16,39 +16,53 @@
 //
 
 #import "BigIntTypes.h"
+#import "dash_spv_apple_bindings.h"
+#import "DSKeyManager.h"
 #import "DSDashPlatform.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity, DSAccount, DSBlockchainIdentityRegistrationTransition, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
+@class DSIdentity, DSAccount, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
 
 @interface DSPotentialOneWayFriendship : NSObject
 
 @property (nonatomic, readonly) DSAccount *account;
-@property (nonatomic, readonly) DSBlockchainIdentity *destinationBlockchainIdentity;
-@property (nonatomic, readonly) DSBlockchainIdentity *sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
+@property (nonatomic, readonly) DSIdentity *destinationIdentity;
+@property (nonatomic, readonly) DSIdentity *sourceIdentity; //this is the holder of the contacts, not the destination
 @property (nonatomic, readonly) NSTimeInterval createdAt;
 @property (nonatomic, readonly) DSIncomingFundsDerivationPath *derivationPath;
 @property (nonatomic, readonly) uint32_t sourceKeyIndex;
 @property (nonatomic, readonly) uint32_t destinationKeyIndex;
+@property (nonatomic, readonly) UInt256 destinationIdentityUniqueId;
 
-- (instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity *)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity *)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount *)account;
+- (instancetype)initWithDestinationIdentity:(DSIdentity *)destinationIdentity
+                        destinationKeyIndex:(uint32_t)destinationKeyIndex
+                             sourceIdentity:(DSIdentity *)sourceIdentity
+                             sourceKeyIndex:(uint32_t)sourceKeyIndex
+                                    account:(DSAccount *)account;
 
-- (instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity *)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity *)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount *)account createdAt:(NSTimeInterval)createdAt;
+- (instancetype)initWithDestinationIdentity:(DSIdentity *)destinationIdentity
+                        destinationKeyIndex:(uint32_t)destinationKeyIndex
+                             sourceIdentity:(DSIdentity *)sourceIdentity
+                             sourceKeyIndex:(uint32_t)sourceKeyIndex
+                                    account:(DSAccount *)account
+                                  createdAt:(NSTimeInterval)createdAt;
 
 //-(DSFriendRequestEntity*)outgoingFriendRequest;
 
-- (DSFriendRequestEntity *)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity *)dashpayUserEntity atTimestamp:(NSTimeInterval)timestamp;
+- (DSFriendRequestEntity *)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity *)dashpayUserEntity
+                                                         atTimestamp:(NSTimeInterval)timestamp;
 
-- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity inContext:(NSManagedObjectContext *)context;
-- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity;
+- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)entity
+                                                                    inContext:(NSManagedObjectContext *)context;
+- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)entity;
 
 - (void)createDerivationPathAndSaveExtendedPublicKeyWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion;
 
-- (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
+- (BOOL)encryptExtendedPublicKey;
 
-- (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData;
+- (DValue *)toValue;
 
 @end
 

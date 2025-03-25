@@ -110,8 +110,10 @@
                          self.highlight.alpha = 1.0;
                      }];
     [self becomeFirstResponder];
-    [[UIMenuController sharedMenuController] setTargetRect:self.copyableFrame inView:self];
-    [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
+//    showMenuFromView:rect
+    [[UIMenuController sharedMenuController] showMenuFromView:self rect:self.copyableFrame];
+//    [[UIMenuController sharedMenuController] setTargetRect:self.copyableFrame inView:self];
+//    [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
 
     if (!self.menuHideObserver) {
         self.menuHideObserver =

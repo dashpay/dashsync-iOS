@@ -36,7 +36,8 @@
 
 @implementation DSDerivationPathEntity
 
-+ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath *)derivationPath inContext:(NSManagedObjectContext *)context {
++ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath *)derivationPath
+                                                                     inContext:(NSManagedObjectContext *)context {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     //DSChain * chain = derivationPath.chain;
     NSArray *derivationPathEntities;
@@ -59,12 +60,15 @@
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         if (derivationPath.account) {
-            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:context];
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString
+                                                                                     index:derivationPath.account.accountNumber
+                                                                                   onChain:derivationPath.chain
+                                                                                 inContext:context];
         }
         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             //NSLog(@"--->creating derivation path entity on path %@ (%@) with no friendship identifier %@", derivationPath, derivationPath.stringRepresentation, [NSThread callStackSymbols]);
             DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-            NSPredicate *predicatee = [NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId), uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId)];
+            NSPredicate *predicatee = [NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(incomingFundsDerivationPath.contactSourceIdentityUniqueId), uint256_data(incomingFundsDerivationPath.contactDestinationIdentityUniqueId)];
             DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectForPredicate:predicatee inContext:context];
             if (friendRequest) {
                 derivationPathEntity.friendRequest = friendRequest;
@@ -75,7 +79,9 @@
     }
 }
 
-+ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath associateWithFriendRequest:(DSFriendRequestEntity *)friendRequest inContext:(NSManagedObjectContext *)context {
++ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath
+                                                    associateWithFriendRequest:(DSFriendRequestEntity *)friendRequest
+                                                                     inContext:(NSManagedObjectContext *)context {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     NSParameterAssert(friendRequest);
     
@@ -96,7 +102,10 @@
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         if (derivationPath.account) {
-            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:context];
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString
+                                                                                     index:derivationPath.account.accountNumber
+                                                                                   onChain:derivationPath.chain
+                                                                                 inContext:context];
         }
         derivationPathEntity.friendRequest = friendRequest;
         

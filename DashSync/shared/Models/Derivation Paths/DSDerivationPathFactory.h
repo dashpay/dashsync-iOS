@@ -6,10 +6,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSKeyManager.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSAuthenticationKeysDerivationPath, DSWallet, DSMasternodeHoldingsDerivationPath, DSDerivationPath, DSCreditFundingDerivationPath;
+@class DSAuthenticationKeysDerivationPath, DSWallet, DSMasternodeHoldingsDerivationPath, DSDerivationPath, DSAssetLockDerivationPath;
 
 @interface DSDerivationPathFactory : NSObject
 
@@ -21,17 +23,47 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSAuthenticationKeysDerivationPath *)platformNodeKeysDerivationPathForWallet:(DSWallet *)wallet;
 - (DSMasternodeHoldingsDerivationPath *)providerFundsDerivationPathForWallet:(DSWallet *)wallet;
 
-- (DSCreditFundingDerivationPath *)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet;
-- (DSCreditFundingDerivationPath *)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet *)wallet;
-- (DSCreditFundingDerivationPath *)blockchainIdentityInvitationFundingDerivationPathForWallet:(DSWallet *)wallet;
-- (DSAuthenticationKeysDerivationPath *)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet *)wallet;
-- (DSAuthenticationKeysDerivationPath *)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet *)wallet;
+- (DSAssetLockDerivationPath *)identityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet;
+- (DSAssetLockDerivationPath *)identityTopupFundingDerivationPathForWallet:(DSWallet *)wallet;
+- (DSAssetLockDerivationPath *)identityInvitationFundingDerivationPathForWallet:(DSWallet *)wallet;
+- (DSAuthenticationKeysDerivationPath *)identityBLSKeysDerivationPathForWallet:(DSWallet *)wallet;
+- (DSAuthenticationKeysDerivationPath *)identityECDSAKeysDerivationPathForWallet:(DSWallet *)wallet;
 
 - (NSArray<DSDerivationPath *> *)loadedSpecializedDerivationPathsForWallet:(DSWallet *)wallet;
 - (NSArray<DSDerivationPath *> *)unloadedSpecializedDerivationPathsForWallet:(DSWallet *)wallet;
 - (NSArray<DSDerivationPath *> *)specializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet;
 
 - (NSArray<DSDerivationPath *> *)fundDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet;
+
+
+
+
+
++ (DMaybeOpaqueKeys *)privateKeysAtIndexPaths:(NSArray *)indexPaths
+                                     fromSeed:(NSData *)seed
+                               derivationPath:(DSDerivationPath *)derivationPath;
++ (NSArray<NSString *> *)serializedPrivateKeysAtIndexPaths:(NSArray *)indexPaths
+                                      fromSeed:(NSData *)seed
+                                derivationPath:(DSDerivationPath *)derivationPath;
++ (NSString *_Nullable)serializedExtendedPublicKey:(DSDerivationPath *)derivationPath;
+
++ (NSString *)serializedExtendedPrivateKeyFromSeed:(NSData *)seed
+                                    derivationPath:(DSDerivationPath *)derivationPath;
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain *)chain;
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString
+                                  onChain:(DSChain *)chain
+                                   rDepth:(uint8_t *)depth
+                        rTerminalHardened:(BOOL *)terminalHardened
+                           rTerminalIndex:(UInt256 *)terminalIndex;
++ (NSData *)deserializedExtendedPublicKey:(DSDerivationPath *)derivationPath extendedPublicKeyString:(NSString *)extendedPublicKeyString;
+
++ (NSString *)standaloneExtendedPublicKeyLocationStringForUniqueID:(NSString *)uniqueID;
++ (NSString *)standaloneInfoDictionaryLocationStringForUniqueID:(NSString *)uniqueID;
++ (NSString *)walletBasedExtendedPublicKeyLocationStringForUniqueID:(NSString *)uniqueID;
++ (NSString *)walletBasedExtendedPrivateKeyLocationStringForUniqueID:(NSString *)uniqueID;
+
+
++ (NSString *)stringRepresentationOfIndex:(UInt256)index hardened:(BOOL)hardened inContext:(NSManagedObjectContext *)context;
 
 @end
 

@@ -25,7 +25,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint8_t specialTransactionVersion;
 @property (nonatomic, strong) NSMutableArray<DSTransactionOutput *> *creditOutputs;
+@property (nonatomic, readonly) UInt160 creditBurnPublicKeyHash;
+@property (nonatomic, readonly) DSUTXO lockedOutpoint;
 
+- (instancetype)initOnChain:(DSChain *)chain withCreditOutputs:(NSArray<DSTransactionOutput *> *)creditOutputs;
+
+- (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
+- (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
+
+- (void)markInvitationAddressAsUsedInWallet:(DSWallet *)wallet;
+- (void)markAddressAsUsedInWallet:(DSWallet *)wallet;
+
+@end
+
+@interface DSAssetLockTransaction (FFI)
++ (instancetype)ffi_from:(dashcore_blockdata_transaction_Transaction *)transaction onChain:(DSChain *)chain;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DSBasePinViewController
 
 + (NSString *)defaultTitle {
-    return [NSString stringWithFormat:DSLocalizedString(@"PIN for %@", nil), DISPLAY_NAME];
+    return DSLocalizedFormat(@"PIN for %@", nil, DISPLAY_NAME);
 }
 
 - (void)viewDidLoad {

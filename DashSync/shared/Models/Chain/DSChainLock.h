@@ -23,37 +23,37 @@
 //  THE SOFTWARE.
 
 #import "BigIntTypes.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSQuorumEntry, DSMasternodeList;
+@class DSChain;
 
 @interface DSChainLock : NSObject
 
-@property (nonatomic, readonly) uint32_t height;
+@property (nonatomic, readonly) DChainLock *lock;
+@property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) UInt256 blockHash;
-@property (nonatomic, readonly) UInt256 requestID;
+@property (nonatomic, readonly) NSData *blockHashData;
 @property (nonatomic, readonly) UInt768 signature;
+@property (nonatomic, readonly) NSData *signatureData;
 @property (nonatomic, readonly) BOOL signatureVerified;
 @property (nonatomic, readonly) BOOL saved;
-@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
 
 // message can be either a merkleblock or header message
 + (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain;
-
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;
-
-- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain;
+- (instancetype)initWithBlockHash:(NSData *)blockHash
+                           height:(uint32_t)height
+                        signature:(NSData *)signature
+                signatureVerified:(BOOL)signatureVerified
+                   quorumVerified:(BOOL)quorumVerified
+                          onChain:(DSChain *)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-- (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList *_Nullable *_Nullable)returnMasternodeList;
-
 - (BOOL)verifySignature;
-
 - (void)saveInitial;
-
 - (void)saveSignatureValid;
 
 @end

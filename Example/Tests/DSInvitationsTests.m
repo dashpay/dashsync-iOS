@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DSBlockchainInvitation+Protected.h"
+#import "DSInvitation.h"
 #import <XCTest/XCTest.h>
 
 @interface DSInvitationsTests : XCTestCase

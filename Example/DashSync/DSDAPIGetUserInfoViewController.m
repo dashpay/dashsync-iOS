@@ -83,16 +83,21 @@
     if (!username) {
         return;
     }
+    
+    [self.chainManager.identitiesManager searchIdentityByName:username inDomain:@"dash" withCompletion:^(BOOL success, DSIdentity * _Nullable identity, NSError * _Nullable error) {
+        NSLog(@"%@ --- %@", identity, error);
 
-    [self.chainManager.DAPIClient.DAPIPlatformNetworkService getIdentityByName:username
-        inDomain:@"dash"
-        completionQueue:dispatch_get_main_queue()
-        success:^(NSDictionary *_Nonnull blockchainIdentity) {
-            NSLog(@"%@", blockchainIdentity);
-        }
-        failure:^(NSError *_Nonnull error) {
-            NSLog(@"%@", error);
-        }];
+    }];
+//
+//    [self.chainManager.DAPIClient.DAPIPlatformNetworkService getIdentityByName:username
+//        inDomain:@"dash"
+//        completionQueue:dispatch_get_main_queue()
+//        success:^(NSDictionary *_Nonnull identity) {
+//            NSLog(@"%@", identity);
+//        }
+//        failure:^(NSError *_Nonnull error) {
+//            NSLog(@"%@", error);
+//        }];
 }
 
 @end

@@ -5,15 +5,33 @@
 //  Created by Sam Westrich on 2/20/19.
 //
 
+#import "DSAccount.h"
+#import "DSAddressEntity+CoreDataClass.h"
+#import "DSGapLimit.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSChain+Params.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSKeyManager.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
 #import "NSError+Dash.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSSimpleIndexedDerivationPath
 
-- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(KeyKind)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
-    if (!(self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes
+                                 hardened:(const BOOL[_Nullable])hardenedIndexes
+                                   length:(NSUInteger)length
+                                     type:(DSDerivationPathType)type
+                         signingAlgorithm:(DKeyKind *)signingAlgorithm
+                                reference:(DSDerivationPathReference)reference
+                                  onChain:(DSChain *)chain {
+    if (!(self = [super initWithIndexes:indexes
+                               hardened:hardenedIndexes
+                                 length:length
+                                   type:type
+                       signingAlgorithm:signingAlgorithm
+                              reference:reference
+                                onChain:chain])) return nil;
 
     self.mOrderedAddresses = [NSMutableArray array];
 
@@ -23,31 +41,9 @@
 - (void)loadAddresses {
     @synchronized(self) {
         if (!self.addressesLoaded) {
-            [self.managedObjectContext performBlockAndWait:^{
-                DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
-                NSArray<DSAddressEntity *> *addresses = [derivationPathEntity.addresses sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]]];
-                for (DSAddressEntity *e in addresses) {
-                    @autoreleasepool {
-                        while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
-                        if (![DSKeyManager isValidDashAddress:e.address forChain:self.wallet.chain]) {
-#if DEBUG
-                            DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
-#else
-                                DSLog(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, @"<REDACTED>");
-#endif /* DEBUG */
-                            continue;
-                        }
-                        self.mOrderedAddresses[e.index] = e.address;
-                        [self.mAllAddresses addObject:e.address];
-                        if ([e.usedInInputs count] || [e.usedInOutputs count] || [e.usedInSpecialTransactions count] || [e.usedInSimplifiedMasternodeEntries count]) {
-                            [self.mUsedAddresses addObject:e.address];
-                        }
-                    }
-                }
-            }];
+            [self loadAddressesInContext:self.managedObjectContext];
             self.addressesLoaded = TRUE;
-            [self registerAddressesWithGapLimit:10 error:nil];
+            [self registerAddressesWithSettings:[self defaultGapSettings]];
         }
     }
 }
@@ -66,26 +62,24 @@
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
-            [self registerAddressesWithDefaultGapLimitWithError:nil];
+            [self registerAddressesWithSettings:[self defaultGapSettings]];
         }
         return TRUE;
     }
     return FALSE;
 }
 
-- (NSUInteger)defaultGapLimit {
-    return 10;
-}
-
-- (NSArray *)registerAddressesWithDefaultGapLimitWithError:(NSError **)error {
-    return [self registerAddressesWithGapLimit:[self defaultGapLimit] error:error];
+- (DSGapLimit *)defaultGapSettings {
+    return [DSGapLimit withLimit:10];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError **)error {
-    NSAssert(self.type != DSDerivationPathType_MultipleUserAuthentication, @"This should not be called for multiple user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit forIdentityIndex:(uint32_t)identityIndex error:(NSError**)error' instead.");
+- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)settings
+                                 inContext:(NSManagedObjectContext *)context {
+    NSAssert(self.type != DSDerivationPathType_MultipleUserAuthentication, @"This should not be called for multiple user authentication. Use '- (NSArray *)registerAddressesWithSettings:(DSGapLimit *)gapLimit' with DSGapLimitIdentity.");
+    uintptr_t gapLimit = settings.gapLimit;
 
     NSMutableArray *rArray = [self.mOrderedAddresses mutableCopy];
 
@@ -118,27 +112,14 @@
         if (rArray.count >= gapLimit) return [rArray subarrayWithRange:NSMakeRange(0, gapLimit)];
 
         while (rArray.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self publicKeyDataAtIndex:n];
+            NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:n]];
             NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
             if (!addr) {
                 DSLog(@"[%@] error generating keys", self.chain.name);
-                if (error) {
-                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
-                }
                 return nil;
             }
-
-            if (!self.wallet.isTransient) {
-                [self.managedObjectContext performBlock:^{ // store new address in core data
-                    DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
-                    e.derivationPath = derivationPathEntity;
-                    NSAssert([DSKeyManager isValidDashAddress:addr forChain:self.chain], @"the address is being saved to the wrong derivation path");
-                    e.address = addr;
-                    e.index = n;
-                    e.standalone = NO;
-                }];
-            }
+            if (!self.wallet.isTransient)
+                [self storeNewAddressInContext:addr atIndex:n context:self.managedObjectContext];
 
             [self.mAllAddresses addObject:addr];
             [rArray addObject:addr];
@@ -150,7 +131,7 @@
     }
 }
 
-- (NSUInteger)firstUnusedIndex {
+- (uint32_t)firstUnusedIndex {
     uint32_t i = (uint32_t)self.mOrderedAddresses.count;
 
     // keep only the trailing contiguous block of addresses that aren't used
@@ -161,15 +142,6 @@
     return i;
 }
 
-// gets an addess at an index
-- (NSString *)addressAtIndex:(uint32_t)index {
-    return [self addressAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-}
-
-- (BOOL)addressIsUsedAtIndex:(uint32_t)index {
-    return [self addressIsUsedAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-}
-
 - (NSIndexPath *)indexPathForKnownAddress:(NSString *)address {
     return [NSIndexPath indexPathWithIndex:[self indexOfKnownAddress:address]];
 }
@@ -178,22 +150,9 @@
     return [self.mOrderedAddresses indexOfObject:address];
 }
 
-// gets a public key at an index
-- (NSData *)publicKeyDataAtIndex:(uint32_t)index {
-    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-}
-
-- (OpaqueKey *)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed {
-    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
-}
-
-- (NSArray *)publicKeyDataArrayToIndex:(NSUInteger)index {
-    NSMutableArray *mArray = [NSMutableArray array];
-    for (int i = 0; i < index; i++) {
-        NSData *pubKey = [self publicKeyDataAtIndex:i];
-        [mArray addObject:pubKey];
-    }
-    return [mArray copy];
+- (NSUInteger)indexOfKnownAddressHash:(UInt160)hash {
+    NSString *address = [DSKeyManager addressFromHash160:hash forChain:self.chain];
+    return [self.mOrderedAddresses indexOfObject:address];
 }
 
 - (NSArray *)addressesToIndex:(NSUInteger)index {
@@ -206,7 +165,7 @@
         if (useCache && self.mOrderedAddresses.count > i && self.mOrderedAddresses[i]) {
             [mArray addObject:self.mOrderedAddresses[i]];
         } else {
-            NSData *pubKey = [self publicKeyDataAtIndex:i];
+            NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:i]];
             NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
             [mArray addObject:addr];
             if (addToCache && self.mOrderedAddresses.count == i) {
@@ -220,15 +179,51 @@
 - (NSArray *)privateKeysForRange:(NSRange)range fromSeed:(NSData *)seed {
     NSMutableArray *mArray = [NSMutableArray array];
     for (NSUInteger i = range.location; i < (range.location + range.length); i++) {
-        OpaqueKey *privateKey = [self privateKeyAtIndex:(uint32_t)i fromSeed:seed];
+        DMaybeOpaqueKey *privateKey = [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:i] fromSeed:seed];
         NSValue *privateKeyValue = [NSValue valueWithPointer:privateKey];
         [mArray addObject:privateKeyValue];
     }
     return [mArray copy];
 }
 
-- (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed {
-    return [self privateKeysForRange:NSMakeRange(0, index) fromSeed:seed];
-}
+- (void)loadAddressesInContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
+        NSArray<DSAddressEntity *> *addresses = [derivationPathEntity.addresses sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]]];
+        for (DSAddressEntity *e in addresses) {
+            @autoreleasepool {
+                while (e.index >= self.mOrderedAddresses.count)
+                    [self.mOrderedAddresses addObject:[NSNull null]];
+                if (!DIsValidDashAddress(DChar(e.address), self.chain.chainType)) {
+#if DEBUG
+                    DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.chain.name, e.address);
+#else
+                        DSLog(@"[%@] address %@ loaded but was not valid on chain", self.chain.name, @"<REDACTED>");
+#endif /* DEBUG */
+                    continue;
+                }
+                self.mOrderedAddresses[e.index] = e.address;
+                [self.mAllAddresses addObject:e.address];
+                if ([e.usedInInputs count] || [e.usedInOutputs count] || [e.usedInSpecialTransactions count] /*|| [e.usedInSimplifiedMasternodeEntries count]*/) {
+                    [self.mUsedAddresses addObject:e.address];
+                }
+            }
+        }
+    }];
 
+}
+- (void)storeNewAddressInContext:(NSString *)address
+                         atIndex:(uint32_t)n
+                         context:(NSManagedObjectContext *)context {
+    [context performBlock:^{ // store new address in core data
+        DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
+        DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
+        e.derivationPath = derivationPathEntity;
+        NSAssert(DIsValidDashAddress(DChar(address), self.chain.chainType), @"the address is being saved to the wrong derivation path");
+        e.address = address;
+        e.index = n;
+        e.standalone = NO;
+    }];
+
+}
 @end

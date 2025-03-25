@@ -17,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *signature;
 @property (assign, nonatomic) BOOL validSignature;
-@property (nullable, nonatomic, retain) DSQuorumEntryEntity *quorum;
 @property (nullable, nonatomic, retain) DSMerkleBlockEntity *merkleBlock;
 @property (nullable, nonatomic, retain) DSChainEntity *chainIfLastChainLock;
 

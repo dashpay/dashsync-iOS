@@ -22,7 +22,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListDiffService : DSMasternodeListService
 
-- (void)sendReversedHashes:(NSString *)baseBlockHash blockHash:(NSString *)blockHash;
+@property (nonatomic, readonly) NSOrderedSet<NSData *> *retrievalQueue;
+@property (nonatomic, readonly) NSUInteger retrievalQueueCount;
+//@property (nonatomic, readonly) NSUInteger retrievalQueueMaxAmount;
+
+- (NSUInteger)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
+- (NSUInteger)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
+- (NSUInteger)addToRetrievalQueueArray:(NSArray<NSData *> *_Nonnull)masternodeBlockHashDataArray;
+//- (void)cleanListsRetrievalQueue;
+
+- (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
 
 @end
 

@@ -7,11 +7,12 @@
 //
 
 #import <DashSync/DashSync.h>
+#import "dash_spv_apple_bindings.h"
 #import <UIKit/UIKit.h>
 
 @interface DSClaimMasternodeViewController : UIViewController
 
-@property (nonatomic, strong) DSSimplifiedMasternodeEntry *masternode;
+@property (nonatomic, assign) DMasternodeEntry *masternode;
 @property (nonatomic, strong) DSChain *chain;
 
 @end

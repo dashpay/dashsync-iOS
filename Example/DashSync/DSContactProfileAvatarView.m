@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor groupTableViewBackgroundColor];
+        self.backgroundColor = [UIColor systemGroupedBackgroundColor];
 
         UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
         imageView.translatesAutoresizingMaskIntoConstraints = NO;

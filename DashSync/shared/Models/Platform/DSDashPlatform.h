@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-#import "DPDocumentFactory.h"
 #import <Foundation/Foundation.h>
 
 #define DPNS_CONTRACT @"DPNS_CONTRACT"
@@ -30,14 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) DPContract *dashPayContract;
 @property (readonly, strong, nonatomic) DPContract *dpnsContract;
-@property (readonly, strong, nonatomic) DPContract *dashThumbnailContract;
+//@property (readonly, strong, nonatomic) DPContract *dashThumbnailContract;
 @property (readonly, strong, nonatomic) NSMutableDictionary *knownContracts;
+- (DDataContract *)dashPayRawContract;
+- (DDataContract *)dpnsRawContract;
 
 @property (readonly, strong, nonatomic) DSChain *chain;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-- (DPDocumentFactory *)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity forContract:(DPContract *)contract;
 
 + (NSString *)nameForContractWithIdentifier:(NSString *)identifier;
 

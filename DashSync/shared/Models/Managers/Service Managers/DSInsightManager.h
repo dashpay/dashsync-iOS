@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)blockForBlockHash:(UInt256)blockHash onChain:(DSChain *)chain
                completion:(void (^)(DSBlock *_Nullable block, NSError *_Nullable error))completion;
+- (void)blockForBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain
+               completion:(void (^)(DSBlock *_Nullable block, NSError *_Nullable error))completion;
 
 - (void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain *)chain
                                 completion:(void (^)(DSTransaction *transaction, NSError *error))completion;

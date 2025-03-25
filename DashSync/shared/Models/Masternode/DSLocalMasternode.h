@@ -6,7 +6,7 @@
 //
 
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -88,23 +88,23 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 - (void)saveInContext:(NSManagedObjectContext *)context;
 
 // BLS
-- (OpaqueKey *_Nullable)operatorKeyFromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *_Nullable)operatorKeyFromSeed:(NSData *)seed;
 // ECDSA
-- (OpaqueKey *_Nullable)ownerKeyFromSeed:(NSData *)seed;
-- (OpaqueKey *_Nullable)votingKeyFromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *_Nullable)ownerKeyFromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *_Nullable)votingKeyFromSeed:(NSData *)seed;
 // ED25519
-- (OpaqueKey *_Nullable)platformNodeKeyFromSeed:(NSData *)seed;
+- (DMaybeOpaqueKey *_Nullable)platformNodeKeyFromSeed:(NSData *)seed;
 
 - (NSString *)operatorKeyStringFromSeed:(NSData *)seed;
 - (NSString *_Nullable)ownerKeyStringFromSeed:(NSData *)seed;
 - (NSString *_Nullable)votingKeyStringFromSeed:(NSData *)seed;
 - (NSString *_Nullable)platformNodeKeyStringFromSeed:(NSData *)seed;
 
-- (BOOL)forceOperatorPublicKey:(OpaqueKey *)operatorPublicKey;
-- (BOOL)forceOwnerPrivateKey:(OpaqueKey *)ownerPrivateKey;
+- (BOOL)forceOperatorPublicKey:(DOpaqueKey *)operatorPublicKey;
+- (BOOL)forceOwnerPrivateKey:(DOpaqueKey *)ownerPrivateKey;
 //the voting key can either be private or public key
-- (BOOL)forceVotingKey:(OpaqueKey *)votingKey;
-- (BOOL)forcePlatformNodeKey:(OpaqueKey *)platformNodeKey;
+- (BOOL)forceVotingKey:(DOpaqueKey *)votingKey;
+- (BOOL)forcePlatformNodeKey:(DOpaqueKey *)platformNodeKey;
 
 @end
 

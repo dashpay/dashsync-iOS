@@ -27,19 +27,20 @@
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
 #import "DSBlock.h"
-#import "DSBlockchainIdentity+Protected.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSIdentity+Protected.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Transaction.h"
+#import "DSChain+Wallet.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
-#import "DSCreditFundingTransaction.h"
-#import "DSDAPIPlatformNetworkService.h"
+#import "DSChainManager+Transactions.h"
 #import "DSError.h"
 #import "DSEventManager.h"
+#import "DSGapLimit.h"
 #import "DSIdentitiesManager.h"
 #import "DSInstantSendTransactionLock.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
@@ -52,8 +53,8 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionInput.h"
-#import "DSTransition.h"
 #import "DSCoinJoinManager.h"
+#import "DSWallet+Identity.h"
 #import "DSWallet+Protected.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -72,6 +73,12 @@
 
 #define SAVE_MAX_TRANSACTIONS_INFO (DEBUG && 0)
 #define DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS (DEBUG && 0)
+
+#define ERROR_NOT_SIGNED [NSError errorWithCode:401 localizedDescriptionKey:@"Dash transaction not signed"]
+#define ERROR_SIGNING [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"]
+#define ERROR_NOT_CONNECTED [NSError errorWithCode:-1009 localizedDescriptionKey:@"Not connected to the Dash network"]
+#define ERROR_TIMEOUT [NSError errorWithCode:DASH_PEER_TIMEOUT_CODE localizedDescriptionKey:@"Transaction canceled, network timeout"]
+#define ERROR_DOUBLE_SPEND [NSError errorWithCode:401 localizedDescriptionKey:@"Double spend"]
 
 @interface DSTransactionManager ()
 
@@ -104,6 +111,11 @@
 @end
 
 @implementation DSTransactionManager
+
+- (NSString *)logPrefix {
+    return [NSString stringWithFormat:@"[%@] [DSTransactionManager] ", self.chain.name];
+}
+
 
 - (instancetype)initWithChain:(id)chain {
     if (!(self = [super init])) return nil;
@@ -186,14 +198,14 @@
     if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];
-            completion([NSError errorWithCode:401 localizedDescriptionKey:@"Dash transaction not signed"]);
+            completion(ERROR_NOT_SIGNED);
         }
 
         return;
     } else if (!self.peerManager.connected && self.peerManager.connectFailures >= MAX_CONNECT_FAILURES) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
-            completion([NSError errorWithCode:-1009 localizedDescriptionKey:@"Not connected to the Dash network"]);
+            completion(ERROR_NOT_CONNECTED);
         }
 
         return;
@@ -444,7 +456,7 @@
 
         if (callback) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
-            callback([NSError errorWithCode:DASH_PEER_TIMEOUT_CODE localizedDescriptionKey:@"Transaction canceled, network timeout"]);
+            callback(ERROR_TIMEOUT);
         }
     });
 }
@@ -589,9 +601,7 @@
         return;
     } else if (amount < TX_MIN_OUTPUT_AMOUNT) {
         NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
-        NSString *errorMessage = [NSString stringWithFormat:
-                                               DSLocalizedString(@"Dash payments can't be less than %@", nil),
-                                           [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *errorMessage = DSLocalizedFormat(@"Dash payments can't be less than %@", nil, [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]);
         NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
         NSError *error = [NSError errorWithDomain:DSErrorDomain
                                              code:DSErrorPaymentAmountLessThenMinOutputAmount
@@ -600,9 +610,7 @@
         return;
     } else if (outputTooSmall) {
         NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
-        NSString *errorMessage = [NSString stringWithFormat:
-                                               DSLocalizedString(@"Dash transaction outputs can't be less than %@", nil),
-                                           [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *errorMessage = DSLocalizedFormat(@"Dash transaction outputs can't be less than %@", nil, [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]);
         NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
         NSError *error = [NSError errorWithDomain:DSErrorDomain
                                              code:DSErrorPaymentTransactionOutputTooSmall
@@ -677,21 +685,47 @@
     if (!tx) { // tx is nil if there were insufficient wallet funds
         if (authenticationManager.didAuthenticate) {
             //the fee puts us over the limit
-            [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication mixedOnly:mixedOnly requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+            [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest
+                                                                fromAccount:account
+                                                                  forAmount:amount
+                                                                  toAddress:address
+                                       requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+                                keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+                                                                  mixedOnly:mixedOnly
+                                                   requestingAdditionalInfo:additionalInfoRequest
+                                                           presentChallenge:challenge
+                                              transactionCreationCompletion:transactionCreationCompletion
+                                                           signedCompletion:signedCompletion
+                                                        publishedCompletion:publishedCompletion
+                                                     requestRelayCompletion:requestRelayCompletion
+                                                     errorNotificationBlock:errorNotificationBlock];
         } else {
             [authenticationManager seedWithPrompt:promptMessage
                                         forWallet:account.wallet
                                         forAmount:amount
                               forceAuthentication:NO
                                        completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                           if (seed) {
-                                               //the fee puts us over the limit
-                                               [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication mixedOnly:mixedOnly requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
-                                           } else {
-                                               additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);
-                                           }
-                                           if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
-                                       }];
+                if (seed) {
+                    //the fee puts us over the limit
+                    [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest
+                                                                        fromAccount:account
+                                                                          forAmount:amount
+                                                                          toAddress:address
+                                               requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+                                        keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+                                                                          mixedOnly:mixedOnly
+                                                           requestingAdditionalInfo:additionalInfoRequest
+                                                                   presentChallenge:challenge
+                                                      transactionCreationCompletion:transactionCreationCompletion
+                                                                   signedCompletion:signedCompletion
+                                                                publishedCompletion:publishedCompletion
+                                                             requestRelayCompletion:requestRelayCompletion
+                                                             errorNotificationBlock:errorNotificationBlock];
+                } else {
+                    additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);
+                }
+                if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
+            }];
         }
     } else {
         NSString *displayedPrompt = promptMessage;
@@ -717,7 +751,7 @@
                           if (!signedTransaction || !tx.isSigned) {
                               if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
                               dispatch_async(dispatch_get_main_queue(), ^{
-                                  signedCompletion(tx, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"], NO);
+                                  signedCompletion(tx, ERROR_SIGNING, NO);
                               });
                               return;
                           }
@@ -788,10 +822,7 @@
                            completion:^(DSPaymentProtocolACK *ack, NSError *error) {
                                if (error) {
                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                       NSString *errorTitle = [NSString
-                                           stringWithFormat:
-                                               DSLocalizedString(@"Error from payment request server %@", nil),
-                                           protocolRequest.details.paymentURL];
+                                       NSString *errorTitle = DSLocalizedFormat(@"Error from payment request server %@", nil, protocolRequest.details.paymentURL);
                                        NSString *errorMessage = error.localizedDescription;
                                        NSString *localizedDescription = [NSString
                                            stringWithFormat:@"%@\n%@",
@@ -853,9 +884,9 @@
 
         if (amount > 0 && amount < requestedSendAmount) {
             NSString *challengeTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
-            NSString *challengeMessage = [NSString stringWithFormat:DSLocalizedString(@"Reduce payment amount by\n%@ (%@)?", nil),
+            NSString *challengeMessage = DSLocalizedFormat(@"Reduce payment amount by\n%@ (%@)?", nil,
                                                    [manager stringForDashAmount:requestedSendAmount - amount],
-                                                   [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]];
+                                                   [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]);
 
             NSString *reduceString = [NSString stringWithFormat:@"%@ (%@)",
                                                [manager stringForDashAmount:amount - requestedSendAmount],
@@ -902,15 +933,21 @@
     }
 }
 
-- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest usingUserBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity fromAccount:(DSAccount *)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest
+  usingUserIdentity:(DSIdentity *)identity
+                  fromAccount:(DSAccount *)account
+        acceptInternalAddress:(BOOL)acceptInternalAddress
+         acceptReusingAddress:(BOOL)acceptReusingAddress
+      addressIsFromPasteboard:(BOOL)addressIsFromPasteboard
+requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
-                       requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
-                               presentChallenge:(DSTransactionChallengeBlock)challenge
-                  transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
-                               signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
-                            publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
-                         errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
-    DSPaymentProtocolRequest *protocolRequest = [paymentRequest protocolRequestForBlockchainIdentity:blockchainIdentity onAccount:account inContext:[NSManagedObjectContext viewContext]];
+     requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+             presentChallenge:(DSTransactionChallengeBlock)challenge
+transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+             signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+          publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+       errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+    DSPaymentProtocolRequest *protocolRequest = [paymentRequest protocolRequestForIdentity:identity onAccount:account inContext:[NSManagedObjectContext viewContext]];
     [self confirmProtocolRequest:protocolRequest forAmount:paymentRequest.amount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO mixedOnly:NO requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:nil errorNotificationBlock:errorNotificationBlock];
 }
 
@@ -981,18 +1018,18 @@
     }
 }
 
-// MARK: - TransactionFetching
-
-- (void)fetchTransactionWithDAPIForTransactionHash:(UInt256)transactionHash success:(void (^)(DSTransaction *transaction))success
-                                           failure:(void (^)(NSError *error))failure {
-    DSDAPIPlatformNetworkService *networkService = self.chainManager.DAPIClient.DAPIPlatformNetworkService;
-    [networkService getTransactionById:uint256_hex(transactionHash)
-                               success:^(NSDictionary *_Nonnull transactionDictionary) {
-                                   //[DSTransaction transactionWithMessage:<#(nonnull NSData *)#>
-                                   //                              onChain:<#(nonnull DSChain *)#>]}
-                               }
-                               failure:failure];
-}
+//// MARK: - TransactionFetching
+//
+//- (void)fetchTransactionWithDAPIForTransactionHash:(UInt256)transactionHash success:(void (^)(DSTransaction *transaction))success
+//                                           failure:(void (^)(NSError *error))failure {
+//    DSDAPIPlatformNetworkService *networkService = self.chainManager.DAPIClient.DAPIPlatformNetworkService;
+//    [networkService getTransactionById:uint256_hex(transactionHash)
+//                               success:^(NSDictionary *_Nonnull transactionDictionary) {
+//                                   //[DSTransaction transactionWithMessage:<#(nonnull NSData *)#>
+//                                   //                              onChain:<#(nonnull DSChain *)#>]}
+//                               }
+//                               failure:failure];
+//}
 
 - (void)fetchTransactionHavingHash:(UInt256)transactionHash {
     for (DSPeer *peer in self.peerManager.connectedPeers) {
@@ -1032,29 +1069,7 @@
 
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
-    NSMutableArray *allAddressesArray = [NSMutableArray array];
-
-    for (DSWallet *wallet in self.chain.wallets) {
-        // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
-        // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-        // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL unusedAccountGapLimit:SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING coinJoinGapLimit:SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN internal:NO error:nil];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL unusedAccountGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING coinJoinGapLimit:SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN internal:YES error:nil];
-        NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
-        [allAddressesArray addObjectsFromArray:[addresses allObjects]];
-
-        [allAddressesArray addObjectsFromArray:[wallet providerOwnerAddresses]];
-        [allAddressesArray addObjectsFromArray:[wallet providerVotingAddresses]];
-        [allAddressesArray addObjectsFromArray:[wallet providerOperatorAddresses]];
-        [allAddressesArray addObjectsFromArray:[wallet platformNodeAddresses]];
-    }
-
-    for (DSFundsDerivationPath *derivationPath in self.chain.standaloneDerivationPaths) {
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
-        NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
-        [allAddressesArray addObjectsFromArray:addresses];
-    }
+    NSArray *allAddressesArray = [self.chain newAddressesForBloomFilter];
 
     for (NSString *address in allAddressesArray) {
         NSData *hash = address.addressToHash160;
@@ -1137,30 +1152,24 @@
 
     if (callback && !isTransactionValid) {
         [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithCode:401 localizedDescriptionKey:@"Double spend"];
-        
+        error = ERROR_DOUBLE_SPEND;
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                 object:nil
                                                               userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                             DSTransactionManagerNotificationTransactionKey: transaction,
-                                                      DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
+                                                                         DSTransactionManagerNotificationTransactionKey: transaction,
+                                                                         DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
         });
     } else if (transaction) {
         for (DSAccount *account in accounts) {
-            if (![account transactionForHash:txHash]) {
-                if ([account registerTransaction:transaction saveImmediately:YES]) {
-                    [[NSManagedObjectContext chainContext] ds_saveInBlock];
-                }
-            }
+            if (![account transactionForHash:txHash] && [account registerTransaction:transaction saveImmediately:YES])
+                [[NSManagedObjectContext chainContext] ds_saveInBlock];
         }
     }
 
     dispatch_async(self.chainManager.chain.networkingQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (callback) callback(error);
-        });
+        dispatch_async(dispatch_get_main_queue(), ^{ if (callback) callback(error); });
     });
 
     //    [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
@@ -1322,35 +1331,18 @@
         }
     }
 
-    BOOL isNewBlockchainIdentity = FALSE;
-    DSBlockchainIdentity *blockchainIdentity = nil;
+    BOOL isNewIdentity = FALSE;
 
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
         BOOL registered = YES; //default to yes
-        if (![transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
-            registered = [self.chain registerSpecialTransaction:transaction saveImmediately:block ? NO : YES];
-        }
+//        if (![transaction isKindOfClass:[DSAssetLockTransaction class]]) {
+            registered = [self.chain registerSpecialTransaction:transaction saveImmediately:!block];
+//        }
 
         if (registered) {
-            if ([transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
-                DSCreditFundingTransaction *creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
-                uint32_t index;
-                DSWallet *wallet = [self.chain walletHavingBlockchainIdentityCreditFundingRegistrationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
-
-                if (wallet) {
-                    blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
-                }
-
-                if (!blockchainIdentity) {
-                    [self.chain triggerUpdatesForLocalReferences:transaction];
-                    if (wallet) {
-                        blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
-                        if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
-                    }
-                } else if (blockchainIdentity && !blockchainIdentity.registrationCreditFundingTransaction) {
-                    blockchainIdentity.registrationCreditFundingTransactionHash = creditFundingTransaction.txHash;
-                }
+            if ([transaction isKindOfClass:[DSAssetLockTransaction class]]) {
+                isNewIdentity = registered;
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
             }
@@ -1390,12 +1382,23 @@
                 addedNewAccount = TRUE;
                 // New account was created
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAccountNewAccountFromTransactionNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainManagerNotificationWalletKey: account.wallet, DSChainManagerNotificationAccountKey: account}];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAccountNewAccountFromTransactionNotification
+                                                                        object:nil
+                                                                      userInfo:@{
+                        DSChainManagerNotificationChainKey: self.chain,
+                        DSChainManagerNotificationWalletKey: account.wallet,
+                        DSChainManagerNotificationAccountKey: account
+                    }];
                 });
             } else {
                 // This means we were not authenticated, we should post a notification
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAccountNewAccountShouldBeAddedFromTransactionNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainManagerNotificationWalletKey: account.wallet}];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAccountNewAccountShouldBeAddedFromTransactionNotification
+                                                                        object:nil
+                                                                      userInfo:@{
+                        DSChainManagerNotificationChainKey: self.chain,
+                        DSChainManagerNotificationWalletKey: account.wallet
+                    }];
                 });
             }
             break;
@@ -1404,10 +1407,10 @@
 
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || !peer || (!syncing && ![self.txRelays[hash] containsObject:peer])) {
-        if (!self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-        if (peer) {
+        if (!self.txRelays[hash])
+            self.txRelays[hash] = [NSMutableSet set];
+        if (peer)
             [self.txRelays[hash] addObject:peer];
-        }
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
         for (DSAccount *account in accountsAcceptingTransaction) {
@@ -1415,8 +1418,8 @@
                 [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
                 [account transactionForHash:transaction.txHash].timestamp == 0) {
                 [account setBlockHeight:TX_UNCONFIRMED
-                            andTimestamp:[NSDate timeIntervalSince1970]
-                    forTransactionHashes:@[hash]]; // set timestamp when tx is verified
+                           andTimestamp:[NSDate timeIntervalSince1970]
+                   forTransactionHashes:@[hash]]; // set timestamp when tx is verified
             }
         }
 
@@ -1429,11 +1432,21 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                     object:nil
-                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                      DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                      DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+                                                                  userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain,
+                    DSTransactionManagerNotificationTransactionKey: transaction,
+                    DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}
+                }];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification
+                                                                    object:nil
+                                                                  userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain
+                }];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification
+                                                                    object:nil
+                                                                  userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain
+                }];
 
                 if (callback) callback(nil);
             });
@@ -1442,26 +1455,24 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                 object:nil
-                                                              userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                  DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                  DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
+                                                              userInfo:@{
+                DSChainManagerNotificationChainKey: self.chain,
+                DSTransactionManagerNotificationTransactionKey: transaction,
+                DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
         });
     }
 
 
     [self.nonFalsePositiveTransactions addObject:hash];
-    if (peer) {
+    if (peer)
         [self.txRequests[hash] removeObject:peer];
-    }
-
-
-    if (block && [transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
-        NSTimeInterval walletCreationTime = [blockchainIdentity.wallet walletCreationTime];
-        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && blockchainIdentity.wallet.defaultBlockchainIdentity == blockchainIdentity) {
-            [blockchainIdentity.wallet setGuessedWalletCreationTime:self.chain.lastSyncBlockTimestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
-        }
-        [self.identitiesManager checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction *)transaction];
+    if (block && [transaction isKindOfClass:[DSAssetLockTransaction class]] && isNewIdentity) {
+//        NSTimeInterval walletCreationTime = [identity.wallet walletCreationTime];
+//        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && identity.wallet.defaultIdentity == identity) {
+//            [identity.wallet setGuessedWalletCreationTime:self.chain.lastSyncBlockTimestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
+//        }
+//        [self.identitiesManager checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction];
         [self destroyTransactionsBloomFilter]; //We want to destroy it temporarily, while we wait for L2, no matter what the block should not be saved and needs to be refetched
     } else if (addedNewAccount) {
         [self destroyTransactionsBloomFilter];
@@ -1494,9 +1505,11 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                 object:nil
-                                                              userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                  DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                  DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
+                                                              userInfo:@{
+                DSChainManagerNotificationChainKey: self.chain,
+                DSTransactionManagerNotificationTransactionKey: transaction,
+                DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}
+            }];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 #if TARGET_OS_IOS
 #if DEBUG
@@ -1550,8 +1563,8 @@
     //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
     DSTransaction *transaction = nil;
     DSWallet *wallet = nil;
-    DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
-
+    NSData *transactionHashData = instantSendTransactionLock.transactionHashData;
+    DSAccount *account = [self.chain firstAccountForTransactionHash:transactionHashData.UInt256 transaction:&transaction wallet:&wallet];
     if (account && transaction && transaction.instantSendReceived) {
         return; //no point to retrieve the instant send lock if we already have it
     }
@@ -1559,11 +1572,10 @@
     BOOL verified = [instantSendTransactionLock verifySignature];
 
 #if DEBUG
-    DSLogPrivate(@"[%@: %@:%d] relayed instant send transaction lock %@ %@", self.chain.name, peer.host, peer.port, verified ? @"Verified" : @"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+    DSLogPrivate(@"[%@: %@:%d] relayed instant send transaction lock %@ %@", self.chain.name, peer.host, peer.port, verified ? @"Verified" : @"Not Verified", transactionHashData.hexString);
 #else
     DSLog(@"[%@: %@:%d] relayed instant send transaction lock %@ %@", self.chain.name, peer.host, peer.port, verified ? @"Verified" : @"Not Verified", @"<REDACTED>");
 #endif
-
 
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
@@ -1576,12 +1588,12 @@
                                                                   DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
         });
     } else {
-        [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+        [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:transactionHashData];
     }
 
-    if (!verified && !instantSendTransactionLock.intendedQuorum) {
+    if (!verified /*&& !instantSendTransactionLock.intendedQuorumPublicKey*/) {
         //the quorum hasn't been retrieved yet
-        [self.instantSendLocksWaitingForQuorums setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+        [self.instantSendLocksWaitingForQuorums setObject:instantSendTransactionLock forKey:transactionHashData];
     }
 }
 
@@ -1591,47 +1603,41 @@
         if (self.instantSendLocksWaitingForTransactions[transactionHashData]) continue;
         DSInstantSendTransactionLock *instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
         BOOL verified = [instantSendTransactionLock verifySignature];
+        NSData *isTransactionHashData = instantSendTransactionLock.transactionHashData;
         if (verified) {
             DSLogPrivate(@"[%@] Verified %@", self.chain.name, instantSendTransactionLock);
             [instantSendTransactionLock saveSignatureValid];
             DSTransaction *transaction = nil;
             DSWallet *wallet = nil;
-            DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+
+            DSAccount *account = [self.chain firstAccountForTransactionHash:isTransactionHashData.UInt256 transaction:&transaction wallet:&wallet];
 
             if (account && transaction) {
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
             }
-            [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
+            [self.instantSendLocksWaitingForQuorums removeObjectForKey:isTransactionHashData];
             if (account && transaction) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                         object:nil
-                                                                      userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                          DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                          DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
+                                                                      userInfo:@{
+                        DSChainManagerNotificationChainKey: self.chain,
+                        DSTransactionManagerNotificationTransactionKey: transaction,
+                        DSTransactionManagerNotificationTransactionChangesKey: @{
+                            DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock,
+                            DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)
+                        }
+                    }];
                 });
             }
         } else {
             DSTransaction *transaction = nil;
             DSWallet *wallet = nil;
-            DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
-
+            DSAccount *account = [self.chain firstAccountForTransactionHash:isTransactionHashData.UInt256 transaction:&transaction wallet:&wallet];
             // Either there is no account or no transaction that means the transaction was not meant for our wallet or the transaction is confirmed
             // Which means the instant send lock no longer needs verification.
-            if (!account || !transaction || transaction.confirmed) {
-                [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
-            }
-#if DEBUG
-            DSMasternodeList *masternodeList = nil;
-            DSQuorumEntry *quorum = [instantSendTransactionLock findSigningQuorumReturnMasternodeList:&masternodeList];
-            if (quorum && masternodeList) {
-                NSArray<DSQuorumEntry *> *quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[instantSendTransactionLock requestID]];
-                NSUInteger index = [quorumEntries indexOfObject:quorum];
-                DSLog(@"[%@] Quorum %@ found at index %lu for masternodeList at height %lu", self.chain.name, quorum, (unsigned long)index, (unsigned long)masternodeList.height);
-                DSLog(@"[%@] Quorum entries are %@", self.chain.name, quorumEntries);
-            }
-            DSLog(@"[%@] Could not verify %@", self.chain.name, instantSendTransactionLock);
-#endif
+            if (!account || !transaction || transaction.confirmed)
+                [self.instantSendLocksWaitingForQuorums removeObjectForKey:isTransactionHashData];
         }
     }
 }
@@ -1645,7 +1651,7 @@
     if (!self.chain.needsInitialTerminalHeadersSync &&
         (self.chain.earliestWalletCreationTime < block.timestamp + DAY_TIME_INTERVAL * 2) &&
         !self.chainManager.chainSynchronizationFingerprint) {
-        DSLog(@"[%@: %@:%d] ignoring header %@", self.chain.name, peer.host, peer.port, uint256_hex(block.blockHash));
+        DSLog(@"[%@: %@:%d] ignoring header %@ (%u %fl %@)", self.chain.name, peer.host, peer.port, uint256_hex(block.blockHash), self.chain.needsInitialTerminalHeadersSync, self.chain.earliestWalletCreationTime, self.chainManager.chainSynchronizationFingerprint);
         return;
     }
 
@@ -1748,10 +1754,13 @@
 
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
+    UInt256 clBlockHash = chainLock.blockHash;
+    UInt256 clBlockHashRev = uint256_reverse(clBlockHash);
+    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
 
-    DSLog(@"[%@: %@:%d] relayed chain lock %@", self.chain.name, peer.host, peer.port, uint256_reverse_hex(chainLock.blockHash));
-
-    DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
+    DSMerkleBlock *block = [self.chain blockForBlockHash:clBlockHash];
+    if (!block)
+        block = [self.chain blockForBlockHash:clBlockHashRev];
 
     if (block) {
         [self.chain addChainLock:chainLock];
@@ -1761,12 +1770,13 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
         });
     } else {
-        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+        DSLog(@"[%@: %@:%d] no block for chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
+        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:uint256_data(clBlockHash)];
     }
 
-    if (!verified && !chainLock.intendedQuorum) {
+    if (!verified /*&& !chainLock.intendedQuorumPublicKey*/) {
         //the quorum hasn't been retrieved yet
-        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:uint256_data(clBlockHash)];
     }
 }
 
@@ -1779,33 +1789,28 @@
         if (verified) {
             DSLog(@"[%@] Verified %@", self.chain.name, chainLock);
             [chainLock saveSignatureValid];
-            DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
+            DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHashData.UInt256];
             [self.chainLocksWaitingForQuorums removeObjectForKey:chainLockHashData];
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (self.chain && block) {
-                    NSDictionary *userInfo = @{
-                        DSChainManagerNotificationChainKey: self.chain,
-                        DSChainNotificationBlockKey: block
-                    };
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:userInfo];
-                    });
-                } else {
-                    DSLog(@"Warning: Unable to post notification due to nil chain or block (%s : %s)", self.chain == nil ? "nil" : "valid", block == nil ? "nil" : "valid");
-                }
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification
+                                                                    object:nil
+                                                                  userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain,
+                    DSChainNotificationBlockKey: block
+                }];
             });
         } else {
-#if DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS
-            DSMasternodeList *masternodeList = nil;
-            DSQuorumEntry *quorum = [chainLock findSigningQuorumReturnMasternodeList:&masternodeList];
-            if (quorum && masternodeList) {
-                NSArray<DSQuorumEntry *> *quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[chainLock requestID]];
-                NSUInteger index = [quorumEntries indexOfObject:quorum];
-                DSLog(@"[%@] Quorum %@ found at index %lu for masternodeList at height %lu", self.chain.name, quorum, (unsigned long)index, (unsigned long)masternodeList.height);
-                DSLog(@"[%@] Quorum entries are %@", self.chain.name, quorumEntries);
-            }
-            DSLog(@"[%@] Could not verify %@", self.chain.name, chainLock);
-#endif
+//#if DEBUG_CHAIN_LOCKS_WAITING_FOR_QUORUMS
+//            DSMasternodeList *masternodeList = nil;
+//            DSQuorumEntry *quorum = [chainLock findSigningQuorumReturnMasternodeList:&masternodeList];
+//            if (quorum && masternodeList) {
+//                NSArray<DSQuorumEntry *> *quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[chainLock requestID]];
+//                NSUInteger index = [quorumEntries indexOfObject:quorum];
+//                DSLog(@"[%@] Quorum %@ found at index %lu for masternodeList at height %lu", self.chain.name, quorum, (unsigned long)index, (unsigned long)masternodeList.height);
+//                DSLog(@"[%@] Quorum entries are %@", self.chain.name, quorumEntries);
+//            }
+//            DSLog(@"[%@] Could not verify %@", self.chain.name, chainLock);
+//#endif
         }
     }
 }

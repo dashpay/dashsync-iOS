@@ -56,21 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)coinJoinDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
 
-// Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
-// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
-// following the last used address in the chain. The internal chain is used for change addresses and the external chain
-// for receive addresses.  These have a hardened purpose scheme depending on the derivation path
-- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError **)error;
-
-- (NSString *_Nullable)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
-- (NSArray *_Nullable)serializedPrivateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
-- (NSArray *_Nullable)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
-
-- (NSData *_Nullable)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal;
-
-// gets an addess at an index one level down based on bip32
-- (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal;
-
 - (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange;
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset;

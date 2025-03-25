@@ -33,10 +33,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    DSFriendRequestEntity *friendRequest = [[_contact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", self.blockchainIdentity.uniqueIDData]] anyObject];
+    DSFriendRequestEntity *friendRequest = [[_contact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", self.identity.uniqueIDData]] anyObject];
     NSAssert(friendRequest, @"there must be a friendRequest");
     self.friendRequest = friendRequest;
-    self.account = [self.blockchainIdentity.wallet accountWithNumber:0];
+    self.account = [self.identity.wallet accountWithNumber:0];
     [self reloadAddressField];
 }
 
@@ -65,7 +65,7 @@
         __block BOOL displayedSentMessage = FALSE;
 
         [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
-            usingUserBlockchainIdentity:nil
+            usingUserIdentity:nil
             fromAccount:self.account
             acceptInternalAddress:NO
             acceptReusingAddress:YES

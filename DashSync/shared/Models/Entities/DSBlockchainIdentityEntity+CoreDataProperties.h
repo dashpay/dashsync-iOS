@@ -7,7 +7,7 @@
 //
 
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
-
+#import "DSAssetLockTransactionEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t registrationStatus;
 @property (nonatomic, assign) uint64_t creditBalance;
 @property (nullable, nonatomic, retain) NSData *dashpaySyncronizationBlockHash;
-@property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *topUpFundingTransactions;
-@property (nullable, nonatomic, retain) DSCreditFundingTransactionEntity *registrationFundingTransaction;
+@property (nullable, nonatomic, retain) NSSet<DSAssetLockTransactionEntity *> *topUpFundingTransactions;
+@property (nullable, nonatomic, retain) DSAssetLockTransactionEntity *registrationFundingTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
 @property (nullable, nonatomic, retain) DSDashpayUserEntity *matchingDashpayUser;
 @property (nullable, nonatomic, retain) DSBlockchainInvitationEntity *associatedInvitation;
@@ -37,10 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentityEntity (CoreDataGeneratedAccessors)
 
-- (void)addTopUpFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
-- (void)removeTopUpFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
-- (void)addTopUpFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
-- (void)removeTopUpFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
+- (void)addTopUpFundingTransactionsObject:(DSAssetLockTransactionEntity *)value;
+- (void)removeTopUpFundingTransactionsObject:(DSAssetLockTransactionEntity *)value;
+- (void)addTopUpFundingTransactions:(NSSet<DSAssetLockTransactionEntity *> *)values;
+- (void)removeTopUpFundingTransactions:(NSSet<DSAssetLockTransactionEntity *> *)values;
 
 - (void)addKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;
 - (void)removeKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;

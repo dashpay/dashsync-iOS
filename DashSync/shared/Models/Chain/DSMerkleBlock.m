@@ -115,7 +115,9 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
+- (instancetype)initWithVersion:(uint32_t)version
+                      blockHash:(UInt256)blockHash
+                      prevBlock:(UInt256)prevBlock
                      merkleRoot:(UInt256)merkleRoot
                       timestamp:(uint32_t)timestamp
                          target:(uint32_t)target

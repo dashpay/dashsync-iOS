@@ -6,7 +6,9 @@
 //
 
 #import "DSProviderRegistrationTransaction.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainManager+Protected.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
@@ -177,12 +179,14 @@
 }
 
 - (UInt256)payloadCollateralDigest {
-    return [DSKeyManager proRegTXPayloadCollateralDigest:[self payloadDataForHash]
-                                            scriptPayout:self.scriptPayout
-                                                  reward:self.operatorReward
-                                            ownerKeyHash:self.ownerKeyHash
-                                            voterKeyHash:self.votingKeyHash
-                                               chainType:self.chain.chainType].UInt256;
+    Slice_u8 *pld = slice_ctor([self payloadDataForHash]);
+    Slice_u8 *sp = slice_ctor(self.scriptPayout);
+    u160 *owner_hash = u160_ctor_u(self.ownerKeyHash);
+    u160 *voter_hash = u160_ctor_u(self.votingKeyHash);
+    u256 *result = DECDSAKeyProRegTxPayloadCollateralDigest(pld, sp, self.operatorReward, owner_hash, voter_hash, self.chain.chainType);
+    UInt256 digest = u256_cast(result);
+    u256_dtor(result);
+    return digest;
 }
 
 - (BOOL)checkPayloadSignature {
@@ -212,6 +216,7 @@
         [data appendUInt16:CFSwapInt16BigToHost(self.platformP2PPort)];
         [data appendUInt16:CFSwapInt16BigToHost(self.platformHTTPPort)];
     }
+//    NSLog(@"basePayloadData: %@", data.hexString);
     return data;
 }
 
@@ -226,6 +231,7 @@
     [data appendData:[self basePayloadData]];
     [data appendUInt8:self.payloadSignature.length];
     [data appendData:self.payloadSignature];
+//    NSLog(@"payloadData: %@", data.hexString);
     return data;
 }
 

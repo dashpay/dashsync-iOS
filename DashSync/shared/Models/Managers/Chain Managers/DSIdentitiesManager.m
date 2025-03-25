@@ -15,38 +15,52 @@
 //  limitations under the License.
 //
 
+#import "DPContract.h"
 #import "DSIdentitiesManager.h"
+#import "DSIdentitiesManager+CoreData.h"
+#import "DSAssetLockTransaction.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBlockchainIdentity+Protected.h"
+#import "DSIdentity+Protected.h"
+#import "DSIdentity+Username.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSChain+Identity.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainManager.h"
-#import "DSCreditFundingTransaction.h"
-#import "DSDAPIClient.h"
-#import "DSDAPIPlatformNetworkService.h"
 #import "DSDashPlatform.h"
+#import "DSDerivationPathFactory.h"
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
 #import "DSPeerManager.h"
 #import "DSTransientDashpayUser+Protected.h"
 #import "DSWallet.h"
+#import "DSWallet+Identity.h"
 #import "NSError+Dash.h"
+#import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
+
+#define ERROR_UNKNOWN_KEYS [NSError errorWithCode:500 localizedDescriptionKey:@"Identity has unknown keys"]
+#define ERROR_CONTRACT_SETUP [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]
 
 @interface DSIdentitiesManager ()
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
-@property (nonatomic, strong) NSMutableDictionary *foreignBlockchainIdentities;
+@property (nonatomic, strong) NSMutableDictionary *foreignIdentities;
 @property (nonatomic, assign) NSTimeInterval lastSyncedIndentitiesTimestamp;
 @property (nonatomic, assign) BOOL hasRecentIdentitiesSync;
 
 @end
 
 @implementation DSIdentitiesManager
+
+- (NSString *)logPrefix {
+    return [NSString stringWithFormat:@"[%@] [Identity Manager] ", self.chain.name];
+}
 
 - (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
@@ -55,27 +69,15 @@
     
     self.chain = chain;
     _identityQueue = dispatch_queue_create([@"org.dashcore.dashsync.identity" UTF8String], DISPATCH_QUEUE_SERIAL);
-    self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
-    [self loadExternalBlockchainIdentities];
+    [self setup];
+//    self.foreignIdentities = [NSMutableDictionary dictionary];
+//    [self loadExternalIdentities];
     
     return self;
 }
 
 // MARK: - Loading
 
-- (void)loadExternalBlockchainIdentities {
-    NSManagedObjectContext *context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
-    
-    [context performBlockAndWait:^{
-        NSArray<DSBlockchainIdentityEntity *> *externalIdentityEntities = [DSBlockchainIdentityEntity objectsInContext:context matching:@"chain == %@ && isLocal == FALSE", [self.chain chainEntityInContext:context]];
-        for (DSBlockchainIdentityEntity *entity in externalIdentityEntities) {
-            DSBlockchainIdentity *identity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:entity];
-            if (identity) {
-                self.foreignBlockchainIdentities[uint256_data(identity.uniqueID)] = identity;
-            }
-        }
-    }];
-}
 
 - (BOOL)hasRecentIdentitiesSync {
     return ([[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 30);
@@ -83,558 +85,467 @@
 
 // MARK: - Wiping
 
-- (void)clearExternalBlockchainIdentities {
-    self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
-}
+//- (void)clearExternalIdentities {
+//    self.foreignIdentities = [NSMutableDictionary dictionary];
+//}
 
 // MARK: - Identities
 
-- (void)registerForeignBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    NSAssert(!blockchainIdentity.isTransient, @"Dash Identity should no longer be transient");
-    @synchronized(self.foreignBlockchainIdentities) {
-        if (!self.foreignBlockchainIdentities[uint256_data(blockchainIdentity.uniqueID)]) {
-            [blockchainIdentity saveInitial];
-            self.foreignBlockchainIdentities[uint256_data(blockchainIdentity.uniqueID)] = blockchainIdentity;
-        }
-    }
-}
+//- (void)registerForeignIdentity:(DSIdentity *)identity {
+//    NSAssert(!identity.isTransient, @"Dash Identity should no longer be transient");
+//    @synchronized(self.foreignIdentities) {
+//        if (!self.foreignIdentities[uint256_data(identity.uniqueID)]) {
+//            [identity saveInitial];
+//            self.foreignIdentities[uint256_data(identity.uniqueID)] = identity;
+//        }
+//    }
+//}
 
-- (DSBlockchainIdentity *)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId {
-    return [self foreignBlockchainIdentityWithUniqueId:uniqueId createIfMissing:NO inContext:nil];
-}
+//- (DSIdentity *)foreignIdentityWithUniqueId:(UInt256)uniqueId {
+//    return [self foreignIdentityWithUniqueId:uniqueId createIfMissing:NO inContext:nil];
+//}
+//
+//- (DSIdentity *)foreignIdentityWithUniqueId:(UInt256)uniqueId
+//                                                createIfMissing:(BOOL)addIfMissing
+//                                                      inContext:(NSManagedObjectContext *)context {
+//    //foreign identities are for local blockchain identies' contacts, not for search.
+//    @synchronized(self.foreignIdentities) {
+//        DSIdentity *foreignIdentity = self.foreignIdentities[uint256_data(uniqueId)];
+//        if (foreignIdentity) {
+//            NSAssert(context ? [foreignIdentity identityEntityInContext:context] : foreignIdentity.identityEntity, @"Identity entity should exist");
+//            return foreignIdentity;
+//        } else if (addIfMissing) {
+//            foreignIdentity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain];
+//            [foreignIdentity saveInitialInContext:context];
+//            self.foreignIdentities[uint256_data(uniqueId)] = foreignIdentity;
+//            return self.foreignIdentities[uint256_data(uniqueId)];
+//        }
+//        return nil;
+//    }
+//}
 
-- (DSBlockchainIdentity *)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing inContext:(NSManagedObjectContext *)context {
-    //foreign blockchain identities are for local blockchain identies' contacts, not for search.
-    @synchronized(self.foreignBlockchainIdentities) {
-        DSBlockchainIdentity *foreignBlockchainIdentity = self.foreignBlockchainIdentities[uint256_data(uniqueId)];
-        if (foreignBlockchainIdentity) {
-            NSAssert(context ? [foreignBlockchainIdentity blockchainIdentityEntityInContext:context] : foreignBlockchainIdentity.blockchainIdentityEntity, @"Blockchain identity entity should exist");
-            return foreignBlockchainIdentity;
-        } else if (addIfMissing) {
-            foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain];
-            [foreignBlockchainIdentity saveInitialInContext:context];
-            self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
-            return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
-        }
-        return nil;
-    }
-}
+- (NSArray *)unsyncedIdentities {
+    NSMutableArray *unsyncedIdentities = [NSMutableArray array];
+    for (DSIdentity *identity in [self.chain localIdentities]) {
+        if (!identity.registrationAssetLockTransaction || (identity.registrationAssetLockTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
+            DSLog(@"%@: unsynced identity (asset lock tx unknown or has unknown height) %@ %@", self.logPrefix, uint256_hex(identity.registrationAssetLockTransactionHash), identity.registrationAssetLockTransaction);
 
-- (NSArray *)unsyncedBlockchainIdentities {
-    NSMutableArray *unsyncedBlockchainIdentities = [NSMutableArray array];
-    for (DSBlockchainIdentity *blockchainIdentity in [self.chain localBlockchainIdentities]) {
-        if (!blockchainIdentity.registrationCreditFundingTransaction || (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
-            [unsyncedBlockchainIdentities addObject:blockchainIdentity];
-        } else if (self.chain.lastSyncBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
+            [unsyncedIdentities addObject:identity];
+        } else if (self.chain.lastSyncBlockHeight > identity.dashpaySyncronizationBlockHeight) {
+            DSLog(@"%@: unsynced identity (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
             //If they are equal then the blockchain identity is synced
             //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
             //That's because it is set at the time with the hash of the last
-            [unsyncedBlockchainIdentities addObject:blockchainIdentity];
+            [unsyncedIdentities addObject:identity];
         }
     }
-    return unsyncedBlockchainIdentities;
+    return unsyncedIdentities;
 }
+
+//- (void)syncPlatformWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
+//    [self syncIdentitiesWithCompletion:^(NSArray<DSIdentity *> *_Nullable identities) {
+//        [self retrieveAllIdentitiesChainStates:completion];
+//    }];
+//
+//}
 
 //TODO: if we get an error or identity not found, better stop the process and start syncing chain
-- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
-    [self
-     retrieveIdentitiesByKeysUntilSuccessWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable retrievedBlockchainIdentities) {
-        NSArray<DSBlockchainIdentity *> *blockchainIdentities = [self unsyncedBlockchainIdentities];
-        [self fetchNeededNetworkStateInformationForBlockchainIdentities:blockchainIdentities
-                                                         withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-            self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
-            if (success) {
-                if (completion) {
-                    completion(blockchainIdentities);
-                }
-            }
-        }
-                                                        completionQueue:self.chain.networkingQueue];
-    }
-     completionQueue:self.chain.networkingQueue];
-}
-
-- (void)retrieveAllBlockchainIdentitiesChainStates {
-    for (DSWallet *wallet in self.chain.wallets) {
-        [self retrieveAllBlockchainIdentitiesChainStatesForWallet:wallet];
-    }
-}
-
-- (void)retrieveAllBlockchainIdentitiesChainStatesForWallet:(DSWallet *)wallet {
-    for (DSBlockchainIdentity *identity in [wallet.blockchainIdentities allValues]) {
-        if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown) {
-            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {
-                if (success && found) {
-                    //now lets get dpns info
-                    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
-                        [identity fetchUsernamesWithCompletion:^(BOOL success, NSError *error){
-                            
-                        }];
-                    }
-                }
-            }];
-        } else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
-            if (!identity.currentDashpayUsername) {
-                if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
-                    [identity fetchUsernamesWithCompletion:^(BOOL success, NSError *error){
-                        
-                    }];
-                }
-            }
-        }
-    }
-}
-
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString *)name withCompletion:(IdentityCompletionBlock)completion {
-    return [self searchIdentityByName:name inDomain:@"dash" withCompletion:completion];
-}
-
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString *)name inDomain:(NSString *)domain withCompletion:(IdentityCompletionBlock)completion {
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDPNSDocumentsForUsernames:@[name]
-                                                                                                  inDomain:domain
-                                                                                           completionQueue:self.identityQueue
-                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
-        for (NSDictionary *document in documents) {
-            NSData *userIdData = document[@"$ownerId"];
-            NSString *normalizedLabel = document[@"normalizedLabel"];
-            NSString *domain = document[@"normalizedParentDomainName"];
-            DSBlockchainIdentity *identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
-            [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            [rBlockchainIdentities addObject:identity];
-        }
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(YES, [rBlockchainIdentities firstObject], nil);
-            });
-        }
-    }
-                                                                                                   failure:^(NSError *_Nonnull error) {
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO, nil, error);
-            });
-        }
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentityByName %@", error);
-#else
-        DSLog(@"Failure in searchIdentityByName %@", @"<REDACTED>");
-#endif
-    }];
-    return call;
-}
-
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue {
-    return [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:5 delay:2 delayIncrease:1 withCompletion:completion onCompletionQueue:completionQueue];
-}
-
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                                                          retryCount:(uint32_t)retryCount
-                                                               delay:(uint32_t)delay
-                                                       delayIncrease:(uint32_t)delayIncrease
-                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion
-                                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
-    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    if ([dashpayContract contractState] != DPContractState_Registered) {
-        if (completion) {
-            dispatch_async(completionQueue, ^{
-                completion(NO, nil, [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]);
-            });
-        }
-        return nil;
-    }
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfileForUserId:blockchainIdentity.uniqueIDData
-                                                                                         completionQueue:self.identityQueue
-                                                                                                 success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        if (documents.count == 0) {
-            if (completion) {
-                dispatch_async(completionQueue, ^{
-                    completion(YES, nil, nil);
-                });
-            }
-            return;
-        }
-        NSDictionary *contactDictionary = documents.firstObject;
-        
-        DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:contactDictionary];
-        if (completion) {
-            dispatch_async(completionQueue, ^{
-                completion(YES, transientDashpayUser, nil);
-            });
-        }
-    }
-                                                                                                 failure:^(NSError *_Nonnull error) {
-        if (retryCount > 0) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.identityQueue, ^{
-                [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease withCompletion:completion onCompletionQueue:completionQueue];
-            });
-        } else {
-            if (completion) {
-                dispatch_async(completionQueue, ^{
-                    completion(NO, nil, error);
-                });
-            }
-        }
-    }];
-    return call;
-}
-
-- (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue {
-    __weak typeof(self) weakSelf = self;
-    
-    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    if ([dashpayContract contractState] != DPContractState_Registered) {
-        if (completion) {
-            dispatch_async(completionQueue, ^{
-                completion(NO, nil, [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]);
-            });
-        }
-        return nil;
-    }
-    NSMutableArray *blockchainIdentityUserIds = [NSMutableArray array];
-    for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-        [blockchainIdentityUserIds addObject:blockchainIdentity.uniqueIDData];
-    }
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfilesForUserIds:blockchainIdentityUserIds
-                                                                                           completionQueue:self.identityQueue
-                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) {
-                dispatch_async(completionQueue, ^{
-                    completion(NO, nil, [NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]);
-                });
-            }
-            return;
-        }
-        
-        NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
-        for (NSDictionary *documentDictionary in documents) {
-            NSData *userIdData = documentDictionary[@"$ownerId"];
-            DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:documentDictionary];
-            [dashpayUserDictionary setObject:transientDashpayUser forKey:userIdData];
-        }
-        __weak typeof(self) weakSelf = self;
-        if (completion) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            dispatch_async(completionQueue, ^{
-                completion(YES, dashpayUserDictionary, nil);
-            });
-        }
-    }
-                                                                                                   failure:^(NSError *_Nonnull error) {
-        if (completion) {
-            dispatch_async(completionQueue, ^{
-                completion(NO, nil, error);
-            });
-        }
-    }];
-    return call;
-}
-
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion {
-    return [self searchIdentitiesByDashpayUsernamePrefix:namePrefix startAfter:nil limit:100 queryDashpayProfileInfo:queryDashpayProfileInfo withCompletion:completion];
-}
-
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix startAfter:(NSData* _Nullable)startAfter limit:(uint32_t)limit queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion {
-    return [self searchIdentitiesByNamePrefix:namePrefix
-                                     inDomain:@"dash"
-                                   startAfter:startAfter
-                                        limit:limit
-                               withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-        if (errors.count) {
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(success, blockchainIdentities, errors);
-                });
-            }
-        } else if (queryDashpayProfileInfo && blockchainIdentities.count) {
-            __block NSMutableDictionary<NSData *, DSBlockchainIdentity *> *blockchainIdentityDictionary = [NSMutableDictionary dictionary];
-            for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                [blockchainIdentityDictionary setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIDData];
-            }
-            [self fetchProfilesForBlockchainIdentities:blockchainIdentities
-                                        withCompletion:^(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByBlockchainIdentityUniqueId, NSError *_Nullable error) {
-                for (NSData *blockchainIdentityUniqueIdData in dashpayUserInfosByBlockchainIdentityUniqueId) {
-                    DSBlockchainIdentity *blockchainIdentity = blockchainIdentityDictionary[blockchainIdentityUniqueIdData];
-                    blockchainIdentity.transientDashpayUser = dashpayUserInfosByBlockchainIdentityUniqueId[blockchainIdentityUniqueIdData];
-                }
-                if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(success, blockchainIdentities, errors);
-                    });
-                }
-            }
-                                     onCompletionQueue:self.identityQueue];
-        } else {
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(success, blockchainIdentities, errors);
-                });
-            }
-        }
-    }];
-}
-
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix inDomain:(NSString *)domain startAfter:(NSData* _Nullable)startAfter limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix
-                                                                                                          inDomain:domain
-                                                                                                        startAfter:startAfter
-                                                                                                             limit:limit
-                                                                                                   completionQueue:self.identityQueue
-                                                                                                           success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __block NSMutableDictionary *rBlockchainIdentities = [NSMutableDictionary dictionary];
-        for (NSDictionary *document in documents) {
-            NSData *userIdData = document[@"$ownerId"];
-            DSBlockchainIdentity *identity = [rBlockchainIdentities objectForKey:userIdData];
-            UInt256 uniqueId = userIdData.UInt256;
-            if (!identity) {
-                identity = [self.chain blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
-            }
-            NSString *label = document[@"label"];
-            NSString *domain = document[@"normalizedParentDomainName"];
-            if (!identity) {
-                identity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
-                [identity addUsername:label inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            } else {
-                if (![identity.dashpayUsernames containsObject:label]) {
-                    [identity addUsername:label inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
-                }
-            }
-            
-            [rBlockchainIdentities setObject:identity forKey:userIdData];
-        }
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(YES, [[rBlockchainIdentities allValues] copy], @[]);
-            });
-        }
-    }
-                                                                                                           failure:^(NSError *_Nonnull error) {
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO, nil, @[error]);
-            });
-        }
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentitiesByNamePrefix %@", error);
-#else
-        DSLog(@"Failure in searchIdentitiesByNamePrefix %@", @"<REDACTED>");
-#endif
-    }];
-    return call;
-}
-
-- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion {
-    DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    [client.DAPIPlatformNetworkService getDPNSDocumentsForIdentityWithUserId:userID
-                                                             completionQueue:self.identityQueue
-                                                                     success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
-        for (NSDictionary *document in documents) {
-            NSData *userIdData = document[@"$ownerId"];
-            NSString *normalizedLabel = document[@"normalizedLabel"];
-            NSString *domain = document[@"normalizedParentDomainName"];
-            DSBlockchainIdentity *identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
-            [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error){
-                
-            }];
-            [rBlockchainIdentities addObject:identity];
-        }
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(YES, [rBlockchainIdentities copy], @[]);
-            });
-        }
-    }
-                                                                     failure:^(NSError *_Nonnull error) {
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO, nil, @[error]);
-            });
-        }
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@", error);
-#else
-        DSLog(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@", @"<REDACTED>");
-#endif
-    }];
-}
-
-- (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction *)creditFundingTransaction {
-    uint32_t index;
-    DSWallet *wallet = [self.chain walletHavingBlockchainIdentityCreditFundingRegistrationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
-    
-    if (!wallet) return; //it's a topup or we are funding an external identity
-    
-    DSBlockchainIdentity *blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
-    
-    NSAssert(blockchainIdentity, @"We should have already created the blockchain identity at this point in the transaction manager by calling triggerUpdatesForLocalReferences");
-    
-    
-    //DSLogPrivate(@"Paused Sync at block %d to gather identity information on %@",block.height,blockchainIdentity.uniqueIdString);
-    [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity
-                                                   withCompletion:^(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-        if (success && blockchainIdentity != nil) {
-            [self chain:self.chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
-        }
-    }
-                                                  completionQueue:self.chain.networkingQueue];
-}
-
-- (void)fetchNeededNetworkStateInformationForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(IdentityCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
-    [blockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable errors) {
-        if (!failureStep || failureStep == DSBlockchainIdentityQueryStep_NoIdentity) {
-            //if this was never registered no need to retry
-            if (completion) {
-                dispatch_async(completionQueue, ^{
-                    completion(YES, blockchainIdentity, nil);
-                });
-            }
-        } else {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), completionQueue, ^{
-                [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity withCompletion:completion completionQueue:completionQueue];
-            });
-        }
-    }];
-}
-
-- (void)fetchNeededNetworkStateInformationForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
-    dispatch_group_t dispatchGroup = dispatch_group_create();
-    __block NSMutableArray *errors = [NSMutableArray array];
-    for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-        dispatch_group_enter(dispatchGroup);
-        [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity
-                                                       withCompletion:^(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-            if (success && blockchainIdentity != nil) {
-                dispatch_group_leave(dispatchGroup);
-            } else {
-                [errors addObject:error];
-            }
-        }
-                                                      completionQueue:self.identityQueue];
-    }
-    dispatch_group_notify(dispatchGroup, completionQueue, ^{
-        if (completion) {
-            completion(!errors.count, blockchainIdentities, errors);
-        }
-    });
-}
-
-- (NSArray<DSBlockchainIdentity *> *)identitiesFromIdentityDictionaries:(NSArray<NSDictionary *> *)identityDictionaries keyIndexes:(NSDictionary *)keyIndexes forWallet:(DSWallet *)wallet {
-    NSMutableArray *identities = [NSMutableArray array];
-    for (NSDictionary *versionedIdentityDictionary in identityDictionaries) {
-        NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
-        NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
-        OpaqueKey *key = [DSBlockchainIdentity firstKeyInIdentityDictionary:identityDictionary];
-        NSNumber *index = [keyIndexes objectForKey:[DSKeyManager publicKeyData:key]];
-        if (index) {
-            DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary version:[version intValue] inWallet:wallet];
-            [identities addObject:blockchainIdentity];
-        }
-    }
-    return identities;
-}
-
-#define RETRIEVE_IDENTITIES_DELAY_INCREMENT 2
-
-- (void)retrieveIdentitiesByKeysUntilSuccessWithCompletion:(IdentitiesSuccessCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
-    [self internalRetrieveIdentitiesByKeysUntilSuccessWithDelay:0 withCompletion:completion completionQueue:completionQueue];
-}
-
-- (void)internalRetrieveIdentitiesByKeysUntilSuccessWithDelay:(uint32_t)delay withCompletion:(IdentitiesSuccessCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
-    [self
-     retrieveIdentitiesByKeysWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-        if (!success) {
-            dispatch_after(delay, self.identityQueue, ^{
-                [self internalRetrieveIdentitiesByKeysUntilSuccessWithDelay:delay + RETRIEVE_IDENTITIES_DELAY_INCREMENT withCompletion:completion completionQueue:completionQueue];
-            });
-        } else if (completion) {
-            completion(blockchainIdentities);
-        }
-    }
-     completionQueue:completionQueue];
-}
-
-- (void)retrieveIdentitiesByKeysWithCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
+- (void)syncIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
+    DSLog(@"%@: Sync Identities", self.logPrefix);
     if (!self.chain.isEvolutionEnabled) {
-        if (completion) {
-            dispatch_async(completionQueue, ^{
-                completion(YES, @[], @[]);
-            });
-        }
+        if (completion) dispatch_async(self.chain.networkingQueue, ^{ completion(@[]); });
         return;
     }
     dispatch_async(self.identityQueue, ^{
         NSArray<DSWallet *> *wallets = self.chain.wallets;
-        DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-        __block dispatch_group_t dispatch_group = dispatch_group_create();
+
+        __block dispatch_group_t keyHashesDispatchGroup = dispatch_group_create();
         __block NSMutableArray *errors = [NSMutableArray array];
         __block NSMutableArray *allIdentities = [NSMutableArray array];
         
         for (DSWallet *wallet in wallets) {
-            NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
-            uint32_t unusedIndex = [wallet unusedBlockchainIdentityIndex];
-            DSAuthenticationKeysDerivationPath *derivationPath = [DSBlockchainIdentity derivationPathForType:KeyKind_ECDSA forWallet:wallet];
+            uint32_t unusedIndex = [wallet unusedIdentityIndex];
+            DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet];
             const int keysToCheck = 5;
-            NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionary];
+            NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionaryWithCapacity:keysToCheck];
+            u160 **key_hashes = malloc(keysToCheck * sizeof(u160 *));
             for (int i = 0; i < keysToCheck; i++) {
                 const NSUInteger indexes[] = {(unusedIndex + i) | BIP32_HARD, 0 | BIP32_HARD};
                 NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
-                OpaqueKey *key = [derivationPath publicKeyAtIndexPath:indexPath];
-                NSData *publicKeyData = [DSKeyManager publicKeyData:key];
-                [keyHashes addObject:uint160_data(publicKeyData.hash160)];
+                NSData *publicKeyData = [derivationPath publicKeyDataAtIndexPath:indexPath];
+                key_hashes[i] = u160_ctor_u(publicKeyData.hash160);
                 [keyIndexes setObject:@(unusedIndex + i) forKey:publicKeyData];
             }
-            dispatch_group_enter(dispatch_group);
-            [client.DAPIPlatformNetworkService fetchIdentitiesByKeyHashes:keyHashes
-                                                          completionQueue:self.identityQueue
-                                                                  success:^(NSArray<NSDictionary *> *_Nonnull identityDictionaries) {
-                NSArray<DSBlockchainIdentity *> *identities = [self identitiesFromIdentityDictionaries:identityDictionaries keyIndexes:keyIndexes forWallet:wallet];
-                BOOL success = [wallet registerBlockchainIdentities:identities verify:YES];
-                if (success) {
-                    [allIdentities addObjectsFromArray:identities];
-                    NSManagedObjectContext *platformContext = [NSManagedObjectContext platformContext];
-                    [platformContext performBlockAndWait:^{
-                        for (DSBlockchainIdentity *identity in identities) {
-                            [identity saveInitialInContext:platformContext];
-                        }
-                        dispatch_group_leave(dispatch_group);
-                    }];
-                } else {
-                    [errors addObject:[NSError errorWithDomain:@"DashPlatform"
-                                                          code:500
-                                                      userInfo:@{NSLocalizedDescriptionKey:
-                                                                     DSLocalizedString(@"Identity has unknown keys", nil)}]];
-                    dispatch_group_leave(dispatch_group);
+            dispatch_group_enter(keyHashesDispatchGroup);
+            DRetry *stragegy = DRetryLinear(5);
+            dash_spv_platform_identity_manager_IdentityValidator *options = DAcceptIdentityNotFound();
+            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
+                        
+            if (result->error) {
+                NSError *error = [NSError ffi_from_platform_error:result->error];
+                DSLog(@"%@: Sync Identities: ERROR %@", self.logPrefix, error);
+                Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
+                [errors addObject:error];
+                dispatch_group_leave(keyHashesDispatchGroup);
+                return;
+            }
+            std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity *ok = result->ok;
+            NSMutableArray *identities = [NSMutableArray array];
+            
+            for (int j = 0; j < ok->count; j++) {
+                DIdentity *identity = ok->values[j];
+                switch (identity->tag) {
+                    case dpp_identity_identity_Identity_V0: {
+                        dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
+                        DMaybeOpaqueKey *maybe_opaque_key = DOpaqueKeyFromIdentityPubKey(identity_v0->public_keys->values[0]);
+                        NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
+                        NSNumber *index = [keyIndexes objectForKey:publicKeyData];
+                        DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
+                        [identityModel applyIdentity:identity save:NO inContext:nil];
+                        [identities addObject:identityModel];
+                        break;
+                    }
+                        
+                    default:
+                        break;
                 }
             }
-                                                                  failure:^(NSError *_Nonnull error) {
-                if (error) {
-                    [errors addObject:error];
-                }
-                dispatch_group_leave(dispatch_group);
-            }];
+            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
+            BOOL success = [wallet registerIdentities:identities verify:YES];
+            DSLog(@"%@: Sync Identities: %@", self.logPrefix, DSLocalizedFormat(success ? @"OK (%lu)" :  @"Retrieved (%lu) but can't register in wallet", nil, identities.count));
+            if (success) {
+                [allIdentities addObjectsFromArray:identities];
+                NSManagedObjectContext *platformContext = [NSManagedObjectContext platformContext];
+                [platformContext performBlockAndWait:^{
+                    for (DSIdentity *identity in identities) {
+                        [identity saveInitialInContext:platformContext];
+                    }
+                }];
+            } else {
+                [errors addObject:ERROR_UNKNOWN_KEYS];
+            }
+            dispatch_group_leave(keyHashesDispatchGroup);
+
         }
         
-        dispatch_group_notify(dispatch_group, completionQueue, ^{
-            completion(!errors.count, allIdentities, errors);
+        dispatch_group_notify(keyHashesDispatchGroup, self.chain.networkingQueue, ^{
+            NSArray *identities = [self unsyncedIdentities];
+            DSLog(@"%@ Sync Identities: unsynced: %@", self.logPrefix, identities);
+            dispatch_group_t dispatchGroup = dispatch_group_create();
+            __block NSMutableArray *errors = [NSMutableArray array];
+            for (DSIdentity *identity in identities) {
+                dispatch_group_enter(dispatchGroup);
+                [self fetchNeededNetworkStateInformationForIdentity:identity
+                                                     withCompletion:^(BOOL success, DSIdentity *_Nullable identity, NSError *_Nullable error) {
+                    if (success && identity != nil) {
+                        dispatch_group_leave(dispatchGroup);
+                    } else {
+                        [errors addObject:error];
+                    }
+                }
+                                                              completionQueue:self.identityQueue];
+            }
+            dispatch_group_notify(dispatchGroup, self.chain.networkingQueue, ^{
+                self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
+                if (!errors.count && completion)
+                    completion(identities);
+            });
+
         });
     });
 }
 
+- (void)searchIdentityByDashpayUsername:(NSString *)name
+                         withCompletion:(IdentityCompletionBlock)completion {
+    [self searchIdentityByName:name
+                      inDomain:@"dash"
+                withCompletion:completion];
+}
+
+- (void)searchIdentityByName:(NSString *)name
+                    inDomain:(NSString *)domain
+              withCompletion:(IdentityCompletionBlock)completion {
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identity by name: %@, domain: %@", self.logPrefix, name, domain];
+    DSLog(@"%@", debugString);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(name));
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentsMapDtor(result);
+        DSLog(@"%@: ERROR: %@", debugString, error);
+        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, error); });
+        return;
+    }
+    
+    // TODO: in wallet we have unusuable but cancelable request, so...
+    __block NSMutableArray *rIdentities = [NSMutableArray array];
+    DDocumentsMap *documents = result->ok;
+    for (int i = 0; i < documents->count; i++) {
+        DDocument *document = documents->values[i];
+        DSLog(@"%@: document[%i]: ", debugString, i);
+        dash_spv_platform_document_print_document(document);
+
+        if (!document) continue;
+        NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
+        NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
+        DIdentifier *owner_id = document->v0->owner_id;
+        
+        DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
+        [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+        [rIdentities addObject:identity];
+
+    }
+    DSLog(@"%@: OK: %@", debugString, [rIdentities firstObject]);
+    if (completion)
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(YES, [rIdentities firstObject], nil);
+        });
+}
+
+- (void)fetchProfileForIdentity:(DSIdentity *)identity
+                 withCompletion:(DashpayUserInfoCompletionBlock)completion
+              onCompletionQueue:(dispatch_queue_t)completionQueue {
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profile for: %@", self.logPrefix, identity];
+    DSLog(@"%@", debugString);
+    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        DSLog(@"%@: ERROR: DashPay Contract Not Registered", debugString);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, nil); });
+        return;
+    }
+    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DSLog(@"%@: ERROR: %@", debugString, error);
+        dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+        DMaybeDocumentDtor(result);
+        return;
+    }
+    if (!result->ok) {
+        DSLog(@"%@: ERROR: Profile is None", debugString);
+        if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil, nil); });
+        DMaybeDocumentDtor(result);
+        return;
+   }
+    DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:result->ok];
+    DSLog(@"%@: OK: %@", debugString, transientDashpayUser);
+    dispatch_async(completionQueue, ^{ if (completion) completion(YES, transientDashpayUser, nil); });
+}
+
+- (void)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
+                    withCompletion:(DashpayUserInfosCompletionBlock)completion
+                 onCompletionQueue:(dispatch_queue_t)completionQueue {
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profiles for: %@", self.logPrefix, identityUserIds];
+    DSLog(@"%@", debugString);
+    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        DSLog(@"%@: ERROR: DashPay Contract Not Registered", debugString);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_CONTRACT_SETUP); });
+        return;
+    }
+    NSUInteger user_ids_count = identityUserIds.count;
+    u256 **user_ids_values = malloc(sizeof(u256 *) * user_ids_count);
+    
+    for (int i = 0; i < user_ids_count; i++) {
+        NSData *userID = identityUserIds[i];
+        user_ids_values[i] = u256_ctor(userID);
+    }
+    Vec_u8_32 *user_ids = Vec_u8_32_ctor(user_ids_count, user_ids_values);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, user_ids, dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DSLog(@"%@: ERROR: %@", debugString, error);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+        DMaybeDocumentsMapDtor(result);
+        return;
+    }
+    DDocumentsMap *documents = result->ok;
+    NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
+    for (int i = 0; i < documents->count; i++) {
+        DDocument *document = documents->values[i];
+        switch (document->tag) {
+            case dpp_document_Document_V0: {
+                DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:document];
+                [dashpayUserDictionary setObject:transientDashpayUser forKey:NSDataFromPtr(document->v0->owner_id->_0->_0)];
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    DMaybeDocumentsMapDtor(result);
+    DSLog(@"%@: OK: %@", debugString, dashpayUserDictionary);
+    if (completion) dispatch_async(completionQueue, ^{ completion(YES, dashpayUserDictionary, nil); });
+}
+
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion {
+    [self searchIdentitiesByDashpayUsernamePrefix:namePrefix
+                                       startAfter:nil
+                                            limit:100
+                          queryDashpayProfileInfo:queryDashpayProfileInfo
+                                   withCompletion:completion];
+}
+
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                                     startAfter:(NSData* _Nullable)startAfter
+                                          limit:(uint32_t)limit
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion {
+    [self searchIdentitiesByNamePrefix:namePrefix
+                            startAfter:startAfter
+                                 limit:limit
+                        withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
+        if (errors.count) {
+            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+        } else if (queryDashpayProfileInfo && identities.count) {
+            __block NSMutableDictionary<NSData *, DSIdentity *> *identityDictionary = [NSMutableDictionary dictionary];
+            for (DSIdentity *identity in identities) {
+                [identityDictionary setObject:identity forKey:identity.uniqueIDData];
+            }
+            [self fetchProfilesForIdentities:identityDictionary.allKeys
+                              withCompletion:^(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByIdentityUniqueId, NSError *_Nullable error) {
+                for (NSData *identityUniqueIdData in dashpayUserInfosByIdentityUniqueId) {
+                    DSIdentity *identity = identityDictionary[identityUniqueIdData];
+                    identity.transientDashpayUser = dashpayUserInfosByIdentityUniqueId[identityUniqueIdData];
+                }
+                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+            }
+                           onCompletionQueue:self.identityQueue];
+        } else if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+        }
+    }];
+}
+
+- (void)searchIdentitiesByNamePrefix:(NSString *)namePrefix
+                          startAfter:(NSData* _Nullable)startAfter
+                               limit:(uint32_t)limit
+                      withCompletion:(IdentitiesCompletionBlock)completion {
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By Name Prefix: %@", self.logPrefix, namePrefix];
+    DSLog(@"%@", debugString);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(namePrefix));
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DSLog(@"%@: ERROR: %@", debugString, error);
+        DMaybeDocumentsMapDtor(result);
+        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
+        return;
+    }
+    DDocumentsMap *documents = result->ok;
+    __block NSMutableDictionary *rIdentities = [NSMutableDictionary dictionary];
+    for (int i = 0; i < documents->count; i++) {
+        DDocument *document = documents->values[i];
+        if (!document) continue;
+        DSLog(@"%@: document[%i]: ", debugString, i);
+        dash_spv_platform_document_print_document(document);
+
+        switch (document->tag) {
+            case dpp_document_Document_V0: {
+                u256 *owner_id = document->v0->owner_id->_0->_0;
+                NSData *userIdData = NSDataFromPtr(owner_id);
+                UInt256 uniqueId = u256_cast(owner_id);
+                DSIdentity *identity = [rIdentities objectForKey:userIdData];
+                if (!identity)
+                    identity = [self.chain identityForUniqueId:uniqueId foundInWallet:nil includeForeignIdentities:YES];
+                NSString *label = DGetTextDocProperty(document, @"label");
+                NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
+                if (!identity) {
+                    identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
+                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+                } else if (![identity hasDashpayUsername:label]) {
+                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:YES registerOnNetwork:NO];
+                }
+                [rIdentities setObject:identity forKey:userIdData];
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    DSLog(@"%@: OK: %@", debugString, rIdentities);
+
+    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [[rIdentities allValues] copy], @[]); });
+}
+
+- (void)searchIdentitiesByDPNSRegisteredIdentityUniqueID:(NSData *)userID
+                                          withCompletion:(IdentitiesCompletionBlock)completion {
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By DPNS identity id: %@", self.logPrefix, userID.hexString];
+    DSLog(@"%@", debugString);
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor(userID));
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DMaybeDocumentsMapDtor(result);
+        DSLog(@"%@: ERROR: %@", debugString, error);
+        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
+        return;
+    }
+    DDocumentsMap *documents = result->ok;
+    __block NSMutableArray *rIdentities = [NSMutableArray array];
+    for (int i = 0; i < documents->count; i++) {
+        DDocument *document = documents->values[i];
+        if (!document) continue;
+        DSLog(@"%@: document[%i]: ", debugString, i);
+        dash_spv_platform_document_print_document(document);
+
+        switch (document->tag) {
+            case dpp_document_Document_V0: {
+                NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
+                NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
+                DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(document->v0->owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
+                [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+                [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
+                [rIdentities addObject:identity];
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    DSLog(@"%@: OK: %@", debugString, rIdentities);
+    DMaybeDocumentsMapDtor(result);
+    if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities copy], @[]); });
+}
+
+- (void)checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction {
+    uint32_t index;
+    DSWallet *wallet = [self.chain walletHavingIdentityAssetLockRegistrationHash:transaction.creditBurnPublicKeyHash foundAtIndex:&index];
+    if (!wallet) return; //it's a topup or we are funding an external identity
+    DSIdentity *identity = [wallet identityForUniqueId:transaction.creditBurnIdentityIdentifier];
+    NSAssert(identity, @"We should have already created the blockchain identity at this point in the transaction manager by calling triggerUpdatesForLocalReferences");
+    //DSLogPrivate(@"Paused Sync at block %d to gather identity information on %@", block.height, identity.uniqueIdString);
+    [self fetchNeededNetworkStateInformationForIdentity:identity
+                                         withCompletion:^(BOOL success, DSIdentity *_Nullable identity, NSError *_Nullable error) {
+        if (success && identity != nil)
+            [self chain:self.chain didFinishInChainSyncPhaseFetchingIdentityDAPInformation:identity];
+    }
+                                                  completionQueue:self.chain.networkingQueue];
+}
+
+- (void)fetchNeededNetworkStateInformationForIdentity:(DSIdentity *)identity
+                                       withCompletion:(IdentityCompletionBlock)completion
+                                      completionQueue:(dispatch_queue_t)completionQueue {
+    [identity fetchNeededNetworkStateInformationInContext:[NSManagedObjectContext platformContext]
+                                       withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable errors) {
+        if (!failureStep || failureStep == DSIdentityQueryStep_NoIdentity) {
+            //if this was never registered no need to retry
+            if (completion)
+                dispatch_async(completionQueue, ^{ completion(YES, identity, nil); });
+        } else {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), completionQueue, ^{
+                [self fetchNeededNetworkStateInformationForIdentity:identity
+                                                     withCompletion:completion
+                                                    completionQueue:completionQueue];
+            });
+        }
+    }
+                                    onCompletionQueue:dispatch_get_main_queue()];
+}
+
 // MARK: - DSChainIdentitiesDelegate
 
-- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity {
-    [self.chain.chainManager chain:chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
+- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingIdentityDAPInformation:(DSIdentity *)identity {
+    [self.chain.chainManager chain:chain didFinishInChainSyncPhaseFetchingIdentityDAPInformation:identity];
 }
 
 @end

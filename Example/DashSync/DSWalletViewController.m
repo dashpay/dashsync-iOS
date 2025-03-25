@@ -69,7 +69,7 @@
 
         walletCell.passphraseLabel.text = self.didAuthenticate ? [lines componentsJoinedByString:@"\n"] : @"";
         DSAccount *account0 = [wallet accountWithNumber:0];
-        walletCell.xPublicKeyLabel.text = [[account0 bip44DerivationPath] serializedExtendedPublicKey];
+        walletCell.xPublicKeyLabel.text = [DSDerivationPathFactory serializedExtendedPublicKey:[account0 bip44DerivationPath]];
         walletCell.showPassphraseButton.hidden = self.didAuthenticate;
         walletCell.actionDelegate = self;
     }

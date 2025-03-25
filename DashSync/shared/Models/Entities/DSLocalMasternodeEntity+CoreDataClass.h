@@ -9,7 +9,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSProviderRegistrationTransactionEntity, DSProviderUpdateRegistrarTransactionEntity, DSProviderUpdateRevocationTransactionEntity, DSProviderUpdateServiceTransactionEntity, DSSimplifiedMasternodeEntryEntity, DSLocalMasternode, DSChainEntity;
+@class DSProviderRegistrationTransactionEntity, DSProviderUpdateRegistrarTransactionEntity, DSProviderUpdateRevocationTransactionEntity, DSProviderUpdateServiceTransactionEntity, DSLocalMasternode, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDictionary<NSData *, DSLocalMasternodeEntity *> *)findLocalMasternodesAndIndexForProviderRegistrationHashes:(NSSet<NSData *> *)providerRegistrationHashes inContext:(NSManagedObjectContext *)context;
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity;
+
++ (void)loadLocalMasternodesInContext:(NSManagedObjectContext *)context
+                        onChainEntity:(DSChainEntity *)chainEntity;
 
 @end
 

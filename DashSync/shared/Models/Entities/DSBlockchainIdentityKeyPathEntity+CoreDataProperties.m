@@ -20,6 +20,8 @@
 @dynamic keyType;
 @dynamic keyStatus;
 @dynamic keyID;
+@dynamic securityLevel;
+@dynamic purpose;
 @dynamic publicKeyData;
 
 @end

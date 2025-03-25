@@ -19,21 +19,41 @@
 #import "DSSyncState.h"
 
 @implementation DSMasternodeListSyncState
+
 - (id)copyWithZone:(NSZone *)zone {
     DSMasternodeListSyncState *copy = [[[self class] alloc] init];
     copy.retrievalQueueCount = self.retrievalQueueCount;
     copy.retrievalQueueMaxAmount = self.retrievalQueueMaxAmount;
     copy.storedCount = self.storedCount;
     copy.lastBlockHeight = self.lastBlockHeight;
+    copy.stubCount = self.stubCount;
     return copy;
 }
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%u/%u/%f/%u",
+    return [NSString stringWithFormat:@"%u/%u/%f/%f/%u",
             self.retrievalQueueCount,
             self.retrievalQueueMaxAmount,
             self.storedCount,
+            self.stubCount,
             self.lastBlockHeight];
 }
+- (void)updateWithSyncState:(DMNSyncState *)state {
+    switch (state->tag) {
+        case DMNSyncStateQueueChanged:
+            self.retrievalQueueCount = (uint32_t) state->queue_changed.count;
+            self.retrievalQueueMaxAmount = (uint32_t) state->queue_changed.max_amount;
+            break;
+        case DMNSyncStateStoreChanged:
+            self.storedCount = (uint32_t) state->store_changed.count;
+            self.lastBlockHeight = state->store_changed.last_block_height;
+            break;
+        case DMNSyncStateStubCount:
+            self.stubCount = state->stub_count.count;
+        default:
+            break;
+    }
+}
+
 @end
 
 @implementation DSSyncState

@@ -23,16 +23,17 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSKeyManager.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSAccountEntity, DSBlockchainIdentityEntity, DSBlockchainInvitationEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSSporkHashEntity, DSTransactionHashEntity, DSChainLockEntity;
+@class DSAccountEntity, DSBlockchainIdentityEntity, DSBlockchainInvitationEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSSporkHashEntity, DSTransactionHashEntity, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainEntity : NSManagedObject
 
-+ (DSChainEntity *_Nonnull)chainEntityForType:(ChainType)type checkpoints:(NSArray *_Nullable)checkpoints inContext:(NSManagedObjectContext *)context;
++ (DSChainEntity *_Nonnull)chainEntityForType:(DChainType *)type checkpoints:(NSArray *_Nullable)checkpoints inContext:(NSManagedObjectContext *)context;
 - (instancetype)setAttributesFromChain:(DSChain *_Nonnull)chain;
 - (DSChain *_Nonnull)chain;
 

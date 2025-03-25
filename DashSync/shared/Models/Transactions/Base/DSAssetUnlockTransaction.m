@@ -16,12 +16,22 @@
 //
 
 #import "DSAssetUnlockTransaction.h"
+#import "DSAssetUnlockTransactionEntity+CoreDataClass.h"
 #import "DSChain.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 @implementation DSAssetUnlockTransaction
+
+- (instancetype)initOnChain:(DSChain *)chain {
+    self = [super initOnChain:chain];
+    if (self) {
+        self.type = DSTransactionType_AssetUnlock;
+        self.version = SPECIAL_TX_VERSION;
+    }
+    return self;
+}
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
     if (!(self = [super initWithMessage:message onChain:chain]))
@@ -89,7 +99,13 @@
     }
 }
 - (size_t)size {
-    return [super size] + [self payloadData].length;
+    @synchronized(self) {
+        if (uint256_is_not_zero(self.txHash)) return self.data.length;
+        return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length);
+    }
+}
+- (Class)entityClass {
+    return [DSAssetUnlockTransactionEntity class];
 }
 
 @end

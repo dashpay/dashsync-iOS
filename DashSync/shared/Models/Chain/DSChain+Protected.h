@@ -46,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
 - (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash;
+- (DSBlock *_Nullable)blockUntilGetInsightForBlockHeight:(uint32_t)blockHeight;
+
 - (void)addInsightVerifiedBlock:(DSBlock *)block forBlockHash:(UInt256)blockHash;
 
 @property (nonatomic, readonly) BOOL allowInsightBlocksForVerification;
@@ -72,25 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Wallet, Accounts and Transactions
 
-/*! @brief Add a wallet to the chain. It is only temporarily in the chain if externaly added this way.  */
-- (BOOL)addWallet:(DSWallet *)wallet;
 
-- (BOOL)registerSpecialTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
 
-- (void)triggerUpdatesForLocalReferences:(DSTransaction *)transaction;
 
-- (void)reloadDerivationPaths;
-
-// MARK: Wallet Discovery
-
-- (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-- (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t *)rIndex;
-- (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash foundAtIndex:(uint32_t *)rIndex;
-- (DSWallet *_Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-- (DSWallet *_Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-- (DSWallet *_Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t *_Nullable)rIndex;
-- (DSWallet *_Nullable)walletHavingPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-- (DSWallet *_Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction *_Nonnull)transaction foundAtIndex:(uint32_t *_Nullable)rIndex;
 
 // MARK: - Standalone Derivation Paths
 
@@ -101,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 
-- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray *)simplifiedMasternodeEntries;
+- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(DMasternodeEntryList *)simplifiedMasternodeEntries;
 
 /*! @brief The header locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
 @property (nonatomic, readonly, nullable) NSArray *terminalBlocksLocatorArray;
@@ -127,6 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)saveBlockLocators;
 - (void)saveTerminalBlocks;
 
+- (void)resetLastSyncBlock;
 @end
 
 NS_ASSUME_NONNULL_END

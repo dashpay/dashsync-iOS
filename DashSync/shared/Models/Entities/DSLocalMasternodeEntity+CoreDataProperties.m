@@ -23,7 +23,7 @@
 @dynamic votingKeysIndex;
 @dynamic votingKeysWalletUniqueId;
 @dynamic providerRegistrationTransaction;
-@dynamic simplifiedMasternodeEntry;
+//@dynamic simplifiedMasternodeEntry;
 @dynamic providerUpdateRegistrarTransactions;
 @dynamic providerUpdateServiceTransactions;
 @dynamic providerUpdateRevocationTransactions;

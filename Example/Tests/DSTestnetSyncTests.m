@@ -19,11 +19,13 @@
 
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSChain+Checkpoint.h"
 #import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSWallet.h"
+#import "DSWallet+Tests.h"
 #import "DashSync.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"

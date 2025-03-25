@@ -7,6 +7,7 @@
 
 #import "DSGovernanceObject.h"
 #import "DSAccount.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
@@ -19,7 +20,6 @@
 #import "DSOptionsManager.h"
 #import "DSPeer.h"
 #import "DSPeerManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -299,7 +299,10 @@
     if (!_knownGovernanceVoteHashesForExistingGovernanceVotes) _knownGovernanceVoteHashesForExistingGovernanceVotes = [NSMutableOrderedSet orderedSet];
     for (DSGovernanceVoteEntity *governanceVoteEntity in governanceVoteEntities) {
         DSGovernanceVote *governanceVote = [governanceVoteEntity governanceVote];
-        DSLog(@"%@ : %@ -> %d/%d", self.identifier, [NSData dataWithUInt256:governanceVote.masternode.simplifiedMasternodeEntryHash].shortHexString, governanceVote.outcome, governanceVote.signal);
+        u256 *entry_hash = dashcore_hash_types_Sha256dHash_inner(governanceVote.masternode->entry_hash);
+        NSString *entryHashString = u256_hex(entry_hash);
+        u256_dtor(entry_hash);
+        DSLog(@"%@ : %@ -> %d/%d", self.identifier, entryHashString, governanceVote.outcome, governanceVote.signal);
         [_knownGovernanceVoteHashesForExistingGovernanceVotes addObject:[NSData dataWithUInt256:governanceVote.governanceVoteHash]];
         [_governanceVotes addObject:governanceVote];
     }

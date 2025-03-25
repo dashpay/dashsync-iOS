@@ -22,7 +22,7 @@
 }
 
 - (IBAction)requestingValidation:(id)sender {
-    [self.masternodeListCellDelegate masternodeListTableViewCellRequestsValidation:self];
+    //[self.masternodeListCellDelegate masternodeListTableViewCellRequestsValidation:self];
 }
 
 @end

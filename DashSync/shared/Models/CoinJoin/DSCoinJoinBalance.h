@@ -16,7 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -41,9 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
                            watchOnlyTrusted:(uint64_t)watchOnlyTrusted
                   watchOnlyUntrustedPending:(uint64_t)watchOnlyUntrustedPending
                           watchOnlyImmature:(uint64_t)watchOnlyImmature;
+@end
 
-+ (void)ffi_free:(Balance *)balance;
-- (Balance *)ffi_malloc;
+@interface DSCoinJoinBalance (FFI)
+
++ (DBalance *)ffi_to:(DSCoinJoinBalance *)obj;
++ (void)ffi_destroy:(DBalance *)ffi_ref;
 
 @end
 

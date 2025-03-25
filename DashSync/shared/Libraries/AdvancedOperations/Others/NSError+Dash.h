@@ -19,6 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define ERROR_500(msg) [NSError errorWithCode:500 localizedDescriptionKey:msg]
+//#define DS_ERROR(domain, code, localizedDescriptionKey) [NSError errorWithDomain:domain code:code userInfo:@{ NSLocalizedDescriptionKey: localizedDescriptionKey }];
+
 @interface NSError (Dash)
 
 + (instancetype)errorWithCode:(NSInteger)code userInfo:(nullable NSDictionary<NSErrorUserInfoKey, id> *)dict;
@@ -26,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)errorWithCode:(NSInteger)code localizedDescriptionKey:(NSString *)localizedDescriptionKey;
 
 + (instancetype)osStatusErrorWithCode:(NSInteger)code;
++ (NSString *)errorsDescription:(NSArray<NSError *> *)errors;
 
 @end
 

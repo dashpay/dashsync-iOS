@@ -28,10 +28,11 @@
 
 #import "DSPaymentRequest.h"
 #import "DSAccount.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
@@ -97,9 +98,11 @@
     NSURL *url = [NSURL URLWithString:s];
 
     if (!url || !url.scheme) {
-        if ([DSKeyManager isValidDashAddress:s forChain:self.chain] ||
-            [s isValidDashPrivateKeyOnChain:self.chain] ||
-            [DSKeyManager isValidDashBIP38Key:s]) {
+        
+        if (dash_spv_crypto_bip_bip38_is_valid_payment_request_address(DChar(s), self.chain.chainType)) {
+//        if (DIsValidDashAddress(DChar(s), self.chain.chainType) ||
+//            [s isValidDashPrivateKeyOnChain:self.chain] ||
+//            [DSKeyManager isValidDashBIP38Key:s]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
         }
@@ -237,7 +240,7 @@
 
 - (BOOL)isValidAsNonDashpayPaymentRequest {
     if ([self.scheme isEqualToString:@"dash"]) {
-        BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]);
+        BOOL valid = DIsValidDashAddress(DChar(self.paymentAddress), self.chain.chainType) || (self.r && [NSURL URLWithString:self.r]);
         if (!valid) {
             DSLog(@"Not a valid dash request");
         }
@@ -257,11 +260,13 @@
     }
 }
 
-- (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account inContext:(NSManagedObjectContext *)context {
+- (BOOL)isValidAsDashpayPaymentRequestForIdentity:(DSIdentity *)identity
+                                                  onAccount:(DSAccount *)account
+                                                  inContext:(NSManagedObjectContext *)context {
     if ([self.scheme isEqualToString:@"dash"]) {
         __block DSIncomingFundsDerivationPath *friendshipDerivationPath = nil;
         [context performBlockAndWait:^{
-            DSDashpayUserEntity *dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+            DSDashpayUserEntity *dashpayUserEntity = [identity matchingDashpayUserInContext:context];
 
             for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
                 if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
@@ -269,7 +274,7 @@
                 }
             }
         }];
-        BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath;
+        BOOL valid = DIsValidDashAddress(DChar(self.paymentAddress), self.chain.chainType) || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath;
         if (!valid) {
             DSLog(@"Not a valid dash request");
         }
@@ -289,8 +294,11 @@
     }
 }
 
-- (NSString *)paymentAddressForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue inContext:(NSManagedObjectContext *)context {
-    if (!blockchainIdentity || !self.dashpayUsername) {
+- (NSString *)paymentAddressForIdentity:(DSIdentity *)identity
+                                        onAccount:(DSAccount *)account
+                  fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue
+                                        inContext:(NSManagedObjectContext *)context {
+    if (!identity || !self.dashpayUsername) {
         if (fallbackToPaymentAddressIfIssue) {
             return [self paymentAddress];
         } else {
@@ -299,7 +307,7 @@
     }
     __block DSIncomingFundsDerivationPath *friendshipDerivationPath = nil;
     [context performBlockAndWait:^{
-        DSDashpayUserEntity *dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+        DSDashpayUserEntity *dashpayUserEntity = [identity matchingDashpayUserInContext:context];
 
         for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
             if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
@@ -319,13 +327,15 @@
     return friendshipDerivationPath.receiveAddress;
 }
 
-- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity onAccount:(DSAccount *)account inContext:(NSManagedObjectContext *)context {
-    if (!blockchainIdentity || !self.dashpayUsername) {
+- (DSPaymentProtocolRequest *)protocolRequestForIdentity:(DSIdentity *)identity
+                                                         onAccount:(DSAccount *)account
+                                                         inContext:(NSManagedObjectContext *)context {
+    if (!identity || !self.dashpayUsername) {
         return [self protocolRequest];
     }
     __block DSIncomingFundsDerivationPath *friendshipDerivationPath = nil;
     [context performBlockAndWait:^{
-        DSDashpayUserEntity *dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+        DSDashpayUserEntity *dashpayUserEntity = [identity matchingDashpayUserInContext:context];
 
         for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
             if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
@@ -379,7 +389,7 @@
 - (DSPaymentProtocolRequest *)protocolRequest {
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
-    if ([DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain]) {
+    if (DIsValidDashAddress(DChar(self.paymentAddress), self.chain.chainType)) {
         [script appendData:[DSKeyManager scriptPubKeyForAddress:self.paymentAddress forChain:self.chain]];
     }
 #if SHAPESHIFT_ENABLED
@@ -469,13 +479,10 @@
                                          }
 
                                          if (!request) {
-                                             DSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                 [[NSString alloc] initWithData:data
-                                                                       encoding:NSUTF8StringEncoding]);
-                                             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                                        req.URL.host]]);
+                                             DSLog(@"unexpected response from %@:\n%@", req.URL.host, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                                             completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
                                          } else if (![request.details.chain isEqual:chain]) {
-                                             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Requested network \"%@\" not currently in use", nil), request.details.chain.networkName]]);
+                                             completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Requested network \"%@\" not currently in use", nil, request.details.chain.networkName)]);
                                          } else
                                              completion(request, nil);
                                      }] resume];
@@ -522,7 +529,7 @@
                                                  [[NSString alloc] initWithData:data
                                                                        encoding:NSUTF8StringEncoding]);
                                              if (completion) {
-                                                 completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil), req.URL.host]]);
+                                                 completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
                                              }
                                          } else if (completion)
                                              completion(ack, nil);

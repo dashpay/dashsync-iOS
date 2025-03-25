@@ -8,6 +8,7 @@
 #import "DSInsightManager.h"
 #import "DSBlock.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSMerkleBlock.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
@@ -106,6 +107,48 @@
     NSString *insightURL = [chain isMainnet] ? INSIGHT_URL : TESTNET_INSIGHT_URL;
     [self queryInsight:insightURL forBlockWithHash:reversedBlockHash onChain:chain completion:completion];
 }
+- (void)blockForBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain completion:(void (^)(DSBlock *block, NSError *error))completion {
+    NSAssert(blockHeight != UINT32_MAX, @"blockHeight must be set");
+    NSParameterAssert(chain);
+    NSString *insightURL = [chain isMainnet] ? INSIGHT_URL : TESTNET_INSIGHT_URL;
+    NSParameterAssert(insightURL);
+    NSString *path = [[insightURL stringByAppendingPathComponent:BLOCK_PATH] stringByAppendingPathComponent:[@(blockHeight) stringValue]];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]
+                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData
+                                                   timeoutInterval:20.0];
+    req.HTTPMethod = @"GET";
+    DSLogPrivate(@"%@ GET: %@", req.URL.absoluteString,
+        [[NSString alloc] initWithData:req.HTTPBody
+                              encoding:NSUTF8StringEncoding]);
+
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            completion(nil, error);
+            return;
+        }
+
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+
+        if (error) {
+            DSLogPrivate(@"Error decoding response (%@) %@", req.URL.absoluteString, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
+            return;
+        }
+        NSNumber *version = json[@"version"];
+        NSData *blockHash = [json[@"hash"] hexToData];
+        NSData *previousBlockHash = [json[@"previousblockhash"] hexToData];
+        NSData *merkleRoot = [json[@"merkleroot"] hexToData];
+        NSNumber *timestamp = json[@"time"];
+        NSString *targetString = json[@"bits"];
+        NSData *chainWork = [json[@"chainwork"] hexToData];
+        NSNumber *height = json[@"height"];
+        DSBlock *block = [[DSBlock alloc] initWithVersion:[version unsignedIntValue] blockHash:blockHash.reverse.UInt256 prevBlock:previousBlockHash.reverse.UInt256 timestamp:timestamp.unsignedIntValue merkleRoot:merkleRoot.reverse.UInt256 target:[targetString.hexToData UInt32AtOffset:0] chainWork:chainWork.reverse.UInt256 height:height.unsignedIntValue onChain:chain];
+
+        completion(block, nil);
+    }] resume];
+
+}
 
 - (void)queryInsight:(NSString *)insightURL forBlockWithHash:(UInt256)blockHash onChain:(DSChain *)chain completion:(void (^)(DSBlock *block, NSError *error))completion {
     NSParameterAssert(insightURL);
@@ -130,8 +173,7 @@
 
         if (error) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSNumber *version = json[@"version"];
@@ -147,6 +189,8 @@
         completion(block, nil);
     }] resume];
 }
+
+
 
 - (void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain *)chain completion:(void (^)(DSTransaction *transaction, NSError *error))completion {
     NSParameterAssert(chain);
@@ -193,8 +237,7 @@
 
         if (error) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSString *rawTxString = json[@"rawtx"];
@@ -232,8 +275,7 @@
 
         if (error || ![json isKindOfClass:[NSDictionary class]] || ![json objectForKey:@"items"]) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                       req.URL.host]]);
+            completion(nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
         NSMutableSet *existingAddresses = [NSMutableSet set];
@@ -289,8 +331,7 @@
 
         if (error || ![json isKindOfClass:[NSArray class]]) {
             DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                 req.URL.host]]);
+            completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
             return;
         }
 
@@ -312,8 +353,7 @@
                 ![utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
                 ![utxo[@"scriptPubKey"] hexToData] ||
                 (![utxo[@"duffs"] isKindOfClass:[NSNumber class]] && ![utxo[@"satoshis"] isKindOfClass:[NSNumber class]] && !amount)) {
-                completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                     req.URL.host]]);
+                completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:DSLocalizedFormat(@"Unexpected response from %@", nil, req.URL.host)]);
                 return;
             }
 

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
-@class DSWallet, DSTransaction, DSCreditFundingTransaction, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityUpdateTransition;
+@class DSWallet, DSTransaction;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,17 +25,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)removeAllTransactions;
 
-- (DSCreditFundingTransaction *)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
-
 //// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
-//- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//- (DSIdentityRegistrationTransition*)identityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 //
 //// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
-//- (DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//- (DSIdentityUpdateTransition*)identityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 //
-//- (NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
+//- (NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)identityRegistrationTransactionHash;
 //
-//- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
+//- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)identityRegistrationTransactionHash;
 
 // this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
 - (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;

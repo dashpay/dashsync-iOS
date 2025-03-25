@@ -16,6 +16,7 @@
 //
 
 #import "BigIntTypes.h"
+#import "DSKeyManager.h"
 #import "DPBaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSString *const DPContractDidUpdateNotification;
 FOUNDATION_EXPORT NSString *const DSContractUpdateNotificationKey;
 
-@class DSChain, DSContractTransition, DSBlockchainIdentity;
+@class DSChain, DSIdentity;
 
 typedef NS_ENUM(NSUInteger, DPContractState)
 {
@@ -36,7 +37,7 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 @interface DPContract : DPBaseObject
 
 @property (readonly, copy, nonatomic) NSString *localContractIdentifier;
-@property (readonly, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
+@property (readonly, nonatomic) UInt256 registeredIdentityUniqueID;
 @property (readonly, copy, nonatomic) NSString *name;
 @property (readonly, nonatomic) UInt256 contractId;
 @property (readonly, copy, nonatomic) NSString *base58ContractId;
@@ -44,35 +45,22 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 @property (readonly, copy, nonatomic) NSString *base58OwnerId;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
-@property (readonly, copy, nonatomic) NSString *jsonSchemaId;
-@property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
-
-@property (assign, nonatomic) NSInteger version;
-@property (copy, nonatomic) NSString *jsonMetaSchema;
-@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;
-@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
+@property (readonly, nonatomic) DDataContract *raw_contract;
+@property (readonly, nonatomic) DDocumentTypes *documents;
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)contractID
-                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
+                                      raw_contract:(DDataContract *)raw_contract
                                         onChain:(DSChain *)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (BOOL)isDocumentDefinedForType:(NSString *)type;
-- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type;
-- (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type;
-
-- (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
-
-- (void)registerCreator:(DSBlockchainIdentity *)blockchainIdentity inContext:(NSManagedObjectContext *)context;
-- (void)unregisterCreatorInContext:(NSManagedObjectContext *)context;
+- (void)registerCreator:(DSIdentity *)identity;
+- (void)unregisterCreator;
 
 + (DPContract *)localDashpayContractForChain:(DSChain *)chain;
 + (DPContract *)localDPNSContractForChain:(DSChain *)chain;
-+ (DPContract *)localDashThumbnailContractForChain:(DSChain *)chain;
+//+ (DPContract *)localDashThumbnailContractForChain:(DSChain *)chain;
 
-
-- (UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

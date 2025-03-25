@@ -5,11 +5,13 @@
 //  Created by Sam Westrich on 7/12/18.
 //
 
+#import "DSChain+Params.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSCoinbaseTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
+
 
 @implementation DSCoinbaseTransaction
 

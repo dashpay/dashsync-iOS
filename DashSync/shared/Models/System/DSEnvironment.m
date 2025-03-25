@@ -8,6 +8,7 @@
 #import "DSEnvironment.h"
 #import "DSAccount.h"
 #import "DSChainsManager.h"
+#import "DSChain+Wallet.h"
 #import "DSWallet.h"
 
 @implementation DSEnvironment

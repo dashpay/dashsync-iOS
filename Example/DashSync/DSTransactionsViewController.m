@@ -9,7 +9,6 @@
 #import "DSTransactionsViewController.h"
 #import "DSTransactionDetailViewController.h"
 #import "DSTransactionTableViewCell.h"
-#import "DSCoinJoinManager.h"
 #import <DashSync/DashSync.h>
 #import <WebKit/WebKit.h>
 
@@ -317,7 +316,7 @@ NSString *dateFormat(NSString *_template) {
     DSAccount *account = [self.chainManager.chain firstAccountThatCanContainTransaction:tx];
     uint64_t received = [tx.chain amountReceivedFromTransaction:tx],
              sent = [tx.chain amountSentByTransaction:tx],
-             balance = [account balanceAfterTransaction:tx];
+            balance = [account balance];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
 
@@ -366,25 +365,25 @@ NSString *dateFormat(NSString *_template) {
         cell.directionLabel.hidden = NO;
     }
     
-    CoinJoinTransactionType type = [[DSCoinJoinManager sharedInstanceForChain:self.chainManager.chain] coinJoinTxTypeForTransaction:tx];
-    
-    if (type != CoinJoinTransactionType_None) {
+    DCoinJoinTransactionType *type = [[DSCoinJoinManager sharedInstanceForChain:self.chainManager.chain] coinJoinTxTypeForTransaction:tx];
+    DCoinJoinTransactionType type_index = DCoinJoinTransactionTypeIndex(type);
+    if (type_index != dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_None) {
         NSString *typeString = @"";
 
-        switch (type) {
-            case CoinJoinTransactionType_CreateDenomination:
+        switch (type_index) {
+            case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_CreateDenomination:
                 typeString = @"Create Denomination";
                 break;
-            case CoinJoinTransactionType_MakeCollateralInputs:
+            case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MakeCollateralInputs:
                 typeString = @"Make Collateral Inputs";
                 break;
-            case CoinJoinTransactionType_MixingFee:
+            case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MixingFee:
                 typeString = @"Mixing Fee";
                 break;
-            case CoinJoinTransactionType_Mixing:
+            case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Mixing:
                 typeString = @"Mixing";
                 break;
-            case CoinJoinTransactionType_Send:
+            case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Send:
                 typeString = @"Send";
                 break;
             default:

@@ -6,7 +6,7 @@
 //
 //
 
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t keyType;
 @property (nonatomic, assign) uint16_t keyStatus;
 @property (nonatomic, assign) uint32_t keyID;
+@property (nonatomic, assign) uint8_t securityLevel;
+@property (nonatomic, assign) uint8_t purpose;
 @property (nullable, nonatomic, retain) NSData *publicKeyData;
 
 @end

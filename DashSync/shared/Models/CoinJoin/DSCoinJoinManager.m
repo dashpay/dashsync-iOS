@@ -23,6 +23,10 @@
 #import "DSWallet.h"
 #import "BigIntTypes.h"
 #import "NSString+Bitcoin.h"
+#import "DSChain+Params.h"
+#import "DSChain+Protected.h"
+#import "DSChain+Transaction.h"
+#import "DSChain+Wallet.h"
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
 #import "DSMasternodeManager.h"
@@ -30,8 +34,6 @@
 #import "DSCoinJoinEntryMessage.h"
 #import "DSCoinJoinSignedInputs.h"
 #import "DSPeerManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
-#import "DSChain+Protected.h"
 #import "DSBlock.h"
 #import "DSKeyManager.h"
 #import "DSDerivationPath+Protected.h"
@@ -94,19 +96,8 @@ static dispatch_once_t managerChainToken = 0;
     _masternodeGroup = [[DSMasternodeGroup alloc] initWithManager:self];
 }
 
-- (CoinJoinClientOptions *)createOptions {
-    CoinJoinClientOptions *options = malloc(sizeof(CoinJoinClientOptions));
-    options->enable_coinjoin = YES;
-    options->coinjoin_rounds = 1;
-    options->coinjoin_sessions = 6;
-    options->coinjoin_amount = DUFFS / 8;
-    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS;
-    options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
-    options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-    options->coinjoin_multi_session = NO;
-    options->denom_only = NO;
-    options->chain_type = self.chain.chainType;
-    
+- (DCoinJoinClientOptions *)createOptions {
+    DCoinJoinClientOptions *options = dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_ctor(true, DUFFS / 8, 6, 1, COINJOIN_RANDOM_ROUNDS, DEFAULT_COINJOIN_DENOMS_GOAL, DEFAULT_COINJOIN_DENOMS_HARDCAP, false, self.chain.chainType, false);
     return options;
 }
 
@@ -276,15 +267,15 @@ static dispatch_once_t managerChainToken = 0;
 #else
         DSLog(@"[%@] CoinJoin tx: Mixing Fee: %@", self.chain.name, @"<REDACTED>");
 #endif
-        [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_MixingFee];
-    } else if ([self coinJoinTxTypeForTransaction:lastTransaction] == CoinJoinTransactionType_Mixing) {
+        [self onTransactionProcessed:lastTransaction.txHash type:dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MixingFee_ctor()];
+    } else if (DCoinJoinTransactionTypeIndex([self coinJoinTxTypeForTransaction:lastTransaction]) == dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Mixing) {
 #if DEBUG
         DSLogPrivate(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, uint256_reverse_hex(lastTransaction.txHash));
 #else
         DSLog(@"[%@] CoinJoin tx: Mixing Transaction: %@", self.chain.name, @"<REDACTED>");
 #endif
         [self.wrapper unlockOutputs:lastTransaction];
-        [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_Mixing];
+        [self onTransactionProcessed:lastTransaction.txHash type:dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Mixing_ctor()];
     }
 }
 
@@ -371,11 +362,14 @@ static dispatch_once_t managerChainToken = 0;
     return NO;
 }
 
-- (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx skipDenominated:(BOOL)skipDenominated anonymizable:(BOOL)anonymizable skipUnconfirmed:(BOOL)skipUnconfirmed maxOupointsPerAddress:(int32_t)maxOupointsPerAddress {
+- (NSArray<DSCompactTallyItem *> *)selectCoinsGroupedByAddresses:(WalletEx *)walletEx
+                                                 skipDenominated:(BOOL)skipDenominated
+                                                    anonymizable:(BOOL)anonymizable
+                                                 skipUnconfirmed:(BOOL)skipUnconfirmed
+                                           maxOupointsPerAddress:(int32_t)maxOupointsPerAddress {
     @synchronized(self) {
         // Note: cache is checked in dash-shared-core.
-        
-        uint64_t smallestDenom = coinjoin_get_smallest_denomination();
+        uint64_t smallestDenom = dash_spv_coinjoin_coinjoin_CoinJoin_get_smallest_denomination();
         NSMutableDictionary<NSData*, DSCompactTallyItem*> *mapTally = [[NSMutableDictionary alloc] init];
         NSMutableSet<NSData *> *setWalletTxesCounted = [[NSMutableSet alloc] init];
         
@@ -433,17 +427,17 @@ static dispatch_once_t managerChainToken = 0;
                     continue;
                 }
                 
-                if (is_locked_coin(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
+                if (dash_spv_coinjoin_wallet_ex_WalletEx_is_locked_coin(walletEx, DOutPointCtorU(outpoint.hash, i))) {
                     continue;
                 }
                 
-                if (skipDenominated && is_denominated_amount(output.amount)) {
+                if (skipDenominated && dash_spv_coinjoin_coinjoin_CoinJoin_is_denominated_amount(output.amount)) {
                     continue;
                 }
                 
                 if (anonymizable) {
                     // ignore collaterals
-                    if (is_collateral_amount(output.amount)) {
+                    if (dash_spv_coinjoin_coinjoin_CoinJoin_is_collateral_amount(output.amount)) {
                         continue;
                     }
                     
@@ -454,7 +448,8 @@ static dispatch_once_t managerChainToken = 0;
                     }
                     
                     // ignore mixed
-                    if (is_fully_mixed(walletEx, (uint8_t (*)[32])(outpoint.hash.u8), (uint32_t)i)) {
+                    
+                    if (dash_spv_coinjoin_wallet_ex_WalletEx_check_if_is_fully_mixed(walletEx, DOutPointCtorU(outpoint.hash, i))) {
                         continue;
                     }
                 }
@@ -520,11 +515,17 @@ static dispatch_once_t managerChainToken = 0;
     return total;
 }
 
-- (NSArray<DSInputCoin *> *)availableCoins:(WalletEx *)walletEx onlySafe:(BOOL)onlySafe coinControl:(DSCoinControl *_Nullable)coinControl minimumAmount:(uint64_t)minimumAmount maximumAmount:(uint64_t)maximumAmount minimumSumAmount:(uint64_t)minimumSumAmount maximumCount:(uint64_t)maximumCount {
+- (NSArray<DSInputCoin *> *)availableCoins:(WalletEx *)walletEx
+                                  onlySafe:(BOOL)onlySafe
+                               coinControl:(DSCoinControl *_Nullable)coinControl
+                             minimumAmount:(uint64_t)minimumAmount
+                             maximumAmount:(uint64_t)maximumAmount
+                          minimumSumAmount:(uint64_t)minimumSumAmount
+                              maximumCount:(uint64_t)maximumCount {
     NSMutableArray<DSInputCoin *> *vCoins = [NSMutableArray array];
     
     @synchronized(self) {
-        CoinType coinType = coinControl != nil ? coinControl.coinType : CoinType_AllCoins;
+        DCoinType coinType = coinControl != nil ? coinControl.coinType : dash_spv_coinjoin_models_coin_control_CoinType_AllCoins;
         
         uint64_t total = 0;
         // Either the WALLET_FLAG_AVOID_REUSE flag is not set (in which case we always allow), or we default to avoiding, and only in the case where a coin control object is provided, and has the avoid address reuse flag set to false, do we allow already used addresses
@@ -565,28 +566,29 @@ static dispatch_once_t managerChainToken = 0;
                 uint64_t value = output.amount;
                 BOOL found = NO;
                 
-                if (coinType == CoinType_OnlyFullyMixed) {
-                    if (!is_denominated_amount(value)) {
+                if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyFullyMixed) {
+                    
+                    if (!dash_spv_coinjoin_coinjoin_CoinJoin_is_denominated_amount(value)) {
                         continue;
                     }
                     
-                    found = is_fully_mixed(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i);
-                } else if (coinType == CoinType_OnlyReadyToMix) {
-                    if (!is_denominated_amount(value)) {
+                    DOutPoint *outpoint = DOutPointCtorU(wtxid, i);
+                    found = dash_spv_coinjoin_wallet_ex_WalletEx_check_if_is_fully_mixed(walletEx, outpoint);
+                } else if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyReadyToMix) {
+                    if (!dash_spv_coinjoin_coinjoin_CoinJoin_is_denominated_amount(value)) {
                         continue;
                     }
-                    
-                    found = !is_fully_mixed(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i);
-                } else if (coinType == CoinType_OnlyNonDenominated) {
-                    if (is_collateral_amount(value)) {
+                    DOutPoint *outpoint = DOutPointCtorU(wtxid, i);
+                    found = !dash_spv_coinjoin_wallet_ex_WalletEx_check_if_is_fully_mixed(walletEx, outpoint);
+                } else if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyNonDenominated) {
+                    if (dash_spv_coinjoin_coinjoin_CoinJoin_is_collateral_amount(value)) {
                         continue; // do not use collateral amounts
                     }
-                    
-                    found = !is_denominated_amount(value);
-                } else if (coinType == CoinType_OnlyMasternodeCollateral) {
+                    found = !dash_spv_coinjoin_coinjoin_CoinJoin_is_denominated_amount(value);
+                } else if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyMasternodeCollateral) {
                     found = value == 1000 * DUFFS;
-                } else if (coinType == CoinType_OnlyCoinJoinCollateral) {
-                    found = is_collateral_amount(value);
+                } else if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyCoinJoinCollateral) {
+                    found = dash_spv_coinjoin_coinjoin_CoinJoin_is_collateral_amount(value);
                 } else {
                     found = YES;
                 }
@@ -604,8 +606,8 @@ static dispatch_once_t managerChainToken = 0;
                 if (coinControl != nil && coinControl.hasSelected && !coinControl.allowOtherInputs && ![coinControl isSelected:utxo]) {
                     continue;
                 }
-                
-                if (is_locked_coin(walletEx, (uint8_t (*)[32])(wtxid.u8), (uint32_t)i) && coinType != CoinType_OnlyMasternodeCollateral) {
+                if (dash_spv_coinjoin_wallet_ex_WalletEx_is_locked_coin(walletEx, DOutPointCtorU(wtxid, i)) &&
+                    coinType != dash_spv_coinjoin_models_coin_control_CoinType_OnlyMasternodeCollateral) {
                     continue;
                 }
                 
@@ -868,15 +870,15 @@ static dispatch_once_t managerChainToken = 0;
     return YES;
 }
 
-- (DSSimplifiedMasternodeEntry *)masternodeEntryByHash:(UInt256)hash {
-    return [self.chain.chainManager.masternodeManager.currentMasternodeList masternodeForRegistrationHash:uint256_reverse(hash)];
+- (DMasternodeEntry *)masternodeEntryByHash:(UInt256)hash {
+    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_masternode_list_masternode_with_pro_reg_tx_hash(self.chain.sharedProcessorObj, dashcore_hash_types_ProTxHash_ctor(u256_ctor_u(uint256_reverse(hash))));
 }
 
-- (uint64_t)validMNCount {
-    return self.chain.chainManager.masternodeManager.currentMasternodeList.validMasternodeCount;
+- (uintptr_t)validMNCount {
+    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_valid_masternodes_count(self.chain.sharedProcessorObj);
 }
 
-- (DSMasternodeList *)mnList {
+- (DMasternodeList *)mnList {
     return self.chain.chainManager.masternodeManager.currentMasternodeList;
 }
 
@@ -928,7 +930,7 @@ static dispatch_once_t managerChainToken = 0;
     return self.cachedBlockHeight - self.cachedLastSuccessBlock < MIN_BLOCKS_TO_WAIT;
 }
 
-- (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
+- (DCoinJoinTransactionType *)coinJoinTxTypeForTransaction:(DSTransaction *)transaction {
     return [DSCoinJoinWrapper coinJoinTxTypeForTransaction:transaction];
 }
 
@@ -990,14 +992,42 @@ static dispatch_once_t managerChainToken = 0;
 
 // Events
 
-- (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined {
+- (void)onSessionStarted:(int32_t)baseId
+         clientSessionId:(UInt256)clientId
+            denomination:(uint32_t)denom
+               poolState:(DPoolState)state
+             poolMessage:(DPoolMessage)message
+              poolStatus:(DPoolStatus)status
+               ipAddress:(UInt128)address
+                isJoined:(BOOL)joined {
     DSLog(@"[%@] CoinJoin: onSessionStarted: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
-    [self.managerDelegate sessionStartedWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
+    [self.managerDelegate sessionStartedWithId:baseId
+                               clientSessionId:clientId
+                                  denomination:denom
+                                     poolState:state
+                                   poolMessage:message
+                                    poolStatus:status
+                                     ipAddress:address
+                                      isJoined:joined];
 }
 
-- (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined {
+- (void)onSessionComplete:(int32_t)baseId
+          clientSessionId:(UInt256)clientId
+             denomination:(uint32_t)denom
+                poolState:(DPoolState)state
+              poolMessage:(DPoolMessage)message
+               poolStatus:(DPoolStatus)status
+                ipAddress:(UInt128)address
+                 isJoined:(BOOL)joined {
     DSLog(@"[%@] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, status: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, status, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
-    [self.managerDelegate sessionCompleteWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
+    [self.managerDelegate sessionCompleteWithId:baseId
+                                clientSessionId:clientId
+                                   denomination:denom
+                                      poolState:state
+                                    poolMessage:message
+                                     poolStatus:status
+                                      ipAddress:address
+                                       isJoined:joined];
 }
 
 - (void)onMixingStarted:(nonnull NSArray *)statuses {
@@ -1010,18 +1040,18 @@ static dispatch_once_t managerChainToken = 0;
         [self stop];
     }
     
-    PoolStatus returnStatus = PoolStatus_ErrNotEnoughFunds;
+    DPoolStatus *returnStatus = NULL;
     BOOL isError = YES;
     
     for (NSNumber *statusNumber in statuses) {
-        PoolStatus status = [statusNumber intValue];
+        DPoolStatus *status = DPoolStatusFromIndex(statusNumber.intValue);
         if (![self isError:status]) {
             returnStatus = status;
             isError = NO;
             break;
         }
         
-        if (status != PoolStatus_ErrNotEnoughFunds) {
+        if (!dash_spv_coinjoin_messages_pool_status_PoolStatus_is_err_not_enough_funds(status)) {
             returnStatus = status;
         }
     }
@@ -1029,17 +1059,17 @@ static dispatch_once_t managerChainToken = 0;
     [self.managerDelegate mixingComplete:isError errorStatus:returnStatus isInterrupted:isInterrupted];
 }
 
-- (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type {
+- (void)onTransactionProcessed:(UInt256)txId type:(DCoinJoinTransactionType *)type {
 #if DEBUG
-    DSLog(@"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, uint256_reverse_hex(txId), type);
+    DSLog(@"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, uint256_reverse_hex(txId), DCoinJoinTransactionTypeIndex(type));
 #else
     DSLog(@"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, @"<REDACTED>", type);
 #endif
     [self.managerDelegate transactionProcessedWithId:txId type:type];
 }
 
-- (BOOL)isError:(PoolStatus)status {
-    return (status & 0x2000) != 0;
+- (BOOL)isError:(DPoolStatus *)status {
+    return (DPoolStatusValue(status) & 0x2000) != 0;
 }
 
 @end

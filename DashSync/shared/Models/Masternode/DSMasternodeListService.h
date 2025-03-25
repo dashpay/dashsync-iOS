@@ -18,8 +18,6 @@
 #import "DSChain.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeListRequest.h"
-#import "DSMasternodeListStore.h"
-#import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,59 +28,44 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@", peer.chain.uniqueID, FAULTY_DML_MASTERNODE_PEERS]
 #define MAX_FAULTY_DML_PEERS 1
 
-typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
-    DSMasternodeListRequestMode_MNLISTDIFF = 1,
-    DSMasternodeListRequestMode_QRINFO = 2,
-    DSMasternodeListRequestMode_MIXED = DSMasternodeListRequestMode_MNLISTDIFF | DSMasternodeListRequestMode_QRINFO
-};
-@class DSMasternodeListService;
-
-@protocol DSMasternodeListServiceDelegate <NSObject>
-
-- (DSMasternodeList *__nullable)masternodeListSerivceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-- (void)masternodeListSerivceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
-- (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
-
-@end
+@class DSPeer;
 
 @interface DSMasternodeListService : NSObject
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
-@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
-@property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *retrievalQueue;
-@property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *neededQueue; // TODO: Make storing hashes for tip list separately, to avoid
-@property (nonatomic, readonly) NSUInteger retrievalQueueCount;
-@property (nonatomic, readonly) NSUInteger retrievalQueueMaxAmount;
-@property (nullable, nonatomic, weak) id<DSMasternodeListServiceDelegate> delegate;
+//@property (nonatomic, readonly) NSOrderedSet<NSData *> *retrievalQueue;
+//@property (nonatomic, readonly) NSUInteger retrievalQueueCount;
+@property (nonatomic, readwrite) NSUInteger retrievalQueueMaxAmount;
 
 @property (nonatomic, assign) uint16_t timedOutAttempt;
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
 
-- (instancetype)initWithChain:(DSChain *)chain store:(DSMasternodeListStore *)store delegate:(id<DSMasternodeListServiceDelegate>)delegate;
+- (instancetype)initWithChain:(DSChain *)chain;
 
-- (void)populateRetrievalQueueWithBlockHashes:(NSOrderedSet *)blockHashes;
-- (void)getRecentMasternodeList;
 - (void)dequeueMasternodeListRequest;
 - (void)stop;
 
-- (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
-- (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;
-- (void)cleanAllLists;
-- (void)cleanListsRetrievalQueue;
-- (void)cleanRequestsInRetrieval;
-- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list;
+- (BOOL)peerIsDisconnected;
 
-- (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
-- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
+- (void)cleanAllLists;
+- (void)cleanRequestsInRetrieval;
+//- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list;
+
+//- (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
+
+//- (NSUInteger)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
+//- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
+- (void)cleanListsRetrievalQueue;
 - (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
 
-- (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash;
-
 - (void)disconnectFromDownloadPeer;
-- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
+//- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
 
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request;
+
+//- (void)checkWaitingForQuorums;
+- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
 
 @end
 

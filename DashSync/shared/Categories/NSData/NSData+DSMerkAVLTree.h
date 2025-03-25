@@ -15,19 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DSDAPIPlatformNetworkServiceProtocol.h"
+//#import "DSDAPIPlatformNetworkServiceProtocol.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSPlatformTreeQuery;
+//@class DSPlatformTreeQuery;
 
 @interface NSData (DSMerkAVLTree)
 
 /* executeProofReturnElementDictionary returns items from the proof that match the specific query, if no query is set all
  items are returned.
  */
-- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary query:(DSPlatformTreeQuery *_Nullable)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error;
+//- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary query:(DSPlatformTreeQuery *_Nullable)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error;
 
 @end
 

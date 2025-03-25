@@ -17,30 +17,31 @@
 
 #import <XCTest/XCTest.h>
 
-#import "dash_shared_core.h"
 #import "DashSync.h"
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSBlockchainIdentity.h"
+#import "DSIdentity.h"
+#import "DSChain+Checkpoint.h"
 #import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSKeyManager.h"
 #import "DSTransactionManager.h"
-#import "DSWallet.h"
+#import "DSWallet+Tests.h"
 #import "NSData+Encryption.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSTestnetE2ETests : XCTestCase
 @property (strong, nonatomic) DSChain *chain;
-@property (assign, nonatomic) ECDSAKey *sweepKey;
+@property (assign, nonatomic) DMaybeECDSAKey *sweepKey;
 @property (strong, nonatomic) DSTransactionManager *transactionManager;
 @property (strong, nonatomic) DSIdentitiesManager *identitiesManager;
 @property (strong, nonatomic) DSWallet *faucetWallet;
 @property (strong, nonatomic) DSWallet *testWallet1;
 @property (strong, nonatomic) DSWallet *testWallet2;
-@property (strong, nonatomic) DSWallet *blockchainIdentityWallet;
+@property (strong, nonatomic) DSWallet *identityWallet;
 @property (strong, nonatomic) DSAccount *fundingAccount1;
 @property (strong, nonatomic) DSAccount *fundingAccount2;
 @property (strong, nonatomic) id blocksObserver, txStatusObserver;
@@ -52,7 +53,7 @@
 
 - (void)dealloc {
     if (self.sweepKey != NULL)
-        processor_destroy_ecdsa_key(self.sweepKey);
+        DMaybeECDSAKeyDtor(self.sweepKey);
 }
 
 - (void)setUp {
@@ -60,8 +61,11 @@
     // this will only be run once before all tests
     uint8_t seed[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     NSData *seedData = [NSData dataWithBytes:seed length:12];
+    Slice_u8 *seed_slice = slice_ctor(seedData);
     
-    self.sweepKey = key_ecdsa_with_seed_data(seedData.bytes, seedData.length);
+    
+    self.sweepKey = DECDSAKeyFromSeedData(seed_slice);
+//    self.sweepKey = key_ecdsa_with_seed_data(seedData.bytes, seedData.length);
     self.transactionManager = self.chain.chainManager.transactionManager;
     self.identitiesManager = self.chain.chainManager.identitiesManager;
 
@@ -195,9 +199,12 @@
 }
 
 - (void)testDSendTransactionToKey {
-    char *c_address = address_for_ecdsa_key(self.sweepKey, self.chain.chainType);
+    
+    char *c_address = DECDSAKeyPubAddress(self.sweepKey->ok, self.chain.chainType);
+    
+//    char *c_address = address_for_ecdsa_key(self.sweepKey, self.chain.chainType);
     NSString *addressToSendTo = [NSString stringWithUTF8String:c_address];
-    processor_destroy_string(c_address);
+    DCharDtor(c_address);
     DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:addressToSendTo onChain:self.chain];
     paymentRequest.amount = 10000;
     DSPaymentProtocolRequest *protocolRequest = paymentRequest.protocolRequest;
@@ -229,9 +236,10 @@
     XCTestExpectation *transactionFinishedExpectation = [[XCTestExpectation alloc] init];
     // we need to wait a few seconds for the transaction to propagate on the network
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        char *c_string = key_ecdsa_serialized_private_key_for_chain(self.sweepKey, self.chain.chainType);
+        uint8_t priv_key_script = dash_spv_crypto_network_chain_type_ChainType_script_priv_key(self.chain.chainType);
+        char *c_string = DECDSAKeySerializedPrivateKey(self.sweepKey->ok, priv_key_script);
         NSString *stringKey = [NSString stringWithUTF8String:c_string];
-        processor_destroy_string(c_string);
+        DCharDtor(c_string);
         [self.fundingAccount1 sweepPrivateKey:stringKey
                                       withFee:YES
                                    completion:^(DSTransaction *_Nonnull sweepTransaction, uint64_t fee, NSError *_Null_unspecified error) {
@@ -257,24 +265,24 @@
     NSString *username1a = [NSString stringWithFormat:@"CIIOSTestUser1a%llu", (uint64_t)[NSDate timeIntervalSince1970]];
     NSString *username1b = [NSString stringWithFormat:@"CIIOSTestUser1b%llu", (uint64_t)[NSDate timeIntervalSince1970]];
     NSString *username2a = [NSString stringWithFormat:@"CIIOSTestUser2a%llu", (uint64_t)[NSDate timeIntervalSince1970]];
-    DSBlockchainIdentity *blockchainIdentity1a = [self.testWallet1 createBlockchainIdentityForUsername:username1a usingDerivationIndex:0];
-    DSBlockchainIdentity *blockchainIdentity1b = [self.testWallet1 createBlockchainIdentityForUsername:username1b usingDerivationIndex:1];
+    DSIdentity *identity1a = [self.testWallet1 createIdentityForUsername:username1a usingDerivationIndex:0];
+    DSIdentity *identity1b = [self.testWallet1 createIdentityForUsername:username1b usingDerivationIndex:1];
 
-    DSBlockchainIdentity *blockchainIdentity2a = [self.testWallet2 createBlockchainIdentityForUsername:username2a];
+    DSIdentity *identity2a = [self.testWallet2 createIdentityForUsername:username2a];
 
-    DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername;
+    DSIdentityRegistrationStep steps = DSIdentityRegistrationStep_RegistrationStepsWithUsername;
     XCTestExpectation *identityRegistrationFinishedExpectation1a = [[XCTestExpectation alloc] init];
-    [blockchainIdentity1a generateBlockchainIdentityExtendedPublicKeysWithPrompt:@""
+    [identity1a generateIdentityExtendedPublicKeysWithPrompt:@""
                                                                       completion:^(BOOL registered) {
-        [blockchainIdentity1a createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+        [identity1a createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
             if (success && !cancelled) {
-                [blockchainIdentity1a registerOnNetwork:steps
+                [identity1a registerOnNetwork:steps
                                      withFundingAccount:self.fundingAccount1
                                          forTopupAmount:10000
                                               pinPrompt:@"PIN?"
-                                         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
-                                             completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    XCTAssertNil(error, @"There should not be an error");
+                                         stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
+                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    XCTAssertTrue(![errors count], @"There should not be an error");
                     XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [identityRegistrationFinishedExpectation1a fulfill];
@@ -285,16 +293,16 @@
     }];
     [self waitForExpectations:@[identityRegistrationFinishedExpectation1a] timeout:600];
     XCTestExpectation *identityRegistrationFinishedExpectation1b = [[XCTestExpectation alloc] init];
-    [blockchainIdentity1b generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"" completion:^(BOOL registered) {
-        [blockchainIdentity1b createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+    [identity1b generateIdentityExtendedPublicKeysWithPrompt:@"" completion:^(BOOL registered) {
+        [identity1b createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
             if (success && !cancelled) {
-                [blockchainIdentity1b registerOnNetwork:steps
+                [identity1b registerOnNetwork:steps
                                      withFundingAccount:self.fundingAccount1
                                          forTopupAmount:10000
                                               pinPrompt:@"PIN?"
-                                         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
-                                             completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    XCTAssertNil(error, @"There should not be an error");
+                                         stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
+                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    XCTAssertTrue(![errors count], @"There should not be an error");
                     XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [identityRegistrationFinishedExpectation1b fulfill];
@@ -305,16 +313,16 @@
     }];
     [self waitForExpectations:@[identityRegistrationFinishedExpectation1b] timeout:600];
     XCTestExpectation *identityRegistrationFinishedExpectation2a = [[XCTestExpectation alloc] init];
-    [blockchainIdentity2a generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"" completion:^(BOOL registered) {
-        [blockchainIdentity2a createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+    [identity2a generateIdentityExtendedPublicKeysWithPrompt:@"" completion:^(BOOL registered) {
+        [identity2a createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
             if (success && !cancelled) {
-                [blockchainIdentity2a registerOnNetwork:steps
+                [identity2a registerOnNetwork:steps
                                      withFundingAccount:self.fundingAccount1
                                          forTopupAmount:10000
                                               pinPrompt:@"PIN?"
-                                         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {}
-                                             completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                    XCTAssertNil(error, @"There should not be an error");
+                                         stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
+                                             completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                    XCTAssertTrue(![errors count], @"There should not be an error");
                     XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [identityRegistrationFinishedExpectation2a fulfill];
@@ -327,19 +335,19 @@
 }
 
 - (void)testGSendAndAcceptContactRequestSameWallet {
-    NSArray *blockchainIdentities = [self.testWallet1.blockchainIdentities allValues];
-    XCTAssert(blockchainIdentities.count > 1, @"There should be at least 2 identities");
-    DSBlockchainIdentity *identityA = blockchainIdentities.firstObject;
-    DSBlockchainIdentity *identityB = blockchainIdentities.lastObject;
+    NSArray *identities = [self.testWallet1.identities allValues];
+    XCTAssert(identities.count > 1, @"There should be at least 2 identities");
+    DSIdentity *identityA = identities.firstObject;
+    DSIdentity *identityB = identities.lastObject;
 
     XCTAssert(identityA != identityB, @"There should be at least 2 identities");
 
     XCTestExpectation *friendshipFinishedExpectation = [[XCTestExpectation alloc] init];
-    [identityA sendNewFriendRequestToBlockchainIdentity:identityB
+    [identityA sendNewFriendRequestToIdentity:identityB
                                              completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
                                                  XCTAssert(success, @"This must succeed");
                                                  XCTAssertEqualObjects(errors, @[], @"There should be no errors");
-                                                 [identityB sendNewFriendRequestToBlockchainIdentity:identityA
+                                                 [identityB sendNewFriendRequestToIdentity:identityA
                                                                                           completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
                                                                                               XCTAssert(success, @"This must succeed");
                                                                                               XCTAssertEqualObjects(errors, @[], @"There should be no errors");
@@ -350,18 +358,18 @@
 }
 
 - (void)testHSendAndAcceptContactRequestDifferentWallet {
-    DSBlockchainIdentity *identityA = self.testWallet1.blockchainIdentities.allValues.firstObject;
-    DSBlockchainIdentity *identityB = self.testWallet2.blockchainIdentities.allValues.firstObject;
+    DSIdentity *identityA = self.testWallet1.identities.allValues.firstObject;
+    DSIdentity *identityB = self.testWallet2.identities.allValues.firstObject;
     XCTAssert(identityA != nil, @"Identity A must exist");
     XCTAssert(identityB != nil, @"Identity B must exist");
     XCTAssert(identityA != identityB, @"There should be at least 2 identities");
 
     XCTestExpectation *friendshipFinishedExpectation = [[XCTestExpectation alloc] init];
-    [identityA sendNewFriendRequestToBlockchainIdentity:identityB
+    [identityA sendNewFriendRequestToIdentity:identityB
                                              completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
                                                  XCTAssert(success, @"This must succeed");
                                                  XCTAssertEqualObjects(errors, @[], @"There should be no errors");
-                                                 [identityB sendNewFriendRequestToBlockchainIdentity:identityA
+                                                 [identityB sendNewFriendRequestToIdentity:identityA
                                                                                           completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
                                                                                               XCTAssert(success, @"This must succeed");
                                                                                               XCTAssertEqualObjects(errors, @[], @"There should be no errors");
@@ -372,10 +380,10 @@
 }
 
 - (void)testISendDashpayPaymentSameWallet {
-    NSArray *blockchainIdentities = [self.testWallet1.blockchainIdentities allValues];
-    XCTAssert(blockchainIdentities.count > 1, @"There should be at least 2 identities");
-    DSBlockchainIdentity *identityA = blockchainIdentities.firstObject;
-    DSBlockchainIdentity *identityB = blockchainIdentities.lastObject;
+    NSArray *identities = [self.testWallet1.identities allValues];
+    XCTAssert(identities.count > 1, @"There should be at least 2 identities");
+    DSIdentity *identityA = identities.firstObject;
+    DSIdentity *identityB = identities.lastObject;
 
     XCTAssert(identityA != identityB, @"There should be at least 2 identities");
 
@@ -413,8 +421,8 @@
 }
 
 - (void)testJSendDashpayPaymentDifferentWallet {
-    DSBlockchainIdentity *identityA = self.testWallet1.blockchainIdentities.allValues.firstObject;
-    DSBlockchainIdentity *identityB = self.testWallet2.blockchainIdentities.allValues.firstObject;
+    DSIdentity *identityA = self.testWallet1.identities.allValues.firstObject;
+    DSIdentity *identityB = self.testWallet2.identities.allValues.firstObject;
 
     XCTAssert(identityA != nil, @"Identity A must exist");
     XCTAssert(identityB != nil, @"Identity B must exist");

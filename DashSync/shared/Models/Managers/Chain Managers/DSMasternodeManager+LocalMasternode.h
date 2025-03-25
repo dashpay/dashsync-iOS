@@ -16,7 +16,7 @@
 //
 
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 #import "DSDerivationPath.h"
 #import "DSLocalMasternode.h"
 #import "DSMasternodeManager.h"
@@ -57,17 +57,20 @@ NS_ASSUME_NONNULL_BEGIN
                                        fundsWalletIndex:(uint32_t)fundsWalletIndex
                                        inOperatorWallet:(DSWallet *_Nullable)operatorWallet
                                     operatorWalletIndex:(uint32_t)operatorWalletIndex
-                                      operatorPublicKey:(OpaqueKey *)operatorPublicKey
+                                      operatorPublicKey:(DOpaqueKey *)operatorPublicKey
                                           inOwnerWallet:(DSWallet *_Nullable)ownerWallet
                                        ownerWalletIndex:(uint32_t)ownerWalletIndex
-                                        ownerPrivateKey:(OpaqueKey *)ownerPrivateKey
+                                        ownerPrivateKey:(DOpaqueKey *)ownerPrivateKey
                                          inVotingWallet:(DSWallet *_Nullable)votingWallet
                                       votingWalletIndex:(uint32_t)votingWalletIndex
-                                              votingKey:(OpaqueKey *)votingKey
+                                              votingKey:(DOpaqueKey *)votingKey
                                    inPlatformNodeWallet:(DSWallet *_Nullable)platformNodeWallet platformNodeWalletIndex:(uint32_t)platformNodeWalletIndex
-                                        platformNodeKey:(OpaqueKey *)platformNodeKey;
+                                        platformNodeKey:(DOpaqueKey *)platformNodeKey;
 - (DSLocalMasternode *_Nullable)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)providerRegistrationTransaction save:(BOOL)save;
-- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
+- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DMasternodeEntry *)simplifiedMasternodeEntry
+                                             claimedWithOwnerWallet:(DSWallet *)wallet
+                                                      ownerKeyIndex:(uint32_t)ownerKeyIndex
+                                                            onChain:(DSChain *)chain;
 - (DSLocalMasternode *_Nullable)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash;
 - (DSLocalMasternode *_Nullable)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath *)derivationPath;
 - (NSArray<DSLocalMasternode *> *_Nullable)localMasternodesPreviouslyUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath *)derivationPath;

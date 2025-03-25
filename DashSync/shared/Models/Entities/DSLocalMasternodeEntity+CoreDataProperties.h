@@ -24,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) uint32_t votingKeysIndex;
 @property (assign, nonatomic) uint32_t holdingKeysIndex;
 @property (nullable, nonatomic, retain) DSProviderRegistrationTransactionEntity *providerRegistrationTransaction;
-@property (nullable, nonatomic, retain) DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntry;
 @property (nullable, nonatomic, retain) NSOrderedSet<DSProviderUpdateRegistrarTransactionEntity *> *providerUpdateRegistrarTransactions;
 @property (nullable, nonatomic, retain) NSOrderedSet<DSProviderUpdateServiceTransactionEntity *> *providerUpdateServiceTransactions;
 @property (nullable, nonatomic, retain) NSOrderedSet<DSProviderUpdateRevocationTransactionEntity *> *providerUpdateRevocationTransactions;

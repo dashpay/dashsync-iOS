@@ -28,8 +28,8 @@
 
 #import "DSPeer.h"
 #import "DSAddrRequest.h"
-#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLock.h"
@@ -48,7 +48,6 @@
 #import "DSInstantSendTransactionLock.h"
 #import "DSInvRequest.h"
 #import "DSKeyManager.h"
-#import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
 #import "DSNotFoundRequest.h"
 #import "DSOptionsManager.h"
@@ -56,7 +55,6 @@
 #import "DSPeerManager.h"
 #import "DSPingRequest.h"
 #import "DSReachabilityManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSSpork.h"
 #import "DSSporkManager.h"
 #import "DSTransaction.h"
@@ -89,7 +87,7 @@
 #define HEADER_LENGTH 24
 #define MAX_MSG_LENGTH 0x02000000
 #define CONNECT_TIMEOUT 3.0
-#define MEMPOOL_TIMEOUT 3.0
+#define MEMPOOL_TIMEOUT 5.0
 
 #define LOCK(lock) dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
 #define UNLOCK(lock) dispatch_semaphore_signal(lock);
@@ -144,9 +142,9 @@
     return [[self alloc] initWithHost:host onChain:chain];
 }
 
-+ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
-}
+//+ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
+//    return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
+//}
 
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
@@ -158,9 +156,9 @@
     return self;
 }
 
-- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    return [self initWithAddress:simplifiedMasternodeEntry.address andPort:simplifiedMasternodeEntry.port onChain:simplifiedMasternodeEntry.chain];
-}
+//- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
+//    return [self initWithAddress:simplifiedMasternodeEntry.address andPort:simplifiedMasternodeEntry.port onChain:simplifiedMasternodeEntry.chain];
+//}
 
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain *)chain {
     if (!chain) return nil;
@@ -1117,9 +1115,10 @@
     }
 #endif
 
+    //    [Testnet: 80.209.232.96:19999] got inv with 1 item (first item Block with hash fae11efe0d3bb7a96104e765b93251f98f3546805aae5755340b1ce4b4000000/000000b4e41c0b345557ae5a8046358ff95132b965e70461a9b73b0dfe1ee1fa)
     if (blockHashes.count == 1 && [self.lastBlockHash isEqual:blockHashes[0]]) [blockHashes removeAllObjects];
     if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];
-
+    
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
         [self dispatchAsyncInDelegateQueue:^{
             [self.knownBlockHashes unionOrderedSet:blockHashes];
@@ -1146,42 +1145,32 @@
     if (instantSendLockHashes.count > 0) {
         for (NSValue *hash in instantSendLockHashes) {
             UInt256 h;
-
             if (![self.knownInstantSendLockHashes containsObject:hash]) continue;
             [hash getValue:&h];
         }
-
         [instantSendLockHashes minusOrderedSet:self.knownInstantSendLockHashes];
         [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockHashes:instantSendLockHashes];
         }];
-
         [self.knownInstantSendLockHashes unionOrderedSet:instantSendLockHashes];
     }
     
     if (instantSendLockDHashes.count > 0) {
         for (NSValue *hash in instantSendLockDHashes) {
             UInt256 h;
-
             if (![self.knownInstantSendLockDHashes containsObject:hash]) continue;
             [hash getValue:&h];
         }
-
         [instantSendLockDHashes minusOrderedSet:self.knownInstantSendLockDHashes];
-
         [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockDHashes:instantSendLockDHashes];
         }];
-
         [self.knownInstantSendLockDHashes unionOrderedSet:instantSendLockDHashes];
     }
-
-
 
     if (chainLockHashes.count > 0) {
         for (NSValue *hash in chainLockHashes) {
             UInt256 h;
-
             if (![self.knownChainLockHashes containsObject:hash]) continue;
             [hash getValue:&h];
         }
@@ -1190,7 +1179,6 @@
         [self dispatchAsyncInDelegateQueue:^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasChainLockHashes:chainLockHashes];
         }];
-
         [self.knownChainLockHashes unionOrderedSet:chainLockHashes];
     }
 

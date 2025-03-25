@@ -15,10 +15,10 @@
 //  limitations under the License.
 //
 
+#import "DSChain+Params.h"
 #import "DSDashPlatform.h"
 #import "DPContract.h"
 #import "DSChain.h"
-#import "DSDAPIPlatformNetworkService.h"
 
 @interface DSDashPlatform ()
 
@@ -26,7 +26,7 @@
 @property (strong, nonatomic, null_resettable) NSMutableDictionary *knownContracts;
 @property (strong, nonatomic) DPContract *dashPayContract;
 @property (strong, nonatomic) DPContract *dpnsContract;
-@property (strong, nonatomic) DPContract *dashThumbnailContract;
+//@property (strong, nonatomic) DPContract *dashThumbnailContract;
 
 @end
 
@@ -61,11 +61,6 @@ static dispatch_once_t platformChainToken = 0;
     return platformForChain;
 }
 
-- (DPDocumentFactory *)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity forContract:(DPContract *)contract {
-    DPDocumentFactory *documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
-    return documentFactory;
-}
-
 + (NSString *)nameForContractWithIdentifier:(NSString *)identifier {
     if ([identifier hasPrefix:DASHPAY_CONTRACT]) {
         return @"DashPay";
@@ -79,7 +74,7 @@ static dispatch_once_t platformChainToken = 0;
 
 - (NSMutableDictionary *)knownContracts {
     if (!_knownContracts) {
-        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract], [self dashThumbnailContract]] forKeys:@[DASHPAY_CONTRACT, DPNS_CONTRACT, DASHTHUMBNAIL_CONTRACT]];
+        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract]/*, [self dashThumbnailContract]*/] forKeys:@[DASHPAY_CONTRACT, DPNS_CONTRACT/*, DASHTHUMBNAIL_CONTRACT*/]];
     }
     return _knownContracts;
 }
@@ -98,11 +93,19 @@ static dispatch_once_t platformChainToken = 0;
     return _dpnsContract;
 }
 
-- (DPContract *)dashThumbnailContract {
-    if (!_dashThumbnailContract) {
-        _dashThumbnailContract = [DPContract localDashThumbnailContractForChain:self.chain];
-    }
-    return _dashThumbnailContract;
+- (DDataContract *)dashPayRawContract {
+    return [self dashPayContract].raw_contract;
 }
+
+- (DDataContract *)dpnsRawContract {
+    return [self dpnsContract].raw_contract;
+}
+
+//- (DPContract *)dashThumbnailContract {
+//    if (!_dashThumbnailContract) {
+//        _dashThumbnailContract = [DPContract localDashThumbnailContractForChain:self.chain];
+//    }
+//    return _dashThumbnailContract;
+//}
 
 @end

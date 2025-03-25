@@ -17,7 +17,8 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
+#import "DSCoinJoinWrapper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,11 +36,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t feeRate;
 @property (nonatomic, assign) uint64_t discardFeeRate;
 @property (nonatomic, strong) NSNumber *confirmTarget;
-@property (nonatomic, assign) CoinType coinType;
+@property (nonatomic, assign) DCoinType coinType;
 @property (nonatomic, strong) NSMutableOrderedSet *setSelected;
 @property (nonatomic, strong) NSString *destChange;
 
-- (instancetype)initWithFFICoinControl:(CoinControl *)coinControl chainType:(ChainType)chainType;
+- (instancetype)initWithFFICoinControl:(DCoinControl *)coinControl
+                             chainType:(DChainType *)chainType;
 
 - (BOOL)hasSelected;
 - (BOOL)isSelected:(DSUTXO)utxo;

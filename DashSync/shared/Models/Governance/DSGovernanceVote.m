@@ -5,14 +5,13 @@
 //  Created by Sam Westrich on 6/12/18.
 //
 
+#import "dash_spv_apple_bindings.h"
 #import "DSGovernanceVote.h"
 #import "DSChain.h"
+#import "DSChain+Params.h"
 #import "DSChainsManager.h"
-#import "DSKeyManager.h"
 #import "DSMasternodeManager.h"
 #import "DSPeerManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
-#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -20,7 +19,7 @@
 
 @interface DSGovernanceVote ()
 
-@property (nonatomic, strong) DSSimplifiedMasternodeEntry *masternode;
+@property (nonatomic, assign) DMasternodeEntry *masternode;
 @property (nonatomic, assign) DSGovernanceVoteOutcome outcome;
 @property (nonatomic, assign) DSGovernanceVoteSignal signal;
 @property (nonatomic, assign) NSTimeInterval createdAt;
@@ -138,18 +137,12 @@
     return self;
 }
 
-- (DSSimplifiedMasternodeEntry *)masternode {
-    if (!_masternode) {
-        /// WTF? old fields ?
-       self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@", [NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash], @(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
-    }
-    return _masternode;
-}
-
-- (void)signWithKey:(OpaqueKey *)key {
+- (void)signWithKey:(DOpaqueKey *)key {
     NSParameterAssert(key);
     // ECDSA
-    self.signature = [DSKeyManager NSDataFrom:key_ecdsa_sign(key->ecdsa, self.governanceVoteHash.u8, 32)];
+    Slice_u8 *slice = slice_u256_ctor_u(self.governanceVoteHash);
+    Vec_u8 *result = DECDSAKeySign(key->ecdsa, slice);
+    self.signature = [DSKeyManager NSDataFrom:result];
 }
 
 - (BOOL)isValid {

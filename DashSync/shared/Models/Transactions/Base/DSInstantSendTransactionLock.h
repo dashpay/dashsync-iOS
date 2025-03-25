@@ -7,24 +7,25 @@
 
 #import "BigIntTypes.h"
 #import "DSChain.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSSimplifiedMasternodeEntry, DSQuorumEntry, DSMasternodeList;
+@class DSChain;
 
 @interface DSInstantSendTransactionLock : NSObject
 
 @property (nonatomic, readonly) uint8_t version;
 @property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) UInt256 transactionHash;
-@property (nonatomic, readonly) UInt768 signature;
-@property (nonatomic, readonly) NSArray *inputOutpoints;
-@property (nonatomic, readonly) UInt256 cycleHash;
+@property (nonatomic, readonly) DInstantLock *lock;
+
+@property (nonatomic, readonly) NSData *transactionHashData;
+@property (nonatomic, readonly) NSData *signatureData;
+@property (nonatomic, readonly) NSData *cycleHashData;
+
 @property (nonatomic, readonly) BOOL signatureVerified; //verifies the signature and quorum together
-@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
 @property (nonatomic, readonly) BOOL saved;
-@property (nonatomic, readonly) UInt256 requestID;
 
 @property (nonatomic, readonly, getter=isDeterministic) BOOL deterministic;
 
@@ -39,9 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)instantSendTransactionLockWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain;
 
-- (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray *)inputOutpoints signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain;
-
-- (DSQuorumEntry *_Nullable)findSigningQuorumReturnMasternodeList:(DSMasternodeList *_Nullable *_Nullable)returnMasternodeList;
+- (instancetype)initWithTransactionHash:(NSData *)transactionHash
+                     withInputOutpoints:(NSArray *)inputOutpoints
+                                version:(uint8_t)version
+                              signature:(NSData *)signature
+                              cycleHash:(NSData *)cycleHash
+                      signatureVerified:(BOOL)signatureVerified
+                         quorumVerified:(BOOL)quorumVerified
+                                onChain:(DSChain *)chain;
 
 @end
 

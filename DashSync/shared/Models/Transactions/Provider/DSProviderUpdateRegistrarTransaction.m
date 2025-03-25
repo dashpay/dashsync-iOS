@@ -6,6 +6,7 @@
 //
 
 #import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSChain+Transaction.h"
 #import "DSChainManager.h"
 #import "DSLocalMasternode.h"
 #import "DSMasternodeManager.h"
@@ -136,20 +137,35 @@
     return [self payloadDataForHash].SHA256_2;
 }
 
-- (BOOL)checkPayloadSignature:(OpaqueKey *)providerOwnerPublicKey {
-    return key_check_payload_signature(providerOwnerPublicKey, self.providerRegistrationTransaction.ownerKeyHash.u8);
+- (BOOL)checkPayloadSignature:(DOpaqueKey *)providerOwnerPublicKey {
+    u160 *owner_key_hash = u160_ctor_u(self.providerRegistrationTransaction.ownerKeyHash);
+    BOOL result = DOpaqueKeyCheckPayloadSignature(providerOwnerPublicKey, owner_key_hash);
+    return result;
 }
 
 - (BOOL)checkPayloadSignature {
     NSData *signature = self.payloadSignature;
     NSData *payload = [self payloadDataForHash];
-    return key_ecdsa_verify_compact_sig(signature.bytes, signature.length, payload.bytes, payload.length, self.providerRegistrationTransaction.ownerKeyHash.u8);
+    Slice_u8 *slice = slice_ctor(signature);
+    u256 *digest = u256_ctor(payload);
+    DMaybeECDSAKey *result = DECDSAKeyWithCompactSig(slice, digest);
+    if (!result->ok) {
+        DMaybeECDSAKeyDtor(result);
+        return NO;
+    } else {
+        u160 *hashed = DECDSAKeyPublicKeyHash(result->ok);
+        BOOL verified = uint160_eq(self.providerRegistrationTransaction.ownerKeyHash, u160_cast(hashed));
+        DMaybeECDSAKeyDtor(result);
+        return verified;
+    }
 }
 
-- (void)signPayloadWithKey:(OpaqueKey *)privateKey {
+- (void)signPayloadWithKey:(DOpaqueKey *)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
-    self.payloadSignature = [DSKeyManager NSDataFrom:key_ecdsa_compact_sign(privateKey->ecdsa, [self payloadHash].u8)];;
+    Arr_u8_65 *sig = DECDSAKeyCompactSign(privateKey->ecdsa, slice_u256_ctor_u([self payloadHash]));
+    self.payloadSignature = NSDataFromPtr(sig);
+    Arr_u8_65_destroy(sig);
 }
 
 - (NSData *)basePayloadData {

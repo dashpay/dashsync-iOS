@@ -16,16 +16,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "dash_shared_core.h"
+#import "dash_spv_apple_bindings.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Encryption)
 
-- (nullable NSData *)encryptWithSecretKey:(OpaqueKey *)secretKey forPublicKey:(OpaqueKey *)peerPubKey;
-- (nullable NSData *)encryptWithSecretKey:(OpaqueKey *)secretKey forPublicKey:(OpaqueKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector;
-- (nullable NSData *)decryptWithSecretKey:(OpaqueKey *)secretKey fromPublicKey:(OpaqueKey *)peerPubKey;
-- (nullable NSData *)encryptWithDHKey:(OpaqueKey *)dhKey;
+- (nullable NSData *)encryptWithSecretKey:(DOpaqueKey *)secretKey forPublicKey:(DOpaqueKey *)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DOpaqueKey *)secretKey forPublicKey:(DOpaqueKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector;
+- (nullable NSData *)decryptWithSecretKey:(DOpaqueKey *)secretKey fromPublicKey:(DOpaqueKey *)peerPubKey;
+- (nullable NSData *)encryptWithDHKey:(DOpaqueKey *)dhKey;
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys;
 - (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<NSValue *> *)keys;
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<NSValue *> *)keys usingInitializationVector:(NSData *)initializationVector;

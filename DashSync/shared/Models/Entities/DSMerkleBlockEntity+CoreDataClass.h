@@ -26,7 +26,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSChainEntity, DSBlock, DSChain, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSQuorumSnapshotEntity, DSChainLockEntity;
+@class DSChainEntity, DSBlock, DSChain, DSMerkleBlock, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,12 +40,17 @@ NS_ASSUME_NONNULL_BEGIN
 + (DSMerkleBlockEntity *)blockWithHash:(UInt256)hash onChainEntity:(DSChainEntity *)chainEntity;
 + (void)deleteBlocksOnChainEntity:(DSChainEntity *)chainEntity;
 
-+ (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context;
-+ (instancetype)merkleBlockEntityForBlockHashFromCheckpoint:(UInt256)blockHash chain:(DSChain *)chain inContext:(NSManagedObjectContext *)context;
-+ (instancetype)createMerkleBlockEntityForBlockHash:(UInt256)blockHash
++ (instancetype)merkleBlockEntityForBlockHash:(NSData *)blockHash inContext:(NSManagedObjectContext *)context;
++ (instancetype)merkleBlockEntityForBlockHashFromCheckpoint:(UInt256)blockHash
+                                                      chain:(DSChain *)chain
+                                                  inContext:(NSManagedObjectContext *)context;
++ (instancetype)createMerkleBlockEntityForBlockHash:(NSData *)blockHash
                                         blockHeight:(uint32_t)blockHeight
                                         chainEntity:(DSChainEntity *)chainEntity
                                           inContext:(NSManagedObjectContext *)context;
+
++ (BOOL)hasBlocksWithHash:(UInt256)blockHash
+                inContext:(NSManagedObjectContext *)context;
 
 @end
 

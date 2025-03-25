@@ -12,7 +12,10 @@
 
 @implementation DSAccountEntity
 
-+ (DSAccountEntity *_Nonnull)accountEntityForWalletUniqueID:(NSString *)walletUniqueID index:(uint32_t)index onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context {
++ (DSAccountEntity *_Nonnull)accountEntityForWalletUniqueID:(NSString *)walletUniqueID
+                                                      index:(uint32_t)index
+                                                    onChain:(DSChain *)chain
+                                                  inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(walletUniqueID);
     NSParameterAssert(chain);
     NSParameterAssert(context);

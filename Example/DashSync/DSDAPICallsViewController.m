@@ -34,17 +34,17 @@
 }
 
 - (void)getBestBlockHeight:(id)sender {
-    [self.chainManager.DAPIClient.DAPIPlatformNetworkService
-        getBestBlockHeightSuccess:^(NSNumber *_Nonnull blockHeight) {
-            [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", blockHeight]
-                                                        center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
-                                      popOutAfterDelay:2.0]];
-        }
-        failure:^(NSError *_Nonnull error) {
-            [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
-                                                        center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
-                                      popOutAfterDelay:2.0]];
-        }];
+//    [self.chainManager.DAPIClient.DAPIPlatformNetworkService
+//        getBestBlockHeightSuccess:^(NSNumber *_Nonnull blockHeight) {
+//            [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", blockHeight]
+//                                                        center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
+//                                      popOutAfterDelay:2.0]];
+//        }
+//        failure:^(NSError *_Nonnull error) {
+//            [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
+//                                                        center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
+//                                      popOutAfterDelay:2.0]];
+//        }];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

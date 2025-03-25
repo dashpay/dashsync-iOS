@@ -54,7 +54,7 @@
 }
 
 - (void)setupChacha {
-    [self setupDevnetWithId:DevnetType_Chacha
+    [self setupDevnetWithId:dash_spv_crypto_network_chain_type_DevnetType_Chacha_ctor()
                sporkAddress:@"ybiRzdGWFeijAgR7a8TJafeNi6Yk6h68ps"
             sporkPrivateKey:@"cPTms6Sd7QuhPWXWQSzMbvg2VbEPsWCsLBbR4PBgvfYRzAPazbt3"
          minProtocolVersion:70225
@@ -85,7 +85,8 @@
 
 
 - (void)setup333 {
-    [self setupDevnetWithId:DevnetType_Devnet333
+    
+    [self setupDevnetWithId:dash_spv_crypto_network_chain_type_DevnetType_Devnet333_ctor()
                sporkAddress:@"yM6zJAMWoouAZxPvqGDbuHb6BJaD6k4raQ"
             sporkPrivateKey:@"cQnP9JNQp6oaZrvBtqBWRMeQERMkDyuXyvQh1qaph4FdP6cT2cVa"
          minProtocolVersion:70221
@@ -109,7 +110,7 @@
 
 
 - (void)setupJackDaniels {
-    [self setupDevnetWithId:DevnetType_JackDaniels
+    [self setupDevnetWithId:dash_spv_crypto_network_chain_type_DevnetType_JackDaniels_ctor()
                sporkAddress:@"yYBanbwp2Pp2kYWqDkjvckY3MosuZzkKp7"
             sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"
          minProtocolVersion:70219
@@ -156,7 +157,7 @@
 }
 
 - (void)setupMojito {
-    [self setupDevnetWithId:DevnetType_Mojito
+    [self setupDevnetWithId:dash_spv_crypto_network_chain_type_DevnetType_Mojito_ctor()
                    sporkAddress:@"yXePLfsnJHGbM2LAWcxXaJaixX4qKs38g1"
                 sporkPrivateKey:@"cS4ikCxcqorwKuGNxMfpX8paBqSjnQsqMuM8YjLvSZZd6gcp7WQg"
              minProtocolVersion:70225
@@ -186,7 +187,7 @@
 }
 
 - (void)setupWhiteRussian {
-    [self setupDevnetWithId:DevnetType_WhiteRussian
+    [self setupDevnetWithId:dash_spv_crypto_network_chain_type_DevnetType_WhiteRussian_ctor()
                    sporkAddress:@"yZaEFuVfaycMzvQbHH7dgbDPJ6F2AGLqzR"
                 sporkPrivateKey:@"cTvYmnZxCK7A8HekGQYMD7yuXSxVKnwgVVo7fHQrcbzckxYm2g7M"
              minProtocolVersion:70227
@@ -217,7 +218,7 @@
 }
 
 - (void)setupScrewdriver {
-    [self setupDevnetWithId:DevnetType_Screwdriver
+    [self setupDevnetWithId:dash_spv_crypto_network_chain_type_DevnetType_Screwdriver_ctor()
                    sporkAddress:@"yibwxyuuKsP6kBsq74vu9p6ju97qEb2B4b"
                 sporkPrivateKey:@"cUu1oagVnd2bBGC7EqyijjtFapiLb9yvmaWF4dMaREg6pmXJksHH"
              minProtocolVersion:70224
@@ -240,7 +241,7 @@
                walletPhrase:nil];
 }
 
-- (void)setupDevnetWithId:(DevnetType)devnetType
+- (void)setupDevnetWithId:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType
              sporkAddress:(NSString *)sporkAddress
           sporkPrivateKey:(NSString *)sporkPrivateKey
        minProtocolVersion:(uint32_t)minProtocolVersion
@@ -253,7 +254,7 @@
     NSArray<DSChain *> *devnetChains = [[DSChainsManager sharedInstance] devnetChains];
     DSChain *chain = nil;
     for (DSChain *devnetChain in devnetChains) {
-        if (devnet_type_for_chain_type(devnetChain.chainType) == devnetType) {
+        if (dash_spv_crypto_network_chain_type_ChainType_devnet_type(devnetChain.chainType) == devnetType) {
             chain = devnetChain;
             break;
         }

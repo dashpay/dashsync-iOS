@@ -6,7 +6,7 @@
 //
 
 #import "BigIntTypes.h"
-#import "dash_shared_core.h"
+#import "DSKeyManager.h"
 #import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,11 +53,11 @@ providerUpdateServiceTransactionVersion:(uint16_t)version
 
 - (void)updateInputsHash;
 
-- (void)signPayloadWithKey:(OpaqueKey *_Nonnull)privateKey;
+- (void)signPayloadWithKey:(DOpaqueKey *_Nonnull)privateKey;
 
 - (BOOL)checkPayloadSignature;
 
-- (BOOL)checkPayloadSignature:(OpaqueKey *)publicKey;
+- (BOOL)checkPayloadSignature:(DOpaqueKey *)publicKey;
 
 
 @end

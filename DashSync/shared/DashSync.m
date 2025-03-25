@@ -7,21 +7,19 @@
 //
 
 #import "DashSync.h"
+#import "DSChain+Params.h"
 #import "DSChain+Protected.h"
+#import "DSChain+Wallet.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Protected.h"
 #import "DSDataController.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
-#import "DSMasternodeListEntity+CoreDataClass.h"
-#import "DSMasternodeListStore.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeerManager+Protected.h"
 #import "DSSyncState.h"
 #import "DSCoinJoinManager.h"
-#import "DSQuorumEntryEntity+CoreDataClass.h"
-#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSporkManager+Protected.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
@@ -214,10 +212,6 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     [context performBlockAndWait:^{
         DSChainEntity *chainEntity = [chain chainEntityInContext:context];
         [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
-        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
-        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-        [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
         DSChainManager *chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager wipeMasternodeInfo];
         [context ds_save];

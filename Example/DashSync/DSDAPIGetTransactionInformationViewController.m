@@ -18,6 +18,7 @@
 #import "DSDAPIGetTransactionInformationViewController.h"
 #import "BRBubbleView.h"
 #import "DSTransactionDetailViewController.h"
+#import "NSError+Platform.h"
 
 @interface DSDAPIGetTransactionInformationViewController ()
 
@@ -42,32 +43,49 @@
                                   popOutAfterDelay:2.0]];
         return;
     }
-    [self.chainManager.DAPIClient.DAPICoreNetworkService getTransactionWithHash:transactionHash
-        completionQueue:dispatch_get_main_queue()
-        success:^(DSTransaction *_Nonnull transaction) {
-            self.currentTranasction = transaction;
-            [self performSegueWithIdentifier:@"GetTransactionInfoDetailsSegue" sender:self];
-        }
-        failure:^(NSError *_Nonnull error) {
-            if (error.code == 404) {
-                //try searching for reverse
-                [self.chainManager.DAPIClient.DAPICoreNetworkService getTransactionWithHash:uint256_reverse(transactionHash)
-                    completionQueue:dispatch_get_main_queue()
-                    success:^(DSTransaction *_Nonnull transaction) {
-                        self.currentTranasction = transaction;
-                        [self performSegueWithIdentifier:@"GetTransactionInfoDetailsSegue" sender:self];
-                    }
-                    failure:^(NSError *_Nonnull error) {
-                        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
-                                                                    center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
-                                                  popOutAfterDelay:2.0]];
-                    }];
-            } else {
-                [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
+    DSDashSharedCore *core = self.chainManager.chain.shareCore;
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(core.runtime, core.platform->obj, u256_ctor_u(transactionHash));
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (result->error) {
+            Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
+            NSError *error = [NSError ffi_from_platform_error:result->error];
+            BRBubbleView *errorView = [[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
                                                             center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
-                                          popOutAfterDelay:2.0]];
-            }
-        }];
+                                       popOutAfterDelay:2.0];
+            [self.view addSubview:errorView];
+            return;
+        }
+        if (result->ok) {
+            self.currentTranasction = [DSAssetLockTransaction ffi_from:result->ok onChain:self.chainManager.chain];
+        }
+    });
+    
+//    [self.chainManager.DAPIClient.DAPICoreNetworkService getTransactionWithHash:transactionHash
+//        completionQueue:dispatch_get_main_queue()
+//        success:^(DSTransaction *_Nonnull transaction) {
+//            self.currentTranasction = transaction;
+//            [self performSegueWithIdentifier:@"GetTransactionInfoDetailsSegue" sender:self];
+//        }
+//        failure:^(NSError *_Nonnull error) {
+//            if (error.code == 404) {
+//                //try searching for reverse
+//                [self.chainManager.DAPIClient.DAPICoreNetworkService getTransactionWithHash:uint256_reverse(transactionHash)
+//                    completionQueue:dispatch_get_main_queue()
+//                    success:^(DSTransaction *_Nonnull transaction) {
+//                        self.currentTranasction = transaction;
+//                        [self performSegueWithIdentifier:@"GetTransactionInfoDetailsSegue" sender:self];
+//                    }
+//                    failure:^(NSError *_Nonnull error) {
+//                        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
+//                                                                    center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
+//                                                  popOutAfterDelay:2.0]];
+//                    }];
+//            } else {
+//                [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", error.localizedDescription]
+//                                                            center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
+//                                          popOutAfterDelay:2.0]];
+//            }
+//        }];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
