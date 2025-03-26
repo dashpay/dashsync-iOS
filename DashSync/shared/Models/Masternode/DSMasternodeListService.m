@@ -59,7 +59,7 @@
 //        uintptr_t masternodeListCount = DKnownMasternodeListsCount(self.chain.sharedCacheObj);
         self.timeOutObserverTry++;
         uint16_t timeOutObserverTry = self.timeOutObserverTry;
-        dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC));
+        dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(40 * (self.timedOutAttempt + 1) * NSEC_PER_SEC));
         self.timeoutTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.chain.networkingQueue);
         if (self.timeoutTimer) {
             dispatch_source_set_timer(self.timeoutTimer, timeout, DISPATCH_TIME_FOREVER, 1ull * NSEC_PER_SEC);

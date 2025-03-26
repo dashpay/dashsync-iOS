@@ -27,17 +27,39 @@
 
 @interface DSMasternodeListDiffService ()
 
-@property (nonatomic, assign) NSMutableOrderedSet<NSData *> *retrievalQueue;
+@property (nonatomic, strong) NSMutableOrderedSet<NSData *> *retrievalQueue;
 
 @end
 
 @implementation DSMasternodeListDiffService
 
+- (instancetype)initWithChain:(DSChain *)chain {
+    NSParameterAssert(chain);
+    if (!(self = [super initWithChain:chain])) return nil;
+    _retrievalQueue = [NSMutableOrderedSet orderedSet];
+    return self;
+}
+
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [MLDiffService] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [MasternodeManager::DiffService] ", self.chain.name];
 }
 
 - (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
+    NSMutableString *debugString = [NSMutableString stringWithString:@"Needed:\n"];
+    for (NSData *data in list) {
+        uint32_t h = [self.chain heightForBlockHash:data.UInt256];
+        [debugString appendFormat:@"%u: %@\n", h, data.hexString];
+    }
+    [debugString appendFormat:@"KnownLists:\n"];
+    DKnownMasternodeLists *lists = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_masternode_lists(self.chain.sharedProcessorObj);
+    for (int i = 0; i < lists->count; i++) {
+        dashcore_prelude_CoreBlockHeight *core_block_height = lists->keys[i];
+        DMasternodeList *list = lists->values[i];
+        u256 *block_hash = dashcore_hash_types_BlockHash_inner(list->block_hash);
+        [debugString appendFormat:@"%u: %@\n", core_block_height->_0, u256_hex(block_hash)];
+    }
+    DKnownMasternodeListsDtor(lists);
+    DSLog(@"%@ composeMasternodeListRequest: \n%@", self.logPrefix, debugString);
     for (NSData *blockHashData in list) {
         // we should check the associated block still exists
         if ([self.chain.masternodeManager hasBlockForBlockHash:blockHashData]) {
@@ -47,9 +69,8 @@
             BOOL success = [self.chain.masternodeManager processRequestFromFileForBlockHash:blockHash];
             if (success) {
                 [self removeFromRetrievalQueue:blockHashData];
-                if (![self retrievalQueueCount]) {
+                if (![self retrievalQueueCount])
                     [self.chain.chainManager.transactionManager checkWaitingForQuorums];
-                }
             } else {
                 // we need to go get it
                 uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
@@ -59,8 +80,6 @@
                 u256 *prev_in_queue_block_hash = u256_ctor_u(prevInQueueBlockHash);
                 uint32_t prevKnownHeight = [self.chain heightForBlockHash:u256_cast(prev_known_block_hash)];
                 uint32_t prevInQueueBlockHeight =  [self.chain heightForBlockHash:u256_cast(prev_in_queue_block_hash)];
-//                uint32_t prevKnownHeight = DHeightForBlockHash(self.chain.sharedProcessorObj, prev_known_block_hash);
-//                uint32_t prevInQueueBlockHeight = DHeightForBlockHash(self.chain.sharedProcessorObj, prev_in_queue_block_hash);
                 UInt256 previousBlockHash = pos ? (prevKnownHeight > prevInQueueBlockHeight ? prevKnownBlockHash : prevInQueueBlockHash) : prevKnownBlockHash;
                 // request at: every new block
 //                NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
@@ -194,6 +213,7 @@
 }
 
 - (void)notifyQueueChange:(NSUInteger)newCount maxAmount:(NSUInteger)maxAmount {
+    DSLog(@"%@ Queue Changed: %u/%u ", self.logPrefix, (uint32_t)newCount, (uint32_t)maxAmount);
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = (uint32_t) newCount;
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) maxAmount;

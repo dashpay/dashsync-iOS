@@ -32,7 +32,7 @@
 @implementation DSQuorumRotationService
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [QRInfoService] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [MasternodeManager::QRInfoService] ", self.chain.name];
 }
 
 - (BOOL)hasRecentQrInfoSync {

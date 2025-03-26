@@ -567,11 +567,19 @@
                 dispatch_group_leave(self.processingGroup);
                 return;
             }
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             std_collections_BTreeSet_dashcore_hash_types_BlockHash *missed_hashes = result->ok;
             
+            DSLog(@"%@ qrinfo: OK: %ul", self.logPrefix, (uint16_t) missed_hashes->count);
             if (missed_hashes->count > 0) {
+                [self.quorumRotationService cleanListsRetrievalQueue];
                 NSArray<NSData *> *missedHashes = [NSArray ffi_from_block_hash_btree_set:missed_hashes];
                 [self.masternodeListDiffService addToRetrievalQueueArray:missedHashes];
+                [self.masternodeListDiffService dequeueMasternodeListRequest];
+            } else {
+                [self.quorumRotationService cleanListsRetrievalQueue];
+                [self.quorumRotationService dequeueMasternodeListRequest];
+                [self.chain.chainManager.transactionManager checkWaitingForQuorums];
             }
 
     //#if SAVE_MASTERNODE_DIFF_TO_FILE
@@ -584,11 +592,6 @@
     //#endif
     //        [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:NSDataFromPtr(block_hash) fromPeer:peer];
             
-            [self.quorumRotationService cleanListsRetrievalQueue];
-            [self.quorumRotationService dequeueMasternodeListRequest];
-            if (missed_hashes->count == 0)
-                [self.chain.chainManager.transactionManager checkWaitingForQuorums];
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
 
             
             DQRInfoResultDtor(result);

@@ -1072,7 +1072,7 @@ static dispatch_once_t devnetToken = 0;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
     DSBlock *prev = nil;
-    DSLog(@"[%@] + block (asHeader: %u) %@ prev: %@", self.name, isHeaderOnly, uint256_hex(block.blockHash), uint256_hex(block.prevBlock));
+    //DSLog(@"[%@] + block (asHeader: %u) %@ prev: %@", self.name, isHeaderOnly, uint256_hex(block.blockHash), uint256_hex(block.prevBlock));
 
     DSBlockPosition blockPosition = DSBlockPosition_Orphan;
     DSChainSyncPhase phase = self.chainManager.syncPhase;
