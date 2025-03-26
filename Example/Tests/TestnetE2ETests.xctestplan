@@ -22,6 +22,7 @@
         "DSChainLockTests",
         "DSChainTests",
         "DSChainedSigningTests",
+        "DSCoinJoinSessionTest",
         "DSDIP13Tests",
         "DSDIP14Tests",
         "DSDataTests",

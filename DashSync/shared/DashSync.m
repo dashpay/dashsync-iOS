@@ -19,6 +19,7 @@
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeerManager+Protected.h"
 #import "DSSyncState.h"
+#import "DSCoinJoinManager.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSporkManager+Protected.h"
@@ -122,13 +123,14 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 - (void)stopSyncAllChains {
     NSArray *chains = [[DSChainsManager sharedInstance] chains];
     for (DSChain *chain in chains) {
+        [[DSCoinJoinManager sharedInstanceForChain:chain] stop];
         [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect: DSDisconnectReason_ChainWipe];
     }
 }
 
 - (void)stopSyncForChain:(DSChain *)chain {
     NSParameterAssert(chain);
-
+    [[DSCoinJoinManager sharedInstanceForChain:chain] stop];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain] stopSync];
 }
 

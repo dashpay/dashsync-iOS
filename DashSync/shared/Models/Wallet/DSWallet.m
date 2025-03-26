@@ -185,12 +185,6 @@
     if (!(self = [self initWithChain:chain])) return nil;
     self.uniqueIDString = uniqueID;
     __weak typeof(self) weakSelf = self;
-    self.seedRequestBlock = ^void(SeedCompletionBlock seedCompletion) {
-        //this happens when we request the seed
-        NSString *seed = [weakSelf seedPhrase];
-        NSData *seedData = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seed withPassphrase:nil];
-        seedCompletion(seedData, false);
-    };
 
     self.secureSeedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
         //this happens when we request the seed and want to auth with pin
@@ -289,6 +283,14 @@
             }
         }
     }];
+}
+
+- (NSData *_Nullable)requestSeedNoAuth {
+    //this happens when we request the seed without a pin code
+    NSString *seed = [self seedPhrase];
+    NSData *seedData = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seed withPassphrase:nil];
+    
+    return seedData;
 }
 
 
@@ -790,7 +792,7 @@
                                                                               return;
                                                                           }
                                                                       }
-                                                                      weakSelf.seedRequestBlock(completion);
+                                                                      completion([self requestSeedNoAuth], cancelled);
                                                                   }
                                                               }];
     }
@@ -853,10 +855,10 @@
     return rBalance;
 }
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error {
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit coinJoinGapLimit:(NSUInteger)coinJoinGapLimit internal:(BOOL)internal error:(NSError **)error {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSAccount *account in self.accounts) {
-        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit unusedAccountGapLimit:unusedAccountGapLimit dashpayGapLimit:dashpayGapLimit internal:internal error:error]];
+        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit unusedAccountGapLimit:unusedAccountGapLimit dashpayGapLimit:dashpayGapLimit coinJoinGapLimit:coinJoinGapLimit internal:internal error:error]];
     }
     return [mArray copy];
 }
@@ -1082,6 +1084,14 @@
         if (![account transactionIsValid:transaction]) return FALSE;
     }
     return TRUE;
+}
+
+- (int64_t)inputValue:(UInt256)txHash inputIndex:(uint32_t)index {
+    for (DSAccount *account in self.accounts) {
+        int64_t value = [account inputValue:txHash inputIndex:index];
+        if (value != -1) return value;
+    }
+    return -1;
 }
 
 - (OpaqueKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed {

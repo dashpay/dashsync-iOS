@@ -19,6 +19,7 @@
 #import "DSChain.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
 
 @implementation DSAssetLockTransaction
 
@@ -58,4 +59,35 @@
     
     return self;
 }
+
+- (NSData *)payloadData {
+    return [self basePayloadData];
+}
+
+- (NSData *)basePayloadData {
+    NSMutableData *data = [NSMutableData data];
+    [data appendUInt8:self.specialTransactionVersion];
+    NSUInteger creditOutputsCount = self.creditOutputs.count;
+    [data appendVarInt:creditOutputsCount];
+    for (NSUInteger i = 0; i < creditOutputsCount; i++) {
+        DSTransactionOutput *output = self.creditOutputs[i];
+        [data appendUInt64:output.amount];
+        [data appendCountedData:output.outScript];
+    }
+    return data;
+}
+
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay {
+    @synchronized(self) {
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:anyoneCanPay] mutableCopy];
+        [data appendCountedData:[self payloadData]];
+        if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
+        return data;
+    }
+}
+
+- (size_t)size {
+    return [super size] + [self payloadData].length;
+}
+
 @end

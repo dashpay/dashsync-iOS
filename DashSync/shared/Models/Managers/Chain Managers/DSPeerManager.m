@@ -57,6 +57,7 @@
 #import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Bitcoin.h"
+#import "DSSendCoinJoinQueue.h"
 #import <arpa/inet.h>
 #import <netdb.h>
 
@@ -696,7 +697,10 @@
     DSLog(@"[%@] [DSPeerManager] connect", self.chain.name);
     self.desiredState = DSPeerManagerDesiredState_Connected;
     dispatch_async(self.networkingQueue, ^{
-        if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
+        if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) {
+            DSLog(@"[%@] [DSPeerManager] failed to connect: check that wallet is created", self.chain.name);
+            return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
+        }
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0;    // this attempt is a manual retry
 
         @synchronized (self.chainManager) {
@@ -880,6 +884,11 @@
                     if (!self.masternodeList) {
                         [peer sendGetaddrMessage]; // request a list of other dash peers
                     }
+                    
+                    if (self.shouldSendDsq) {
+                        [peer sendRequest:[DSSendCoinJoinQueue requestWithShouldSend:true]];
+                    }
+                    
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification 
                                                                             object:nil
@@ -1060,5 +1069,14 @@
     [self.downloadPeer sendRequest:request];
 }
 
+// MARK: CoinJoin
+
+- (void)shouldSendDsq:(BOOL)shouldSendDsq {
+    for (DSPeer *peer in self.connectedPeers) {
+        DSSendCoinJoinQueue *request = [DSSendCoinJoinQueue requestWithShouldSend:shouldSendDsq];
+        [peer sendRequest:request];
+    }
+    _shouldSendDsq = shouldSendDsq;
+}
 
 @end

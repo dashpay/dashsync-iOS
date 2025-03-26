@@ -9,6 +9,7 @@
 #import "DSTransactionsViewController.h"
 #import "DSTransactionDetailViewController.h"
 #import "DSTransactionTableViewCell.h"
+#import "DSCoinJoinManager.h"
 #import <DashSync/DashSync.h>
 #import <WebKit/WebKit.h>
 
@@ -316,7 +317,7 @@ NSString *dateFormat(NSString *_template) {
     DSAccount *account = [self.chainManager.chain firstAccountThatCanContainTransaction:tx];
     uint64_t received = [tx.chain amountReceivedFromTransaction:tx],
              sent = [tx.chain amountSentByTransaction:tx],
-             balance = [account balanceAfterTransaction:tx];
+             balance = [account balance];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
 
@@ -364,25 +365,56 @@ NSString *dateFormat(NSString *_template) {
         cell.confirmationsLabel.hidden = YES;
         cell.directionLabel.hidden = NO;
     }
+    
+    CoinJoinTransactionType type = [[DSCoinJoinManager sharedInstanceForChain:self.chainManager.chain] coinJoinTxTypeForTransaction:tx];
+    
+    if (type != CoinJoinTransactionType_None) {
+        NSString *typeString = @"";
 
-    if (sent > 0 && received == sent) {
+        switch (type) {
+            case CoinJoinTransactionType_CreateDenomination:
+                typeString = @"Create Denomination";
+                break;
+            case CoinJoinTransactionType_MakeCollateralInputs:
+                typeString = @"Make Collateral Inputs";
+                break;
+            case CoinJoinTransactionType_MixingFee:
+                typeString = @"Mixing Fee";
+                break;
+            case CoinJoinTransactionType_Mixing:
+                typeString = @"Mixing";
+                break;
+            case CoinJoinTransactionType_Send:
+                typeString = @"Send";
+                break;
+            default:
+                typeString = @"Unknown";
+                break;
+        }
+
+        cell.directionLabel.text = NSLocalizedString(typeString, nil);
         cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:sent];
-        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
-                                              [priceManager localCurrencyStringForDashAmount:sent]];
-        cell.directionLabel.text = NSLocalizedString(@"moved", nil);
         cell.directionLabel.textColor = [UIColor blackColor];
-    } else if (sent > 0) {
-        cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received - sent];
-        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
-                                              [priceManager localCurrencyStringForDashAmount:received - sent]];
-        cell.directionLabel.text = NSLocalizedString(@"sent", nil);
-        cell.directionLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
     } else {
-        cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received];
-        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
-                                              [priceManager localCurrencyStringForDashAmount:received]];
-        cell.directionLabel.text = NSLocalizedString(@"received", nil);
-        cell.directionLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+        if (sent > 0 && received == sent) {
+            cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:sent];
+            cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
+                                                [priceManager localCurrencyStringForDashAmount:sent]];
+            cell.directionLabel.text = NSLocalizedString(@"moved", nil);
+            cell.directionLabel.textColor = [UIColor blackColor];
+        } else if (sent > 0) {
+            cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received - sent];
+            cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
+                                                [priceManager localCurrencyStringForDashAmount:received - sent]];
+            cell.directionLabel.text = NSLocalizedString(@"sent", nil);
+            cell.directionLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
+        } else {
+            cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received];
+            cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
+                                                [priceManager localCurrencyStringForDashAmount:received]];
+            cell.directionLabel.text = NSLocalizedString(@"received", nil);
+            cell.directionLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+        }
     }
 
     if (!cell.confirmationsLabel.hidden) {

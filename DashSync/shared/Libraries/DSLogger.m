@@ -16,6 +16,7 @@
 //
 
 #import "DSLogger.h"
+#import "CompressingLogFileManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,10 +50,13 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         [DDLog addLogger:[DDOSLogger sharedInstance]]; // os_log
 
-        DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
-        fileLogger.rollingFrequency = 60 * 60 * 24;            // 24 hour rolling
-        fileLogger.logFileManager.maximumNumberOfLogFiles = 3; // keep a 3 days worth of log files
-        //[fileLogger setLogFormatter:[[NoTimestampLogFormatter alloc] init]]; // Use the custom formatter
+        unsigned long long maxFileSize = 1024 * 1024 * 5; // 5 MB max. Then log files are ziped
+        CompressingLogFileManager *logFileManager = [[CompressingLogFileManager alloc] initWithFileSize:maxFileSize];
+        DDFileLogger *fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
+        fileLogger.rollingFrequency = 60 * 60 * 24;     // 24 hour rolling
+        fileLogger.maximumFileSize = maxFileSize;
+        fileLogger.logFileManager.maximumNumberOfLogFiles = 10;
+        
         [DDLog addLogger:fileLogger];
         _fileLogger = fileLogger;
     }
@@ -60,22 +64,23 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<NSURL *> *)logFiles {
-    NSArray<DDLogFileInfo *> *logFileInfos = [self.fileLogger.logFileManager unsortedLogFileInfos];
-    NSMutableArray<NSURL *> *logFiles = [NSMutableArray array];
-    for (DDLogFileInfo *fileInfo in logFileInfos) {
-        NSURL *fileURL = [NSURL fileURLWithPath:fileInfo.filePath];
-        if (fileURL) {
-            [logFiles addObject:fileURL];
+    NSString *logsDirectory = [self.fileLogger.logFileManager logsDirectory];
+    NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:logsDirectory error:nil];
+    NSMutableArray *logFiles = [NSMutableArray arrayWithCapacity:[fileNames count]];
+
+    for (NSString *fileName in fileNames) {
+        BOOL hasProperSuffix = [fileName hasSuffix:@".log"] || [fileName hasSuffix:@".gz"];
+        
+        if (hasProperSuffix) {
+            NSString *filePath = [logsDirectory stringByAppendingPathComponent:fileName];
+            NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+            
+            if (fileURL) {
+                [logFiles addObject:fileURL];
+            }
         }
     }
-    // add rust log file located at $CACHE/Logs/processor.log
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *cacheDirectory = [paths objectAtIndex:0];
-    NSString *rustLogPath = [cacheDirectory stringByAppendingPathComponent:@"Logs/processor.log"];
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:rustLogPath]) {
-        [logFiles addObject:[NSURL fileURLWithPath:rustLogPath]];
-    }
+    
     return [logFiles copy];
 }
 

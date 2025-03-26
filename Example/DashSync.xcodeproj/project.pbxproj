@@ -66,6 +66,10 @@
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		65F8D081B17C5F08E6BBF4A8 /* libPods-DashSync-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F6B6FEB4981DE6989D82EB0 /* libPods-DashSync-DashSync_Example.a */; };
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
+		757323562C5A384800EF5FC0 /* DSCoinJoinSessionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 757323542C5A381600EF5FC0 /* DSCoinJoinSessionTest.m */; };
+		758719952B3ECB7A004C0E2D /* DSCoinJoinViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758719942B3ECB7A004C0E2D /* DSCoinJoinViewController.m */; };
+		798A60FA627EC43C0AB39611 /* libPods-DashSync-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 192956F40996DE819B9D64AC /* libPods-DashSync-DashSync_Example.a */; };
+		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		93099D7228E7275400160709 /* MNLIST_1746460.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7028E7275300160709 /* MNLIST_1746460.dat */; };
 		93099D7328E7275400160709 /* MNL_1746460_1746516.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7128E7275400160709 /* MNL_1746460_1746516.dat */; };
@@ -615,6 +619,11 @@
 		64A245673BBAE1DA7DAB4907 /* DashSync.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = DashSync.podspec; path = ../DashSync.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		6F6B6FEB4981DE6989D82EB0 /* libPods-DashSync-DashSync_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync-DashSync_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
+		757323532C5A329600EF5FC0 /* CoinJoinTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CoinJoinTests.xctestplan; sourceTree = "<group>"; };
+		757323542C5A381600EF5FC0 /* DSCoinJoinSessionTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCoinJoinSessionTest.m; sourceTree = "<group>"; };
+		758719932B3ECB28004C0E2D /* DSCoinJoinViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSCoinJoinViewController.h; sourceTree = "<group>"; };
+		758719942B3ECB7A004C0E2D /* DSCoinJoinViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCoinJoinViewController.m; sourceTree = "<group>"; };
 		77374E9036662C743187A1DA /* Pods-DashSync_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.release.xcconfig"; path = "Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		93099D7028E7275300160709 /* MNLIST_1746460.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MNLIST_1746460.dat; sourceTree = "<group>"; };
@@ -1459,6 +1468,7 @@
 				FBD45D1B24DF1A6200168EBC /* LibraryTests */,
 				FBD45D1924DF1A0900168EBC /* L1Tests */,
 				FB76C5A822BD7B9700DF2B29 /* MasternodeLists */,
+				757323522C5A31ED00EF5FC0 /* CoinJoin */,
 				FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */,
 				2A5C601322BFC65E00C6003F /* ML_at_122088.dat */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
@@ -1487,6 +1497,29 @@
 				27552411E6D7D4041AC16526 /* LICENSE */,
 			);
 			name = "Podspec Metadata";
+			sourceTree = "<group>";
+		};
+		757323522C5A31ED00EF5FC0 /* CoinJoin */ = {
+			isa = PBXGroup;
+			children = (
+				757323542C5A381600EF5FC0 /* DSCoinJoinSessionTest.m */,
+			);
+			name = CoinJoin;
+			sourceTree = "<group>";
+		};
+		83DC6095687FDE098549FF30 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				98472781BAD8800EFF391FA4 /* Pods-DashSync_Example.debug.xcconfig */,
+				2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */,
+				C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */,
+				DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */,
+				D1B8FECBB1652E781A9E4620 /* Pods-NetworkInfo.debug.xcconfig */,
+				131B02E9F838D9B0B88342E6 /* Pods-NetworkInfo.release.xcconfig */,
+				425B12FE369253E7F3A93D58 /* Pods-DashSync-DashSync_Example.debug.xcconfig */,
+				74FDA0D6BCD2D779E20B58FC /* Pods-DashSync-DashSync_Example.release.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 		FB0F15B421090405000272E6 /* Blockchain Identities */ = {
@@ -2036,6 +2069,8 @@
 				FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */,
 				FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */,
 				FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */,
+				758719932B3ECB28004C0E2D /* DSCoinJoinViewController.h */,
+				758719942B3ECB7A004C0E2D /* DSCoinJoinViewController.m */,
 			);
 			name = Actions;
 			sourceTree = "<group>";
@@ -2138,6 +2173,7 @@
 				FB97500625B3876D00A1DCE7 /* TestnetSyncTests.xctestplan */,
 				FB97501F25B3AD1400A1DCE7 /* Metrics.xctestplan */,
 				FBBB464D25C054DE00ACDF35 /* TestnetE2ETests.xctestplan */,
+				757323532C5A329600EF5FC0 /* CoinJoinTests.xctestplan */,
 			);
 			name = TestPlans;
 			sourceTree = "<group>";
@@ -3001,6 +3037,7 @@
 				FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,
+				758719952B3ECB7A004C0E2D /* DSCoinJoinViewController.m in Sources */,
 				FB9762F724BC4C3E00CF28EC /* DSMiningViewController.m in Sources */,
 				FB850013261A7B9A0002E5EA /* DSIdentityChooserViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
@@ -3058,6 +3095,7 @@
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
 				FB91B2D425325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
+				757323562C5A384800EF5FC0 /* DSCoinJoinSessionTest.m in Sources */,
 				FBAF79792385CA0200F4944E /* DSSparseMerkleTreeTests.m in Sources */,
 				FB97501025B3888800A1DCE7 /* DSMainnetE2ETests.m in Sources */,
 				FB97502B25B3BC2D00A1DCE7 /* DSMainnetSyncTests.m in Sources */,
@@ -3161,6 +3199,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_FAST_MATH = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3216,6 +3255,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_FAST_MATH = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -3284,7 +3324,7 @@
 					"\"SystemConfiguration\"",
 					"-framework",
 					"\"UIKit\"",
-					"-ld_classic",
+					"-ld64",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3346,7 +3386,7 @@
 					"\"SystemConfiguration\"",
 					"-framework",
 					"\"UIKit\"",
-					"-ld_classic",
+					"-ld64",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";

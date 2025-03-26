@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define TX_LOCKTIME 0x00000000u
 #define TXIN_SEQUENCE UINT32_MAX
 #define SIGHASH_ALL 0x00000001u
+#define SIGHASH_ANYONECANPAY 0x80u
 
 #define MAX_ECDSA_SIGNATURE_SIZE 75
 
@@ -89,7 +90,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, assign) uint32_t lockTime;
 @property (nonatomic, assign) uint64_t feeUsed;
 @property (nonatomic, assign) uint64_t roundedFeeCostPerByte;
-@property (nonatomic, readonly) uint64_t amountSent;
+@property (nonatomic, readonly) DSTransactionDirection direction;
+@property (nonatomic, readonly) uint64_t dashAmount;
 @property (nonatomic, readonly) NSData *payloadData;
 @property (nonatomic, readonly) NSData *payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
@@ -104,6 +106,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
+@property (nonatomic, readonly) BOOL isImmatureCoinBase;
 @property (nonatomic, readonly) BOOL isCreditFundingTransaction;
 @property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
 
@@ -143,6 +146,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 - (void)hasSetInputsAndOutputs;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
+- (BOOL)signWithPrivateKeys:(NSArray *)keys anyoneCanPay:(BOOL)anyoneCanPay;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;
@@ -152,7 +156,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex;
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay;
 
 - (BOOL)hasNonDustOutputInWallet:(DSWallet *)wallet;
 
@@ -170,10 +174,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 - (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
-@end
+- (int32_t)getBlocksToMaturity;
 
-@interface DSTransaction (Extensions)
-- (DSTransactionDirection)direction;
 @end
 
 NS_ASSUME_NONNULL_END

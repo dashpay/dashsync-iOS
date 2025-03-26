@@ -10,6 +10,7 @@
 #define SEQUENCE_GAP_LIMIT_EXTERNAL 10
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 #define SEQUENCE_GAP_LIMIT_INITIAL 100
+#define SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN 400
 
 #define SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL 10
 #define SEQUENCE_UNUSED_GAP_LIMIT_INTERNAL 5
@@ -52,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
 
 + (instancetype)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
+
++ (instancetype)coinJoinDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
 
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
