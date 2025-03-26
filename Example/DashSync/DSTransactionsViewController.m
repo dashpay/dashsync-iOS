@@ -317,7 +317,7 @@ NSString *dateFormat(NSString *_template) {
     DSAccount *account = [self.chainManager.chain firstAccountThatCanContainTransaction:tx];
     uint64_t received = [tx.chain amountReceivedFromTransaction:tx],
              sent = [tx.chain amountSentByTransaction:tx],
-             balance = [account balanceAfterTransaction:tx];
+             balance = [account balance];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
 

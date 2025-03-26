@@ -586,10 +586,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.4.19)
+  - DashSharedCore (0.5.1)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
+    - DashSharedCore (= 0.5.1)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -666,7 +667,6 @@ PODS:
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `../../dash-shared-core/`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
   - SDWebImage (= 5.14.3)
@@ -679,6 +679,7 @@ SPEC REPOS:
     - BoringSSL-GRPC
     - CocoaLumberjack
     - DAPI-GRPC
+    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - gRPC
@@ -695,8 +696,6 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
-  DashSharedCore:
-    :path: "../../dash-shared-core/"
   DashSync:
     :path: "../"
 
@@ -713,8 +712,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 009f29640756017406ee2b0ab5f1073f1856f85e
-  DashSync: 2438dbf626f13a8633ccc19c718c1c223c8ee831
+  DashSharedCore: b8481feb5f08acf162b548edbfc7a9b1ce491141
+  DashSync: 1f5741aad267dcc0cfc04b6903490d304232ddf2
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
@@ -727,6 +726,6 @@ SPEC CHECKSUMS:
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: f435b90d50cf6c9c6e0622b30150618588fb4a56
+PODFILE CHECKSUM: 426e3f03a062ea4c149b0500478f0fe6bbe5bab5
 
 COCOAPODS: 1.15.2
