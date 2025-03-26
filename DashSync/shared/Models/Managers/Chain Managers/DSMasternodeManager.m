@@ -453,7 +453,7 @@
         dispatch_group_enter(self.processingGroup);
         Slice_u8 *message_slice = slice_ctor(message);
         
-        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, true);
+        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, false);
 
         if (result->error) {
             NSError *error = [NSError ffi_from_processing_error:result->error];
@@ -514,7 +514,7 @@
             dispatch_group_enter(self.processingGroup);
             Slice_u8 *slice_msg = slice_ctor(message);
             
-            DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_qr_info_result_from_message(self.processor, slice_msg, true, true);
+            DQRInfoResult *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_process_qr_info_result_from_message(self.processor, slice_msg, false, true);
             if (result->error) {
                 NSError *error = [NSError ffi_from_processing_error:result->error];
                 DSLog(@"%@ qrinfo: Error: %@", self.logPrefix, error);
