@@ -22,10 +22,11 @@
 #import "DSQuorumRotationService.h"
 #import "DSMasternodeListService+Protected.h"
 #import "DSMasternodeManager.h"
+#import "NSString+Bitcoin.h"
 
 @interface DSQuorumRotationService ()
 
-@property (nonatomic, strong) NSData *retrievalBlockHash;
+@property (nonatomic, strong, nullable) NSData *retrievalBlockHash;
 
 @end
 
@@ -48,6 +49,7 @@
         UInt256 blockHash = blockHashData.UInt256;
         uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
         UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHeight:blockHeight];
+//        @"000000000000000899fdcd85241296146c365b238a655517da8dcd08a8a79b98".hexToData;
 //        NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
         [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
     } else {
@@ -82,15 +84,8 @@
 }
 
 - (void)getRecent:(UInt256)blockHash {
-//    if (self.retrievalBlockHash)
-//    BOOL hasLatestBlockWithHash = uint256_eq(self.retrievalBlockHash.UInt256, blockHash);
-//    if (hasLatestBlockWithHash || [self hasRecentQrInfoSync])
-//        return;
     self.retrievalBlockHash = uint256_data(blockHash);
     [self dequeueMasternodeListRequest];
-//    NSUInteger newCount = [self addToRetrievalQueue:uint256_data(blockHash)];
-//    if (newCount == 1) {
-//    }
 }
 
 - (void)cleanListsRetrievalQueue {
@@ -109,9 +104,6 @@
     DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:YES];
     uint32_t prev_h = [self.chain heightForBlockHash:previousBlockHash];
     uint32_t h = [self.chain heightForBlockHash:blockHash];
-    
-//    uint32_t prev_h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(previousBlockHash));
-//    uint32_t h = DHeightForBlockHash(self.chain.sharedProcessorObj, u256_ctor_u(blockHash));
     DSLog(@"%@ Request: %u..%u %@ .. %@", self.logPrefix, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
     [self sendMasternodeListRequest:request];
 }

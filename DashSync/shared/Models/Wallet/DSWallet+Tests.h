@@ -26,13 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (DSWallet *)transientWalletWithDerivedKeyData:(NSData *)derivedData
                                        forChain:(DSChain *)chain;
-+ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain
-                                                  storeSeedPhrase:(BOOL)store
-                                                      isTransient:(BOOL)isTransient;
-+ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language
-                                                           forChain:(DSChain *)chain
-                                                    storeSeedPhrase:(BOOL)store
-                                                        isTransient:(BOOL)isTransient;
 
 @end
 

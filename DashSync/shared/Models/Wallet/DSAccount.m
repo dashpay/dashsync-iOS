@@ -1044,7 +1044,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSParameterAssert(address);
     NSData *script = [NSData scriptPubKeyForAddress:address forChain:self.wallet.chain];
     DSTransactionOutput *creditOutput = [DSTransactionOutput transactionOutputWithAmount:amount outScript:script onChain:self.wallet.chain];
-    DSAssetLockTransaction *transaction = [[DSAssetLockTransaction alloc] initOnChain:self.wallet.chain withCreditOutputs:@[creditOutput]];
+    DSAssetLockTransaction *transaction = [[DSAssetLockTransaction alloc] initOnChain:self.wallet.chain withCreditOutputs:@[creditOutput] payloadVersion:1];
     return (DSAssetLockTransaction *)[self updateTransaction:transaction
                                                   forAmounts:@[@(amount)]
                                              toOutputScripts:@[[NSData assetLockOutputScript]]

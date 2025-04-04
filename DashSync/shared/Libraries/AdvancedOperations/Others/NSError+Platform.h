@@ -16,22 +16,21 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "dash_spv_apple_bindings.h"
 #import "DSKeyManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSError (dash_spv_platform_error_Error)
-+ (NSError *)ffi_from_platform_error:(dash_spv_platform_error_Error *)ffi_ref;
+@interface NSError (DPlatformError)
++ (NSError *)ffi_from_platform_error:(DPlatformError *)ffi_ref;
 @end
 
 
-@interface NSError (dash_spv_crypto_keys_KeyError)
+@interface NSError (DKeyError)
 + (NSError *)ffi_from_key_error:(DKeyError *)ffi_ref;
 @end
 
-@interface NSError (dash_spv_masternode_processor_processing_core_provider_CoreProviderError)
-+ (NSError *)ffi_from_core_provider_error:(dash_spv_masternode_processor_processing_core_provider_CoreProviderError *)ffi_ref;
+@interface NSError (DCoreProviderError)
++ (NSError *)ffi_from_core_provider_error:(DCoreProviderError *)ffi_ref;
 @end
 
 @interface NSError (DProcessingError)

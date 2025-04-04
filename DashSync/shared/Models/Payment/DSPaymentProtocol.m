@@ -456,79 +456,68 @@ typedef enum : NSUInteger
 
 - (BOOL)isValid {
     BOOL r = YES;
-
     if (![self.pkiType isEqual:@"none"]) {
         NSMutableArray *certs = [NSMutableArray array];
-        NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
+        NSArray *policies = @[(__bridge_transfer id)SecPolicyCreateBasicX509()];
         SecTrustRef trust = NULL;
-
         for (NSData *d in self.certs) {
             SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)d);
-
-            if (cert) [certs addObject:CFBridgingRelease(cert)];
+            if (cert) [certs addObject:(__bridge_transfer id)cert];
         }
-
-        if (certs.count > 0) {
-            _commonName = CFBridgingRelease(SecCertificateCopySubjectSummary((__bridge SecCertificateRef)certs[0]));
-        }
-
+        if (certs.count > 0)
+            _commonName = (__bridge_transfer NSString *)SecCertificateCopySubjectSummary((__bridge SecCertificateRef)certs[0]);
         SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
         CFErrorRef error = NULL;
-        BOOL isValid = FALSE;
-        if (trust) {
-            isValid = SecTrustEvaluateWithError(trust, &error); // verify certificate chain
-        }
-
+        // verify certificate chain
+        BOOL isValid = trust ? SecTrustEvaluateWithError(trust, &error) : NO;
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
-        if (error) {
-            _errorMessage = (certs.count > 0) ? DSLocalizedString(@"Untrusted certificate", nil) :
-                                                DSLocalizedString(@"Missing certificate", nil);
-
-            if (trust) {
-                for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
-                    if ([property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) {
-                        _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
-                        break;
-                    }
-                }
+        if (!isValid || error) {
+            _errorMessage = DSLocalizedString(certs.count > 0 ? @"Untrusted certificate" : @"Missing certificate", nil);
+            if (error) {
+                NSString *errStr = CFBridgingRelease(CFErrorCopyDescription(error));
+                _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", errStr ?: @"Unknown error"];
+                CFRelease(error);
             }
-
             r = NO;
         }
 
-        SecKeyRef pubKey = (trust) ? SecTrustCopyPublicKey(trust) : NULL;
-        OSStatus status = errSecUnimplemented;
-        NSData *sig = _signature;
+        if (trust) {
+            SecKeyRef pubKey = SecTrustCopyKey(trust);
+            NSData *sig = _signature;
+            _signature = [NSData data]; // set signature to 0 bytes, a signature can't sign itself
 
-        _signature = [NSData data]; // set signature to 0 bytes, a signature can't sign itself
+            SecKeyAlgorithm algorithm = NULL;
+            NSData *hashData = nil;
 
-        if (pubKey && [self.pkiType isEqual:@"x509+sha256"]) {
-            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA256, self.data.SHA256.u8, sizeof(UInt256), sig.bytes,
-                sig.length);
-        } else if (pubKey && [self.pkiType isEqual:@"x509+sha1"]) {
-            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, sizeof(UInt160), sig.bytes,
-                sig.length);
-        }
+            if ([self.pkiType isEqualToString:@"x509+sha256"]) {
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
+                hashData = uint256_data(self.data.SHA256);
+            } else if ([self.pkiType isEqualToString:@"x509+sha1"]) {
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
+                hashData = uint160_data(self.data.SHA1);
+            }
 
-        _signature = sig;
-        if (pubKey) CFRelease(pubKey);
-        if (trust) CFRelease(trust);
+            _signature = sig;
 
-        if (status != errSecSuccess) {
-            if (status == errSecUnimplemented) {
+            if (pubKey && algorithm && SecKeyIsAlgorithmSupported(pubKey, kSecKeyOperationTypeVerify, algorithm)) {
+                BOOL verified = SecKeyVerifySignature(pubKey, algorithm, (__bridge CFDataRef)hashData, (__bridge CFDataRef)sig, NULL);
+                if (!verified) {
+                    _errorMessage = DSLocalizedString(@"Invalid signature", nil);
+                    DSLog(@"%@", _errorMessage);
+                    r = NO;
+                }
+            } else if (pubKey) {
                 _errorMessage = DSLocalizedString(@"Unsupported signature type", nil);
                 DSLog(@"%@", _errorMessage);
-            } else {
-                _errorMessage = [NSError osStatusErrorWithCode:status].localizedDescription;                
-                DSLog(@"SecKeyRawVerify error: %@", _errorMessage);
+                r = NO;
             }
 
-            r = NO;
+            if (pubKey) CFRelease(pubKey);
+            CFRelease(trust);
         }
     } else if (self.certs.firstObject) { // non-standard extention to include an un-certified request name
         _commonName = [[NSString alloc] initWithData:self.certs.firstObject encoding:NSUTF8StringEncoding];
     }
-
     if (r && self.details.expires >= 1 && [NSDate timeIntervalSince1970] > self.details.expires) {
         _errorMessage = DSLocalizedString(@"Request expired", nil);
         r = NO;

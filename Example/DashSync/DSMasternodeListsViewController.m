@@ -191,7 +191,7 @@
 }
 
 - (IBAction)fetchMasternodeList:(id)sender {
-    uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""]) ? [self.blockHeightTextField.text intValue] : self.chain.lastSyncBlock.height;
+//    uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""]) ? [self.blockHeightTextField.text intValue] : self.chain.lastSyncBlock.height;
 
     NSError *error = nil;
     //[self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
@@ -207,7 +207,7 @@
     DMasternodeList *list = [self.chain.masternodeManager currentMasternodeList];
 //    int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
     if (list->known_height + 24 > self.chain.lastSyncBlock.height) return;
-    uint32_t blockHeight = list->known_height + 24;
+    //uint32_t blockHeight = list->known_height + 24;
 
     NSError *error = nil;
     //[self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];

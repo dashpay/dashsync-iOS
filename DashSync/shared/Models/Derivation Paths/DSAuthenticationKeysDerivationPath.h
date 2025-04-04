@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath;
 
+- (UInt256)keyIdAtIndex:(uint32_t)index;
 @end
 
 NS_ASSUME_NONNULL_END

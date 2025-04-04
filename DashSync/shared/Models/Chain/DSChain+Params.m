@@ -315,8 +315,8 @@ NSString const *feePerByteKey = @"feePerByteKey";
 }
 
 - (uint64_t)baseReward {
-    if (dash_spv_crypto_network_chain_type_ChainType_is_mainnet(self.chainType)) return 5 * DUFFS;
-    return 50 * DUFFS;
+    if (dash_spv_crypto_network_chain_type_ChainType_is_mainnet(self.chainType)) return 5 * DUFFS_OBJC;
+    return 50 * (unsigned long long) DUFFS_OBJC;
 }
 - (uint32_t)coinType {
     return dash_spv_crypto_network_chain_type_ChainType_coin_type(self.chainType);

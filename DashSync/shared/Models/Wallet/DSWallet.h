@@ -35,8 +35,8 @@ typedef void (^SecureSeedRequestBlock)(NSString *_Nullable authprompt, uint64_t 
 
 FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
-#define DUFFS 100000000LL
-#define MAX_MONEY (21000000LL * DUFFS)
+#define DUFFS_OBJC 100000000LL
+#define MAX_MONEY_OBJC (21000000LL * DUFFS_OBJC)
 
 @class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSSpecialTransactionsWalletHolder, DSInvitation;
 
@@ -90,6 +90,14 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 @property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
 
 - (void)authPrivateKey:(void (^_Nullable)(NSString *_Nullable authKey))completion;
+
++ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain
+                                                  storeSeedPhrase:(BOOL)store
+                                                      isTransient:(BOOL)isTransient;
++ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language
+                                                           forChain:(DSChain *)chain
+                                                    storeSeedPhrase:(BOOL)store
+                                                        isTransient:(BOOL)isTransient;
 
 + (DSWallet *_Nullable)standardWalletWithSeedPhrase:(NSString *)seedPhrase
                                     setCreationDate:(NSTimeInterval)creationDate
@@ -182,6 +190,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
                                           fromSeed:(NSData *_Nonnull)seed;
 - (NSString *_Nullable)privateKeyAddressForAddress:(NSString *)address
                                           fromSeed:(NSData *)seed;
+- (NSData *_Nullable)signDigest:(UInt256)digest
+      usingPrivateKeyForAddress:(NSString *)address
+                       fromSeed:(NSData *)seed;
 
 //generate a random Mnemonic seed
 + (NSString *_Nullable)generateRandomSeedPhrase;

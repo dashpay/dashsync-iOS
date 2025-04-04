@@ -276,9 +276,9 @@
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    BlockHeightFinder finder = ^uint32_t(UInt256 blockHash) {
-        return [self.chain heightForBlockHash:blockHash];
-    };
+//    BlockHeightFinder finder = ^uint32_t(UInt256 blockHash) {
+//        return [self.chain heightForBlockHash:blockHash];
+//    };
     if ([segue.identifier isEqualToString:@"MasternodeDetailSegue"]) {
         NSIndexPath *indexPath = self.tableView.indexPathForSelectedRow;
         dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry *qualified_entry = self.masternodeList->masternodes->values[indexPath.row];

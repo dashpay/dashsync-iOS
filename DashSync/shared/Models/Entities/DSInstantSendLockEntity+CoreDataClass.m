@@ -11,7 +11,7 @@
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSTransactionEntity+CoreDataClass.h"
-#import "DSTransactionHashEntity+CoreDataClass.m"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -50,13 +50,13 @@
         [inputOutpoints addObject:dsutxo_data(input.outpoint)];
     }
     return [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash
-                                                                                                          withInputOutpoints:inputOutpoints
-                                                                                                                     version:self.version
-                                                                                                                   signature:self.signature
-                                                                                                                   cycleHash:self.cycleHash
-                                                                                                           signatureVerified:TRUE
-                                                                                                              quorumVerified:TRUE
-                                                                                                                     onChain:chain];
+                                                      withInputOutpoints:inputOutpoints
+                                                                 version:self.version
+                                                               signature:self.signature
+                                                               cycleHash:self.cycleHash
+                                                       signatureVerified:TRUE
+                                                          quorumVerified:TRUE
+                                                                 onChain:chain];
 }
 
 @end

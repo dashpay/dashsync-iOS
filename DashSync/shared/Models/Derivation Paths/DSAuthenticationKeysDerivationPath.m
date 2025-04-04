@@ -313,4 +313,9 @@
     }];
 }
 
+- (UInt256)keyIdAtIndex:(uint32_t)index {
+    NSData *data = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+    return [data SHA256];
+}
+
 @end

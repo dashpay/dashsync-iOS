@@ -1,6 +1,6 @@
 //  
-//  Created by Andrei Ashikhmin
-//  Copyright © 2024 Dash Core Group. All rights reserved.
+//  Created by Vladimir Pirogov
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import "DSTransaction.h"
 #import "DSKeyManager.h"
+#import "DSTransactionOutput.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSTransaction (CoinJoin)
+@interface DSTransactionOutput (FFI)
 
-- (DSTransaction *)initWithTransaction:(DTransaction *)transaction onChain:(DSChain *)chain;
-
-- (DTransaction *)ffi_malloc:(DChainType *)chainType;
-+ (void)ffi_free:(DTransaction *)tx;
+- (DTxOut *)ffi_malloc;
++ (void)ffi_free:(DTxOut *)output;
 
 @end
 

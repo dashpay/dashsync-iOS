@@ -86,6 +86,16 @@
 
 @implementation DSWallet
 
++ (DSWallet *)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    NSParameterAssert(chain);
+    return [self standardWalletWithRandomSeedPhraseInLanguage:DSBIP39Language_Default forChain:chain storeSeedPhrase:store isTransient:isTransient];
+}
+
++ (DSWallet *)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    NSParameterAssert(chain);
+    return [self standardWalletWithSeedPhrase:[self generateRandomSeedPhraseForLanguage:language] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store isTransient:isTransient];
+}
+
 + (DSWallet *)standardWalletWithSeedPhrase:(NSString *)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
     NSParameterAssert(seedPhrase);
     NSParameterAssert(chain);
@@ -974,6 +984,18 @@
         DMaybeOpaqueKeyDtor(result);
     }
     return keyAddress;
+}
+
+- (NSData *_Nullable)signDigest:(UInt256)digest
+      usingPrivateKeyForAddress:(NSString *)address
+                       fromSeed:(NSData *)seed {
+    DMaybeOpaqueKey *opaque_key = [self privateKeyForAddress:address fromSeed:seed];
+    if (opaque_key->error) {
+        return nil;
+    }
+    NSData *signature = [DSKeyManager signMesasageDigest:opaque_key->ok digest:digest];
+    DMaybeOpaqueKeyDtor(opaque_key);
+    return signature;
 }
 
 - (void)reloadDerivationPaths {

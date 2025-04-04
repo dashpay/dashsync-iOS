@@ -448,14 +448,15 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
         DSLog(@"[%@] CoinJoin: session is not connected to a masternode, sessionId: %@", self.chain.name, uint256_hex(sessionId));
         return NO;
     }
-    
+    DSChainManager *chainManager = self.chain.chainManager;
     DSLog(@"[%@] CoinJoin: masternode[connecting] %@: %@; %@", self.chain.name, peer.location, uint256_hex(proTxHash), uint256_hex(sessionId));
     
-    [peer setChainDelegate:self.chain.chainManager
-              peerDelegate:self transactionDelegate:self.chain.chainManager.transactionManager
-        governanceDelegate:self.chain.chainManager.governanceSyncManager
-             sporkDelegate:self.chain.chainManager.sporkManager
-        masternodeDelegate:self.chain.chainManager.masternodeManager
+    [peer setChainDelegate:chainManager
+              peerDelegate:self
+       transactionDelegate:(id<DSPeerTransactionDelegate>) chainManager.transactionManager
+        governanceDelegate:(id<DSPeerGovernanceDelegate>) chainManager.governanceSyncManager
+             sporkDelegate:(id<DSPeerSporkDelegate>) chainManager.sporkManager
+        masternodeDelegate:chainManager.masternodeManager
                      queue:self.networkingQueue];
     peer.earliestKeyTime = self.chain.earliestWalletCreationTime;;
 

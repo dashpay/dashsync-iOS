@@ -92,4 +92,7 @@
     return [NSString stringWithFormat:@"%u: %@ .. %u: %@", blockHeightLookup(self.baseBlockHashes[0].UInt256), self.baseBlockHashes[0].hexString, blockHeightLookup(self.blockHash), uint256_hex(self.blockHash)];
 }
 
+- (BOOL)logging {
+    return YES;
+}
 @end

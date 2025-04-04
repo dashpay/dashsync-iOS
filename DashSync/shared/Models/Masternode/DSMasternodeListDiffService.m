@@ -100,7 +100,7 @@
         return;
     }
     if ([self.requestsInRetrieval count]) {
-        DSLog(@"%@ Already in retrieval", self.logPrefix);
+        //DSLog(@"%@ Already in retrieval", self.logPrefix);
         return;
     }
     if ([self peerIsDisconnected]) {

@@ -15,23 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DSTransactionInput.h"
-#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
+#import "DSTransaction.h"
+#import "DSKeyManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSTransactionInput (CoinJoin)
+@interface DSTransaction (FFI)
 
-- (DTxIn *)ffi_malloc;
-+ (void)ffi_free:(DTxIn *)input;
++ (instancetype)ffi_from:(DTransaction *)transaction onChain:(DSChain *)chain;
+- (DTransaction *)ffi_malloc:(DChainType *)chainType;
++ (void)ffi_free:(DTransaction *)tx;
 
 @end
-
-@interface NSArray (Vec_dashcore_blockdata_transaction_txin_TxIn)
-+ (DTxInputs *)ffi_to_tx_inputs:(NSArray<DSTransactionInput *> *)obj;
-+ (void)ffi_destroy_tx_inputs:(DTxInputs *)ffi_ref;
-@end
-
 
 NS_ASSUME_NONNULL_END

@@ -17,15 +17,16 @@
 
 #import "BigIntTypes.h"
 #import "DSChain+Transaction.h"
-#import "DSTransaction.h"
-#import "DSTransaction+CoinJoin.h"
-#import "DSTransactionInput+CoinJoin.h"
+#import "DSAssetLockTransaction.h"
+#import "DSTransaction+FFI.h"
+#import "DSTransactionInput+FFI.h"
+#import "DSTransactionOutput+FFI.h"
 #import "NSData+Dash.h"
 #import "DSKeyManager.h"
 
-@implementation DSTransaction (CoinJoin)
+@implementation DSTransaction (FFI)
 
-- (DSTransaction *)initWithTransaction:(DTransaction *)transaction onChain:(DSChain *)chain {
++ (nonnull instancetype)ffi_from:(nonnull DTransaction *)transaction onChain:(nonnull DSChain *)chain {
     NSMutableArray *hashes = [NSMutableArray array];
     NSMutableArray *indexes = [NSMutableArray array];
     NSMutableArray *scripts = [NSMutableArray array];
@@ -61,13 +62,41 @@
         [amounts addObject:amount];
     }
 
-    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:hashes
-                                                      inputIndexes:indexes
-                                                      inputScripts:scripts
-                                                    inputSequences:inputSequences
-                                                   outputAddresses:addresses
-                                                     outputAmounts:amounts
-                                                           onChain:chain];
+    DSTransaction *tx;
+    switch (transaction->special_transaction_payload->tag) {
+        case dashcore_blockdata_transaction_special_transaction_TransactionPayload_AssetLockPayloadType: {
+            dashcore_blockdata_transaction_special_transaction_asset_lock_AssetLockPayload *payload = transaction->special_transaction_payload->asset_lock_payload_type;
+            NSMutableArray<DSTransactionOutput *> *creditOutputs = [NSMutableArray arrayWithCapacity:payload->credit_outputs->count];
+            for (int i = 0; i < payload->credit_outputs->count; i++) {
+                DTxOut *output = payload->credit_outputs->values[i];
+                NSData *script = NSDataFromPtr(output->script_pubkey->_0);
+                [creditOutputs addObject:[DSTransactionOutput transactionOutputWithAmount:output->value outScript:script onChain:chain]];
+            }
+            
+            tx = [[DSAssetLockTransaction alloc] initWithInputHashes:hashes
+                                                        inputIndexes:indexes
+                                                        inputScripts:scripts
+                                                      inputSequences:inputSequences
+                                                     outputAddresses:addresses
+                                                       outputAmounts:amounts
+                                                       creditOutputs:creditOutputs
+                                                      payloadVersion:payload->version
+                                                             onChain:chain];
+        }
+        default: {
+            // TODO: implement other transactions types
+            tx = [[DSTransaction alloc] initWithInputHashes:hashes
+                                               inputIndexes:indexes
+                                               inputScripts:scripts
+                                             inputSequences:inputSequences
+                                            outputAddresses:addresses
+                                              outputAmounts:amounts
+                                                    onChain:chain];
+
+        };
+    }
+
+    
     tx.version = transaction->version;
     
     return tx;
@@ -84,7 +113,7 @@
     
     for (uintptr_t i = 0; i < outputsCount; ++i) {
         DSTransactionOutput *output = self.outputs[i];
-        output_values[i] = DTxOutCtor(output.amount, DScriptBufCtor(bytes_ctor(output.outScript)));
+        output_values[i] = [output ffi_malloc];
     }
     DTransaction *transaction = DTransactionCtor(self.version, self.lockTime, DTxInputsCtor(inputsCount, input_values), DTxOutputsCtor(outputsCount, output_values), NULL);
     return transaction;
@@ -94,6 +123,8 @@
     if (!tx) return;
     DTransactionDtor(tx);
 }
+
+
 
 @end
 

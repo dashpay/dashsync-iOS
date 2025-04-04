@@ -52,18 +52,6 @@ NSString const *transientDerivedKeyDataKey = @"transientDerivedKeyDataKey";
     return wallet;
 }
 
-+ (DSWallet *)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
-    NSParameterAssert(chain);
-
-    return [self standardWalletWithRandomSeedPhraseInLanguage:DSBIP39Language_Default forChain:chain storeSeedPhrase:store isTransient:isTransient];
-}
-
-+ (DSWallet *)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
-    NSParameterAssert(chain);
-
-    return [self standardWalletWithSeedPhrase:[self generateRandomSeedPhraseForLanguage:language] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store isTransient:isTransient];
-}
-
 + (NSString *)setTransientDerivedKeyData:(NSData *)derivedKeyData withAccounts:(NSArray *)accounts forChain:(DSChain *)chain {
     if (!derivedKeyData) return nil;
     NSString *uniqueID = nil;

@@ -28,7 +28,7 @@
 }
 
 - (IBAction)checkAddress:(id)sender {
-    NSString *address = self.addressTextField.text;
+//    NSString *address = self.addressTextField.text;
 //    if (DIsValidDashAddress(DChar(address), self.chainManager.chain.chainType)) {
 //        [self.chainManager.DAPIClient.DAPIPlatformNetworkService getAddressSummary:@[address]
 //            noTxList:NO

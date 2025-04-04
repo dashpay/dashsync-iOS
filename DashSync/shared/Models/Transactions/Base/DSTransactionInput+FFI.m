@@ -17,10 +17,10 @@
 
 #import "BigIntTypes.h"
 #import "DSTransactionInput.h"
-#import "DSTransactionInput+CoinJoin.h"
+#import "DSTransactionInput+FFI.h"
 #import "NSData+Dash.h"
 
-@implementation DSTransactionInput (CoinJoin)
+@implementation DSTransactionInput (FFI)
 
 - (DTxIn *)ffi_malloc {
     DOutPoint *outpoint = DOutPointCtorU(self.inputHash, self.index);

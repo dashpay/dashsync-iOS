@@ -1,6 +1,6 @@
 //  
-//  Created by Vladimir Pirogov
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,23 @@
 //  limitations under the License.
 //
 
+#import "DSTransactionInput.h"
+#import "DSKeyManager.h"
 #import <Foundation/Foundation.h>
-#import "DSMasternodeListService.h"
-#import "DSMerkleBlock.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSQuorumRotationService : DSMasternodeListService
+@interface DSTransactionInput (FFI)
 
-@property (nonatomic, assign) NSTimeInterval lastSyncedTimestamp;
-@property (nonatomic, strong, readonly) NSData *retrievalBlockHash;
-- (void)getRecent:(UInt256)blockHash;
-- (void)fetchMasternodeListToRetrieve:(void (^)(NSData *listsToRetrieve))completion;
-- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
+- (DTxIn *)ffi_malloc;
++ (void)ffi_free:(DTxIn *)input;
 
 @end
+
+@interface NSArray (Vec_dashcore_blockdata_transaction_txin_TxIn)
++ (DTxInputs *)ffi_to_tx_inputs:(NSArray<DSTransactionInput *> *)obj;
++ (void)ffi_destroy_tx_inputs:(DTxInputs *)ffi_ref;
+@end
+
 
 NS_ASSUME_NONNULL_END

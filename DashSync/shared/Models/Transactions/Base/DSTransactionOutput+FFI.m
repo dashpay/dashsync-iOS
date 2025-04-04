@@ -1,6 +1,6 @@
 //  
 //  Created by Vladimir Pirogov
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,17 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSTransactionOutput+FFI.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSTransactionOutput (FFI)
 
-@interface DSMessageRequest : NSObject<NSCoding, NSSecureCoding>
+- (DTxOut *)ffi_malloc {
+    return DTxOutCtor(self.amount, DScriptBufCtor(self.outScript ? bytes_ctor(self.outScript) : bytes_ctor([NSData data])));
+}
 
-@property (nonatomic, readonly) BOOL logging;
-@property (nonatomic, readonly) NSString *type;
-
-+ (instancetype)requestWithType:(NSString *)type;
-- (instancetype)initWithType:(NSString *)type;
-
-- (NSData *)toData;
++ (void)ffi_free:(DTxOut *)output {
+    if (!output) return;
+    DTxOutDtor(output);
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
