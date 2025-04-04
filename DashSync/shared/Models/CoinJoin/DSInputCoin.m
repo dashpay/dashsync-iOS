@@ -16,6 +16,7 @@
 //
 
 #import "DSInputCoin.h"
+#import "DSTransactionOutput+FFI.h"
 
 @implementation DSInputCoin
 
@@ -33,8 +34,7 @@
 - (DInputCoin *)ffi_malloc:(DChainType *)type {
     // TODO: check outpoint hash reverse or not
     DOutPoint *outpoint = DOutPointCtorU(self.outpointHash, self.outpointIndex);
-    DTxOut *tx_out = DTxOutCtor(self.output.amount, DScriptBufCtor(bytes_ctor(self.output.outScript)));
-    return DInputCoinCtor(outpoint, tx_out, self.effectiveValue);
+    return DInputCoinCtor(outpoint, [self.output ffi_malloc], self.effectiveValue);
 }
 
 + (void)ffi_free:(DInputCoin *)inputCoin {

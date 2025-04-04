@@ -3,25 +3,25 @@ PODS:
   - CocoaLumberjack (3.7.2):
     - CocoaLumberjack/Core (= 3.7.2)
   - CocoaLumberjack/Core (3.7.2)
-  - DashSharedCore (0.5.0)
+  - DashSharedCore (0.5.1)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
-    - DashSharedCore (= 0.5.0)
+    - DashSharedCore (= 0.5.1)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
   - KVO-MVVM (0.5.1)
-  - SDWebImage (5.14.3):
-    - SDWebImage/Core (= 5.14.3)
-  - SDWebImage/Core (5.14.3)
+  - SDWebImage (5.21.0):
+    - SDWebImage/Core (= 5.21.0)
+  - SDWebImage/Core (5.21.0)
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
   - DashSharedCore (from `../../dash-shared-core-ferment/`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
-  - SDWebImage (= 5.14.3)
+  - SDWebImage (= 5.21.0)
 
 SPEC REPOS:
   trunk:
@@ -48,13 +48,13 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  DashSharedCore: 6010e7cd176984ba4b153fd984e69e1b397e666a
-  DashSync: 1f423727bb7398aeb288a42233fdb979b68a9542
+  DashSharedCore: 37eda0b2954bf605aa4afa310d9ab4474fff9097
+  DashSync: 8d090412f8041f916fdeed32fc5814d88538856c
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  SDWebImage: 9c36e66c8ce4620b41a7407698dda44211a96764
+  SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
 
-PODFILE CHECKSUM: 6d0caf342a8a4873843775ad12b0883a69c02948
+PODFILE CHECKSUM: cd434cceb1ac899847b4f9d7693c7deb9f0af2ae
 
 COCOAPODS: 1.15.2

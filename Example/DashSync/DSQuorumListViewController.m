@@ -115,7 +115,7 @@
 #pragma mark - Table view data source
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    NSInteger quorumType = dashcore_sml_llmq_type_LLMQType_index(self.masternode_list->quorums->keys[section]);
+    NSInteger quorumType = DLLMQTypeIndex(self.masternode_list->quorums->keys[section]);
 //    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
 //    NSInteger quorumType = [[sectionInfo name] integerValue];
     switch (quorumType) {

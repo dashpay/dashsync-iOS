@@ -102,6 +102,8 @@
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
+#import "DSAssetLockTransaction.h"
+#import "DSAssetUnlockTransaction.h"
 
 #import "DSPaymentProtocol.h"
 #import "DSPaymentRequest.h"

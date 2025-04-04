@@ -58,7 +58,7 @@
 #define VOLATILE_RATES_CUTTOFF_PERIOD 7 * 24 * 60 * 60 // 7 Days
 
 #define DEFAULT_CURRENCY_CODE @"USD"
-#define DEFAULT_SPENT_LIMIT DUFFS
+#define DEFAULT_SPENT_LIMIT DUFFS_OBJC
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
 
@@ -113,7 +113,7 @@
     self.dashFormat.currencySymbol = DASH;
     self.dashFormat.maximumFractionDigits = 8;
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
-    self.dashFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
+    self.dashFormat.maximum = @(MAX_MONEY_OBJC / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
 
     _csvDashFormat = [self.dashFormat copy];
     self.csvDashFormat.currencyCode = @"";
@@ -137,7 +137,7 @@
     self.dashSignificantFormat.maximumSignificantDigits = 6;
     self.dashSignificantFormat.maximumFractionDigits = 8;
     self.dashSignificantFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
-    self.dashSignificantFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
+    self.dashSignificantFormat.maximum = @(MAX_MONEY_OBJC / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
 
     _bitcoinFormat = [NSNumberFormatter new];
     self.bitcoinFormat.lenient = YES;
@@ -153,7 +153,7 @@
     self.bitcoinFormat.currencySymbol = BTC;
     self.bitcoinFormat.maximumFractionDigits = 8;
     self.bitcoinFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
-    self.bitcoinFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.bitcoinFormat.maximumFractionDigits));
+    self.bitcoinFormat.maximum = @(MAX_MONEY_OBJC / (int64_t)pow(10.0, self.bitcoinFormat.maximumFractionDigits));
 
     _unknownFormat = [NSNumberFormatter new];
     self.unknownFormat.lenient = YES;
@@ -243,7 +243,7 @@
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
         [[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyDashPrice.decimalValue]
-            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:MAX_MONEY / DUFFS]];
+            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:MAX_MONEY_OBJC / DUFFS_OBJC]];
 
     if ([self.localCurrencyCode isEqual:[NSLocale currentLocale].currencyCode]) {
         [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
@@ -445,13 +445,13 @@
             overflowbits = 0, p = 10, min, max, amount;
 
     if (local == 0 || price < 1) return 0;
-    while (llabs(local) + 1 > INT64_MAX / DUFFS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
-    min = llabs(local) * DUFFS / price + 1;                                  // minimum amount that safely matches local currency string
-    max = (llabs(local) + 1) * DUFFS / price - 1;                            // maximum amount that safely matches local currency string
+    while (llabs(local) + 1 > INT64_MAX / DUFFS_OBJC) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
+    min = llabs(local) * DUFFS_OBJC / price + 1;                                  // minimum amount that safely matches local currency string
+    max = (llabs(local) + 1) * DUFFS_OBJC / price - 1;                            // maximum amount that safely matches local currency string
     amount = (min + max) / 2;                                                // average min and max
     while (overflowbits > 0) local *= 2, min *= 2, max *= 2, amount *= 2, overflowbits--;
 
-    if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
+    if (amount >= MAX_MONEY_OBJC) return (local < 0) ? -MAX_MONEY_OBJC : MAX_MONEY_OBJC;
     while ((amount / p) * p >= min && p <= INT64_MAX / 10) p *= 10; // lowest decimal precision matching local currency string
     p /= 10;
     return (local < 0) ? -(amount / p) * p : (amount / p) * p;
@@ -475,14 +475,14 @@
     int64_t local = amt + DBL_EPSILON * amt, overflowbits = 0;
 
     if (local == 0) return 0;
-    while (llabs(local) + 1 > INT64_MAX / DUFFS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
-    int64_t min = llabs(local) * DUFFS / (int64_t)(price + DBL_EPSILON * price) + 1,
-            max = (llabs(local) + 1) * DUFFS / (int64_t)(price + DBL_EPSILON * price) - 1,
+    while (llabs(local) + 1 > INT64_MAX / DUFFS_OBJC) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
+    int64_t min = llabs(local) * DUFFS_OBJC / (int64_t)(price + DBL_EPSILON * price) + 1,
+            max = (llabs(local) + 1) * DUFFS_OBJC / (int64_t)(price + DBL_EPSILON * price) - 1,
             amount = (min + max) / 2, p = 10;
 
     while (overflowbits > 0) local *= 2, min *= 2, max *= 2, amount *= 2, overflowbits--;
 
-    if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
+    if (amount >= MAX_MONEY_OBJC) return (local < 0) ? -MAX_MONEY_OBJC : MAX_MONEY_OBJC;
     while ((amount / p) * p >= min && p <= INT64_MAX / 10) p *= 10; // lowest decimal precision matching local currency string
     p /= 10;
     return (local < 0) ? -(amount / p) * p : (amount / p) * p;
@@ -494,7 +494,7 @@
 
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:self.bitcoinDashPrice.decimalValue]
                         decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
-                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
+                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS_OBJC]],
                     *min = [[NSDecimalNumber one]
                         decimalNumberByMultiplyingByPowerOf10:-self.bitcoinFormat.maximumFractionDigits];
 
@@ -534,7 +534,7 @@
 
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyBitcoinPrice.decimalValue]
                         decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
-                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
+                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS_OBJC]],
                     *min = [[NSDecimalNumber one]
                         decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
 
@@ -557,7 +557,7 @@
 
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:local.decimalValue]
                         decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
-                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
+                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS_OBJC]],
                     *min = [[NSDecimalNumber one]
                         decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
 
@@ -583,7 +583,7 @@
 
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:@(price).decimalValue]
                         decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
-                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
+                        decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS_OBJC]],
                     *min = [[NSDecimalNumber one]
                         decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
 

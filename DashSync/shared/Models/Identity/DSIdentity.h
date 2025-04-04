@@ -203,10 +203,13 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
  */
 - (BOOL)unregisterLocally;
 
-/*! @brief Register the blockchain identity to its wallet from a credit funding registration transaction. This should only be done once on the creation of the blockchain identity.
+/*! @brief Register the blockchain identity to its wallet from a asset lock transaction. This should only be done once on the creation of the blockchain identity.
     @param transaction The asset lock transaction used to initially fund the blockchain identity.
 */
 - (void)registerInWalletForAssetLockTransaction:(DSAssetLockTransaction *)transaction;
+
+
+- (void)registerInWalletForAssetLockTopupTransaction:(DSAssetLockTransaction *)transaction;
 
 // MARK: - Keys
 

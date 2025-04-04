@@ -241,7 +241,7 @@
                walletPhrase:nil];
 }
 
-- (void)setupDevnetWithId:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType
+- (void)setupDevnetWithId:(DDevnetType *)devnetType
              sporkAddress:(NSString *)sporkAddress
           sporkPrivateKey:(NSString *)sporkPrivateKey
        minProtocolVersion:(uint32_t)minProtocolVersion

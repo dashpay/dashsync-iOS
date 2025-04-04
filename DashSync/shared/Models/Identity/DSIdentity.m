@@ -32,6 +32,7 @@
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
+#import "DSTransactionOutput+FFI.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSWallet+Identity.h"
 #import "NSData+Encryption.h"
@@ -1317,7 +1318,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     DTxOut **tx_outputs = malloc(sizeof(DTxOut *) * outputsCount);
     for (int i = 0; i < outputs.count; i++) {
         DSTransactionOutput *o = outputs[i];
-        tx_outputs[i] = DTxOutCtor(o.amount, DScriptBufCtor(o.outScript ? bytes_ctor(o.outScript) : bytes_ctor([NSData data])));
+        tx_outputs[i] = [o ffi_malloc];
     }
     uint8_t asset_lock_payload_version = self.registrationAssetLockTransaction.specialTransactionVersion;
     
@@ -1326,7 +1327,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     DTxOut **credit_outputs = malloc(sizeof(DTxOut *) * creditOutputsCount);
     for (int i = 0; i < creditOutputsCount; i++) {
         DSTransactionOutput *o = creditOutputs[i];
-        credit_outputs[i] = DTxOutCtor(o.amount, DScriptBufCtor(o.outScript ? bytes_ctor(o.outScript) : bytes_ctor([NSData data])));
+        credit_outputs[i] = [o ffi_malloc];
     }
 
     DTxInputs *input_vec = DTxInputsCtor(inputsCount, tx_inputs);

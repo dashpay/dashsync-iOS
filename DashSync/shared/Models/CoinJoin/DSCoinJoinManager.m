@@ -97,7 +97,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (DCoinJoinClientOptions *)createOptions {
-    DCoinJoinClientOptions *options = dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_ctor(true, DUFFS / 8, 6, 1, COINJOIN_RANDOM_ROUNDS, DEFAULT_COINJOIN_DENOMS_GOAL, DEFAULT_COINJOIN_DENOMS_HARDCAP, false, self.chain.chainType, false);
+    DCoinJoinClientOptions *options = dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_ctor(true, DUFFS_OBJC / 8, 6, 1, COINJOIN_RANDOM_ROUNDS, DEFAULT_COINJOIN_DENOMS_GOAL, DEFAULT_COINJOIN_DENOMS_HARDCAP, false, self.chain.chainType, false);
     return options;
 }
 
@@ -586,7 +586,7 @@ static dispatch_once_t managerChainToken = 0;
                     }
                     found = !dash_spv_coinjoin_coinjoin_CoinJoin_is_denominated_amount(value);
                 } else if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyMasternodeCollateral) {
-                    found = value == 1000 * DUFFS;
+                    found = value == 1000 * DUFFS_OBJC;
                 } else if (coinType == dash_spv_coinjoin_models_coin_control_CoinType_OnlyCoinJoinCollateral) {
                     found = dash_spv_coinjoin_coinjoin_CoinJoin_is_collateral_amount(value);
                 } else {
@@ -626,7 +626,7 @@ static dispatch_once_t managerChainToken = 0;
                 [vCoins addObject:[[DSInputCoin alloc] initWithTx:coin index:i]];
                 
                 // Checks the sum amount of all UTXO's.
-                if (minimumSumAmount != MAX_MONEY) {
+                if (minimumSumAmount != MAX_MONEY_OBJC) {
                     total += value;
                     
                     if (total >= minimumSumAmount) {

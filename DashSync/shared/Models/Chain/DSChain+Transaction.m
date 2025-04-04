@@ -314,8 +314,9 @@
         UInt160 creditBurnPublicKeyHash = tx.creditBurnPublicKeyHash;
         uint32_t index;
         DSWallet *wallet = [self walletHavingIdentityAssetLockRegistrationHash:creditBurnPublicKeyHash foundAtIndex:&index];
+        UInt256 identityId = tx.creditBurnIdentityIdentifier;
         if (wallet) {
-            DSIdentity *identity = [wallet identityForUniqueId:tx.creditBurnIdentityIdentifier];
+            DSIdentity *identity = [wallet identityForUniqueId:identityId];
             if (!identity) {
                 identity = [[DSIdentity alloc] initAtIndex:index withAssetLockTransaction:tx inWallet:wallet];
                 [identity registerInWalletForAssetLockTransaction:tx];
@@ -323,13 +324,17 @@
         } else {
             wallet = [self walletHavingIdentityAssetLockTopupHash:creditBurnPublicKeyHash foundAtIndex:&index];
             if (wallet) {
-                DSIdentity *identity = [wallet identityForUniqueId:tx.creditBurnIdentityIdentifier];
-//                [identity r]
+                DSIdentity *identity = [wallet identityForUniqueId:identityId];
+                if (identity) {
+                    [identity registerInWalletForAssetLockTopupTransaction:tx];
+                } else {
+                    NSAssert(NO, @"Topup unknown identity %@", uint256_hex(identityId));
+                }
                 
             } else {
                 wallet = [self walletHavingIdentityAssetLockInvitationHash:creditBurnPublicKeyHash foundAtIndex:&index];
                 if (wallet) {
-                    DSInvitation *invitation = [wallet invitationForUniqueId:tx.creditBurnIdentityIdentifier];
+                    DSInvitation *invitation = [wallet invitationForUniqueId:identityId];
                     if (!invitation) {
                         invitation = [[DSInvitation alloc] initAtIndex:index withAssetLockTransaction:tx inWallet:wallet];
                         [invitation registerInWalletForAssetLockTransaction:tx];

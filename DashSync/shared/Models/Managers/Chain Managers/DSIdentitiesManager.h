@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain, DSIdentity, DSAssetLockTransaction, DSTransientDashpayUser;
 
-@protocol DSDAPINetworkServiceRequest;
+//@protocol DSDAPINetworkServiceRequest;
 
 typedef void (^IdentitiesSuccessCompletionBlock)(NSArray<DSIdentity *> *_Nullable identities);
 typedef void (^IdentitiesCompletionBlock)(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *errors);

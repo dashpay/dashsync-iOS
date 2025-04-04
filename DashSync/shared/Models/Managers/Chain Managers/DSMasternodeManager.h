@@ -101,6 +101,8 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (NSSet<NSData *> *)blockHashesUsedByMasternodeLists;
 
+- (uintptr_t)currentQuorumsOfType:(DLLMQType)type;
+- (uintptr_t)currentValidQuorumsOfType:(DLLMQType)type;
 @end
 
 NS_ASSUME_NONNULL_END

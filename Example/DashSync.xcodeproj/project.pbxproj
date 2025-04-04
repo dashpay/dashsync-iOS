@@ -2423,6 +2423,7 @@
 				ORGANIZATIONNAME = "Dash Core Group";
 				TargetAttributes = {
 					6003F589195388D20070C39A = {
+						DevelopmentTeam = 44RJ69WHFF;
 						ProvisioningStyle = Automatic;
 					};
 					6003F5AD195388D20070C39A = {
@@ -2794,10 +2795,12 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-macOS/DashSync.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImage-macOS/SDWebImage.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImage.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2834,10 +2837,12 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DashSync-DashSync_Example/Pods-DashSync-DashSync_Example-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-iOS/DashSync.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImage-iOS/SDWebImage.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImage.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -3255,7 +3260,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
@@ -3316,7 +3321,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
@@ -3443,26 +3448,18 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
-					"-l\"BoringSSL-GRPC-macOS\"",
 					"-l\"CocoaImageHashing-macOS\"",
 					"-l\"CocoaLumberjack-macOS\"",
-					"-l\"DAPI-GRPC-macOS\"",
 					"-l\"DSDynamicOptions-macOS\"",
 					"-l\"DashSync-macOS\"",
 					"-l\"Protobuf-macOS\"",
 					"-l\"SDWebImage-macOS\"",
-					"-l\"TinyCborObjc-macOS\"",
 					"-l\"abseil-macOS\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
 					"-l\"dash_shared_core_macos\"",
-					"-l\"gRPC-Core-macOS\"",
-					"-l\"gRPC-ProtoRPC-macOS\"",
-					"-l\"gRPC-RxLibrary-macOS\"",
-					"-l\"gRPC-macOS\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor-macOS\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -3478,7 +3475,6 @@
 					"\"Security\"",
 					"-framework",
 					"\"SystemConfiguration\"",
-					"\"-ld_classic\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3510,26 +3506,18 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
-					"-l\"BoringSSL-GRPC-macOS\"",
 					"-l\"CocoaImageHashing-macOS\"",
 					"-l\"CocoaLumberjack-macOS\"",
-					"-l\"DAPI-GRPC-macOS\"",
 					"-l\"DSDynamicOptions-macOS\"",
 					"-l\"DashSync-macOS\"",
 					"-l\"Protobuf-macOS\"",
 					"-l\"SDWebImage-macOS\"",
-					"-l\"TinyCborObjc-macOS\"",
 					"-l\"abseil-macOS\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
 					"-l\"dash_shared_core_macos\"",
-					"-l\"gRPC-Core-macOS\"",
-					"-l\"gRPC-ProtoRPC-macOS\"",
-					"-l\"gRPC-RxLibrary-macOS\"",
-					"-l\"gRPC-macOS\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor-macOS\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -3545,7 +3533,6 @@
 					"\"Security\"",
 					"-framework",
 					"\"SystemConfiguration\"",
-					"\"-ld_classic\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

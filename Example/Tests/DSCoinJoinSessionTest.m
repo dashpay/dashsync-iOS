@@ -26,23 +26,8 @@
 @implementation DSCoinJoinSessionTest
 
 - (void)sessionTest {
-//    DCoinJoinClientOptions *options = malloc(sizeof(DCoinJoinClientOptions));
-    
-    DCoinJoinClientOptions *options = dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_ctor(YES, DUFFS / 4, 1, 1, COINJOIN_RANDOM_ROUNDS, DEFAULT_COINJOIN_DENOMS_GOAL, DEFAULT_COINJOIN_DENOMS_HARDCAP, NO, dash_spv_crypto_network_chain_type_ChainType_MainNet_ctor(), NO);
-    
-    dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_destroy(options);
-//    options->enable_coinjoin = YES;
-//    options->coinjoin_rounds = 1;
-//    options->coinjoin_sessions = 1;
-//    options->coinjoin_amount = DUFFS / 4; // 0.25 DASH
-//    options->coinjoin_random_rounds = COINJOIN_RANDOM_ROUNDS; // TODO: check
-//    options->coinjoin_denoms_goal = DEFAULT_COINJOIN_DENOMS_GOAL;
-//    options->coinjoin_denoms_hardcap = DEFAULT_COINJOIN_DENOMS_HARDCAP;
-//    options->coinjoin_multi_session = NO;
-//
-//    // TODO: session test
-//    
-//    free(options);
+    DCoinJoinClientOptions *options = DCoinJoinClientOptionsCtor(YES, DUFFS_OBJC / 4, 1, 1, COINJOIN_RANDOM_ROUNDS, DEFAULT_COINJOIN_DENOMS_GOAL, DEFAULT_COINJOIN_DENOMS_HARDCAP, NO, DChainTypeMainnet(), NO);
+    DCoinJoinClientOptionsDtor(options);
 }
 
 @end

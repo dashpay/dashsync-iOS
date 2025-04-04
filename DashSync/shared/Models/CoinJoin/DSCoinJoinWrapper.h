@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define DCoinJoinTransactionType dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType
 #define DCoinJoinTransactionTypeIndex(ptr) dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_index(ptr)
 #define DCoinJoinClientOptions dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions
+#define DCoinJoinClientOptionsCtor(enable, amount, sessions, rounds, random_rounds, denoms_goal, denoms_hardcap, multi_session, chain_type, denom_only) dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_ctor(enable, amount, sessions, rounds, random_rounds, denoms_goal, denoms_hardcap, multi_session, chain_type, denom_only)
+#define DCoinJoinClientOptionsDtor(ptr) dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_destroy(ptr)
 #define DInputCoin dash_spv_coinjoin_coin_selection_input_coin_InputCoin
 #define DInputCoinCtor(outpoint, out, value) dash_spv_coinjoin_coin_selection_input_coin_InputCoin_ctor(outpoint, out, value)
 #define DInputCoinDtor(ptr) dash_spv_coinjoin_coin_selection_input_coin_InputCoin_destroy(ptr)

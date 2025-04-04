@@ -21,21 +21,48 @@
 #import "DSAssetLockTransactionEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
 #import "DSGapLimit.h"
+#import "DSTransaction+FFI.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 @implementation DSAssetLockTransaction
 
-- (instancetype)initOnChain:(DSChain *)chain withCreditOutputs:(NSArray<DSTransactionOutput *> *)creditOutputs {
+- (instancetype)initOnChain:(DSChain *)chain withCreditOutputs:(NSArray<DSTransactionOutput *> *)creditOutputs payloadVersion:(uint8_t)payloadVersion {
     self = [super initOnChain:chain];
     if (self) {
         self.type = DSTransactionType_AssetLock;
         self.version = SPECIAL_TX_VERSION;
         self.creditOutputs = [creditOutputs mutableCopy];
-        self.specialTransactionVersion = 1;
+        self.specialTransactionVersion = payloadVersion;
     }
     return self;
+}
+
+- (instancetype)initWithInputHashes:(NSArray *)hashes
+                       inputIndexes:(NSArray *)indexes
+                       inputScripts:(NSArray *)scripts
+                     inputSequences:(NSArray *)inputSequences
+                    outputAddresses:(NSArray *)addresses
+                      outputAmounts:(NSArray *)amounts
+                      creditOutputs:(NSArray<DSTransactionOutput *> *)creditOutputs
+                     payloadVersion:(uint8_t)payloadVersion
+                            onChain:(DSChain *)chain {
+    self = [super initWithInputHashes:hashes
+                         inputIndexes:indexes
+                         inputScripts:scripts
+                       inputSequences:inputSequences
+                      outputAddresses:addresses
+                        outputAmounts:amounts
+                              onChain:chain];
+    if (self) {
+        self.type = DSTransactionType_AssetLock;
+        self.version = SPECIAL_TX_VERSION;
+        self.creditOutputs = [creditOutputs mutableCopy];
+        self.specialTransactionVersion = payloadVersion;
+    }
+    return self;
+
 }
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
@@ -170,21 +197,31 @@
 
 @end
 
-@implementation DSAssetLockTransaction (FFI)
-+ (instancetype)ffi_from:(dashcore_blockdata_transaction_Transaction *)transaction onChain:(DSChain *)chain {
-    if (!transaction->special_transaction_payload) {
-        return nil;
-    }
-    // TODO: it's used just for ui
-    switch (transaction->special_transaction_payload->tag) {
-        case dashcore_blockdata_transaction_special_transaction_TransactionPayload_AssetLockPayloadType: {
-            dashcore_blockdata_transaction_special_transaction_asset_lock_AssetLockPayload *payload = transaction->special_transaction_payload->asset_lock_payload_type;
-            // TODO: implement it
-            DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initOnChain:chain];
-//            tx.
-            return tx;
-        }
-        default: return nil;
-    }
-}
-@end
+//@implementation DSAssetLockTransaction (FFI)
+//+ (instancetype)ffi_from:(DTransaction *)transaction onChain:(DSChain *)chain {
+//    if (!transaction->special_transaction_payload) {
+//        return nil;
+//    }
+//    
+//    DSAssetLockTransaction *tx = (DSAssetLockTransaction *) [DSTransaction ffi_from:transaction onChain:chain];
+//    
+//    // TODO: it's used just for ui
+//    switch (transaction->special_transaction_payload->tag) {
+//        case dashcore_blockdata_transaction_special_transaction_TransactionPayload_AssetLockPayloadType: {
+//            dashcore_blockdata_transaction_special_transaction_asset_lock_AssetLockPayload *payload = transaction->special_transaction_payload->asset_lock_payload_type;
+//            // TODO: implement it
+//            NSMutableArray<DSTransactionOutput *> *creditOutputs = [NSMutableArray arrayWithCapacity:payload->credit_outputs->count];
+//            for (int i = 0; i < payload->credit_outputs->count; i++) {
+//                DTxOut *output = payload->credit_outputs->values[i];
+//                NSData *script = NSDataFromPtr(output->script_pubkey->_0);
+//                [creditOutputs addObject:[DSTransactionOutput transactionOutputWithAmount:output->value outScript:script onChain:chain]];
+//            }
+//            
+//            DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initOnChain:chain withCreditOutputs:creditOutputs payloadVersion:payload->version];
+////            tx.
+//            return tx;
+//        }
+//        default: return nil;
+//    }
+//}
+//@end

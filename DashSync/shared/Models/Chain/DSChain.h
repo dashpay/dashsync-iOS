@@ -169,6 +169,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
 - (DSMerkleBlock *_Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
+- (UInt256)chainTipHash;
 - (uint32_t)chainTipHeight;
 
 // MARK: Chain Sync

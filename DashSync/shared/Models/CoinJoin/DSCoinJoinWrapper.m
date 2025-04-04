@@ -17,7 +17,7 @@
 
 #import "DSCoinJoinManager.h"
 #import "DSWallet.h"
-#import "DSTransaction+CoinJoin.h"
+#import "DSTransaction+FFI.h"
 #import "DSAccount.h"
 #import "DSChain+Params.h"
 #import "DSChain+Transaction.h"
@@ -393,8 +393,8 @@ DInputCoins* availableCoins(const void *context, bool onlySafe, DCoinControl *co
                                                                onlySafe:onlySafe
                                                             coinControl:cc
                                                           minimumAmount:1
-                                                          maximumAmount:MAX_MONEY
-                                                       minimumSumAmount:MAX_MONEY
+                                                          maximumAmount:MAX_MONEY_OBJC
+                                                       minimumSumAmount:MAX_MONEY_OBJC
                                                            maximumCount:0];
         DCoinControlDtor(coinControl);
         NSUInteger count = coins.count;
@@ -435,7 +435,7 @@ DCompactTallyItems* selectCoinsGroupedByAddresses(const void *context,
 DTransaction* signTransaction(const void *context, DTransaction *transaction, bool anyoneCanPay) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
-        DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
+        DSTransaction *tx = [DSTransaction ffi_from:transaction onChain:wrapper.chain];
         DTransactionDtor(transaction);
         BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx anyoneCanPay:anyoneCanPay];
         if (isSigned) {

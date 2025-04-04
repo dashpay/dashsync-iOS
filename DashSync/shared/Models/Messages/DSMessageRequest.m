@@ -62,6 +62,8 @@
     return YES;
 }
 
-
+- (BOOL)logging {
+    return NO;
+}
 
 @end

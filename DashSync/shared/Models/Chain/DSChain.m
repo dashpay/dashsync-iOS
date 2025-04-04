@@ -155,7 +155,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
                                checkpoints:(NSArray<DSCheckpoint *> *)checkpoints {
     //for devnet the genesis checkpoint is really the second block
     if (!(self = [self init])) return nil;
-    self.chainType = dash_spv_crypto_network_chain_type_ChainType_DevNet_ctor(devnetType);
+    self.chainType = DChainTypeDevnet(devnetType);
     if (!checkpoints || ![checkpoints count]) {
         DSCheckpoint *genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
         DSCheckpoint *secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:devnetType onProtocolVersion:protocolVersion];
@@ -246,7 +246,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     static dispatch_once_t mainnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
-        _mainnet = [[DSChain alloc] initWithType:dash_spv_crypto_network_chain_type_ChainType_MainNet_ctor() checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array) / sizeof(*mainnet_checkpoint_array))]];
+        _mainnet = [[DSChain alloc] initWithType:DChainTypeMainnet() checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array) / sizeof(*mainnet_checkpoint_array))]];
         inSetUp = TRUE;
     });
     if (inSetUp) {
@@ -270,7 +270,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     static dispatch_once_t testnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&testnetToken, ^{
-        _testnet = [[DSChain alloc] initWithType:dash_spv_crypto_network_chain_type_ChainType_TestNet_ctor() checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array) / sizeof(*testnet_checkpoint_array))]];
+        _testnet = [[DSChain alloc] initWithType:DChainTypeTestnet() checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array) / sizeof(*testnet_checkpoint_array))]];
         inSetUp = TRUE;
     });
     if (inSetUp) {
@@ -556,6 +556,9 @@ static dispatch_once_t devnetToken = 0;
 
 - (NSString *)chainTip {
     return [NSData dataWithUInt256:self.lastTerminalBlock.blockHash].shortHexString;
+}
+- (UInt256)chainTipHash {
+    return self.lastTerminalBlock.blockHash;
 }
 - (uint32_t)chainTipHeight {
     return self.lastTerminalBlock.height;
@@ -1072,7 +1075,7 @@ static dispatch_once_t devnetToken = 0;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
     DSBlock *prev = nil;
-    DSLog(@"[%@] + block (asHeader: %u) %@ prev: %@", self.name, isHeaderOnly, uint256_hex(block.blockHash), uint256_hex(block.prevBlock));
+    //DSLog(@"[%@] + block (asHeader: %u) %@ prev: %@", self.name, isHeaderOnly, uint256_hex(block.blockHash), uint256_hex(block.prevBlock));
 
     DSBlockPosition blockPosition = DSBlockPosition_Orphan;
     DSChainSyncPhase phase = self.chainManager.syncPhase;

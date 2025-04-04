@@ -73,7 +73,7 @@
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-+ (UInt256)devnetGenesisCoinbaseTxHash:(dash_spv_crypto_network_chain_type_DevnetType *)devnetType
++ (UInt256)devnetGenesisCoinbaseTxHash:(DDevnetType *)devnetType
                      onProtocolVersion:(uint32_t)protocolVersion
                               forChain:(DSChain *)chain {
     DSTransaction *transaction = [[self alloc] initOnChain:chain];
@@ -966,9 +966,6 @@
     return YES;
 }
 
-@end
-
-@implementation DSTransaction (Extensions)
 - (DSTransactionDirection)direction {
     if (self.cachedDirection != DSTransactionDirection_NotAccountFunds) {
         return self.cachedDirection;

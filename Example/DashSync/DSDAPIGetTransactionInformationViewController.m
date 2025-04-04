@@ -18,6 +18,7 @@
 #import "DSDAPIGetTransactionInformationViewController.h"
 #import "BRBubbleView.h"
 #import "DSTransactionDetailViewController.h"
+#import "DSTransaction+FFI.h"
 #import "NSError+Platform.h"
 
 @interface DSDAPIGetTransactionInformationViewController ()

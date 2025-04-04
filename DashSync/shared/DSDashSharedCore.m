@@ -178,8 +178,17 @@
             break;
     }
     Vec_ *address_list = [NSArray ffi_to_vec:addresses];
+    dash_spv_apple_bindings_DiffConfig *diff_config = NULL;
+    if ([chain isMainnet]) {
+        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSString *filePath = [bundle pathForResource:@"mn_list_diff_0_2227096" ofType:@"bin"];
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
 
-    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_cl_signature_by_block_hash, update_address_usage_of_masternodes, issue_with_masternode_list_from_peer, notify_sync_state, context);
+        diff_config = dash_spv_apple_bindings_DiffConfig_ctor(bytes_ctor(data), 2227096);
+    }
+
+    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, diff_config, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_cl_signature_by_block_hash, update_address_usage_of_masternodes, issue_with_masternode_list_from_peer, notify_sync_state, context);
     return self;
 }
 

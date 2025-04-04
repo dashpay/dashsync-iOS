@@ -376,7 +376,8 @@
 - (void)sendRequest:(DSMessageRequest *)request {
     NSString *type = [request type];
     NSData *payload = [request toData];
-//    DSLog(@"%@:%u sendRequest: [%@]: %@", self.host, self.port, type, [payload hexString]);
+    if ([request logging])
+        DSLog(@"%@:%u sendRequest: [%@]: %@", self.host, self.port, type, [payload hexString]);
     [self sendMessage:payload type:type];
 }
 
