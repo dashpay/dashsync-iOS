@@ -248,7 +248,8 @@ uint32_t get_block_height_by_hash_caller(const void *context, u256 *block_hash) 
         height = [[core.chain insightVerifiedBlocksByHashDictionary] objectForKey:NSDataFromPtr(block_hash)].height;
     }
     u256_dtor(block_hash);
-    DSLog(@"[SDK] get_block_height_by_hash_caller: %@ = %u", uint256_hex(blockHash), height);
+    if (height == UINT32_MAX)
+        DSLog(@"[SDK] get_block_height_by_hash_caller: %@ = %u", uint256_hex(blockHash), height);
     return height;
 }
 void get_block_height_by_hash_dtor(uint32_t result) {}

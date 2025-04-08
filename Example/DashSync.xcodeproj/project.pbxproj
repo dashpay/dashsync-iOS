@@ -3268,13 +3268,18 @@
 					"$(inherited)",
 					"COCOAPODS=1",
 					"$(inherited)",
-					"GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1",
+					"DASHCORE_QUORUM_VALIDATION=1",
 					"DPP_STATE_TRANSITIONS=1",
 					"PLATFORM_VALUE_STD=1",
 				);
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MODULE_NAME = ExampleApp;
+				OTHER_CFLAGS = (
+					"-DDASHCORE_QUORUM_VALIDATION=1",
+					"-DDPP_STATE_TRANSITIONS=1",
+					"-DPLATFORM_VALUE_STD=1",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -3305,7 +3310,6 @@
 					"-framework",
 					"\"UIKit\"",
 					"-ld64",
-					"-DPP_STATE_TRANSITIONS",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3329,13 +3333,18 @@
 					"$(inherited)",
 					"COCOAPODS=1",
 					"$(inherited)",
-					"GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1",
+					"DASHCORE_QUORUM_VALIDATION=1",
 					"DPP_STATE_TRANSITIONS=1",
 					"PLATFORM_VALUE_STD=1",
 				);
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MODULE_NAME = ExampleApp;
+				OTHER_CFLAGS = (
+					"-DDASHCORE_QUORUM_VALIDATION=1",
+					"-DDPP_STATE_TRANSITIONS=1",
+					"-DPLATFORM_VALUE_STD=1",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -3366,7 +3375,6 @@
 					"-framework",
 					"\"UIKit\"",
 					"-ld64",
-					"-DPP_STATE_TRANSITIONS",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";

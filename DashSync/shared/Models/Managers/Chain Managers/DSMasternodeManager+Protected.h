@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)processRequestFromFileForBlockHash:(UInt256)blockHash;
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
 
+- (void)printEngineStatus;
+
 @end
 
 

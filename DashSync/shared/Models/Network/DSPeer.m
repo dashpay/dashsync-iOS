@@ -936,9 +936,11 @@
         NSTimeInterval timestamp = [message UInt32AtOffset:off];
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
         UInt128 address = *(UInt128 *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t));
-        uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
-                                                                 sizeof(uint32_t) + sizeof(uint64_t) +
-                                                                 sizeof(UInt128)));
+
+        uint16_t rawPort;
+        memcpy(&rawPort, (const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(UInt128), sizeof(rawPort));
+        uint16_t port = CFSwapInt16BigToHost(rawPort);
+
 
         if (!(services & SERVICES_NODE_NETWORK)) continue;                                   // skip peers that don't carry full blocks
         if (address.u64[0] != 0 || address.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; // ignore IPv6 for now

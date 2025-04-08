@@ -55,6 +55,7 @@
     } else {
         DSLog(@"%@ Missing block: %@ (%@)", self.logPrefix, blockHashData.hexString, blockHashData.reverse.hexString);
         self.retrievalBlockHash = nil;
+        self.retrievalQueueMaxAmount = 0;
     }
 }
 
@@ -65,9 +66,13 @@
     }];
 }
 
-- (NSUInteger)retrievalQueueMaxAmount { return 1; }
-
 - (void)fetchMasternodeListToRetrieve:(void (^)(NSData *listsToRetrieve))completion {
+    //DSLog(@"%@ fetchMasternodeListToRetrieve...: %u", self.logPrefix, [self hasActiveQueue]);
+    if (![self hasActiveQueue]) {
+        DSLog(@"%@ No masternode lists in retrieval", self.logPrefix);
+        [self.chain.masternodeManager masternodeListServiceEmptiedRetrievalQueue:self];
+        return;
+    }
     if ([self.requestsInRetrieval count]) {
         DSLog(@"%@ A masternode list is already in retrieval", self.logPrefix);
         return;
@@ -83,15 +88,19 @@
     completion([self.retrievalBlockHash copy]);
 }
 
-- (void)getRecent:(UInt256)blockHash {
-    self.retrievalBlockHash = uint256_data(blockHash);
+- (void)getRecent:(NSData *)blockHash {
+    self.retrievalQueueMaxAmount = 1;
+    self.retrievalBlockHash = blockHash;
     [self dequeueMasternodeListRequest];
 }
 
 - (void)cleanListsRetrievalQueue {
+    self.retrievalQueueMaxAmount = 0;
     self.retrievalBlockHash = nil;
 }
-
+- (BOOL)hasActiveQueue {
+    return self.retrievalBlockHash != nil;
+}
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
     // blockHeight % dkgInterval == activeSigningQuorumsCount + 11 + 8
@@ -100,7 +109,9 @@
         DSLog(@"%@ Request: already in retrieval: %@ .. %@", self.logPrefix,  uint256_hex(previousBlockHash), uint256_hex(blockHash));
         return;
     }
-    NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
+    
+    NSArray<NSData *> *baseBlockHashes = self.chain.isMainnet ? @[@"989ba7a808cd8dda1755658a235b366c1496122485cdfd990800000000000000".hexToData, [NSData dataWithUInt256:previousBlockHash]] : @[[NSData dataWithUInt256:previousBlockHash]];
+
     DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:YES];
     uint32_t prev_h = [self.chain heightForBlockHash:previousBlockHash];
     uint32_t h = [self.chain heightForBlockHash:blockHash];

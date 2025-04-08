@@ -39,15 +39,6 @@ typedef NS_ENUM(uint16_t, DSSyncStateKind) {
 - (void)updateWithSyncState:(DMNSyncState *)state;
 @end
 
-//@interface DSPlatformSyncState : NSObject <NSCopying>
-//
-//@property (nonatomic, assign) uint32_t retrievalQueueCount;
-//@property (nonatomic, assign) uint32_t retrievalQueueMaxAmount;
-//@property (nonatomic, assign) double storedCount;
-//@property (nonatomic, assign) double stubCount;
-//
-//@end
-
 
 @interface DSSyncState : NSObject <NSCopying>
 

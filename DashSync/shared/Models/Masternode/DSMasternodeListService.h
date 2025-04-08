@@ -34,37 +34,21 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
 @property (nonatomic, readonly) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
-//@property (nonatomic, readonly) NSOrderedSet<NSData *> *retrievalQueue;
-//@property (nonatomic, readonly) NSUInteger retrievalQueueCount;
 @property (nonatomic, readwrite) NSUInteger retrievalQueueMaxAmount;
-
 @property (nonatomic, assign) uint16_t timedOutAttempt;
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
 
 - (instancetype)initWithChain:(DSChain *)chain;
-
 - (void)dequeueMasternodeListRequest;
+- (void)getRecent:(NSData *)blockHash;
 - (void)stop;
-
 - (BOOL)peerIsDisconnected;
-
 - (void)cleanAllLists;
 - (void)cleanRequestsInRetrieval;
-//- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list;
-
-//- (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
-
-//- (NSUInteger)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
-//- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
 - (void)cleanListsRetrievalQueue;
 - (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
-
 - (void)disconnectFromDownloadPeer;
-//- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
-
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request;
-
-//- (void)checkWaitingForQuorums;
 - (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
 
 @end

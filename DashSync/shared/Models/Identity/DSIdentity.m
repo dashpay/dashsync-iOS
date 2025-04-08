@@ -302,7 +302,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
             DSAssetLockTransactionEntity *assetLockEntity = [DSAssetLockTransactionEntity anyObjectInContext:identityEntity.managedObjectContext matching:@"transactionHash.txHash == %@", transactionHashData];
             if (assetLockEntity) {
                 self.registrationAssetLockTransactionHash = assetLockEntity.transactionHash.txHash.UInt256;
-                DSLog(@"%@: AssetLockTX: Found: txHash: %@: entity: %@", self.logPrefix, uint256_hex(self.registrationAssetLockTransactionHash), assetLockEntity);
+                DSLog(@"%@: AssetLockTX: Entity Found for txHash: %@", self.logPrefix, uint256_hex(self.registrationAssetLockTransactionHash));
                 DSAssetLockTransaction *registrationAssetLockTransaction = (DSAssetLockTransaction *)[assetLockEntity transactionForChain:self.chain];
                 BOOL correctIndex = self.isOutgoingInvitation ?
                     [registrationAssetLockTransaction checkInvitationDerivationPathIndexForWallet:self.wallet isIndex:self.index] :
@@ -1911,20 +1911,20 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedPartialIdentity: {
-            NSData *identifier = NSDataFromPtr(proof_result->verified_partial_identity>id->_0->_0);
+            NSData *identifier = NSDataFromPtr(proof_result->verified_partial_identity->id->_0->_0);
             DSLog(@"%@: VerifiedPartialIdentity: %@", self.logPrefix, identifier.hexString);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedBalanceTransfer: {
-            dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedBalanceTransfer_Body *transfer = proof_result->verified_balance_transfer;
-            NSData *from_identifier = NSDataFromPtr(transfer->_0->id->_0->_0);
-            NSData *to_identifier = NSDataFromPtr(transfer->_1->id->_0->_0);
+            dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedBalanceTransfer_Body transfer = proof_result->verified_balance_transfer;
+            NSData *from_identifier = NSDataFromPtr(transfer._0->id->_0->_0);
+            NSData *to_identifier = NSDataFromPtr(transfer._1->id->_0->_0);
             DSLog(@"%@: VerifiedBalanceTransfer: %@ --> %@", self.logPrefix, from_identifier.hexString, to_identifier.hexString);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedDocuments: {
             std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_dpp_document_Document *verified_documents = proof_result->verified_documents;
-            DSLog(@"%@: VerifiedDocuments: %u", self.logPrefix, verified_documents->count);
+            DSLog(@"%@: VerifiedDocuments: %lu", self.logPrefix, verified_documents->count);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedMasternodeVote: {

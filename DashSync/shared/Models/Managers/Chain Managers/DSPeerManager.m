@@ -261,7 +261,9 @@
     NSMutableArray *mArray = [NSMutableArray array];
     for (int i = 0; i < vec->count; i++) {
         Tuple_Arr_u8_16_u16 *pair = vec->values[i];
-        [mArray addObject:[[DSPeer alloc] initWithAddress:u128_cast(pair->o_0) andPort:pair->o_1 onChain:self.chain]];
+        UInt128 ip = u128_cast(pair->o_0);
+        uint16_t port = pair->o_1;
+        [mArray addObject:[[DSPeer alloc] initWithAddress:ip andPort:port onChain:self.chain]];
     }
     Vec_Tuple_Arr_u8_16_u16_destroy(vec);
     return mArray;

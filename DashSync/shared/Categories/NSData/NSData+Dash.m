@@ -883,7 +883,7 @@ uint16_t compactBitsLE(UInt256 number) {
     for (int pos = 7; pos >= 0; pos--) {
         if (number.u32[pos]) {
             for (int bits = 31; bits > 0; bits--) {
-                if (number.u32[pos] & 1 << bits)
+                if (number.u32[pos] & 1U << bits)
                     return 32 * pos + bits + 1;
             }
             return 32 * pos + 1;

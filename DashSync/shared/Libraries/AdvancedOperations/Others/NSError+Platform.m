@@ -92,7 +92,7 @@
 + (NSError *)ffi_from_quorum_validation_error:(dashcore_sml_quorum_validation_error_QuorumValidationError *)ffi_ref {
     switch (ffi_ref->tag) {
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockNotPresent: {
-            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_block_not_present);
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_block_not_present._0);
             return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"QuorumValidationError::RequiredBlockNotPresent: %@ (%@)", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockHeightNotPresent:

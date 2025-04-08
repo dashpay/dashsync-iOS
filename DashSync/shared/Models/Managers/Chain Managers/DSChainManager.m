@@ -110,7 +110,7 @@
 }
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [Chain Manager] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [Chain Manager]", self.chain.name];
 }
 
 - (BOOL)isSynced {
@@ -157,7 +157,7 @@
 
     [self removeNonMainnetTrustedPeer];
     [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-    DSLog(@"[%@] Disconnected (MasternodeListAndBlocksRescan) -> peerManager::connect", self.logPrefix);
+    DSLog(@"%@ Disconnected (MasternodeListAndBlocksRescan) -> peerManager::connect", self.logPrefix);
     [self.peerManager connect];
 }
 
@@ -359,6 +359,7 @@
 - (void)chain:(DSChain *)chain wasExtendedWithBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer {
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
+        DSLog(@"%@ [%@:%d] chain extended with %@ -> re-request masternode lists", self.logPrefix, peer.host, peer.port, uint256_hex(merkleBlock.blockHash));
         [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];
     }
 }

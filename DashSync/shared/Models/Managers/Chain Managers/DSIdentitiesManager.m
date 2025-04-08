@@ -59,7 +59,7 @@
 @implementation DSIdentitiesManager
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [Identity Manager] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [Identity Manager]", self.chain.name];
 }
 
 - (instancetype)initWithChain:(DSChain *)chain {
@@ -128,11 +128,11 @@
     NSMutableArray *unsyncedIdentities = [NSMutableArray array];
     for (DSIdentity *identity in [self.chain localIdentities]) {
         if (!identity.registrationAssetLockTransaction || (identity.registrationAssetLockTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
-            DSLog(@"%@: unsynced identity (asset lock tx unknown or has unknown height) %@ %@", self.logPrefix, uint256_hex(identity.registrationAssetLockTransactionHash), identity.registrationAssetLockTransaction);
+            DSLog(@"%@ Unsynced identity (asset lock tx unknown or has unknown height) %@ %@", self.logPrefix, uint256_hex(identity.registrationAssetLockTransactionHash), identity.registrationAssetLockTransaction);
 
             [unsyncedIdentities addObject:identity];
         } else if (self.chain.lastSyncBlockHeight > identity.dashpaySyncronizationBlockHeight) {
-            DSLog(@"%@: unsynced identity (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
+            DSLog(@"%@: Unsynced identity (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
             //If they are equal then the blockchain identity is synced
             //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
             //That's because it is set at the time with the hash of the last
@@ -151,7 +151,7 @@
 
 //TODO: if we get an error or identity not found, better stop the process and start syncing chain
 - (void)syncIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
-    DSLog(@"%@: Sync Identities", self.logPrefix);
+    DSLog(@"%@ Sync Identities", self.logPrefix);
     if (!self.chain.isEvolutionEnabled) {
         if (completion) dispatch_async(self.chain.networkingQueue, ^{ completion(@[]); });
         return;

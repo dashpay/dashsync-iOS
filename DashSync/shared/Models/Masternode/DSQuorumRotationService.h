@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSTimeInterval lastSyncedTimestamp;
 @property (nonatomic, strong, readonly) NSData *retrievalBlockHash;
-- (void)getRecent:(UInt256)blockHash;
 - (void)fetchMasternodeListToRetrieve:(void (^)(NSData *listsToRetrieve))completion;
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
 

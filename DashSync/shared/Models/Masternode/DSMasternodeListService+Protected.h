@@ -23,16 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListService (Protected)
 
-//@property (nonatomic, assign) NSMutableOrderedSet<NSData *> *retrievalQueue;
-
 - (NSString *)logPrefix;
+- (BOOL)hasActiveQueue;
 
-//- (void)updateAfterProcessingMasternodeListWithBlockHash:(NSData *)blockHashData fromPeer:(DSPeer *)peer;
 - (BOOL)shouldProcessDiffResult:(u256 *)block_hash
                         isValid:(BOOL)isValid
         skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
-//- (BOOL)shouldProcessDiffResult:(DSMnDiffProcessingResult *)diffResult skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
-//- (DSMasternodeListRequest*__nullable)requestInRetrievalFor:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
 - (UInt256)closestKnownBlockHashForBlockHeight:(uint32_t)blockHeight;
 - (void)startTimeOutObserver;
 

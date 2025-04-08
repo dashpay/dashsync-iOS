@@ -63,7 +63,8 @@
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic) BOOL isSyncing;
 @property (nonatomic) BOOL isRestored;
-@property (nonatomic, strong) NSData* baseBlockHashWaitingForDiffs;
+@property (nonatomic) BOOL hasHandledQrInfoPipeline;
+@property (nonatomic) BOOL isPendingValidation;
 
 @end
 
@@ -88,7 +89,7 @@
 }
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [MasternodeManager] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [MasternodeManager]", self.chain.name];
 }
 
 - (BOOL)hasCurrentMasternodeListInLast30Days {
@@ -104,9 +105,7 @@
 
 
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-    if (self.baseBlockHashWaitingForDiffs)
-        [self getRecentMasternodeList];
-    else
+    if (!self.isPendingValidation)
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
 }
 
@@ -127,7 +126,11 @@
 
 - (BOOL)isMasternodeListOutdated {
     uint32_t lastHeight = self.lastMasternodeListBlockHeight;
-    return lastHeight == UINT32_MAX || lastHeight < self.chain.lastTerminalBlockHeight - 8;
+    return lastHeight == UINT32_MAX || lastHeight < self.chain.lastTerminalBlockHeight;
+}
+
+- (BOOL)isQRInfoOutdated {
+    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_is_qr_info_outdated(self.processor, self.chain.lastTerminalBlockHeight);
 }
 
 - (DMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
@@ -349,7 +352,12 @@
         DSLog(@"%@ getRecentMasternodeList: (no block exist) for tip", self.logPrefix);
         return;
     }
-    [self.quorumRotationService getRecent:merkleBlock.blockHash];
+    NSData *blockHash = uint256_data(merkleBlock.blockHash);
+    if (!self.isPendingValidation && (!self.hasHandledQrInfoPipeline || [self isQRInfoOutdated]))
+        [self.quorumRotationService getRecent:blockHash];
+
+    if (!self.isPendingValidation && self.hasHandledQrInfoPipeline && [self isMasternodeListOutdated])
+        [self.masternodeListDiffService getRecent:blockHash];
 }
 
 
@@ -363,7 +371,7 @@
             dispatch_source_set_timer(self.masternodeListTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), DISPATCH_TIME_FOREVER, 1ull * NSEC_PER_SEC);
             dispatch_source_set_event_handler(self.masternodeListTimer, ^{
                 NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
-                if (timeElapsed > safetyDelay) {
+                if (timeElapsed > safetyDelay && !self.isPendingValidation) {
                     [self getRecentMasternodeList];
                 }
             });
@@ -445,16 +453,38 @@
     [self.chain.chainManager notify:DSMasternodeListDiffValidationErrorNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 }
 
+- (void)printEngineStatus {
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_print_engine_status(self.processor);
+}
+
+- (NSError *_Nullable)verifyQuorums {
+#if defined(DASHCORE_QUORUM_VALIDATION)
+    DSLog(@"%@: Quorums Verification: Started", self.logPrefix);
+    Result_ok_bool_err_dashcore_sml_quorum_validation_error_QuorumValidationError *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_verify_current_masternode_list_quorums(self.processor);
+    if (result->error) {
+        NSError *quorumValidationError = [NSError ffi_from_quorum_validation_error:result->error];
+        DSLog(@"%@ Quorums Verification: Error: %@", self.logPrefix, quorumValidationError.description);
+        Result_ok_bool_err_dashcore_sml_quorum_validation_error_QuorumValidationError_destroy(result);
+        return quorumValidationError;
+    }
+    DSLog(@"%@: Quorums Verification: Ok", self.logPrefix);
+    Result_ok_bool_err_dashcore_sml_quorum_validation_error_QuorumValidationError_destroy(result);
+#else
+    DSLog(@"%@: Quorums Verification: Disabled", self.logPrefix);
+#endif
+    return nil;
+}
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
-    DSLog(@"%@ [%@:%d] mnlistdiff: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
+    //DSLog(@"%@ [%@:%d] mnlistdiff: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.masternodeListDiffService) {
         self.masternodeListDiffService.timedOutAttempt = 0;
     }
     dispatch_async(self.processingQueue, ^{
         dispatch_group_enter(self.processingGroup);
         Slice_u8 *message_slice = slice_ctor(message);
-        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, false);
+        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, self.hasHandledQrInfoPipeline);
+        
         if (result->error) {
             NSError *error = [NSError ffi_from_processing_error:result->error];
             DSLog(@"%@ mnlistdiff: Error: %@", self.logPrefix, error.description);
@@ -470,7 +500,7 @@
                     break;
             }
             #if SAVE_MASTERNODE_DIFF_TO_FILE
-            [self writeToDisk:[NSString stringWithFormat:@"MNL_ERR__%d_%lu.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
+            [self writeToDisk:[NSString stringWithFormat:@"MNL_ERR__%d_%f.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
             #endif
             DMnDiffResultDtor(result);
             dispatch_group_leave(self.processingGroup);
@@ -480,14 +510,20 @@
         if (self.isSyncing) {
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(result->ok->o_1);
             NSData *blockHashData = NSDataFromPtr(block_hash);
+            DSLog(@"%@ MNLISTDIFF: OK: %@", self.logPrefix, blockHashData.hexString);
             u256_dtor(block_hash);
             [self.masternodeListDiffService removeFromRetrievalQueue:blockHashData];
             
-            if ([self.masternodeListDiffService retrievalQueueCount]) {
+            if ([self.masternodeListDiffService hasActiveQueue]) {
                 [self.masternodeListDiffService dequeueMasternodeListRequest];
-            } else {
-                DSLog(@"%@: All diffs are here -> Re-request QRINFO for", self.logPrefix, self.baseBlockHashWaitingForDiffs.hexString);
-                [self getRecentMasternodeList];
+            } else if (self.isPendingValidation) {
+                NSError *quorumValidationError = [self verifyQuorums];
+                if (quorumValidationError) {
+                    DMnDiffResultDtor(result);
+                    dispatch_group_leave(self.processingGroup);
+                    return;
+                }
+                [self finishIntitialQrInfoPipeline];
             }
         }
         DMnDiffResultDtor(result);
@@ -533,7 +569,7 @@
                         break;
                 }
             #if SAVE_MASTERNODE_DIFF_TO_FILE
-                [self writeToDisk:[NSString stringWithFormat:@"QRINFO_ERR_%d_%lu.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
+                [self writeToDisk:[NSString stringWithFormat:@"QRINFO_ERR_%d_%f.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
             #endif
             #if SAVE_ERROR_STATE
                 Result_ok_Vec_u8_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError *bincode = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_serialize_engine(self.processor);
@@ -553,18 +589,25 @@
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             std_collections_BTreeSet_dashcore_hash_types_BlockHash *missed_hashes = result->ok;
             
-            DSLog(@"%@ qrinfo: OK: %ul", self.logPrefix, (uint16_t) missed_hashes->count);
+            DSLog(@"%@ QRINFO: OK: %u", self.logPrefix, (uint32_t) missed_hashes->count);
+//            #if SAVE_MASTERNODE_DIFF_TO_FILE
+//                [self writeToDisk:[NSString stringWithFormat:@"QRINFO_MISSED_%d_%f.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
+//            #endif
+
             if (missed_hashes->count > 0) {
-                self.baseBlockHashWaitingForDiffs = [self.quorumRotationService retrievalBlockHash];
+                self.isPendingValidation = YES;
                 [self.quorumRotationService cleanAllLists];
                 NSArray<NSData *> *missedHashes = [NSArray ffi_from_block_hash_btree_set:missed_hashes];
                 [self.masternodeListDiffService addToRetrievalQueueArray:missedHashes];
                 [self.masternodeListDiffService dequeueMasternodeListRequest];
             } else {
-                self.baseBlockHashWaitingForDiffs = nil;
-                [self.quorumRotationService cleanAllLists];
-                [self.quorumRotationService dequeueMasternodeListRequest];
-                [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+                NSError *quorumValidationError = [self verifyQuorums];
+                if (quorumValidationError) {
+                    DQRInfoResultDtor(result);
+                    dispatch_group_leave(self.processingGroup);
+                    return;
+                }
+                [self finishIntitialQrInfoPipeline];
             }
 
             DQRInfoResultDtor(result);
@@ -572,8 +615,16 @@
         });
 }
 
+- (void)finishIntitialQrInfoPipeline {
+    self.hasHandledQrInfoPipeline = YES;
+    self.isPendingValidation = NO;
+    [self.quorumRotationService cleanAllLists];
+    [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+    [self.quorumRotationService dequeueMasternodeListRequest];
+}
+
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
-    DSLog(@"%@ [%@:%d] qrinfo: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
+    //DSLog(@"%@ [%@:%d] qrinfo: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.quorumRotationService) {
         self.quorumRotationService.timedOutAttempt = 0;
     }
