@@ -732,6 +732,10 @@ static dispatch_once_t managerChainToken = 0;
     return outputs;
 }
 
++ (BOOL)isDenominatedAmount:(uint64_t)amount {
+    return is_denominated_amount(amount);
+}
+
 - (BOOL)isCoinJoinOutput:(DSTransactionOutput *)output utxo:(DSUTXO)utxo {
     if (![self.wrapper isDenominatedAmount:output.amount]) {
         return false;

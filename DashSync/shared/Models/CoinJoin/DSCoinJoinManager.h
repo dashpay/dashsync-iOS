@@ -111,6 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateOptionsWithAmount:(uint64_t)amount;
 - (void)updateOptionsWithEnabled:(BOOL)isEnabled;
 - (void)initiateShutdown;
++ (BOOL)isDenominatedAmount:(uint64_t)amount;
 
 // Events
 - (void)onSessionComplete:(int32_t)baseId
