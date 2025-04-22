@@ -145,16 +145,15 @@
 
 - (void)getSporks {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
-
     if (!self.sporkTimer) {
         [self performSporkRequest];
         self.sporkTimer = [NSTimer scheduledTimerWithTimeInterval:600
                                                           repeats:TRUE
                                                             block:^(NSTimer *_Nonnull timer) {
-                                                                if (self.lastSyncedSporks < [NSDate timeIntervalSince1970] - 60 * 10) { //wait 10 minutes between requests
-                                                                    [self performSporkRequest];
-                                                                }
-                                                            }];
+            if (self.lastSyncedSporks < [NSDate timeIntervalSince1970] - 60 * 10) { //wait 10 minutes between requests
+                [self performSporkRequest];
+            }
+        }];
     }
 }
 

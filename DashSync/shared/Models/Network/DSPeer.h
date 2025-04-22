@@ -271,6 +271,7 @@ typedef NS_ENUM(NSInteger, DSPeerType)
 @property (nonatomic, readonly, weak) id<DSPeerSporkDelegate> sporkDelegate;
 @property (nonatomic, readonly, weak) id<DSPeerMasternodeDelegate> masternodeDelegate;
 @property (nonatomic, readonly, weak) id<DSPeerChainDelegate> peerChainDelegate;
+// it's actually the chain networking queue
 @property (nonatomic, readonly) dispatch_queue_t delegateQueue;
 
 // set this to the timestamp when the wallet was created to improve initial sync time (interval since reference date)
@@ -313,7 +314,7 @@ typedef NS_ENUM(NSInteger, DSPeerType)
 - (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain *)chain timestamp:(NSTimeInterval)timestamp
                        services:(uint64_t)services;
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain *)chain;
-- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
+- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate;
 - (void)connect;
 - (void)disconnect;
 - (void)disconnectWithError:(NSError *_Nullable)error;

@@ -370,9 +370,13 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                     object:nil
-                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                 DSTransactionManagerNotificationTransactionKey: transaction,
-                                                          DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
+                                                                  userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain,
+                    DSTransactionManagerNotificationTransactionKey: transaction,
+                    DSTransactionManagerNotificationTransactionChangesKey: @{
+                        DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)
+                    }
+                }];
             });
         }
     }
@@ -948,11 +952,28 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
           publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
        errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
     DSPaymentProtocolRequest *protocolRequest = [paymentRequest protocolRequestForIdentity:identity onAccount:account inContext:[NSManagedObjectContext viewContext]];
-    [self confirmProtocolRequest:protocolRequest forAmount:paymentRequest.amount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO mixedOnly:NO requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:nil errorNotificationBlock:errorNotificationBlock];
+    [self confirmProtocolRequest:protocolRequest
+                       forAmount:paymentRequest.amount
+                     fromAccount:account
+           acceptInternalAddress:acceptInternalAddress
+            acceptReusingAddress:acceptReusingAddress
+         addressIsFromPasteboard:addressIsFromPasteboard
+          acceptUncertifiedPayee:NO
+                       mixedOnly:NO
+requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+        requestingAdditionalInfo:additionalInfoRequest
+                presentChallenge:challenge
+   transactionCreationCompletion:transactionCreationCompletion
+                signedCompletion:signedCompletion
+             publishedCompletion:publishedCompletion
+          requestRelayCompletion:nil
+          errorNotificationBlock:errorNotificationBlock];
 }
 
 // MARK: - Mempools Sync
 
+// always from chain.networkingQueue
 - (void)fetchMempoolFromPeer:(DSPeer *)peer {
     DSLog(@"[%@: %@:%d] [DSTransactionManager] fetching mempool from peer", self.chain.name, peer.host, peer.port);
     if (peer.status != DSPeerStatus_Connected) return;
@@ -988,6 +1009,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
                     }
                 }
                 if (peer == self.peerManager.downloadPeer) {
+                    [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Mempool];
                     [self.peerManager chainSyncStopped];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
@@ -996,6 +1018,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
             }];
         } else if (peer == self.peerManager.downloadPeer) {
             DSLog(@"[%@: %@:%d] [DSTransactionManager] fetching mempool ping failure on download peer", self.chain.name, peer.host, peer.port);
+            [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Mempool];
             [self.peerManager chainSyncStopped];
 
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -1010,10 +1033,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     }];
 }
 
+// always from chain.networkingQueue
 - (void)fetchMempoolFromNetwork {
     // this can come from any queue
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about mempool
-    for (DSPeer *peer in self.peerManager.connectedPeers) {                            // after syncing, load filters and get mempools from other peers
+    [self.chain.chainManager.syncState addSyncKind:DSSyncStateExtKind_Mempool];
+    for (DSPeer *peer in self.peerManager.connectedPeers) {
+        // after syncing, load filters and get mempools from other peers
         [self fetchMempoolFromPeer:peer];
     }
 }
@@ -1244,21 +1270,23 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     [self.txRequests[hash] removeObject:peer];
 }
 
-//The peer has sent us a transaction we are interested in and that we did not send ourselves
+// always from chain.networkingQueue
+// The peer has sent us a transaction we are interested in and that we did not send ourselves
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSBlock *)block {
-    NSValue *hash = uint256_obj(transaction.txHash);
+    UInt256 txHash = transaction.txHash;
+    NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
 
     if (peer) {
 #if DEBUG
-        DSLogPrivate(@"[%@: %@:%d] relayed transaction %@", self.chain.name, peer.host, peer.port, hash);
+        DSLogPrivate(@"[%@: %@:%d] relayed transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
         DSLog(@"[%@: %@:%d] relayed transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
     } else {
 #if DEBUG
-        DSLogPrivate(@"[%@: %@:%d] accepting local transaction %@", self.chain.name, peer.host, peer.port, hash);
+        DSLogPrivate(@"[%@: %@:%d] accepting local transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
         DSLog(@"[%@: %@:%d] accepting local transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1273,13 +1301,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         if (![self.chain transactionHasLocalReferences:transaction]) {
             if (peer) {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, hash);
+                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
             } else {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, hash);
+                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1288,13 +1316,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         } else {
             if (peer) {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, hash);
+                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
             } else {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, hash);
+                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1313,13 +1341,13 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
             } else {
                 if (peer) {
 #if DEBUG
-                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, hash);
+                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
                     DSLog(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
                 } else {
 #if DEBUG
-                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, hash);
+                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
 #else
                     DSLog(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1364,10 +1392,10 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         }
     }
 
-    DSInstantSendTransactionLock *transactionLockReceivedEarlier = [self.instantSendLocksWaitingForTransactions objectForKey:uint256_data(transaction.txHash)];
+    DSInstantSendTransactionLock *transactionLockReceivedEarlier = [self.instantSendLocksWaitingForTransactions objectForKey:uint256_data(txHash)];
 
     if (transactionLockReceivedEarlier) {
-        [self.instantSendLocksWaitingForTransactions removeObjectForKey:uint256_data(transaction.txHash)];
+        [self.instantSendLocksWaitingForTransactions removeObjectForKey:uint256_data(txHash)];
         [transaction setInstantSendReceivedWithInstantSendLock:transactionLockReceivedEarlier];
         [transactionLockReceivedEarlier saveInitial];
     }
@@ -1414,12 +1442,12 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
         for (DSAccount *account in accountsAcceptingTransaction) {
-            if (account && [self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
-                [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
-                [account transactionForHash:transaction.txHash].timestamp == 0) {
-                [account setBlockHeight:TX_UNCONFIRMED
-                           andTimestamp:[NSDate timeIntervalSince1970]
-                   forTransactionHashes:@[hash]]; // set timestamp when tx is verified
+            if (account && [self.txRelays[hash] count] >= self.peerManager.maxConnectCount) {
+                DSTransaction *tx = [account transactionForHash:txHash];
+                if (tx.blockHeight == TX_UNCONFIRMED && tx.timestamp == 0)
+                    [account setBlockHeight:TX_UNCONFIRMED
+                               andTimestamp:[NSDate timeIntervalSince1970]
+                       forTransactionHashes:@[hash]]; // set timestamp when tx is verified
             }
         }
 
@@ -1645,6 +1673,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
 
 // MARK: Blocks
 
+// always from chain.networkingQueue
 - (void)peer:(DSPeer *)peer relayedHeader:(DSMerkleBlock *)block {
     //DSLogPrivate(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
@@ -1660,6 +1689,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     [self.chain addBlock:block receivedAsHeader:YES fromPeer:peer];
 }
 
+// always from chain.networkingQueue
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block {
     if (!self.chainManager.syncPhase) {
         DSLog(@"[%@: %@:%d] Block was received after reset, ignoring it", self.chain.name, peer.host, peer.port);
@@ -1752,6 +1782,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
     [self.peerManager peerMisbehaving:peer errorMessage:@"Too many orphan blocks"];
 }
 
+// always from chain.networkingQueue
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
     UInt256 clBlockHash = uint256_reverse(chainLock.blockHash);
@@ -1766,7 +1797,7 @@ transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionC
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainNotificationBlockKey: block}];
         });
     } else {
-        DSLog(@"[%@: %@:%d] no block for chain lock %@", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
+        DSLog(@"[%@: %@:%d] no block %@ for chain lock", self.chain.name, peer.host, peer.port, uint256_hex(clBlockHash));
         [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:uint256_data(clBlockHash)];
     }
 

@@ -77,6 +77,16 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
     DSTransactionDirection_NotAccountFunds,
 };
 
+@interface DSTransactionOptions : NSObject
+@property (nonatomic, assign) BOOL anyoneCanPay;
+@property (nonatomic, assign) NSUInteger subscriptIndex;
++ (instancetype)default;
++ (instancetype)withAnyoneCanPay:(BOOL)anyoneCanPay;
++ (instancetype)withSubscriptIndex:(NSUInteger)subscriptIndex;
++ (instancetype)withSubscriptIndex:(NSUInteger)subscriptIndex
+                      anyoneCanPay:(BOOL)anyoneCanPay;
+@end
+
 @interface DSTransaction : NSObject
 
 @property (nonatomic, readonly) NSArray<DSTransactionInput *> *inputs;
@@ -118,7 +128,6 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
 @property (nonatomic, readonly) BOOL isImmatureCoinBase;
-@property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
 
 @property (nonatomic, strong) DSShapeshiftEntity *associatedShapeshift;
 @property (nonatomic, readonly) DSChain *chain;
@@ -167,7 +176,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay;
+- (NSData *)toDataWithOptions:(DSTransactionOptions *)options;
 
 - (BOOL)hasNonDustOutputInWallet:(DSWallet *)wallet;
 

@@ -34,7 +34,7 @@ typedef NS_ENUM(uint16_t, DSChainNotificationType) {
 - (void)wipeMasternodeInfo;
 
 - (void)notifySyncStateChanged;
-- (void)notifyMasternodeSyncStateChange:(uint32_t)lastBlockHeihgt storedCount:(uintptr_t)storedCount;
+- (void)notifyMasternodeSyncStateChange:(uint32_t)lastBlockHeihgt storedCount:(uint32_t)storedCount;
 
 
 @end

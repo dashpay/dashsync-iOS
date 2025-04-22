@@ -23,6 +23,7 @@
 #import "DSGetQRInfoRequest.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSPeerManager+Protected.h"
 #import "NSData+Dash.h"
 
@@ -109,6 +110,7 @@
 - (void)stop {
     [self cancelTimeOutObserver];
     [self cleanAllLists];
+    
 }
 
 
@@ -174,6 +176,20 @@
     @synchronized (self.requestsInRetrieval) {
         [self.requestsInRetrieval addObject:request];
     }
+}
+
+- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData {
+    UInt256 blockHash = blockHashData.UInt256;
+    BOOL hasBlock = [self.chain blockForBlockHash:blockHash] != nil;
+    if (!hasBlock) {
+        hasBlock = [DSMerkleBlockEntity hasBlocksWithHash:blockHash inContext:self.chain.masternodeManager.managedObjectContext];
+    }
+    if (!hasBlock && self.chain.isTestnet) {
+        //We can trust insight if on testnet
+        [self.chain blockUntilGetInsightForBlockHash:blockHash];
+        hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
+    }
+    return hasBlock;
 }
 
 @end

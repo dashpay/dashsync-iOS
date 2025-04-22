@@ -27,7 +27,7 @@
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChain+Wallet.h"
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSDashPlatform.h"
 #import "DSDerivationPathFactory.h"
 #import "DSMerkleBlock.h"
@@ -52,7 +52,6 @@
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
 @property (nonatomic, strong) NSMutableDictionary *foreignIdentities;
 @property (nonatomic, assign) NSTimeInterval lastSyncedIndentitiesTimestamp;
-@property (nonatomic, assign) BOOL hasRecentIdentitiesSync;
 
 @end
 
@@ -68,7 +67,10 @@
     if (!(self = [super init])) return nil;
     
     self.chain = chain;
-    _identityQueue = dispatch_queue_create([@"org.dashcore.dashsync.identity" UTF8String], DISPATCH_QUEUE_SERIAL);
+    
+    dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0);
+    _identityQueue = dispatch_queue_create("org.dashcore.dashsync.identity", attr);
+
     [self setup];
 //    self.foreignIdentities = [NSMutableDictionary dictionary];
 //    [self loadExternalIdentities];
@@ -76,12 +78,6 @@
     return self;
 }
 
-// MARK: - Loading
-
-
-- (BOOL)hasRecentIdentitiesSync {
-    return ([[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 30);
-}
 
 // MARK: - Wiping
 
@@ -132,7 +128,7 @@
 
             [unsyncedIdentities addObject:identity];
         } else if (self.chain.lastSyncBlockHeight > identity.dashpaySyncronizationBlockHeight) {
-            DSLog(@"%@: Unsynced identity (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
+            DSLog(@"%@ Unsynced identity (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
             //If they are equal then the blockchain identity is synced
             //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
             //That's because it is set at the time with the hash of the last
@@ -142,31 +138,32 @@
     return unsyncedIdentities;
 }
 
-//- (void)syncPlatformWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
-//    [self syncIdentitiesWithCompletion:^(NSArray<DSIdentity *> *_Nullable identities) {
-//        [self retrieveAllIdentitiesChainStates:completion];
-//    }];
-//
-//}
 
 //TODO: if we get an error or identity not found, better stop the process and start syncing chain
 - (void)syncIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
-    DSLog(@"%@ Sync Identities", self.logPrefix);
     if (!self.chain.isEvolutionEnabled) {
         if (completion) dispatch_async(self.chain.networkingQueue, ^{ completion(@[]); });
         return;
     }
+    DSLog(@"%@ Sync Identities", self.logPrefix);
     dispatch_async(self.identityQueue, ^{
         NSArray<DSWallet *> *wallets = self.chain.wallets;
 
         __block dispatch_group_t keyHashesDispatchGroup = dispatch_group_create();
         __block NSMutableArray *errors = [NSMutableArray array];
         __block NSMutableArray *allIdentities = [NSMutableArray array];
-        
+        const int keysToCheck = 5;
+        dispatch_async(self.chain.networkingQueue, ^{
+            [self.chain.chainManager.syncState addSyncKind:DSSyncStateExtKind_Platform];
+            [self.chain.chainManager.syncState.platformSyncInfo addSyncKind:DSPlatformSyncStateKind_KeyHashes];
+            self.chain.chainManager.syncState.platformSyncInfo.queueCount = 0;
+            self.chain.chainManager.syncState.platformSyncInfo.queueMaxAmount = keysToCheck * (uint32_t) wallets.count;
+            [self.chain.chainManager notifySyncStateChanged];
+       });
+
         for (DSWallet *wallet in wallets) {
             uint32_t unusedIndex = [wallet unusedIdentityIndex];
             DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet];
-            const int keysToCheck = 5;
             NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionaryWithCapacity:keysToCheck];
             u160 **key_hashes = malloc(keysToCheck * sizeof(u160 *));
             for (int i = 0; i < keysToCheck; i++) {
@@ -179,64 +176,89 @@
             dispatch_group_enter(keyHashesDispatchGroup);
             DRetry *stragegy = DRetryLinear(5);
             dash_spv_platform_identity_manager_IdentityValidator *options = DAcceptIdentityNotFound();
-            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
-                        
-            if (result->error) {
-                NSError *error = [NSError ffi_from_platform_error:result->error];
-                DSLog(@"%@: Sync Identities: ERROR %@", self.logPrefix, error);
-                Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
-                [errors addObject:error];
-                dispatch_group_leave(keyHashesDispatchGroup);
-                return;
-            }
-            std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity *ok = result->ok;
-            NSMutableArray *identities = [NSMutableArray array];
             
-            for (int j = 0; j < ok->count; j++) {
-                DIdentity *identity = ok->values[j];
-                switch (identity->tag) {
-                    case dpp_identity_identity_Identity_V0: {
-                        dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
-                        DMaybeOpaqueKey *maybe_opaque_key = DOpaqueKeyFromIdentityPubKey(identity_v0->public_keys->values[0]);
-                        NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
-                        NSNumber *index = [keyIndexes objectForKey:publicKeyData];
-                        DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
-                        [identityModel applyIdentity:identity save:NO inContext:nil];
-                        [identities addObject:identityModel];
-                        break;
-                    }
-                        
-                    default:
-                        break;
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
+                            
+                if (result->error) {
+                    NSError *error = [NSError ffi_from_platform_error:result->error];
+                    DSLog(@"%@: Sync Identities: ERROR %@", self.logPrefix, error);
+                    Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
+                    [errors addObject:error];
+                    dispatch_group_leave(keyHashesDispatchGroup);
+                    return;
                 }
-            }
-            Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
-            BOOL success = [wallet registerIdentities:identities verify:YES];
-            DSLog(@"%@: Sync Identities: %@", self.logPrefix, DSLocalizedFormat(success ? @"OK (%lu)" :  @"Retrieved (%lu) but can't register in wallet", nil, identities.count));
-            if (success) {
-                [allIdentities addObjectsFromArray:identities];
-                NSManagedObjectContext *platformContext = [NSManagedObjectContext platformContext];
-                [platformContext performBlockAndWait:^{
-                    for (DSIdentity *identity in identities) {
-                        [identity saveInitialInContext:platformContext];
+                std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity *ok = result->ok;
+                NSMutableArray *identities = [NSMutableArray array];
+                
+                for (int j = 0; j < ok->count; j++) {
+                    DIdentity *identity = ok->values[j];
+                    switch (identity->tag) {
+                        case dpp_identity_identity_Identity_V0: {
+                            dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
+                            DMaybeOpaqueKey *maybe_opaque_key = DOpaqueKeyFromIdentityPubKey(identity_v0->public_keys->values[0]);
+                            NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
+                            NSNumber *index = [keyIndexes objectForKey:publicKeyData];
+                            DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
+                            [identityModel applyIdentity:identity save:NO inContext:nil];
+                            [identities addObject:identityModel];
+                            break;
+                        }
+                            
+                        default:
+                            break;
                     }
-                }];
-            } else {
-                [errors addObject:ERROR_UNKNOWN_KEYS];
-            }
-            dispatch_group_leave(keyHashesDispatchGroup);
+                }
+                
+                Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
+                BOOL success = [wallet registerIdentities:identities verify:YES];
+                dispatch_async(self.chain.networkingQueue, ^{
+                    self.chain.chainManager.syncState.platformSyncInfo.queueCount = keysToCheck;
+                });
+
+                DSLog(@"%@: Sync Identities: %@", self.logPrefix, DSLocalizedFormat(success ? @"OK (%lu)" :  @"Retrieved (%lu) but can't register in wallet", nil, identities.count));
+                if (success) {
+                    [allIdentities addObjectsFromArray:identities];
+                    NSManagedObjectContext *platformContext = [NSManagedObjectContext platformContext];
+                    [platformContext performBlockAndWait:^{
+                        for (DSIdentity *identity in identities) {
+                            [identity saveInitialInContext:platformContext];
+                        }
+                    }];
+                } else {
+                    [errors addObject:ERROR_UNKNOWN_KEYS];
+                }
+                dispatch_group_leave(keyHashesDispatchGroup);
+            });
+
 
         }
         
         dispatch_group_notify(keyHashesDispatchGroup, self.chain.networkingQueue, ^{
+            [self.chain.chainManager.syncState.platformSyncInfo removeSyncKind:DSPlatformSyncStateKind_KeyHashes];
             NSArray *identities = [self unsyncedIdentities];
-            DSLog(@"%@ Sync Identities: unsynced: %@", self.logPrefix, identities);
+            NSMutableString *deb_id = [NSMutableString stringWithFormat:@"%@ Sync Identities: unsynced: ", self.logPrefix];
+            for (DSIdentity *identitity in identities) {
+                [deb_id appendFormat:@"%@,", uint256_hex(identitity.uniqueID)];
+            }
+            DSLog(@"%@", deb_id);
+            NSUInteger identitiesCount = [identities count];
+            if (identitiesCount) {
+                self.chain.chainManager.syncState.platformSyncInfo.queueCount = 0;
+                self.chain.chainManager.syncState.platformSyncInfo.queueMaxAmount = (uint32_t) identitiesCount;
+                [self.chain.chainManager.syncState.platformSyncInfo addSyncKind:DSPlatformSyncStateKind_Unsynced];
+            }
+            [self.chain.chainManager notifySyncStateChanged];
+
             dispatch_group_t dispatchGroup = dispatch_group_create();
             __block NSMutableArray *errors = [NSMutableArray array];
             for (DSIdentity *identity in identities) {
                 dispatch_group_enter(dispatchGroup);
-                [self fetchNeededNetworkStateInformationForIdentity:identity
-                                                     withCompletion:^(BOOL success, DSIdentity *_Nullable identity, NSError *_Nullable error) {
+                [self fetchNeededNetworkStateInformationForIdentity:identity withCompletion:^(BOOL success, DSIdentity *_Nullable identity, NSError *_Nullable error) {
+                    dispatch_async(self.chain.networkingQueue, ^{
+                        self.chain.chainManager.syncState.platformSyncInfo.queueCount++;
+                        [self.chain.chainManager notifySyncStateChanged];
+             });
                     if (success && identity != nil) {
                         dispatch_group_leave(dispatchGroup);
                     } else {
@@ -247,6 +269,12 @@
             }
             dispatch_group_notify(dispatchGroup, self.chain.networkingQueue, ^{
                 self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
+                self.chain.chainManager.syncState.platformSyncInfo.queueCount = 0;
+                self.chain.chainManager.syncState.platformSyncInfo.queueMaxAmount = 0;
+                self.chain.chainManager.syncState.platformSyncInfo.lastSyncedIndentitiesTimestamp = self.lastSyncedIndentitiesTimestamp;
+                [self.chain.chainManager.syncState.platformSyncInfo resetSyncKind];
+                [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Platform];
+                [self.chain.chainManager notifySyncStateChanged];
                 if (!errors.count && completion)
                     completion(identities);
             });
@@ -507,6 +535,7 @@
     if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(YES, [rIdentities copy], @[]); });
 }
 
+// always from chain.networkingQueue
 - (void)checkAssetLockTransactionForPossibleNewIdentity:(DSAssetLockTransaction *)transaction {
     uint32_t index;
     DSWallet *wallet = [self.chain walletHavingIdentityAssetLockRegistrationHash:transaction.creditBurnPublicKeyHash foundAtIndex:&index];
@@ -544,6 +573,7 @@
 
 // MARK: - DSChainIdentitiesDelegate
 
+// always from chain.networkingQueue
 - (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingIdentityDAPInformation:(DSIdentity *)identity {
     [self.chain.chainManager chain:chain didFinishInChainSyncPhaseFetchingIdentityDAPInformation:identity];
 }

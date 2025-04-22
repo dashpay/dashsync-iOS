@@ -815,18 +815,42 @@
 
     DSIncomingFundsDerivationPath *incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationIdentityUniqueId:destinationUser2
                                                                                                                                    sourceIdentityUniqueId:sourceUser1
+                        
                                                                                                                                                forAccount:account
                                                                                                                                                   onChain:self.chain];
 
-//    incomingFundsDerivationPath.account = account;
-    DMaybeOpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    NSArray *addr = @[
+        @"Xs8zNYNY5hT38KFb8tq8EbnPn7GCNaqr45", @"XwWQUo4dVZyBbFPfYFaDeQPheAyF1UMNrM", @"Xn1ZbTGjxfm2u8NvgkkaqVTpGDQEje7WcE",
+        @"XgBYmmXKzwyEtfAEjckYeF6rDn9soWTVGh", @"Xpj22eAisURDuR78wgn6oXu1MCjioG9q2o", @"XggND74Hr7T5BEbGUQh2KA6HekH3ETLboQ",
+        @"XrbDuBSQgGirgeej84CrAei3utTgLn5idh", @"XgbqXkwJ6mF2kD1ewHL328SsmFNgSJWw52", @"XeMUeHCYRJAHs75xhgBPPxmDMQQZ8eA8Yq",
+        @"XyfLokqnEqP1n28RaaGyYr3h7i1gaPuFrx"
+    ];
 
-    DSGapLimit *limit = [DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL];
+    DMaybeOpaqueKey *extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    NSArray *addresses = [incomingFundsDerivationPath registerAddressesWithSettings:[DSGapLimit withLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL]];
+    XCTAssertEqualObjects(addr, addresses, @"Incoming Funds Address registration is broken");
+
     
-    NSArray *addresses = [incomingFundsDerivationPath registerAddressesWithSettings:limit];
-    for (NSString *address in addresses) {
-        NSLog(@"IncomingFunds Address: %@", address);
-    }
+    DSFundsDerivationPath *fundsDerivationPath = account.bip32DerivationPath;
+    NSUInteger registerGapLimit = [fundsDerivationPath shouldUseReducedGapLimit] ? SEQUENCE_UNUSED_GAP_LIMIT_INITIAL : SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL;
+
+    addr = @[@"Xo6DdaeXwo6RrZmo5ANJHX3rbtyjbe9T8E", @"XoAyZ8XGiuoWaTGZKr4Twt9qJ6N5NoAkcC", @"Xiw2UrfyKk25Axz688bTR2Q4wrEqe25s53",
+             @"XninCEW1c3tTtLJhWZSS4hxXxvifud7MwV", @"XvvX9mv9zjiuvTiJMngvxyd2nsRg35ncQv", @"XvgxEYMPsRcArR278s6KhSAT1e5TMCyFmz",
+             @"XxsafWegPEfTyo7yFpKrHCFYoq4rU51Hez", @"XgBckqELMYgdQ8NLh788CQ8b4NhCnSZDix", @"XgZnMiKv9kz6rkSooWGCjAorJcWKU7BTme",
+             @"XszcLZPFZiFwrieYqYqGi5aiWNW1sVMstg", @"Xtba4ANeMmqWLnC1sHGx4mpLZE36TGS4zP", @"Xi2xGMNENSUxwX5PoZ3krczoTThUbkethW",
+             @"Xf7H7nBDsMp31AN4dB8ESPCvuxkrw2y9nV", @"XkyNdyxsMRNQqB2Ns5tAr44ypFak9APtZQ", @"XjRZhQjwgEDv6NgC72HzNQ9veFKN9dF1DV"];
+    
+    addresses = [fundsDerivationPath registerAddressesWithSettings:[DSGapLimitFunds external:registerGapLimit]];
+    XCTAssertEqualObjects(addr, addresses, @"External Funds Address registration is broken");
+
+    addr = @[@"XrXhvXAfNjqwRKRhGbJjzmdjEQFaS9fPyn", @"XgerxzzfUZbxmPFwd1KWHheUGHXMJE3JBT", @"Xp2chci79M3bpdMKqewM4SephDqyQDA4d4",
+             @"XugKvwuXt1bJd9oWoPCL4y77uf5BPyDpEq", @"XiiVyHz4JBdeib22QC9wfmj8PpsrfTRG47", @"XsvExbmoEAZTmbzS7GmKvu5RWRezbhDSNM",
+             @"Xjut8E67j1YhmusRH4eHaM6QHoTf8PcyxE", @"Xh1xphusd1jSWH5bznLZeVzUjyVSRcyYfv", @"Xdrc2g25JWSQQpMKDFt9pxBXFno8B7ZRfr",
+             @"Xm9wfkssebS1guJW3WfSYudTxJaDqf1wWB", @"Xfr3Md6SAcxqeVmgtSPyUVof5YgG6mivFP", @"Xw4wqZJoUVY4mTokF8cMUjvzh1sngRzAvM",
+             @"XyXyaNQs5Zv3RAdTaCJLdhD2UzVVUjB9uv", @"XhLh5YmLjDwyq3eT4q1zukmGZcAkhD5X5Q", @"Xcny5L7z2x9VvdiAqTDdoRvjP3nC8Pbe8H"];
+    
+    addresses = [fundsDerivationPath registerAddressesWithSettings:[DSGapLimitFunds internal:registerGapLimit]];
+    XCTAssertEqualObjects(addr, addresses, @"Internal Funds Address registration is broken");
 
 
 }

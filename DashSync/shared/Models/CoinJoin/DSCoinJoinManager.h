@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCoinJoinManager : NSObject
 
-@property (nonatomic, assign, nullable) DSChain *chain;
+@property (nonatomic, strong, nullable) DSChain *chain;
 @property (nonatomic, strong, nullable) DSMasternodeGroup *masternodeGroup;
 @property (nonatomic, assign, nullable) DCoinJoinClientOptions *options;
 @property (nonatomic, nullable, weak) id<DSCoinJoinManagerDelegate> managerDelegate;

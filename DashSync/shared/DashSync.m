@@ -162,9 +162,11 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
         [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
         [chain wipeBlockchainInfoInContext:context];
-        [chain.chainManager restartChainSyncStartHeight];
-        [chain.chainManager restartTerminalSyncStartHeight];
-        chain.chainManager.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+        dispatch_async(chain.networkingQueue, ^{
+            [chain.chainManager restartChainSyncStartHeight];
+            [chain.chainManager restartTerminalSyncStartHeight];
+            chain.chainManager.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+        });
         [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity]; // this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];
@@ -192,7 +194,9 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
         [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
         [chain wipeBlockchainNonTerminalInfoInContext:context];
-        [chain.chainManager restartChainSyncStartHeight];
+        dispatch_async(chain.networkingQueue, ^{
+            [chain.chainManager restartChainSyncStartHeight];
+        });
         [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity]; // this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];

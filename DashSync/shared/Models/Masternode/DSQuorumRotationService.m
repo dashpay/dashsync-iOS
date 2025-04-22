@@ -33,7 +33,7 @@
 @implementation DSQuorumRotationService
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [MasternodeManager::QRInfoService] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [MasternodeManager::QRInfoService]", self.chain.name];
 }
 
 - (BOOL)hasRecentQrInfoSync {
@@ -45,13 +45,17 @@
     if (!blockHashData) {
         return;
     }
-    if ([self.chain.masternodeManager hasBlockForBlockHash:blockHashData]) {
+    if ([self hasBlockForBlockHash:blockHashData]) {
         UInt256 blockHash = blockHashData.UInt256;
         uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
         UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHeight:blockHeight];
-//        @"000000000000000899fdcd85241296146c365b238a655517da8dcd08a8a79b98".hexToData;
 //        NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-        [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
+        if (uint256_eq(previousBlockHash, blockHash)) {
+            self.retrievalBlockHash = nil;
+            self.retrievalQueueMaxAmount = 0;
+        } else {
+            [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
+        }
     } else {
         DSLog(@"%@ Missing block: %@ (%@)", self.logPrefix, blockHashData.hexString, blockHashData.reverse.hexString);
         self.retrievalBlockHash = nil;
@@ -69,12 +73,15 @@
 - (void)fetchMasternodeListToRetrieve:(void (^)(NSData *listsToRetrieve))completion {
     //DSLog(@"%@ fetchMasternodeListToRetrieve...: %u", self.logPrefix, [self hasActiveQueue]);
     if (![self hasActiveQueue]) {
-        DSLog(@"%@ No masternode lists in retrieval", self.logPrefix);
-        [self.chain.masternodeManager masternodeListServiceEmptiedRetrievalQueue:self];
+        //DSLog(@"%@ No masternode lists in retrieval", self.logPrefix);
+        dispatch_async(self.chain.networkingQueue, ^{
+            [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_QrInfo];
+            [self.chain.masternodeManager masternodeListServiceEmptiedRetrievalQueue:self];
+        });
         return;
     }
     if ([self.requestsInRetrieval count]) {
-        DSLog(@"%@ A masternode list is already in retrieval", self.logPrefix);
+        //DSLog(@"%@ A masternode list is already in retrieval", self.logPrefix);
         return;
     }
     if ([self peerIsDisconnected]) {
@@ -116,6 +123,9 @@
     uint32_t prev_h = [self.chain heightForBlockHash:previousBlockHash];
     uint32_t h = [self.chain heightForBlockHash:blockHash];
     DSLog(@"%@ Request: %u..%u %@ .. %@", self.logPrefix, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_QrInfo];
+    });
     [self sendMasternodeListRequest:request];
 }
 

@@ -456,8 +456,7 @@ float_t const BACKOFF_MULTIPLIER = 1.001;
        transactionDelegate:(id<DSPeerTransactionDelegate>) chainManager.transactionManager
         governanceDelegate:(id<DSPeerGovernanceDelegate>) chainManager.governanceSyncManager
              sporkDelegate:(id<DSPeerSporkDelegate>) chainManager.sporkManager
-        masternodeDelegate:chainManager.masternodeManager
-                     queue:self.networkingQueue];
+        masternodeDelegate:chainManager.masternodeManager];
     peer.earliestKeyTime = self.chain.earliestWalletCreationTime;;
 
     @synchronized (self.peersLock) {

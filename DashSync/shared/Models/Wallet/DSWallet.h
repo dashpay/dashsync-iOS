@@ -25,6 +25,7 @@
 #import "BigIntTypes.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSIdentity.h"
+#import "DSGapLimit.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -154,8 +155,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;
 
 - (NSArray<NSString *> *)allAddresses;
-- (NSArray *_Nullable)registerAddressesWithInitialGapLimit;
-- (NSArray *_Nullable)registerAddressesWithProlongGapLimit;
+- (NSArray *)registerAddressesAtStage:(DSGapLimitStage)stage;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;

@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Protected
 + (NSMutableArray *)createCheckpointsArrayFromCheckpoints:(checkpoint *)checkpoints count:(NSUInteger)checkpointCount;
 
+- (dash_spv_masternode_processor_processing_processor_DiffConfig *_Nullable)createDiffConfig;
 @end
 
 NS_ASSUME_NONNULL_END

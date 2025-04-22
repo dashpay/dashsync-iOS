@@ -384,7 +384,7 @@
 }
 
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: Sign and publish profile", self.logPrefix];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Sign & Publish Profile", self.logPrefix];
     DSLog(@"%@", debugInfo);
     NSManagedObjectContext *context = self.platformContext;
     __block uint32_t profileDocumentRevision;

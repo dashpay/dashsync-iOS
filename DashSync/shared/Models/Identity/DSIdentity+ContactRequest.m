@@ -92,7 +92,7 @@
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue {
     
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: fetch incoming contact requests: (startAfter: %@)", self.logPrefix, startAfter ? startAfter.hexString : @"NULL"];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Fetch Incoming Contact Requests: (after: %@)", self.logPrefix, startAfter ? startAfter.hexString : @"NULL"];
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
         [debugInfo appendFormat:@" : ERROR: DashPay Contract State: %lu", dashpayContract.contractState];
@@ -207,7 +207,7 @@
                                    startAfter:(NSData*_Nullable)startAfter
                                withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
                             onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: fetch outgoing contact requests: (startAfter: %@)", self.logPrefix, startAfter ? startAfter.hexString : @"NULL"];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Fetch Outgoing Contact Requests: (after: %@)", self.logPrefix, startAfter ? startAfter.hexString : @"NULL"];
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
         [debugInfo appendFormat:@" : ERROR: DashPay Contract State: %lu", dashpayContract.contractState];
@@ -291,7 +291,7 @@
                 [self.platformContext performBlockAndWait:^{
                     self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
                 }];
-            [debugInfo appendFormat:@" : OK: %u: %@", succeeded, rErrors];
+            [debugInfo appendFormat:@" : %@: %@", succeeded ? @"OK" : @"No", [rErrors count] ? rErrors.description : @""];
             DSLog(@"%@", debugInfo);
             __block NSData * hasMoreStartAfter = nil;
             if (documents->count > 0) {
@@ -530,7 +530,7 @@
                                                   atTimestamp:request->created_at
                                                     inContext:context];
                     } else {
-                        succeeded = FALSE;
+                        succeeded = NO;
                         [errors addObjectsFromArray:networkErrors];
                     }
                     dispatch_group_leave(dispatchGroup);

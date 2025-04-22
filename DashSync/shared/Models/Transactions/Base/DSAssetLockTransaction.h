@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint8_t specialTransactionVersion;
 @property (nonatomic, strong) NSMutableArray<DSTransactionOutput *> *creditOutputs;
+@property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
 @property (nonatomic, readonly) UInt160 creditBurnPublicKeyHash;
 @property (nonatomic, readonly) DSUTXO lockedOutpoint;
 

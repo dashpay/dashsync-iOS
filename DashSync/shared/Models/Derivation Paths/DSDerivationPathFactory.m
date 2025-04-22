@@ -279,6 +279,8 @@
                 [mArray addObject:fundsDerivationPath];
             }
         }
+        if (account.coinJoinDerivationPath && ![account.coinJoinDerivationPath hasExtendedPublicKey])
+            [mArray addObject:account.coinJoinDerivationPath];
     }
 
     return [mArray copy];

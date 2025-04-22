@@ -634,7 +634,7 @@ static dispatch_once_t devnetToken = 0;
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithProlongGapLimit];
+        [wallet registerAddressesAtStage:DSGapLimitStage_Prolong];
         [allAddressesArray addObjectsFromArray:[wallet allAddresses]];
     }
 
@@ -654,7 +654,7 @@ static dispatch_once_t devnetToken = 0;
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithInitialGapLimit];
+        [wallet registerAddressesAtStage:DSGapLimitStage_Initial];
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
         [allAddresses addObjectsFromArray:[wallet allAddresses]];
     }
@@ -1063,7 +1063,8 @@ static dispatch_once_t devnetToken = 0;
     return TRUE;
 }
 
-//TRUE if it was added to the end of the chain
+// always from chain.networkingQueue
+// TRUE if it was added to the end of the chain
 - (BOOL)addBlock:(DSBlock *)block receivedAsHeader:(BOOL)isHeaderOnly fromPeer:(DSPeer *)peer {
     NSString *prefix = [NSString stringWithFormat:@"[%@: %@:%d]", self.name, peer.host ? peer.host : @"TEST", peer.port];
     if (peer && !self.chainManager.syncPhase) {
@@ -1256,7 +1257,6 @@ static dispatch_once_t devnetToken = 0;
         self.lastTerminalBlock = block;
         self.chainManager.syncState.estimatedBlockHeight = self.estimatedBlockHeight;
         self.chainManager.syncState.lastTerminalBlockHeight = block.height;
-
         @synchronized(peer) {
             if (peer) {
                 peer.currentBlockHeight = h; //might be download peer instead
@@ -1454,7 +1454,7 @@ static dispatch_once_t devnetToken = 0;
     if (((blockPosition & DSBlockPosition_Terminal) && block.height > self.estimatedBlockHeight) || ((blockPosition & DSBlockPosition_Sync) && block.height >= self.lastTerminalBlockHeight)) {
         @synchronized (self) {
             _bestEstimatedBlockHeight = block.height;
-            self.chainManager.syncState.estimatedBlockHeight = _bestEstimatedBlockHeight;
+            self.chainManager.syncState.estimatedBlockHeight = self->_bestEstimatedBlockHeight;
         }
         if (peer && (blockPosition & DSBlockPosition_Sync) && !savedBlockLocators) {
             [self saveBlockLocators];
@@ -1579,6 +1579,7 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: Chain Locks
 
+// always from chain.networkingQueue
 - (BOOL)addChainLock:(DSChainLock *)chainLock {
     DSBlock *terminalBlock = self.mTerminalBlocks[uint256_obj(chainLock.blockHashData.UInt256)];
     [terminalBlock setChainLockedWithChainLock:chainLock];
@@ -1730,6 +1731,7 @@ static dispatch_once_t devnetToken = 0;
     return _lastSyncBlock ? _lastSyncBlock.timestamp : (self.lastPersistedChainSyncBlockTimestamp ? self.lastPersistedChainSyncBlockTimestamp : self.lastSyncBlock.timestamp);
 }
 
+// this is thread-unsafe, it's preferable to use NSNotificationCenter's DSChainManagerSyncStateDidChangeNotification to get progress in main thread
 - (uint32_t)lastSyncBlockHeight {
     @synchronized (_lastSyncBlock) {
         if (_lastSyncBlock) {
@@ -1750,6 +1752,7 @@ static dispatch_once_t devnetToken = 0;
     return _lastSyncBlock ? _lastSyncBlock.chainWork : (uint256_is_not_zero(self.lastPersistedChainSyncBlockChainWork) ? self.lastPersistedChainSyncBlockChainWork : self.lastSyncBlock.chainWork);
 }
 
+// this is thread-unsafe, it's preferable to use NSNotificationCenter's DSChainManagerSyncStateDidChangeNotification to get progress in main thread
 - (uint32_t)lastTerminalBlockHeight {
     return self.lastTerminalBlock.height;
 }
@@ -1934,6 +1937,7 @@ static dispatch_once_t devnetToken = 0;
     return [announcers count];
 }
 
+// always from chain.networkingQueue
 - (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer *)peer thresholdPeerCount:(uint32_t)thresholdPeerCount {
     uint32_t oldEstimatedBlockHeight = self.estimatedBlockHeight;
     
@@ -1968,6 +1972,7 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+// always from chain.networkingQueue
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer *)peer {
     for (NSNumber *height in [self.estimatedBlockHeights copy]) {
         NSMutableArray *announcers = self.estimatedBlockHeights[height];
@@ -2144,7 +2149,6 @@ static dispatch_once_t devnetToken = 0;
         for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsInContext:self.chainManagedObjectContext matching:@"txHash in %@", [self.transactionHashHeights allKeys]]) {
             e.blockHeight = [self.transactionHashHeights[e.txHash] intValue];
             e.timestamp = [self.transactionHashTimestamps[e.txHash] intValue];
-            ;
             [entities addObject:e];
         }
         for (DSTransactionHashEntity *e in entities) {

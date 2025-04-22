@@ -179,6 +179,7 @@
     DLLMQEntry *quorum = self.masternode_list->quorums->values[indexPath.section]->values[indexPath.row];
     u256 *quorum_hash = dashcore_hash_types_QuorumHash_inner(quorum->quorum_entry->quorum_hash);
     cell.quorumHashLabel.text = u256_hex(quorum_hash);
+    UInt256 quorumHash = u256_cast(quorum_hash);
     u256_dtor(quorum_hash);
     if (quorum->quorum_entry->quorum_index) {
         cell.indexLabel.text = [NSString stringWithFormat:@"%d", quorum->quorum_entry->quorum_index[0]];
@@ -186,7 +187,6 @@
         cell.indexLabel.text = [NSString stringWithFormat:@"None"];
     }
     cell.verifiedLabel.text = quorum->verified ? @"Yes" : @"No";
-    UInt256 quorumHash = u256_cast(quorum_hash);
     uint32_t height = [self.chain heightForBlockHash:quorumHash];
     cell.heightLabel.text = [NSString stringWithFormat:@"%d", height];
 //    DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];

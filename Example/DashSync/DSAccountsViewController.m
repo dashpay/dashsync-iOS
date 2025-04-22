@@ -110,13 +110,16 @@
     [self.wallet seedPhraseAfterAuthenticationWithPrompt:@"Add account?"
                                               completion:^(NSString *_Nullable seedPhrase) {
         NSData *derivedKeyData = seedPhrase ? [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil] : nil;
+        NSString *walletUniqueId = self.wallet.uniqueIDString;
         for (DSDerivationPath *derivationPath in addAccount.fundDerivationPaths) {
             [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
-                                     storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+                                     storeUnderWalletUniqueId:walletUniqueId];
         }
+        if (addAccount.coinJoinDerivationPath)
+            [addAccount.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
         if ([chain isEvolutionEnabled])
             [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
-                                                              storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+                                                              storeUnderWalletUniqueId:walletUniqueId];
 
         [self.wallet addAccount:addAccount];
         [addAccount loadDerivationPaths];

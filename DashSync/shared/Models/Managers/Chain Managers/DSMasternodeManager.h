@@ -25,7 +25,6 @@
 
 #import "DSChain.h"
 #import "DSKeyManager.h"
-//#import "DSMasternodeListStore.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
@@ -68,7 +67,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
 - (DMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash
-                                      withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
+                                   withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 - (DMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
 
 - (void)startSync;
@@ -83,12 +82,15 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service;
 
-- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData;
 
 - (NSSet<NSData *> *)blockHashesUsedByMasternodeLists;
 
 - (uintptr_t)currentQuorumsOfType:(DLLMQType)type;
 - (uintptr_t)currentValidQuorumsOfType:(DLLMQType)type;
+
+- (NSError *_Nullable)requestMasternodeListForBlockHeight:(uint32_t)blockHeight;
+- (void)requestMasternodeListForBlockHash:(NSData *)blockHash;
+- (void)requestMasternodeListForBaseBlockHash:(NSData *)baseBlockHash blockHash:(NSData *)blockHash;
 @end
 
 NS_ASSUME_NONNULL_END

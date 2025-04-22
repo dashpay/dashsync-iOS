@@ -993,7 +993,7 @@ UInt256 uInt256DivideLE(UInt256 a, UInt256 b) {
     while (shift >= 0) {
         if (uint256_supeq(num, div)) {
             num = uInt256SubtractLE(num, div);
-            r.u32[shift / 32] |= (1 << (shift & 31)); // set a bit of the result.
+            r.u32[shift / 32] |= (1U << (shift & 31)); // set a bit of the result.
         }
         div = uInt256ShiftRightLE(div, 1); // shift back.
         shift--;

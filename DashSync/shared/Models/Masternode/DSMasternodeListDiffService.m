@@ -41,7 +41,7 @@
 }
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [MasternodeManager::DiffService] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [MasternodeManager::DiffService]", self.chain.name];
 }
 
 - (void)getRecent:(NSData *)blockHash {
@@ -50,24 +50,21 @@
 }
 
 - (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
-    NSMutableString *debugString = [NSMutableString stringWithString:@"Needed:\n"];
-    for (NSData *data in list) {
-        uint32_t h = [self.chain heightForBlockHash:data.UInt256];
-        [debugString appendFormat:@"%u: %@\n", h, data.hexString];
-    }
-    DSLog(@"%@ composeMasternodeListRequest: \n%@", self.logPrefix, debugString);
-//    [self.chain.masternodeManager printEngineStatus];
     for (NSData *blockHashData in list) {
         // we should check the associated block still exists
-        if ([self.chain.masternodeManager hasBlockForBlockHash:blockHashData]) {
+        if ([self hasBlockForBlockHash:blockHashData]) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             NSUInteger pos = [list indexOfObject:blockHashData];
             UInt256 blockHash = blockHashData.UInt256;
             BOOL success = [self.chain.masternodeManager processRequestFromFileForBlockHash:blockHash];
             if (success) {
-                [self removeFromRetrievalQueue:blockHashData];
-                if (![self hasActiveQueue])
-                    [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+                NSUInteger newCount = [self removeFromRetrievalQueue:blockHashData];
+                dispatch_async(self.chain.networkingQueue, ^{
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+                    [self.chain.chainManager notifySyncStateChanged];
+                    if (!newCount)
+                        [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+                });
             } else {
                 // we need to go get it
                 uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
@@ -79,12 +76,24 @@
                 uint32_t prevInQueueBlockHeight =  [self.chain heightForBlockHash:u256_cast(prev_in_queue_block_hash)];
                 UInt256 previousBlockHash = pos ? (prevKnownHeight > prevInQueueBlockHeight ? prevKnownBlockHash : prevInQueueBlockHash) : prevKnownBlockHash;
                 // request at: every new block
-//                NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
+                //                NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+                if (uint256_eq(previousBlockHash, blockHash)) {
+                    NSUInteger newCount = [self removeFromRetrievalQueue:blockHashData];
+                    dispatch_async(self.chain.networkingQueue, ^{
+                        self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+                        [self.chain.chainManager notifySyncStateChanged];
+                    });
+                } else {
+                    [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
+                }
             }
         } else {
             DSLog(@"%@ Missing block (%@)", self.logPrefix, blockHashData.hexString);
-            [self removeFromRetrievalQueue:blockHashData];
+            NSUInteger newCount = [self removeFromRetrievalQueue:blockHashData];
+            dispatch_async(self.chain.networkingQueue, ^{
+                self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+                [self.chain.chainManager notifySyncStateChanged];
+            });
         }
     }
 }
@@ -93,11 +102,14 @@
     //DSLog(@"%@ fetchMasternodeListToRetrieve...: %u", self.logPrefix, [self hasActiveQueue]);
     if (![self hasActiveQueue]) {
         DSLog(@"%@ No masternode lists in retrieval", self.logPrefix);
-        [self.chain.masternodeManager masternodeListServiceEmptiedRetrievalQueue:self];
+        dispatch_async(self.chain.networkingQueue, ^{
+            [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Diffs];
+            [self.chain.masternodeManager masternodeListServiceEmptiedRetrievalQueue:self];
+        });
         return;
     }
     if ([self.requestsInRetrieval count]) {
-        //DSLog(@"%@ Already in retrieval", self.logPrefix);
+        DSLog(@"%@ Already in retrieval", self.logPrefix);
         return;
     }
     if ([self peerIsDisconnected]) {
@@ -141,7 +153,6 @@
             return ([self.chain heightForBlockHash:obj1.UInt256] < [self.chain heightForBlockHash:obj2.UInt256]) ? NSOrderedAscending : NSOrderedDescending;
         }];
     }
-    [self notifyQueueChange:newCount maxAmount:maxAmount];
     return newCount;
 
 }
@@ -150,10 +161,12 @@
     NSMutableArray *nonEmptyBlockHashes = [NSMutableArray array];
     NSUInteger newCount = 0, maxAmount = 0;
     @synchronized (_retrievalQueue) {
+        NSMutableString *debugString = [NSMutableString string];
         for (NSData *blockHashData in masternodeBlockHashDataArray) {
             NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
             if (uint256_is_not_zero(blockHashData.UInt256)) {
                 [nonEmptyBlockHashes addObject:blockHashData];
+                [debugString appendFormat:@"\t%@,\n", blockHashData.hexString];
             }
         }
         [_retrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
@@ -164,7 +177,6 @@
             return ([self.chain heightForBlockHash:obj1.UInt256] < [self.chain heightForBlockHash:obj2.UInt256]) ? NSOrderedAscending : NSOrderedDescending;
         }];
     }
-    [self notifyQueueChange:newCount maxAmount:maxAmount];
     return newCount;
 }
 
@@ -174,9 +186,7 @@
         [_retrievalQueue removeObject:masternodeBlockHashData];
         newCount = [_retrievalQueue count];
         maxAmount = MAX(self.retrievalQueueMaxAmount, newCount);
-
     }
-    [self notifyQueueChange:newCount maxAmount:maxAmount];
     return newCount;
 }
 
@@ -185,7 +195,6 @@
         [_retrievalQueue removeAllObjects];
     }
     self.retrievalQueueMaxAmount = 0;
-    [self notifyQueueChange:0 maxAmount:0];
 }
 
 - (BOOL)hasActiveQueue {
@@ -196,34 +205,27 @@
     DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:previousBlockHash blockHash:blockHash];
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:previousBlockHash blockHash:blockHash];
     if (matchedRequest) {
-//        DSLog(@"[%@] •••• mnlistdiff request with such a range already in retrieval: %u..%u %@ .. %@", self.chain.name, [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+//        DSLog(@"[%@] •••• mnlistdiff request with such a range already in retrieval: %@ .. %@", self.chain.name, uint256_hex(previousBlockHash), uint256_hex(blockHash));
         return;
     }
     uint32_t prev_h =  [self.chain heightForBlockHash:previousBlockHash];
     uint32_t h =  [self.chain heightForBlockHash:blockHash];
+    
+    
     DSLog(@"%@ Request: %u..%u %@ .. %@", self.logPrefix, prev_h, h, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Diffs];
+    });
     [self sendMasternodeListRequest:request];
 }
 
 - (void)notifyQueueChange:(NSUInteger)newCount maxAmount:(NSUInteger)maxAmount {
     // DSLog(@"%@Queue Changed: %u/%u ", self.logPrefix, (uint32_t)newCount, (uint32_t)maxAmount);
-    @synchronized (self.chain.chainManager.syncState) {
-        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = (uint32_t) newCount;
-        self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) maxAmount;
+    dispatch_async(self.chain.networkingQueue, ^{
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = (uint32_t) maxAmount;
         [self.chain.chainManager notifySyncStateChanged];
-    }
+    });
 }
-
-/// test-only
-/// Used for fast obtaining list diff chain for specific block hashes like this:
-/// //DSMasternodeListDiffService *service = self.masternodeListDiffService;
-//    [service sendReversedHashes:@"00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c" blockHash:@"000000e6b51b9aba9754e6b4ef996ef1d142d6cfcc032c1fd7fc78ca6663ee0a"];
-//    [service sendReversedHashes:@"000000e6b51b9aba9754e6b4ef996ef1d142d6cfcc032c1fd7fc78ca6663ee0a" blockHash:@"00000009d7c0bcb59acf741f25239f45820eea178b74597d463ca80e104f753b"];
-
-//-(void)sendReversedHashes:(NSString *)baseBlockHash blockHash:(NSString *)blockHash {
-//    DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:baseBlockHash.hexToData.reverse.UInt256
-//                                                                             blockHash:blockHash.hexToData.reverse.UInt256];
-//    [self sendMasternodeListRequest:request];
-//}
 
 @end

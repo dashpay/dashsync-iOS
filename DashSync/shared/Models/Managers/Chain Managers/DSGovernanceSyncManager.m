@@ -131,7 +131,9 @@
 - (void)startGovernanceSync {
     //Do we want to sync?
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.chain.chainManager.syncState addSyncKind:DSSyncStateExtKind_Governance];
+    });
     //Do we need to sync?
     if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@_%@", self.chain.uniqueID, LAST_SYNCED_GOVERANCE_OBJECTS]]) { //no need to do a governance sync if we already completed one recently
         NSTimeInterval lastSyncedGovernance = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@_%@", self.chain.uniqueID, LAST_SYNCED_GOVERANCE_OBJECTS]];
@@ -139,6 +141,7 @@
         NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
         if (lastSyncedGovernance + interval > now) {
             [self continueGovernanceSync];
+            [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Governance];
             return;
         };
     }
@@ -196,12 +199,16 @@
     [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@_%@", self.chain.uniqueID, LAST_SYNCED_GOVERANCE_OBJECTS]];
 
     //Do we want to request votes now?
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) {
+        [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Governance];
+        return;
+    }
     self.needVoteSyncGovernanceObjects = [self.governanceObjects mutableCopy];
     [self startNextGoveranceVoteSyncWithPeer:peer];
 }
 
 - (void)finishedGovernanceVoteSyncWithPeer:(DSPeer *)peer {
+    [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Governance];
     if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjectVotes) return;
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
     peer.governanceRequestState = DSGovernanceRequestState_None;

@@ -43,9 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
              status:(DUsernameStatus *)status
                save:(BOOL)save
   registerOnNetwork:(BOOL)registerOnNetwork;
-- (DUsernameStatus *)statusOfUsername:(NSString *)username
+- (DUsernameStatus *_Nullable)statusOfUsername:(NSString *)username
                              inDomain:(NSString *)domain;
-- (DUsernameStatus *)statusOfDashpayUsername:(NSString *)username;
+- (DUsernameStatus *_Nullable)statusOfDashpayUsername:(NSString *)username;
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context

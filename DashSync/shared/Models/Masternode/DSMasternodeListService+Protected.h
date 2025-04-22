@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
         skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval;
 - (UInt256)closestKnownBlockHashForBlockHeight:(uint32_t)blockHeight;
 - (void)startTimeOutObserver;
+- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData;
 
 @end
 

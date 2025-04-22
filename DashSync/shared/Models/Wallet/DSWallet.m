@@ -303,6 +303,9 @@
         [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
                                  storeUnderWalletUniqueId:self.uniqueIDString];
     }
+    if (addAccount.coinJoinDerivationPath)
+        [addAccount.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:self.uniqueIDString];
+    
     if ([self.chain isEvolutionEnabled]) {
         [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
                                                           storeUnderWalletUniqueId:self.uniqueIDString];
@@ -618,6 +621,8 @@
             for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             }
+            if (account.coinJoinDerivationPath)
+                [account.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             if ([chain isEvolutionEnabled]) {
                 [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             }
@@ -720,20 +725,13 @@
     return allAddressesArray;
 }
 
-- (NSArray *)registerAddressesWithInitialGapLimit {
+- (NSArray *)registerAddressesAtStage:(DSGapLimitStage)stage {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSAccount *account in self.accounts) {
-        [mArray addObjectsFromArray:[account registerAddressesWithInitialGapLimit]];
+        [mArray addObjectsFromArray:[account registerAddressesAtStage:stage]];
     }
     return [mArray copy];
-}
 
-- (NSArray *)registerAddressesWithProlongGapLimit {
-    NSMutableArray *mArray = [NSMutableArray array];
-    for (DSAccount *account in self.accounts) {
-        [mArray addObjectsFromArray:[account registerAddressesWithProlongGapLimit]];
-    }
-    return [mArray copy];
 }
 
 - (DSAccount *)firstAccountThatCanContainTransaction:(DSTransaction *)transaction {
@@ -1003,6 +1001,8 @@
         for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
             [derivationPath reloadAddresses];
         }
+        if (account.coinJoinDerivationPath)
+            [account.coinJoinDerivationPath reloadAddresses];
     }
     for (DSDerivationPath *derivationPath in self.specializedDerivationPaths) {
         [derivationPath reloadAddresses];
