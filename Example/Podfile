@@ -1,6 +1,6 @@
 def common_pods
 #  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :branch => 'fix/core-20-test-additional'
-  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => '3cfd5b41a408eb75a7b77f9d757146b7dec3931f'
+  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => '6426b8ab1fcce4cb0898228ca340946dfc7d5cb4'
 #  pod 'DashSharedCore', :path => '../../dash-shared-core-ferment/'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.21.0'
