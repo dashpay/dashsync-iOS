@@ -135,7 +135,8 @@
 // MARK: - Derivation Path Addresses
 
 - (BOOL)registerTransactionAddress:(NSString *_Nonnull)address {
-    if ([self containsAddress:address]) {
+    BOOL contains = [self containsAddress:address];
+    if (contains) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
             DSGapLimit *gapLimit = [self.allChangeAddresses containsObject:address]
@@ -143,9 +144,8 @@
                 : [DSGapLimitFunds external:SEQUENCE_GAP_LIMIT_EXTERNAL];
             [self registerAddressesWithSettings:gapLimit];
         }
-        return TRUE;
     }
-    return FALSE;
+    return contains;
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is

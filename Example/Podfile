@@ -1,6 +1,6 @@
 def common_pods
 #  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :branch => 'fix/core-20-test-additional'
-  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => 'a506c8560642b50dbf4e37528b8885e41cedf0db'
+  pod 'DashSharedCore', :git => 'https://github.com/dashpay/dash-shared-core.git', :commit => '6426b8ab1fcce4cb0898228ca340946dfc7d5cb4'
 #  pod 'DashSharedCore', :path => '../../dash-shared-core-ferment/'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.21.0'
@@ -30,6 +30,10 @@ post_install do |installer|
       # fixes warnings about unsupported Deployment Target in Xcode 10
       target.build_configurations.each do |config|
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'DASHCORE_QUORUM_VALIDATION=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'DPP_STATE_TRANSITIONS=1'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'PLATFORM_VALUE_STD=1'
       end
     end
 end

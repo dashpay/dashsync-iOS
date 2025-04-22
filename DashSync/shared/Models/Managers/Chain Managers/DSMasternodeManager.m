@@ -46,8 +46,10 @@
 
 #define ENGINE_STORAGE_LOCATION(chain) [NSString stringWithFormat:@"MNL_ENGINE_%@.dat", chain.name]
 
-#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
-#define SAVE_ERROR_STATE (1 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_ERROR_TO_FILE (1 && DEBUG)
+#define SAVE_ERROR_STATE (0 && DEBUG)
+#define RESTORE_FROM_CHECKPOINT (0 && DEBUG)
 
 
 @interface DSMasternodeManager ()
@@ -63,7 +65,8 @@
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic) BOOL isSyncing;
 @property (nonatomic) BOOL isRestored;
-@property (nonatomic, strong) NSData* baseBlockHashWaitingForDiffs;
+@property (nonatomic) BOOL hasHandledQrInfoPipeline;
+@property (nonatomic) BOOL isPendingValidation;
 
 @end
 
@@ -88,7 +91,7 @@
 }
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [MasternodeManager] ", self.chain.name];
+    return [NSString stringWithFormat:@"[%@] [MasternodeManager]", self.chain.name];
 }
 
 - (BOOL)hasCurrentMasternodeListInLast30Days {
@@ -103,11 +106,12 @@
 #pragma mark - DSMasternodeListServiceDelegate
 
 
+// always from chain.networkingQueue
 - (void)masternodeListServiceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
-    if (self.baseBlockHashWaitingForDiffs)
-        [self getRecentMasternodeList];
-    else
+    if (!self.isPendingValidation) {
+        [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Masternodes];
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
+    }
 }
 
 
@@ -127,7 +131,11 @@
 
 - (BOOL)isMasternodeListOutdated {
     uint32_t lastHeight = self.lastMasternodeListBlockHeight;
-    return lastHeight == UINT32_MAX || lastHeight < self.chain.lastTerminalBlockHeight - 8;
+    return lastHeight == UINT32_MAX || lastHeight < self.chain.lastTerminalBlockHeight;
+}
+
+- (BOOL)isQRInfoOutdated {
+    return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_is_qr_info_outdated(self.processor, self.chain.lastTerminalBlockHeight);
 }
 
 - (DMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
@@ -208,6 +216,7 @@
     }
 }
 
+#if RESTORE_FROM_CHECKPOINT
 - (BOOL)restoreFromCheckpoint {
     DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
     if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""])
@@ -227,15 +236,20 @@
     DMnDiffResultDtor(result);
     return YES;
 }
+#endif
 
+// always from chain.networkingQueue
 - (BOOL)restoreState {
+    [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Checkpoints];
     BOOL restored = [self restoreEngine];
     if (!restored) {
         DSLog(@"%@ No Engine Stored", self.logPrefix);
+        #if RESTORE_FROM_CHECKPOINT
         // TODO: checkpoints don't work anymore, since old protocol version support was dropped
-//        restored = [self restoreFromCheckpoint];
-//        if (!restored)
-//            DSLog(@"%@ No Checkpoint Stored", self.logPrefix);
+        restored = [self restoreFromCheckpoint];
+        if (!restored)
+            DSLog(@"%@ No Checkpoint Stored", self.logPrefix);
+        #endif
     }
     if (restored) {
         DMasternodeList *current_list = [self currentMasternodeList];
@@ -246,7 +260,12 @@
             DSMasternodeManagerNotificationMasternodeListKey: current_list ? [NSValue valueWithPointer:current_list] : [NSNull null]
         }];
         self.isRestored = YES;
+
     }
+    self.chain.chainManager.syncState.masternodeListSyncInfo.lastListHeight = DCurrentMasternodeListBlockHeight(self.processor);
+    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = (uint32_t) DKnownMasternodeListsCount(self.processor);
+    [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Checkpoints];
+    [self.chain.chainManager notifySyncStateChanged];
     return restored;
 }
 
@@ -261,28 +280,22 @@
 }
 
 - (void)setUp {
-    [self restoreState];
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self restoreState];
+    });
     [DSLocalMasternodeEntity loadLocalMasternodesInContext:self.managedObjectContext onChainEntity:[self.chain chainEntityInContext:self.managedObjectContext]];
 }
 
 - (void)reloadMasternodeLists {
     DProcessorClear(self.processor);
-    [self.chain.chainManager notifyMasternodeSyncStateChange:UINT32_MAX storedCount:0];
-    [self restoreState];
-}
-
-- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData {
-    UInt256 blockHash = blockHashData.UInt256;
-    BOOL hasBlock = [self.chain blockForBlockHash:blockHash] != nil;
-    if (!hasBlock) {
-        hasBlock = [DSMerkleBlockEntity hasBlocksWithHash:blockHash inContext:self.managedObjectContext];
-    }
-    if (!hasBlock && self.chain.isTestnet) {
-        //We can trust insight if on testnet
-        [self.chain blockUntilGetInsightForBlockHash:blockHash];
-        hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
-    }
-    return hasBlock;
+    [self notify:DSCurrentMasternodeListDidChangeNotification userInfo:@{
+        DSChainManagerNotificationChainKey: self.chain,
+        DSMasternodeManagerNotificationMasternodeListKey: [NSNull null]
+    }];
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self.chain.chainManager notifyMasternodeSyncStateChange:UINT32_MAX storedCount:0];
+        [self restoreState];
+    });
 }
 
 - (DMasternodeList *)currentMasternodeList {
@@ -294,18 +307,19 @@
     DProcessorClear(self.processor);
     [self.masternodeListDiffService cleanAllLists];
     [self.quorumRotationService cleanAllLists];
-    [self.chain.chainManager notifyMasternodeSyncStateChange:UINT32_MAX storedCount:0];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification
-                                                            object:nil
-                                                          userInfo:@{
-            DSChainManagerNotificationChainKey: self.chain
-        }];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification
-                                                            object:nil
-                                                          userInfo:@{
-            DSChainManagerNotificationChainKey: self.chain
-        }];
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_reinit_engine(self.processor, self.chain.chainType, [self.chain createDiffConfig]);
+    uint32_t lastListHeight = DCurrentMasternodeListBlockHeight(self.processor);
+    uint32_t storedCount = (uint32_t) DKnownMasternodeListsCount(self.processor);
+    DMasternodeList *current_list = [self currentMasternodeList];
+    dispatch_async(self.chain.networkingQueue, ^{
+//        [self.chain.chainManager.syncState.masternodeListSyncInfo resetSyncKind];
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = 0;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = 0;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.lastListHeight = lastListHeight;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = storedCount;
+        [self.chain.chainManager notifySyncStateChanged];
+
+        [self notifyCurrentListChanged:current_list];
     });
 }
 
@@ -324,14 +338,17 @@
 
 // MARK: - Requesting Masternode List
 
+// always from chain.networkingQueue
 - (void)startSync {
     DSLog(@"%@ [Start]", self.logPrefix);
     self.isSyncing = YES;
     if (!self.isRestored)
         [self restoreState];
     [self getRecentMasternodeList];
+    [self.chain.chainManager.syncState addSyncKind:DSSyncStateExtKind_Masternodes];
 }
 
+// always from chain.networkingQueue
 - (void)stopSync {
     DSLog(@"%@ [Stop]", self.logPrefix);
     self.isSyncing = NO;
@@ -339,6 +356,12 @@
     if (self.chain.isRotatedQuorumsPresented)
         [self.quorumRotationService stop];
     [self.masternodeListDiffService stop];
+    
+    self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = 0;
+    self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = 0;
+    [self.chain.chainManager.syncState.masternodeListSyncInfo resetSyncKind];
+    [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Masternodes];
+    [self.chain.chainManager notifySyncStateChanged];
 }
 
 - (void)getRecentMasternodeList {
@@ -349,7 +372,23 @@
         DSLog(@"%@ getRecentMasternodeList: (no block exist) for tip", self.logPrefix);
         return;
     }
-    [self.quorumRotationService getRecent:merkleBlock.blockHash];
+    NSData *blockHash = uint256_data(merkleBlock.blockHash);
+    if (!self.isPendingValidation && (!self.hasHandledQrInfoPipeline || [self isQRInfoOutdated])) {
+        [self.quorumRotationService getRecent:blockHash];
+    }
+    if (!self.isPendingValidation && self.hasHandledQrInfoPipeline && [self isMasternodeListOutdated]) {
+        
+        NSUInteger newCount = [self.masternodeListDiffService addToRetrievalQueue:blockHash];
+        NSUInteger maxAmount = self.masternodeListDiffService.retrievalQueueMaxAmount;
+        [self.masternodeListDiffService dequeueMasternodeListRequest];
+        dispatch_async(self.chain.networkingQueue, ^{
+            self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+            self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = (uint32_t) maxAmount;
+            [self.chain.chainManager notifySyncStateChanged];
+        });
+
+        
+    }
 }
 
 
@@ -363,7 +402,7 @@
             dispatch_source_set_timer(self.masternodeListTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), DISPATCH_TIME_FOREVER, 1ull * NSEC_PER_SEC);
             dispatch_source_set_event_handler(self.masternodeListTimer, ^{
                 NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
-                if (timeElapsed > safetyDelay) {
+                if (timeElapsed > safetyDelay && !self.isPendingValidation) {
                     [self getRecentMasternodeList];
                 }
             });
@@ -400,28 +439,6 @@
     return YES;
 }
 
-
-// MARK: - Deterministic Masternode List Sync
-
-- (DSBlock *)lastBlockForBlockHash:(UInt256)blockHash fromPeer:(DSPeer *)peer {
-    DSBlock *lastBlock = nil;
-    if ([self.chain heightForBlockHash:blockHash]) {
-        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
-        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
-            NSData *blockHashData = uint256_data(blockHash);
-            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
-            if (!lastBlock && peer.chain.isTestnet) {
-                //We can trust insight if on testnet
-                [self.chain blockUntilGetInsightForBlockHash:blockHash];
-                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
-            }
-        }
-    } else {
-        lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
-    }
-    return lastBlock;
-}
-
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
     [self.chain.chainManager chain:self.chain badMasternodeListReceivedFromPeer:peer];
     NSArray *faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
@@ -431,6 +448,12 @@
         [self.masternodeListDiffService cleanListsRetrievalQueue];
         [self.quorumRotationService cleanListsRetrievalQueue];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        dispatch_async(self.chain.networkingQueue, ^{
+            self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = 0;
+            self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = 0;
+            [self.chain.chainManager notifySyncStateChanged];
+        });
+
         [self.chain.masternodeManager getRecentMasternodeList];
     } else {
         if (!faultyPeers) {
@@ -445,16 +468,38 @@
     [self.chain.chainManager notify:DSMasternodeListDiffValidationErrorNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 }
 
+- (void)printEngineStatus {
+    dash_spv_masternode_processor_processing_processor_MasternodeProcessor_print_engine_status(self.processor);
+}
+
+- (NSError *_Nullable)verifyQuorums {
+#if defined(DASHCORE_QUORUM_VALIDATION)
+    DSLog(@"%@: Quorums Verification: Started", self.logPrefix);
+    Result_ok_bool_err_dashcore_sml_quorum_validation_error_QuorumValidationError *result = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_verify_current_masternode_list_quorums(self.processor);
+    if (result->error) {
+        NSError *quorumValidationError = [NSError ffi_from_quorum_validation_error:result->error];
+        DSLog(@"%@ Quorums Verification: Error: %@", self.logPrefix, quorumValidationError.description);
+        Result_ok_bool_err_dashcore_sml_quorum_validation_error_QuorumValidationError_destroy(result);
+        return quorumValidationError;
+    }
+    DSLog(@"%@: Quorums Verification: Ok", self.logPrefix);
+    Result_ok_bool_err_dashcore_sml_quorum_validation_error_QuorumValidationError_destroy(result);
+#else
+    DSLog(@"%@: Quorums Verification: Disabled", self.logPrefix);
+#endif
+    return nil;
+}
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
-    DSLog(@"%@ [%@:%d] mnlistdiff: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
+    //DSLog(@"%@ [%@:%d] mnlistdiff: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.masternodeListDiffService) {
         self.masternodeListDiffService.timedOutAttempt = 0;
     }
     dispatch_async(self.processingQueue, ^{
         dispatch_group_enter(self.processingGroup);
         Slice_u8 *message_slice = slice_ctor(message);
-        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, false);
+        DMnDiffResult *result = DMnDiffFromMessage(self.processor, message_slice, nil, self.hasHandledQrInfoPipeline);
+        
         if (result->error) {
             NSError *error = [NSError ffi_from_processing_error:result->error];
             DSLog(@"%@ mnlistdiff: Error: %@", self.logPrefix, error.description);
@@ -469,25 +514,74 @@
                     [self issueWithMasternodeListFromPeer:peer];
                     break;
             }
-            #if SAVE_MASTERNODE_DIFF_TO_FILE
-            [self writeToDisk:[NSString stringWithFormat:@"MNL_ERR__%d_%lu.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
+            #if SAVE_MASTERNODE_DIFF_ERROR_TO_FILE
+            [self writeToDisk:[NSString stringWithFormat:@"MNL_ERR__%d_%f.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
             #endif
             DMnDiffResultDtor(result);
             dispatch_group_leave(self.processingGroup);
             return;
         }
+
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         if (self.isSyncing) {
+            u256 *base_block_hash = dashcore_hash_types_BlockHash_inner(result->ok->o_0);
             u256 *block_hash = dashcore_hash_types_BlockHash_inner(result->ok->o_1);
-            NSData *blockHashData = NSDataFromPtr(block_hash);
+            UInt256 baseBlockHash = u256_cast(base_block_hash);
+            UInt256 blockHash = u256_cast(block_hash);
+            DSLog(@"%@ MNLISTDIFF: OK: %@", self.logPrefix, uint256_hex(blockHash));
+            #if SAVE_MASTERNODE_DIFF_TO_FILE
+            [self writeToDisk:[NSString stringWithFormat:@"MNL_%@_%@__%d.dat", uint256_hex(baseBlockHash), uint256_hex(blockHash), peer.version] data:message];
+            #endif
+            u256_dtor(base_block_hash);
             u256_dtor(block_hash);
-            [self.masternodeListDiffService removeFromRetrievalQueue:blockHashData];
+            uint32_t newCount = (uint32_t) [self.masternodeListDiffService removeFromRetrievalQueue:uint256_data(blockHash)];
+            uint32_t maxQueueCount = (uint32_t) [self.masternodeListDiffService retrievalQueueMaxAmount];
+            [self.masternodeListDiffService removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
             
-            if ([self.masternodeListDiffService retrievalQueueCount]) {
+            if ([self.masternodeListDiffService hasActiveQueue]) {
+                uint32_t lastListHeight = DCurrentMasternodeListBlockHeight(self.processor);
+                uint32_t storedCount = (uint32_t) DKnownMasternodeListsCount(self.processor);
+
+                DMasternodeList *current_list = [self currentMasternodeList];
+                dispatch_async(self.chain.networkingQueue, ^{
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = newCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = maxQueueCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.lastListHeight = lastListHeight;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = storedCount;
+                    [self.chain.chainManager notifySyncStateChanged];
+                    [self notifyCurrentListChanged:current_list];
+                });
                 [self.masternodeListDiffService dequeueMasternodeListRequest];
+            } else if (self.isPendingValidation) {
+                dispatch_async(self.chain.networkingQueue, ^{
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = newCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = maxQueueCount;
+                    [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_QrInfo];
+                    [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Diffs];
+                    [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                    [self.chain.chainManager notifySyncStateChanged];
+                });
+                NSError *quorumValidationError = [self verifyQuorums];
+                if (quorumValidationError) {
+                    dispatch_async(self.chain.networkingQueue, ^{
+                        [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                    });
+                } else {
+                    [self finishIntitialQrInfoPipeline];
+                }
             } else {
-                DSLog(@"%@: All diffs are here -> Re-request QRINFO for", self.logPrefix, self.baseBlockHashWaitingForDiffs.hexString);
-                [self getRecentMasternodeList];
+                uint32_t lastListHeight = DCurrentMasternodeListBlockHeight(self.processor);
+                uint32_t storedCount = (uint32_t) DKnownMasternodeListsCount(self.processor);
+                DMasternodeList *current_list = [self currentMasternodeList];
+                dispatch_async(self.chain.networkingQueue, ^{
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = newCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = maxQueueCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.lastListHeight = lastListHeight;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = storedCount;
+                    [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Diffs];
+                    [self.chain.chainManager notifySyncStateChanged];
+                    [self notifyCurrentListChanged:current_list];
+                });
             }
         }
         DMnDiffResultDtor(result);
@@ -532,8 +626,8 @@
                     default:
                         break;
                 }
-            #if SAVE_MASTERNODE_DIFF_TO_FILE
-                [self writeToDisk:[NSString stringWithFormat:@"QRINFO_ERR_%d_%lu.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
+            #if SAVE_MASTERNODE_DIFF_ERROR_TO_FILE
+                [self writeToDisk:[NSString stringWithFormat:@"QRINFO_ERR_%d_%f.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
             #endif
             #if SAVE_ERROR_STATE
                 Result_ok_Vec_u8_err_dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError *bincode = dash_spv_masternode_processor_processing_processor_MasternodeProcessor_serialize_engine(self.processor);
@@ -553,18 +647,36 @@
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             std_collections_BTreeSet_dashcore_hash_types_BlockHash *missed_hashes = result->ok;
             
-            DSLog(@"%@ qrinfo: OK: %ul", self.logPrefix, (uint16_t) missed_hashes->count);
+            DSLog(@"%@ QRINFO: OK: %u", self.logPrefix, (uint32_t) missed_hashes->count);
+            #if SAVE_MASTERNODE_DIFF_TO_FILE
+                [self writeToDisk:[NSString stringWithFormat:@"QRINFO_MISSED_%d_%f.dat", peer.version, [NSDate timeIntervalSinceReferenceDate]] data:message];
+            #endif
+
             if (missed_hashes->count > 0) {
-                self.baseBlockHashWaitingForDiffs = [self.quorumRotationService retrievalBlockHash];
+                self.isPendingValidation = YES;
                 [self.quorumRotationService cleanAllLists];
                 NSArray<NSData *> *missedHashes = [NSArray ffi_from_block_hash_btree_set:missed_hashes];
-                [self.masternodeListDiffService addToRetrievalQueueArray:missedHashes];
+                NSUInteger newCount = [self.masternodeListDiffService addToRetrievalQueueArray:missedHashes];
+                NSUInteger maxAmount = self.masternodeListDiffService.retrievalQueueMaxAmount;
+                dispatch_async(self.chain.networkingQueue, ^{
+                    [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Diffs];
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+                    self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = (uint32_t) maxAmount;
+                    [self.chain.chainManager notifySyncStateChanged];
+                });
                 [self.masternodeListDiffService dequeueMasternodeListRequest];
             } else {
-                self.baseBlockHashWaitingForDiffs = nil;
-                [self.quorumRotationService cleanAllLists];
-                [self.quorumRotationService dequeueMasternodeListRequest];
-                [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+                dispatch_async(self.chain.networkingQueue, ^{
+                    [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                });
+                NSError *quorumValidationError = [self verifyQuorums];
+                if (quorumValidationError) {
+                    dispatch_async(self.chain.networkingQueue, ^{
+                        [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                    });
+                } else {
+                    [self finishIntitialQrInfoPipeline];
+                }
             }
 
             DQRInfoResultDtor(result);
@@ -572,8 +684,27 @@
         });
 }
 
+- (void)finishIntitialQrInfoPipeline {
+    self.hasHandledQrInfoPipeline = YES;
+    self.isPendingValidation = NO;
+    DMasternodeList *current_list = [self currentMasternodeList];
+    uint32_t lastListHeight = DCurrentMasternodeListBlockHeight(self.processor);
+    uint32_t storedCount = (uint32_t) DKnownMasternodeListsCount(self.processor);
+    [self.quorumRotationService cleanAllLists];
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Quorums];
+        [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_QrInfo];
+        self.chain.chainManager.syncState.masternodeListSyncInfo.lastListHeight = lastListHeight;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = storedCount;
+        [self.chain.chainManager notifySyncStateChanged];
+        [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+        [self notifyCurrentListChanged:current_list];
+    });
+    [self.quorumRotationService dequeueMasternodeListRequest];
+}
+
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
-    DSLog(@"%@ [%@:%d] qrinfo: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
+    //DSLog(@"%@ [%@:%d] qrinfo: received: %@", self.logPrefix, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.quorumRotationService) {
         self.quorumRotationService.timedOutAttempt = 0;
     }
@@ -604,6 +735,54 @@
 }
 - (uintptr_t)currentValidQuorumsOfType:(DLLMQType)type {
     return dash_spv_masternode_processor_processing_processor_MasternodeProcessor_current_valid_quorums_of_type_count(self.processor, &type);
+}
+
+
+- (NSError *_Nullable)requestMasternodeListForBlockHeight:(uint32_t)blockHeight {
+    DSMerkleBlock *merkleBlock = [self.chain blockAtHeight:blockHeight];
+    if (!merkleBlock)
+        return [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey: @"Unknown block"}];
+    [self requestMasternodeListForBlockHash:uint256_data(merkleBlock.blockHash)];
+    return nil;
+}
+- (void)requestMasternodeListForBlockHash:(NSData *)blockHash {
+    NSUInteger newCount = [self.masternodeListDiffService addToRetrievalQueue:blockHash];
+    NSUInteger maxAmount = self.masternodeListDiffService.retrievalQueueMaxAmount;
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Diffs];
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = (uint32_t) maxAmount;
+        [self.chain.chainManager notifySyncStateChanged];
+    });
+    [self.masternodeListDiffService dequeueMasternodeListRequest];
+
+}
+- (void)requestMasternodeListForBaseBlockHash:(NSData *)baseBlockHash blockHash:(NSData *)blockHash {
+    NSUInteger maxAmount = self.masternodeListDiffService.retrievalQueueMaxAmount;
+    NSUInteger newCount = [self.masternodeListDiffService addToRetrievalQueueArray:@[baseBlockHash, blockHash]];
+    dispatch_async(self.chain.networkingQueue, ^{
+        [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Diffs];
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueCount = (uint32_t) newCount;
+        self.chain.chainManager.syncState.masternodeListSyncInfo.queueMaxAmount = (uint32_t) maxAmount;
+        [self.chain.chainManager notifySyncStateChanged];
+    });
+    [self.masternodeListDiffService dequeueMasternodeListRequest];
+}
+
+- (void)notifyCurrentListChanged:(DMasternodeList *_Nullable)list {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{
+            DSChainManagerNotificationChainKey: self.chain,
+            DSMasternodeManagerNotificationMasternodeListKey: list ? [NSValue valueWithPointer:list] : [NSNull null]
+        }];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{
+            DSChainManagerNotificationChainKey: self.chain,
+        }];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{
+            DSChainManagerNotificationChainKey: self.chain,
+        }];
+    });
+
 }
 
 @end

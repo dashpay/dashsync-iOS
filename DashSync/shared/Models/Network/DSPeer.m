@@ -195,7 +195,12 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue {
+- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate
+            peerDelegate:(id<DSPeerDelegate>)peerDelegate
+     transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate
+      governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate
+           sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate
+      masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate {
     _peerChainDelegate = chainDelegate;
     _peerDelegate = peerDelegate;
     _transactionDelegate = transactionDelegate;
@@ -203,7 +208,7 @@
     _sporkDelegate = sporkDelegate;
     _masternodeDelegate = masternodeDelegate;
 
-    _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
+    _delegateQueue = self.chain.networkingQueue;
 }
 
 - (NSString *)location {
@@ -562,7 +567,8 @@
 //   are generated and local peer sends filterload with an updated bloom filter
 // - after filterload is sent, getdata is sent to re-request recent blocks that may contain new tx matching the filter
 
-- (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop {
+- (void)sendGetheadersMessageWithLocators:(NSArray *)locators
+                              andHashStop:(UInt256)hashStop {
     DSGetHeadersRequest *request = [DSGetHeadersRequest requestWithLocators:locators andHashStop:hashStop protocolVersion:self.chain.protocolVersion];
     if (self.relayStartTime == 0)
         self.relayStartTime = [NSDate timeIntervalSince1970];
@@ -936,9 +942,11 @@
         NSTimeInterval timestamp = [message UInt32AtOffset:off];
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
         UInt128 address = *(UInt128 *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t));
-        uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
-                                                                 sizeof(uint32_t) + sizeof(uint64_t) +
-                                                                 sizeof(UInt128)));
+
+        uint16_t rawPort;
+        memcpy(&rawPort, (const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(UInt128), sizeof(rawPort));
+        uint16_t port = CFSwapInt16BigToHost(rawPort);
+
 
         if (!(services & SERVICES_NODE_NETWORK)) continue;                                   // skip peers that don't carry full blocks
         if (address.u64[0] != 0 || address.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; // ignore IPv6 for now

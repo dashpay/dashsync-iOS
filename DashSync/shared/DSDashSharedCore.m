@@ -16,6 +16,7 @@
 //
 
 #import "DSBlock.h"
+#import "DSChain+Checkpoint.h"
 #import "DSChain+Params.h"
 #import "DSChain+Protected.h"
 #import "DSChain+Identity.h"
@@ -46,31 +47,13 @@
 #define GetBlockHeightByHash Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_u32
 #define GetBlockHashByHeight Fn_ARGS_std_os_raw_c_void_u32_RTRN_Option_u8_32
 
-#define MerkleBlockByBlockHash Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dash_spv_masternode_processor_common_block_MBlock_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define LastMerkleBlockByBlockHashForPeer Fn_ARGS_std_os_raw_c_void_Arr_u8_32_std_os_raw_c_void_RTRN_Result_ok_dash_spv_masternode_processor_common_block_MBlock_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-
-
-#define AddInsight Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_
-
-#define HasPersistInRetrieval Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_bool
-#define GetBlockHeightOrLastTerminal Fn_ARGS_std_os_raw_c_void_u32_RTRN_Result_ok_dash_spv_masternode_processor_common_block_Block_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-
-#define FnMaybeCLSignature Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dashcore_bls_sig_utils_BLSSignature_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 #define DMaybeCLSignature Result_ok_dashcore_bls_sig_utils_BLSSignature_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
 #define DMaybeCLSignatureCtor(ok, err) Result_ok_dashcore_bls_sig_utils_BLSSignature_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError_ctor(ok, err)
-#define LoadMasternodeList Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dashcore_sml_masternode_list_MasternodeList_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define SaveMasternodeList Fn_ARGS_std_os_raw_c_void_Arr_u8_32_std_collections_Map_keys_u8_arr_32_values_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_RTRN_Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define LoadLLMQSnapshot Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Result_ok_dashcore_network_message_qrinfo_QuorumSnapshot_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-#define SaveLLMQSnapshot Fn_ARGS_std_os_raw_c_void_Arr_u8_32_dashcore_network_message_qrinfo_QuorumSnapshot_RTRN_Result_ok_bool_err_dash_spv_masternode_processor_processing_core_provider_CoreProviderError
-
 #define UpdateMasternodesAddressUsage Fn_ARGS_std_os_raw_c_void_Vec_dashcore_sml_masternode_list_entry_qualified_masternode_list_entry_QualifiedMasternodeListEntry_RTRN_
-
-#define IssueWithMasternodeList Fn_ARGS_std_os_raw_c_void_bool_std_os_raw_c_void_RTRN_
-#define NotifySyncState Fn_ARGS_std_os_raw_c_void_dash_spv_masternode_processor_models_sync_state_CacheState_RTRN_
 
 @interface DSDashSharedCore ()
 
-@property (nonatomic) DSChain *chain;
+@property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) DashSPVCore *core;
 @property (nonatomic, strong) NSMutableDictionary *devnetSharedCoreDictionary;
 
@@ -149,16 +132,6 @@
     UpdateMasternodesAddressUsage update_address_usage_of_masternodes = {
         .caller = &update_address_usage_of_masternodes_caller
     };
-    IssueWithMasternodeList issue_with_masternode_list_from_peer = {
-        .caller = &issue_with_masternode_list_from_peer_caller
-    };
-    FnMaybeCLSignature get_cl_signature_by_block_hash = {
-        .caller = &get_cl_signature_by_block_hash_caller,
-        .destructor = &get_cl_signature_by_block_hash_dtor
-    };
-    NotifySyncState notify_sync_state = {
-        .caller = &notify_sync_state_caller,
-    };
     
     NSArray<NSString *> *addresses = @[@"127.0.0.1"];
     switch (chain.chainType->tag) {
@@ -178,17 +151,8 @@
             break;
     }
     Vec_ *address_list = [NSArray ffi_to_vec:addresses];
-    dash_spv_apple_bindings_DiffConfig *diff_config = NULL;
-    if ([chain isMainnet]) {
-        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-        NSString *filePath = [bundle pathForResource:@"mn_list_diff_0_2227096" ofType:@"bin"];
-        NSData *data = [NSData dataWithContentsOfFile:filePath];
-
-        diff_config = dash_spv_apple_bindings_DiffConfig_ctor(bytes_ctor(data), 2227096);
-    }
-
-    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, diff_config, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, get_cl_signature_by_block_hash, update_address_usage_of_masternodes, issue_with_masternode_list_from_peer, notify_sync_state, context);
+    dash_spv_masternode_processor_processing_processor_DiffConfig *diff_config = [chain createDiffConfig];
+    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, diff_config, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, update_address_usage_of_masternodes, context);
     return self;
 }
 
@@ -248,7 +212,8 @@ uint32_t get_block_height_by_hash_caller(const void *context, u256 *block_hash) 
         height = [[core.chain insightVerifiedBlocksByHashDictionary] objectForKey:NSDataFromPtr(block_hash)].height;
     }
     u256_dtor(block_hash);
-    DSLog(@"[SDK] get_block_height_by_hash_caller: %@ = %u", uint256_hex(blockHash), height);
+    if (height == UINT32_MAX)
+        DSLog(@"[SDK] get_block_height_by_hash_caller: %@ = %u", uint256_hex(blockHash), height);
     return height;
 }
 void get_block_height_by_hash_dtor(uint32_t result) {}
@@ -268,61 +233,10 @@ u256 *get_block_hash_by_height_caller(const void *context, uint32_t block_height
 
 void get_block_hash_by_height_dtor(u256 *result) {}
 
-DMaybeCLSignature *get_cl_signature_by_block_hash_caller(const void *context, u256 *block_hash) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    UInt256 blockHash = u256_cast(block_hash);
-    UInt256 blockHashRev = uint256_reverse(blockHash);
-    u256_dtor(block_hash);
-    DSChainLock *chainLock = [core.chain.chainManager chainLockForBlockHash:blockHash];
-    DSChainLock *chainLockRev = [core.chain.chainManager chainLockForBlockHash:blockHashRev];
-    if (chainLock) {
-        DBLSSignature *bls_sig = DChainLockSignature(chainLock.lock);
-        DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = %@", uint256_hex(blockHash), u768_hex(bls_sig->_0));
-        return DMaybeCLSignatureCtor(bls_sig, NULL);
-    } else if (chainLockRev) {
-        DBLSSignature *bls_sig = DChainLockSignature(chainLockRev.lock);
-        DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = %@", uint256_hex(blockHashRev), u768_hex(bls_sig->_0));
-        return DMaybeCLSignatureCtor(bls_sig, NULL);
-    } else {
-        DSLog(@"[SDK] get_cl_signature_by_block_hash_caller: %@ = None", uint256_hex(blockHash));
-        return DMaybeCLSignatureCtor(NULL, DCoreProviderErrorNullResultCtor(DSLocalizedChar(@"No clsig for block hash %@", nil, uint256_hex(blockHash))));
-    }
-}
-void get_cl_signature_by_block_hash_dtor(DMaybeCLSignature *result) {}
-
-
 void update_address_usage_of_masternodes_caller(const void *context, DMasternodeEntryList *masternodes) {
     DSDashSharedCore *core = AS_OBJC(context);
     [core.chain updateAddressUsageOfSimplifiedMasternodeEntries:masternodes];
     DMasternodeEntryListDtor(masternodes);
-}
-
-void issue_with_masternode_list_from_peer_caller(const void *context, bool is_dip24, const void *peer_context) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    DSPeer *peer = ((__bridge DSPeer *)(peer_context));
-    [core.chain.masternodeManager issueWithMasternodeListFromPeer:peer];
-}
-
-void notify_sync_state_caller(const void *context, DMNSyncState *state) {
-    DSDashSharedCore *core = AS_OBJC(context);
-    DSMasternodeListSyncState *syncInfo = core.chain.chainManager.syncState.masternodeListSyncInfo;
-    @synchronized (syncInfo) {
-        [syncInfo updateWithSyncState:state];
-        switch (state->tag) {
-            case DMNSyncStateQueueChanged:
-                DSLog(@"[%@] Masternode list queue updated: %lu/%lu", core.chain.name, state->queue_changed.count, state->queue_changed.max_amount);
-                break;
-            case DMNSyncStateStoreChanged:
-                DSLog(@"[%@] Masternode list store updated: %lu/%u", core.chain.name, state->store_changed.count, state->store_changed.last_block_height);
-                break;
-            case DMNSyncStateStubCount:
-                DSLog(@"[%@] Masternode list DB updated: %lu", core.chain.name, state->stub_count.count);
-            default:
-                break;
-        }
-        DMNSyncStateDtor(state);
-        [core.chain.chainManager notifySyncStateChanged];
-    }
 }
 
 @end

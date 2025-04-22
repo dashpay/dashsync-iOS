@@ -73,7 +73,7 @@
         self.knownChains = [NSMutableArray array];
         self.knownDevnetChains = [NSMutableArray array];
         self.reachability = [DSReachabilityManager sharedManager];
-        register_rust_logger();
+        //register_rust_logger();
     }
     return self;
 }

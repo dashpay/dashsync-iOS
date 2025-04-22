@@ -40,7 +40,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo)
     DSSyncCountInfo_GovernanceObjectVote = 11,
 };
 
-#define PROTOCOL_TIMEOUT 20.0
+#define PROTOCOL_TIMEOUT 40.0
 
 FOUNDATION_EXPORT NSString *const DSChainManagerNotificationChainKey;
 FOUNDATION_EXPORT NSString *const DSChainManagerNotificationWalletKey;
@@ -83,7 +83,6 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 - (void)syncBlocksRescan;
 - (void)masternodeListAndBlocksRescan;
 - (void)masternodeListRescan;
-
 
 - (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash;
 

@@ -35,52 +35,70 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0) {
-        return [self.account.fundDerivationPaths count];
-    } else {
-        return [self.account.outgoingFundDerivationPaths count];
+    switch (section) {
+        case 0:
+            return [self.account.fundDerivationPaths count];
+        case 1:
+            return [self.account.outgoingFundDerivationPaths count];
+        default:
+            return 1; //coinjoin
     }
 }
 
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    if (section == 0) {
-        return @"Funds";
-    } else {
-        return @"Friends";
+    switch (section) {
+        case 0:
+            return @"Funds";
+        case 1:
+            return @"Friends";
+        default:
+            return @"CoinJoin";
     }
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 1) {
-        return 237;
-    } else {
-        DSDerivationPath *derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
-        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            return 299;
-        } else {
-            return 237;
+    switch (indexPath.section) {
+        case 0: {
+            DSDerivationPath *derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
+            if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                return 299;
+            } else {
+                return 237;
+            }
         }
+        case 1: return 237;
+        default:
+            return 299;
     }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 1) {
-        DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IncomingDerivationPathCellIdentifier" forIndexPath:indexPath];
-        [self configureCell:cell atIndexPath:indexPath];
-        return cell;
-    } else {
-        DSDerivationPath *derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
-        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"DerivationPathCellIdentifier" forIndexPath:indexPath];
+    switch (indexPath.section) {
+        case 0: {
+            DSDerivationPath *derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
+            if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"DerivationPathCellIdentifier" forIndexPath:indexPath];
+                [self configureCell:cell atIndexPath:indexPath];
+                return cell;
+            } else {
+                DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IncomingDerivationPathCellIdentifier" forIndexPath:indexPath];
+                [self configureCell:cell atIndexPath:indexPath];
+                return cell;
+            }
+        }
+        case 1: {
+            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IncomingDerivationPathCellIdentifier" forIndexPath:indexPath];
             [self configureCell:cell atIndexPath:indexPath];
             return cell;
-        } else {
-            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IncomingDerivationPathCellIdentifier" forIndexPath:indexPath];
+        }
+        default: {
+            DSDerivationPath *derivationPath = (DSDerivationPath *)self.account.coinJoinDerivationPath;
+            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"DerivationPathCellIdentifier" forIndexPath:indexPath];
             [self configureCell:cell atIndexPath:indexPath];
             return cell;
         }
@@ -92,6 +110,8 @@
     DSDerivationPath *derivationPath;
     if (indexPath.section == 1) {
         derivationPath = (DSDerivationPath *)[self.account.outgoingFundDerivationPaths objectAtIndex:indexPath.row];
+    } else if (indexPath.section == 2) {
+        derivationPath = (DSDerivationPath *)self.account.coinJoinDerivationPath;
     } else {
         derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
     }
@@ -153,6 +173,8 @@
         DSDoubleDerivationPathsAddressesViewController *derivationPathsAddressesViewController = (DSDoubleDerivationPathsAddressesViewController *)segue.destinationViewController;
         if (indexPath.section == 0) {
             derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
+        } else if (indexPath.section == 2) {
+            derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath *)self.account.coinJoinDerivationPath;
         } else {
             derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath *)[self.account.outgoingFundDerivationPaths objectAtIndex:indexPath.row];
         }

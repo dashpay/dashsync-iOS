@@ -105,10 +105,9 @@
 
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
-                        anyoneCanPay:(BOOL)anyoneCanPay {
+- (NSData *)toDataWithOptions:(DSTransactionOptions *)options {
     @synchronized(self) {
-        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:anyoneCanPay] mutableCopy];
+        NSMutableData *data = [[super toDataWithOptions:options] mutableCopy];
         return [data appendCountedData:[self payloadData]];
     }
 }

@@ -151,4 +151,23 @@ NSString const *syncHeadersOverrideUseCheckpointKey = @"syncHeadersOverrideUseCh
     return [checkpointMutableArray copy];
 }
 
+- (dash_spv_masternode_processor_processing_processor_DiffConfig *_Nullable)createDiffConfig {
+    dash_spv_masternode_processor_processing_processor_DiffConfig *diff_config = NULL;
+    if ([self isMainnet]) {
+        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSString *filePath = [bundle pathForResource:@"mn_list_diff_0_2227096" ofType:@"dat"];
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
+
+        diff_config = dash_spv_masternode_processor_processing_processor_DiffConfig_ctor(bytes_ctor(data), 2227096);
+    } else if ([self isTestnet]) {
+        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSString *filePath = [bundle pathForResource:@"MNL_TESTNET_0_1220040" ofType:@"dat"];
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
+        diff_config = dash_spv_masternode_processor_processing_processor_DiffConfig_ctor(bytes_ctor(data), 1220040);
+    }
+    return diff_config;
+}
+
 @end

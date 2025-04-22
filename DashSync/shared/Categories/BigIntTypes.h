@@ -34,6 +34,7 @@
 #define NoTimeLog(format, ...) CFShow([NSString stringWithFormat:format, ##__VA_ARGS__]);
 #endif
 
+#define FLAG_IS_SET(value, flag) ((value & flag) == flag)
 
 typedef union _UInt768 {
     uint8_t u8[768 / 8];

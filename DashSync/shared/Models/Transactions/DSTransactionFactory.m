@@ -21,14 +21,14 @@
 
 + (DSTransactionType)transactionTypeOfMessage:(NSData *)message {
     uint16_t version = [message UInt16AtOffset:0];
-    if (version < 3) return DSTransactionType_Classic;
+    if (version < SPECIAL_TX_VERSION) return DSTransactionType_Classic;
     return [message UInt16AtOffset:2];
 }
 
 + (DSTransaction *)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain {
     uint16_t version = [message UInt16AtOffset:0];
     uint16_t type;
-    if (version < 3) {
+    if (version < SPECIAL_TX_VERSION) {
         type = DSTransactionType_Classic;
     } else {
         type = [message UInt16AtOffset:2];

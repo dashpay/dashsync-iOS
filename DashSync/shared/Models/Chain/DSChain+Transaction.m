@@ -92,8 +92,6 @@
 
 //Does the chain mat
 - (BOOL)transactionHasLocalReferences:(DSTransaction *)transaction {
-    if ([self firstAccountThatCanContainTransaction:transaction]) return TRUE;
-    
     //PROVIDERS
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction *tx = (DSProviderRegistrationTransaction *)transaction;
@@ -230,6 +228,7 @@
         return NO;
     }
 }
+// always from chain.networkingQueue
 - (BOOL)registerAssetLockTransaction:(DSAssetLockTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
     DSAssetLockTransaction *assetLockTransaction = (DSAssetLockTransaction *)transaction;
     UInt160 creditBurnPublicKeyHash = assetLockTransaction.creditBurnPublicKeyHash;
@@ -272,6 +271,7 @@
     return isNewIdentity;
 }
 
+// always from chain.networkingQueue
 - (BOOL)registerSpecialTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         return [self registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)transaction saveImmediately:saveImmediately];

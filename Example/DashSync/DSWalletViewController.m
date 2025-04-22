@@ -64,7 +64,9 @@
         NSArray *components = [passphrase componentsSeparatedByString:@" "];
         NSMutableArray *lines = [NSMutableArray array];
         for (int i = 0; i < [components count]; i += 4) {
-            [lines addObject:[[components subarrayWithRange:NSMakeRange(i, 4)] componentsJoinedByString:@" "]];
+            NSRange range = NSMakeRange(i, MIN(4, components.count - i));
+
+            [lines addObject:[[components subarrayWithRange:range] componentsJoinedByString:@" "]];
         }
 
         walletCell.passphraseLabel.text = self.didAuthenticate ? [lines componentsJoinedByString:@"\n"] : @"";

@@ -295,20 +295,20 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     if (self.isLocal || self.isOutgoingInvitation) {
         if (identityEntity.registrationFundingTransaction) {
             self.registrationAssetLockTransactionHash = identityEntity.registrationFundingTransaction.transactionHash.txHash.UInt256;
-            DSLog(@"%@: AssetLockTX: Entity Attached: txHash: %@: entity: %@", self.logPrefix, uint256_hex(self.registrationAssetLockTransactionHash), identityEntity.registrationFundingTransaction);
+            DSLog(@"%@ AssetLockTX: Entity Attached: txHash: %@: entity: %@", self.logPrefix, uint256_hex(self.registrationAssetLockTransactionHash), identityEntity.registrationFundingTransaction);
         } else {
             NSData *transactionHashData = uint256_data(uint256_reverse(self.lockedOutpoint.hash));
-            DSLog(@"%@: AssetLockTX: Load: lockedOutpoint: %@: %lu %@", self.logPrefix, uint256_hex(self.lockedOutpoint.hash), self.lockedOutpoint.n, transactionHashData.hexString);
+            DSLog(@"%@ AssetLockTX: Load: lockedOutpoint: %@: %lu %@", self.logPrefix, uint256_hex(self.lockedOutpoint.hash), self.lockedOutpoint.n, transactionHashData.hexString);
             DSAssetLockTransactionEntity *assetLockEntity = [DSAssetLockTransactionEntity anyObjectInContext:identityEntity.managedObjectContext matching:@"transactionHash.txHash == %@", transactionHashData];
             if (assetLockEntity) {
                 self.registrationAssetLockTransactionHash = assetLockEntity.transactionHash.txHash.UInt256;
-                DSLog(@"%@: AssetLockTX: Found: txHash: %@: entity: %@", self.logPrefix, uint256_hex(self.registrationAssetLockTransactionHash), assetLockEntity);
+                DSLog(@"%@ AssetLockTX: Entity Found for txHash: %@", self.logPrefix, uint256_hex(self.registrationAssetLockTransactionHash));
                 DSAssetLockTransaction *registrationAssetLockTransaction = (DSAssetLockTransaction *)[assetLockEntity transactionForChain:self.chain];
                 BOOL correctIndex = self.isOutgoingInvitation ?
                     [registrationAssetLockTransaction checkInvitationDerivationPathIndexForWallet:self.wallet isIndex:self.index] :
                     [registrationAssetLockTransaction checkDerivationPathIndexForWallet:self.wallet isIndex:self.index];
                 if (!correctIndex) {
-                    DSLog(@"%@: AssetLockTX: IncorrectIndex %u (%@)", self.logPrefix, self.index, registrationAssetLockTransaction.toData.hexString);
+                    DSLog(@"%@ AssetLockTX: IncorrectIndex %u (%@)", self.logPrefix, self.index, registrationAssetLockTransaction.toData.hexString);
                     //NSAssert(FALSE, @"We should implement this");
                 }
             }
@@ -348,7 +348,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 
     self.lockedOutpoint = lockedOutpoint;
     self.uniqueID = [dsutxo_data(lockedOutpoint) SHA256_2];
-    DSLog(@"%@: initAtIndex: %u lockedOutpoint: %@: %lu", self.logPrefix, index, uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
+    DSLog(@"%@ initAtIndex: %u lockedOutpoint: %@: %lu", self.logPrefix, index, uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
     return self;
 }
 
@@ -583,7 +583,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                 pinPrompt:(NSString *)prompt
            stepCompletion:(void (^_Nullable)(DSIdentityRegistrationStep stepCompleted))stepCompletion
                completion:(void (^_Nullable)(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors))completion {
-    DSLog(@"%@: registerOnNetwork: %@", self.logPrefix, DSRegistrationStepsDescription(steps));
+    DSLog(@"%@ Register On Network: %@", self.logPrefix, DSRegistrationStepsDescription(steps));
     __block DSIdentityRegistrationStep stepsCompleted = DSIdentityRegistrationStep_None;
     if (![self hasIdentityExtendedPublicKeys]) {
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(stepsCompleted, @[ERROR_REGISTER_KEYS_BEFORE_IDENTITY]); });
@@ -724,7 +724,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     self.registrationAssetLockTransactionHash = transaction.txHash;
     DSUTXO lockedOutpoint = transaction.lockedOutpoint;
     UInt256 creditBurnIdentityIdentifier = transaction.creditBurnIdentityIdentifier;
-    DSLog(@"%@: registerInWalletForAssetLockTransaction: txHash: %@: creditBurnIdentityID: %@, creditBurnPublicKeyHash: %@, lockedOutpoint: %@: %lu", self.logPrefix, uint256_hex(transaction.txHash), uint256_hex(creditBurnIdentityIdentifier), uint160_hex(transaction.creditBurnPublicKeyHash), uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
+    DSLog(@"%@ Register In Wallet (AssetLockTx Register): txHash: %@: creditBurnIdentityID: %@, creditBurnPublicKeyHash: %@, lockedOutpoint: %@: %lu", self.logPrefix, uint256_hex(transaction.txHash), uint256_hex(creditBurnIdentityIdentifier), uint160_hex(transaction.creditBurnPublicKeyHash), uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
     self.lockedOutpoint = lockedOutpoint;
     [self registerInWalletForIdentityUniqueId:creditBurnIdentityIdentifier];
     //we need to also set the address of the funding transaction to being used so future identities past the initial gap limit are found
@@ -738,7 +738,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 
     DSUTXO lockedOutpoint = transaction.lockedOutpoint;
     UInt256 creditBurnIdentityIdentifier = transaction.creditBurnIdentityIdentifier;
-    DSLog(@"%@: registerInWalletForAssetLockTopupTransaction: txHash: %@: creditBurnIdentityID: %@, creditBurnPublicKeyHash: %@, lockedOutpoint: %@: %lu", self.logPrefix, uint256_hex(transaction.txHash), uint256_hex(creditBurnIdentityIdentifier), uint160_hex(transaction.creditBurnPublicKeyHash), uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
+    DSLog(@"%@ Register In Wallet (AssetLockTx TopUp): txHash: %@: creditBurnIdentityID: %@, creditBurnPublicKeyHash: %@, lockedOutpoint: %@: %lu", self.logPrefix, uint256_hex(transaction.txHash), uint256_hex(creditBurnIdentityIdentifier), uint160_hex(transaction.creditBurnPublicKeyHash), uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
 //    self.lockedOutpoint = lockedOutpoint;
     [self registerInWalletForIdentityUniqueId:creditBurnIdentityIdentifier];
     //we need to also set the address of the funding transaction to being used so future identities past the initial gap limit are found
@@ -1350,7 +1350,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                        public_key:(DIdentityPublicKey *)public_key
                           atIndex:(uint32_t)index
                        completion:(void (^)(BOOL, NSError *))completion {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: Register Identity using public key (%u: %p) at %u with private key: %p", self.logPrefix, public_key->tag, public_key, index, self.internalRegistrationFundingPrivateKey->ok];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Register Identity using public key (%u: %p) at %u with private key: %p", self.logPrefix, public_key->tag, public_key, index, self.internalRegistrationFundingPrivateKey->ok];
     DSLog(@"%@", debugInfo);
     DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_identity_register_using_public_key_at_index(self.chain.sharedRuntime, self.chain.sharedPlatformObj, public_key, index, proof, self.internalRegistrationFundingPrivateKey->ok);
     if (state_transition_result->error) {
@@ -1405,7 +1405,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                        public_key:(DIdentityPublicKey *)public_key
                           atIndex:(uint32_t)index
                         completion:(void (^)(BOOL, NSError *_Nullable))completion {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: Register Identity using public key (%u: %p) at %u with private key: %p", self.logPrefix, public_key->tag, public_key, index, self.internalRegistrationFundingPrivateKey->ok];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Register Identity (public key (%u: %p) at %u with private key: %p", self.logPrefix, public_key->tag, public_key, index, self.internalRegistrationFundingPrivateKey->ok];
     DSLog(@"%@", debugInfo);
     Result_ok_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *state_transition_result = dash_spv_platform_PlatformSDK_identity_register_using_public_key_at_index2(self.chain.sharedRuntime, self.chain.sharedPlatformObj, public_key, index, proof, self.internalRegistrationFundingPrivateKey->ok);
     if (state_transition_result->error) {
@@ -1438,7 +1438,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                     public_key:(DIdentityPublicKey *)public_key
                        atIndex:(uint32_t)index
                     completion:(void (^)(BOOL, NSError *_Nullable))completion {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: TopUp Identity using public key (%u: %p) at %u with private key: %p", self.logPrefix, public_key->tag, public_key, index, self.internalTopupFundingPrivateKey->ok];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ TopUp Identity using public key (%u: %p) at %u with private key: %p", self.logPrefix, public_key->tag, public_key, index, self.internalTopupFundingPrivateKey->ok];
     DSLog(@"%@", debugInfo);
     u256 *identity_id = u256_ctor_u(self.uniqueID);
     DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_identity_topup(self.chain.sharedRuntime, self.chain.sharedPlatformObj, identity_id, proof, self.internalTopupFundingPrivateKey->ok);
@@ -1494,7 +1494,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                                  fundedByAccount:(DSAccount *)fundingAccount
                                        pinPrompt:(NSString *)prompt
                                   withCompletion:(void (^)(BOOL, NSError *_Nullable))completion {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: CREATE AND PUBLISH IDENTITY TOPUP TRANSITION", self.logPrefix];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ CREATE AND PUBLISH IDENTITY TOPUP TRANSITION", self.logPrefix];
     DSLog(@"%@", debugInfo);
     DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityTopupFundingDerivationPathForWallet:self.wallet];
     NSString *topupAddress = [path addressAtIndexPath:[NSIndexPath indexPathWithIndex:self.index]];
@@ -1547,7 +1547,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 }
 
 - (void)createAndPublishRegistrationTransitionWithCompletion:(void (^)(BOOL, NSError *))completion {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: CREATE AND PUBLISH IDENTITY REGISTRATION TRANSITION", self.logPrefix];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ CREATE AND PUBLISH IDENTITY REGISTRATION TRANSITION", self.logPrefix];
     DSLog(@"%@", debugInfo);
     if (!self.internalRegistrationFundingPrivateKey) {
         DSLog(@"%@: ERROR: No Funding Private Key", debugInfo);
@@ -1576,7 +1576,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 // MARK: Retrieval
 
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: Fetch Identity State", self.logPrefix];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Identity State", self.logPrefix];
     DSLog(@"%@", debugString);
     dispatch_async(self.identityQueue, ^{
         DMaybeIdentity *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_id_bytes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, u256_ctor(self.uniqueIDData), DRetryDown50(DEFAULT_FETCH_IDENTITY_RETRY_COUNT), self.isLocal ? DAcceptIdentityNotFound() : DRaiseIdentityNotFound());
@@ -1671,7 +1671,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                              inContext:(NSManagedObjectContext *)context
                         withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                      onCompletionQueue:(dispatch_queue_t)completionQueue {
-    DSLog(@"%@: Fetch L3 State (%@)", self.logPrefix, DSIdentityQueryStepsDescription(queryStep));
+    DSLog(@"%@ Fetch L3 State (%@)", self.logPrefix, DSIdentityQueryStepsDescription(queryStep));
     if (!(queryStep & DSIdentityQueryStep_Identity) && (!self.activeKeyCount)) {
         // We need to fetch keys if we want to query other information
         if (completion) completion(DSIdentityQueryStep_BadQuery, @[ERROR_ATTEMPT_QUERY_WITHOUT_KEYS]);
@@ -1771,7 +1771,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
                            inContext:(NSManagedObjectContext *)context
                       withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                    onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNetworkStateInformation (%@)", self.logPrefix, DSIdentityQueryStepsDescription(querySteps)];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ fetchNetworkStateInformation (%@)", self.logPrefix, DSIdentityQueryStepsDescription(querySteps)];
     DSLog(@"%@", debugString);
     if (querySteps & DSIdentityQueryStep_Identity) {
         [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {
@@ -1851,7 +1851,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 - (void)fetchNeededNetworkStateInformationInContext:(NSManagedObjectContext *)context
                                      withCompletion:(void (^)(DSIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion
                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchNeededNetworkStateInformationInContext (local: %u, active keys: %lu) ", self.logPrefix, self.isLocal, self.activeKeyCount];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Needed Network State Info (local: %u, active keys: %lu) ", self.logPrefix, self.isLocal, self.activeKeyCount];
     DSLog(@"%@", debugString);
     dispatch_async(self.identityQueue, ^{
         if (!self.activeKeyCount) {
@@ -1902,34 +1902,34 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
     switch (proof_result->tag) {
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedDataContract: {
             NSData *identifier = NSDataFromPtr(proof_result->verified_data_contract->v0->id->_0->_0);
-            DSLog(@"%@: VerifiedDataContract: %@", self.logPrefix, identifier.hexString);
+            DSLog(@"%@ VerifiedDataContract: %@", self.logPrefix, identifier.hexString);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedIdentity: {
             NSData *identifier = NSDataFromPtr(proof_result->verified_identity->v0->id->_0->_0);
-            DSLog(@"%@: VerifiedIdentity: %@", self.logPrefix, identifier.hexString);
+            DSLog(@"%@ VerifiedIdentity: %@", self.logPrefix, identifier.hexString);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedPartialIdentity: {
-            NSData *identifier = NSDataFromPtr(proof_result->verified_partial_identity>id->_0->_0);
-            DSLog(@"%@: VerifiedPartialIdentity: %@", self.logPrefix, identifier.hexString);
+            NSData *identifier = NSDataFromPtr(proof_result->verified_partial_identity->id->_0->_0);
+            DSLog(@"%@ VerifiedPartialIdentity: %@", self.logPrefix, identifier.hexString);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedBalanceTransfer: {
-            dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedBalanceTransfer_Body *transfer = proof_result->verified_balance_transfer;
-            NSData *from_identifier = NSDataFromPtr(transfer->_0->id->_0->_0);
-            NSData *to_identifier = NSDataFromPtr(transfer->_1->id->_0->_0);
-            DSLog(@"%@: VerifiedBalanceTransfer: %@ --> %@", self.logPrefix, from_identifier.hexString, to_identifier.hexString);
+            dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedBalanceTransfer_Body transfer = proof_result->verified_balance_transfer;
+            NSData *from_identifier = NSDataFromPtr(transfer._0->id->_0->_0);
+            NSData *to_identifier = NSDataFromPtr(transfer._1->id->_0->_0);
+            DSLog(@"%@ VerifiedBalanceTransfer: %@ --> %@", self.logPrefix, from_identifier.hexString, to_identifier.hexString);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedDocuments: {
             std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_dpp_document_Document *verified_documents = proof_result->verified_documents;
-            DSLog(@"%@: VerifiedDocuments: %u", self.logPrefix, verified_documents->count);
+            DSLog(@"%@ VerifiedDocuments: %lu", self.logPrefix, verified_documents->count);
             break;
         }
         case dpp_state_transition_proof_result_StateTransitionProofResult_VerifiedMasternodeVote: {
             dpp_voting_votes_Vote *verified_masternode_vote = proof_result->verified_masternode_vote;
-            DSLog(@"%@: VerifiedMasternodeVote: %u", self.logPrefix, verified_masternode_vote->tag);
+            DSLog(@"%@ VerifiedMasternodeVote: %u", self.logPrefix, verified_masternode_vote->tag);
             break;
         }
         default:
@@ -1942,7 +1942,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 // MARK: - Contracts
 
 - (void)fetchAndUpdateContract:(DPContract *)contract {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@: fetchAndUpdateContract (%lu) ", self.logPrefix, (unsigned long) contract.contractState];
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch & Update Contract (%lu) ", self.logPrefix, (unsigned long) contract.contractState];
     DSLog(@"%@", debugString);
     NSManagedObjectContext *context = [NSManagedObjectContext platformContext];
     __weak typeof(contract) weakContract = contract;
@@ -1967,11 +1967,11 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
             DMaybeStateTransitionProofResult *state_transition_result = dash_spv_platform_PlatformSDK_data_contract_create2(self.chain.sharedRuntime, self.chain.sharedPlatformObj, data_contracts_SystemDataContract_DPNS_ctor(), u256_ctor_u(self.uniqueID), 0, privateKey->ok);
 
             if (state_transition_result->error) {
-                DSLog(@"%@: ERROR: %@", debugString, [NSError ffi_from_platform_error:state_transition_result->error]);
+                DSLog(@"%@ ERROR: %@", debugString, [NSError ffi_from_platform_error:state_transition_result->error]);
                 DMaybeStateTransitionProofResultDtor(state_transition_result);
                 return;
             }
-            DSLog(@"%@: OK", debugString);
+            DSLog(@"%@ OK", debugString);
             if ([self processStateTransitionResult:state_transition_result]) {
                 contract.contractState = DPContractState_Registering;
             } else {
@@ -1983,36 +1983,36 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
 
             if (monitor_result->error) {
                 DMaybeContractDtor(monitor_result);
-                DSLog(@"%@: Contract Monitoring Error: %@", self.logPrefix, [NSError ffi_from_platform_error:monitor_result->error]);
+                DSLog(@"%@ Contract Monitoring Error: %@", self.logPrefix, [NSError ffi_from_platform_error:monitor_result->error]);
                 return;
             }
             if (monitor_result->ok) {
                 NSData *identifier = NSDataFromPtr(monitor_result->ok->v0->id->_0->_0);
                 if ([identifier isEqualToData:uint256_data(contract.contractId)]) {
-                    DSLog(@"%@: Contract Monitoring OK", self.logPrefix);
+                    DSLog(@"%@ Contract Monitoring OK", self.logPrefix);
                     contract.contractState = DPContractState_Registered;
                     [contract saveAndWaitInContext:context];
                 } else {
-                    DSLog(@"%@: Contract Monitoring Error: Ids dont match", self.logPrefix);
+                    DSLog(@"%@ Contract Monitoring Error: Ids dont match", self.logPrefix);
                 }
             }
-            DSLog(@"%@: Contract Monitoring Error", self.logPrefix);
+            DSLog(@"%@ Contract Monitoring Error", self.logPrefix);
 
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
-            DSLog(@"%@: Fetching contract for verification %@", self.logPrefix, contract.base58ContractId);
+            DSLog(@"%@ Fetching contract for verification %@", self.logPrefix, contract.base58ContractId);
             DMaybeContract *contract_result = dash_spv_platform_contract_manager_ContractsManager_fetch_contract_by_id_bytes(self.chain.sharedRuntime, self.chain.sharedContractsObj, u256_ctor_u(contract.contractId));
 
             dispatch_async(self.identityQueue, ^{
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract || !contract_result) return;
                 if (!contract_result->ok) {
-                    DSLog(@"%@: Contract Monitoring ERROR: NotRegistered ", self.logPrefix);
+                    DSLog(@"%@ Contract Monitoring ERROR: NotRegistered ", self.logPrefix);
                     strongContract.contractState = DPContractState_NotRegistered;
                     [strongContract saveAndWaitInContext:context];
                     DMaybeContractDtor(contract_result);
                     return;
                 }
-                DSLog(@"%@: Contract Monitoring OK: %@ ", self.logPrefix, strongContract);
+                DSLog(@"%@ Contract Monitoring OK: %@ ", self.logPrefix, strongContract);
                 if (strongContract.contractState == DPContractState_Registered && !dash_spv_platform_contract_manager_has_equal_document_type_keys(contract_result->ok, strongContract.raw_contract)) {
                     strongContract.contractState = DPContractState_NotRegistered;
                     [strongContract saveAndWaitInContext:context];
@@ -2034,13 +2034,13 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step) {
         if (!strongSelf) return;
         DMaybeIdentityBalance *result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_balance_by_id_bytes(strongSelf.chain.sharedRuntime, strongSelf.chain.sharedIdentitiesObj, u256_ctor(self.uniqueIDData));
         if (!result->ok) {
-            DSLog(@"%@: updateCreditBalance: ERROR RESULT: %u", self.logPrefix, result->error->tag);
+            DSLog(@"%@ Update Credit Balance: ERROR RESULT: %u", self.logPrefix, result->error->tag);
             DMaybeIdentityBalanceDtor(result);
             return;
         }
         uint64_t balance = result->ok[0];
         DMaybeIdentityBalanceDtor(result);
-        DSLog(@"%@: updateCreditBalance: OK: %llu", self.logPrefix, balance);
+        DSLog(@"%@ Update Credit Balance: OK: %llu", self.logPrefix, balance);
         dispatch_async(self.identityQueue, ^{
             strongSelf.creditBalance = balance;
         });
@@ -2445,7 +2445,7 @@ fromDerivationPath:(DSDerivationPath *)derivationPath
 }
 
 - (NSString *)logPrefix {
-    return [NSString stringWithFormat:@"[%@] [Identity: %@] ", self.chain.name, uint256_hex(self.uniqueID)];
+    return [NSString stringWithFormat:@"[%@] [Identity: %@]", self.chain.name, uint256_hex(self.uniqueID)];
 }
 
 

@@ -20,7 +20,10 @@
 //@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 @property (nonatomic, assign) std_collections_Map_keys_dashcore_prelude_CoreBlockHeight_values_dashcore_sml_masternode_list_MasternodeList *lists;
 @property (strong, nonatomic) IBOutlet UITextField *blockHeightTextField;
+@property (strong, nonatomic) IBOutlet UITextField *baseBlockHashTextField;
+@property (strong, nonatomic) IBOutlet UITextField *blockHashTextField;
 @property (strong, nonatomic) IBOutlet UIButton *fetchButton;
+@property (strong, nonatomic) IBOutlet UIButton *fetchByHashesButton;
 @property (strong, nonatomic) NSMutableDictionary<NSData *, NSNumber *> *validMerkleRootDictionary;
 
 @end
@@ -189,16 +192,30 @@
         [cell.validButton setTitle:valid ? ([valid boolValue] ? @"V" : @"X") : @"?" forState:UIControlStateNormal];
     }
 }
-
+- (IBAction)fetchByHashesMasternodeList:(id)sender {
+    NSData *baseBlockHashData = self.baseBlockHashTextField.text.hexToData;
+    NSData *blockHashData = self.blockHashTextField.text.hexToData;
+    if (!blockHashData || blockHashData.length != 32) {
+        return;
+    }
+    NSString *msg;
+    if (!baseBlockHashData || baseBlockHashData.length != 32) {
+        [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHash:blockHashData];
+        msg = NSLocalizedString(@"sent for range!", nil);
+    } else {
+        [self.chain.chainManager.masternodeManager requestMasternodeListForBaseBlockHash:baseBlockHashData blockHash:blockHashData];
+        msg = NSLocalizedString(@"sent for block hash!", nil);
+    }
+    BRBubbleView *v = [[[BRBubbleView viewWithText:msg center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn] popOutAfterDelay:2.0];
+    [self.view addSubview:v];
+}
 - (IBAction)fetchMasternodeList:(id)sender {
-//    uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""]) ? [self.blockHeightTextField.text intValue] : self.chain.lastSyncBlock.height;
+    uint32_t blockHeight = ![self.blockHeightTextField.text isEqualToString:@""] ? [self.blockHeightTextField.text intValue] : self.chain.lastSyncBlock.height;
 
-    NSError *error = nil;
-    //[self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
-    if (error) {
-        [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
-                                                    center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
-                                  popOutAfterDelay:2.0]];
+    NSError *error = [self.chain.masternodeManager requestMasternodeListForBlockHeight:blockHeight];
+    if (!error) {
+        BRBubbleView *v = [[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil) center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn] popOutAfterDelay:2.0];
+        [self.view addSubview:v];
     }
 }
 

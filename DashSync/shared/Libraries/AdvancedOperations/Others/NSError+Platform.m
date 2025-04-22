@@ -92,7 +92,7 @@
 + (NSError *)ffi_from_quorum_validation_error:(dashcore_sml_quorum_validation_error_QuorumValidationError *)ffi_ref {
     switch (ffi_ref->tag) {
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockNotPresent: {
-            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_block_not_present);
+            u256 *block_hash = dashcore_hash_types_BlockHash_inner(ffi_ref->required_block_not_present._0);
             return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"QuorumValidationError::RequiredBlockNotPresent: %@ (%@)", nil, u256_hex(block_hash), u256_reversed_hex(block_hash))];
         }
         case dashcore_sml_quorum_validation_error_QuorumValidationError_RequiredBlockHeightNotPresent:
@@ -206,6 +206,8 @@
             return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"Decode Error: %@", nil, NSStringFromPtr(ffi_ref->decode_error))];
         case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_QuorumValidationError:
             return [NSError ffi_from_quorum_validation_error:ffi_ref->quorum_validation_error];
+        case dash_spv_masternode_processor_processing_processor_processing_error_ProcessingError_SML:
+            return [NSError ffi_from_sml_error:ffi_ref->sml];
     }
 }
 @end

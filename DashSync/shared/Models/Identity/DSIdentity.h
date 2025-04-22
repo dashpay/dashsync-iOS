@@ -12,9 +12,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define FLAG_IS_SET(value, flag) ((value & flag) == flag)
-
-
 @class DSWallet, DSAccount, DSChain, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSAssetLockTransaction, DSTransientDashpayUser, DSInvitation, DSAuthenticationKeysDerivationPath, UIImage;
 
 typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStep)

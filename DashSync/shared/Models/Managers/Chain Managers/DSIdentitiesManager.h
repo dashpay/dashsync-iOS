@@ -37,8 +37,6 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
 /*! @brief Returns the timestamp of the last time identities were synced.  */
 @property (nonatomic, readonly) NSTimeInterval lastSyncedIndentitiesTimestamp;
 
-/*! @brief Returns if we synced identities in the last 30 seconds.  */
-@property (nonatomic, readonly) BOOL hasRecentIdentitiesSync;
 
 - (instancetype)initWithChain:(DSChain *)chain;
 

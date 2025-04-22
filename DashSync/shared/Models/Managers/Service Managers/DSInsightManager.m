@@ -23,7 +23,8 @@
 
 #define INSIGHT_URL @"https://insight.dash.org/insight-api-dash"
 #define INSIGHT_FAILOVER_URL @"https://insight.dash.show/api"
-#define TESTNET_INSIGHT_URL @"https://testnet-insight.dashevo.org/insight-api-dash"
+#define TESTNET_INSIGHT_URL @"https://insight.testnet.networks.dash.org/insight-api"
+//#define TESTNET_INSIGHT_URL @"https://testnet-insight.dashevo.org/insight-api-dash"
 
 @implementation DSInsightManager
 
@@ -117,7 +118,7 @@
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                    timeoutInterval:20.0];
     req.HTTPMethod = @"GET";
-    DSLogPrivate(@"%@ GET: %@", req.URL.absoluteString,
+    DSLogPrivate(@"[%@] %@ GET: %@", chain.name, req.URL.absoluteString,
         [[NSString alloc] initWithData:req.HTTPBody
                               encoding:NSUTF8StringEncoding]);
 
@@ -144,6 +145,7 @@
         NSData *chainWork = [json[@"chainwork"] hexToData];
         NSNumber *height = json[@"height"];
         DSBlock *block = [[DSBlock alloc] initWithVersion:[version unsignedIntValue] blockHash:blockHash.reverse.UInt256 prevBlock:previousBlockHash.reverse.UInt256 timestamp:timestamp.unsignedIntValue merkleRoot:merkleRoot.reverse.UInt256 target:[targetString.hexToData UInt32AtOffset:0] chainWork:chainWork.reverse.UInt256 height:height.unsignedIntValue onChain:chain];
+        DSLogPrivate(@"[%@] BLOCK FROM INSIGHT: %@", chain.name, block);
 
         completion(block, nil);
     }] resume];

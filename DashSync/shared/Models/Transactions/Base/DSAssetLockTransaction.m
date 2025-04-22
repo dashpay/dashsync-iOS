@@ -119,15 +119,15 @@
     return data;
 }
 
-
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay {
+- (NSData *)toDataWithOptions:(DSTransactionOptions *)options {
     @synchronized(self) {
-        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex anyoneCanPay:anyoneCanPay] mutableCopy];
+        NSMutableData *data = [[super toDataWithOptions:options] mutableCopy];
         [data appendCountedData:[self payloadData]];
-        if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
+        if (options.subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
         return data;
     }
 }
+
 - (size_t)size {
     @synchronized(self) {
         if (uint256_is_not_zero(self.txHash)) return self.data.length;

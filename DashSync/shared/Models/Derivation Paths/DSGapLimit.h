@@ -25,6 +25,11 @@ typedef NS_ENUM(NSUInteger, DSGapLimitFundsDirection) {
     DSGapLimitFundsDirection_Both = DSGapLimitFundsDirection_Internal | DSGapLimitFundsDirection_External,
 };
 
+typedef NS_ENUM(NSUInteger, DSGapLimitStage) {
+    DSGapLimitStage_Initial = 1,
+    DSGapLimitStage_Prolong = 2,
+};
+
 
 @interface DSGapLimit : NSObject
 @property (readwrite, nonatomic, assign) uintptr_t gapLimit;

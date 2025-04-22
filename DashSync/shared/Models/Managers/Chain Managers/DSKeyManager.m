@@ -36,7 +36,6 @@
 - (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
     if (!(self = [super init])) return nil;
-    DSLog(@"[%@] DSKeyManager.initWithChain: %@: ", chain.name, chain);
     return self;
 }
 

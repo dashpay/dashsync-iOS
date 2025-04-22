@@ -52,6 +52,31 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 
+@implementation DSTransactionOptions : NSObject
++ (nonnull instancetype)default {
+    return [DSTransactionOptions withSubscriptIndex:NSNotFound anyoneCanPay:NO];
+}
++ (nonnull instancetype)withAnyoneCanPay:(BOOL)anyoneCanPay {
+    return [DSTransactionOptions withSubscriptIndex:NSNotFound anyoneCanPay:anyoneCanPay];
+}
++ (nonnull instancetype)withSubscriptIndex:(NSUInteger)subscriptIndex {
+    return [DSTransactionOptions withSubscriptIndex:subscriptIndex anyoneCanPay:NO];
+}
++ (instancetype)withSubscriptIndex:(NSUInteger)subscriptIndex
+                      anyoneCanPay:(BOOL)anyoneCanPay {
+    DSTransactionOptions *options = [[self alloc] init];
+    if (options) {
+        options.subscriptIndex = subscriptIndex;
+        options.anyoneCanPay = anyoneCanPay;
+    }
+    return options;
+}
+
+
+
+@end
+
+
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain *chain;
@@ -437,16 +462,18 @@
 // MARK: - Wire Serialization
 
 - (NSData *)toData {
-    return [self toData:NO];
+    return [self toDataWithOptions:[DSTransactionOptions default]];
 }
 
 - (NSData *)toData:(BOOL)anyoneCanPay {
-    return [self toDataWithSubscriptIndex:NSNotFound anyoneCanPay:anyoneCanPay];
+    return [self toDataWithOptions:[DSTransactionOptions withAnyoneCanPay:anyoneCanPay]];
 }
 
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex anyoneCanPay:(BOOL)anyoneCanPay {
+- (NSData *)toDataWithOptions:(DSTransactionOptions *)options {
+    BOOL anyoneCanPay = options.anyoneCanPay;
+    NSUInteger subscriptIndex = options.subscriptIndex;
     @synchronized(self) {
         NSArray<DSTransactionInput *> *inputs = self.inputs;
         NSArray<DSTransactionOutput *> *outputs = self.outputs;
@@ -502,6 +529,7 @@
         return [d copy];
     }
 }
+
 
 // MARK: - Construction
 
@@ -649,7 +677,8 @@
                     transactionInput.signature = [NSData data];
                 continue;
             }
-            NSData *data = [self toDataWithSubscriptIndex:i anyoneCanPay:anyoneCanPay];
+            DSTransactionOptions *options = [DSTransactionOptions withSubscriptIndex:i anyoneCanPay:anyoneCanPay];
+            NSData *data = [self toDataWithOptions:options];
             uint8_t sighashFlags = SIGHASH_ALL;
             if (anyoneCanPay) {
                 sighashFlags |= SIGHASH_ANYONECANPAY;
@@ -660,7 +689,9 @@
             transactionInput.signature = sig;
         }
         if (!self.isSigned) return NO;
-        _txHash = self.data.SHA256_2;
+        // TODO: check if this is wrong
+//        _txHash = self.data.SHA256_2;
+        _txHash = [self toData:anyoneCanPay].SHA256_2;
         return YES;
     }
 }
@@ -675,7 +706,8 @@
                 if (maybe_opaque_keys->ok) {
                     DOpaqueKey *opaque_key = DOpaqueKeyUsedInTxInputScript(bytes_ctor(inScript), maybe_opaque_keys->ok, self.chain.chainType);
                     if (opaque_key) {
-                        NSData *data = [self toDataWithSubscriptIndex:i anyoneCanPay:anyoneCanPay];
+                        DSTransactionOptions *options = [DSTransactionOptions withSubscriptIndex:i anyoneCanPay:anyoneCanPay];
+                        NSData *data = [self toDataWithOptions:options];
                         NSData *sig = [DSTransaction signInput:data flags:SIGHASH_ALL inputScript:inScript withOpaqueKey:opaque_key];
                         DOpaqueKeyDtor(opaque_key);
                         transactionInput.signature = sig;
@@ -694,7 +726,9 @@
     @synchronized (self) {
         for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *transactionInput = self.mInputs[i];
-            NSData *sig = [DSTransaction signInput:[self toDataWithSubscriptIndex:i anyoneCanPay:NO] flags:SIGHASH_ALL inputScript:transactionInput.inScript withOpaqueKeyValue:keys[i]];
+            DSTransactionOptions *options = [DSTransactionOptions withSubscriptIndex:i];
+            NSData *data = [self toDataWithOptions:options];
+            NSData *sig = [DSTransaction signInput:data flags:SIGHASH_ALL inputScript:transactionInput.inScript withOpaqueKeyValue:keys[i]];
             transactionInput.signature = sig;
         }
         if (!self.isSigned) return NO;
@@ -713,7 +747,7 @@
 + (NSData *)signInput:(NSData *)data
                 flags:(uint8_t)flags
           inputScript:(NSData *)inputScript
-   withOpaqueKey:(DOpaqueKey *)key {
+        withOpaqueKey:(DOpaqueKey *)key {
     Slice_u8 *input = slice_ctor(data);
     Vec_u8 *tx_input_script = bytes_ctor(inputScript);
     Vec_u8 *tx_sig = DOpaqueKeyCreateTxSig(key, input, flags, tx_input_script);
@@ -766,15 +800,11 @@
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock *)instantSendLock {
     self.instantSendReceived = instantSendLock.signatureVerified;
-    self.hasUnverifiedInstantSendLock = (instantSendLock && !instantSendLock.signatureVerified);
-    if (self.hasUnverifiedInstantSendLock) {
-        self.instantSendLockAwaitingProcessing = instantSendLock;
-    } else {
-        self.instantSendLockAwaitingProcessing = nil;
-    }
-    if (!instantSendLock.saved) {
+    BOOL hasUnverifiedISLock = instantSendLock && !instantSendLock.signatureVerified;
+    self.hasUnverifiedInstantSendLock = hasUnverifiedISLock;
+    self.instantSendLockAwaitingProcessing = hasUnverifiedISLock ? instantSendLock : nil;
+    if (!instantSendLock.saved)
         [instantSendLock saveInitial];
-    }
 }
 
 - (uint32_t)confirmations {
@@ -805,22 +835,13 @@
         for (DSFundsDerivationPath *derivationPath in derivationPaths) {
             if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] &&
                 [derivationPath containsAddress:output.address]) {
-                DSIncomingFundsDerivationPath *incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath *)derivationPath);
-                DSIdentity *destinationIdentity = [self.chain identityForUniqueId:incomingFundsDerivationPath.contactDestinationIdentityUniqueId
-                                                                                                  foundInWallet:nil
-                                                                             includeForeignIdentities:YES];
-
-                DSIdentity *sourceIdentity = [self.chain identityForUniqueId:incomingFundsDerivationPath.contactSourceIdentityUniqueId
-                                                                                             foundInWallet:nil
-                                                                        includeForeignIdentities:YES];
-
-                
-                if (sourceIdentity) {
+                DSIncomingFundsDerivationPath *path = ((DSIncomingFundsDerivationPath *)derivationPath);
+                DSIdentity *destinationIdentity = [self.chain identityForUniqueId:path.contactDestinationIdentityUniqueId foundInWallet:nil includeForeignIdentities:YES];
+                DSIdentity *sourceIdentity = [self.chain identityForUniqueId:path.contactSourceIdentityUniqueId foundInWallet:nil includeForeignIdentities:YES];
+                if (sourceIdentity)
                     [destinationIdentities addObject:sourceIdentity]; //these need to be inverted since the derivation path is incoming
-                }
-                if (destinationIdentity) {
+                if (destinationIdentity)
                     [sourceIdentities addObject:destinationIdentity]; //these need to be inverted since the derivation path is incoming
-                }
             }
         }
     }

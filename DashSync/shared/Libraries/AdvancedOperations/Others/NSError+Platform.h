@@ -41,4 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSError *)ffi_from_sml_error:(dashcore_sml_error_SmlError *)ffi_ref;
 @end
 
+@interface NSError (dashcore_sml_quorum_validation_error_QuorumValidationError)
++ (NSError *)ffi_from_quorum_validation_error:(dashcore_sml_quorum_validation_error_QuorumValidationError *)ffi_ref;
+@end
+
 NS_ASSUME_NONNULL_END

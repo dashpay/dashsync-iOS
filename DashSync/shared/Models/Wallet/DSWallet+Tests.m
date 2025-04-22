@@ -64,6 +64,8 @@ NSString const *transientDerivedKeyDataKey = @"transientDerivedKeyDataKey";
             for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
             }
+            if (account.coinJoinDerivationPath)
+                [account.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
             if ([chain isEvolutionEnabled]) {
                 [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
             }

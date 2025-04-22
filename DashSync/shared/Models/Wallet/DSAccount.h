@@ -25,6 +25,7 @@
 
 #import "DSAssetLockTransaction.h"
 #import "DSFundsDerivationPath.h"
+#import "DSGapLimit.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransaction.h"
 #import "NSData+Dash.h"
@@ -87,8 +88,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // has an extended public key missing in one of the account derivation paths
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-- (NSArray *_Nullable)registerAddressesWithInitialGapLimit;
-- (NSArray *_Nullable)registerAddressesWithProlongGapLimit;
+- (NSArray *)registerAddressesAtStage:(DSGapLimitStage)stage;
 
 + (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber
                     withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths
@@ -212,6 +212,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
 - (BOOL)canContainTransaction:(DSTransaction *)transaction;
 //- (BOOL)canContainRustTransaction:(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *)transaction;
+- (BOOL)canContainTransactionIncludingCoinjoin:(DSTransaction *)transaction;
 
 // adds a transaction to the account, or returns false if it isn't associated with the account
 - (BOOL)registerTransaction:(DSTransaction *)transaction

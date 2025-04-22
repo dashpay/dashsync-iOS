@@ -79,5 +79,7 @@
 - (NSString *)logWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     return [NSString stringWithFormat:@"%u: %@ .. %u: %@", blockHeightLookup(self.baseBlockHash), uint256_hex(self.baseBlockHash), blockHeightLookup(self.blockHash), uint256_hex(self.blockHash)];
 }
-
+- (BOOL)logging {
+    return YES;
+}
 @end

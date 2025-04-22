@@ -130,13 +130,13 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
         });
 }
 
-- (DUsernameStatus *)statusOfUsername:(NSString *)username
-                             inDomain:(NSString *)domain {
-    return dash_spv_platform_identity_model_IdentityModel_status_of_username(self.identity_model, DChar(username), DChar(domain));
+- (DUsernameStatus *_Nullable)statusOfUsername:(NSString *)username
+                                      inDomain:(NSString *)domain {
+    return username ? dash_spv_platform_identity_model_IdentityModel_status_of_username(self.identity_model, DChar(username), DChar(domain)) : nil;
 }
 
-- (DUsernameStatus *)statusOfDashpayUsername:(NSString *)username {
-    return dash_spv_platform_identity_model_IdentityModel_status_of_dashpay_username(self.identity_model, DChar(username));
+- (DUsernameStatus *_Nullable)statusOfDashpayUsername:(NSString *)username {
+    return username ? dash_spv_platform_identity_model_IdentityModel_status_of_dashpay_username(self.identity_model, DChar(username)) : nil;
 }
 
 - (DUsernameStatus *)statusOfUsernameFullPath:(NSString *)usernameFullPath {
@@ -339,7 +339,7 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@: fetchUsernamesInContext", self.logPrefix];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Fetch Usernames", self.logPrefix];
     DSLog(@"%@", debugInfo);
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     if (contract.contractState != DPContractState_Registered) {
@@ -412,7 +412,7 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                                             andEntropyData:(NSData *)entropyData
                                      withIdentityPublicKey:(DIdentityPublicKey *)identity_public_key
                                             withPrivateKey:(DMaybeOpaqueKey *)maybe_private_key {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"[%@]: registerUsernameWithSaltedDomainHash [%@]", self.logPrefix, saltedDomainHashData.hexString];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"[%@] Register Username With SaltedDomainHash [%@]", self.logPrefix, saltedDomainHashData.hexString];
     DDocumentResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hash_for_username_full_path(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract, u256_ctor_u(self.uniqueID), identity_public_key, bytes_ctor(saltedDomainHashData), u256_ctor(entropyData));
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
@@ -440,7 +440,7 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                        inContext:(NSManagedObjectContext *)context
                       completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion
                onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"[%@]: registerUsernamesAtStage [%lu]", self.logPrefix, (unsigned long) status];
+    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Register Usernames At Stage [%hhu]", self.logPrefix, DUsernameStatusIndex(status)];
     DSLog(@"%@", debugInfo);
     Vec_String *result = dash_spv_platform_identity_model_IdentityModel_username_full_paths_with_status(self.identity_model, status);
     NSArray *usernameFullPaths = [NSArray ffi_from_vec_of_string:result];
