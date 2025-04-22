@@ -82,7 +82,7 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *> *block
 - (void)stopSync;
 - (void)syncBlocksRescan;
 - (void)masternodeListAndBlocksRescan;
-
+- (void)masternodeListRescan;
 
 - (DSChainLock * _Nullable)chainLockForBlockHash:(UInt256)blockHash;
 

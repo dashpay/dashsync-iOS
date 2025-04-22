@@ -185,6 +185,17 @@
     }];
 }
 
+- (void)masternodeListRescan {
+    [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
+        NSManagedObjectContext *chainContext = [NSManagedObjectContext chainContext];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:chainContext];
+        [self removeNonMainnetTrustedPeer];
+        [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+        DSLog(@"%@ Disconnected (MasternodeListRescan) -> peerManager::connect", self.logPrefix);
+        [self.peerManager connect];
+    }];
+}
+
 // MARK: - DSChainDelegate
 
 - (void)chain:(DSChain *)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes updatedTransactions:(NSArray *)updatedTransactions {
