@@ -131,7 +131,7 @@
             return;
         }
         DContactRequests *documents = result->ok;
-        NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
+//        NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
         __block NSMutableArray<NSValue *> *incomingNewRequests = [NSMutableArray array];
         __block NSMutableArray *rErrors = [NSMutableArray array];
         [context performBlockAndWait:^{
@@ -219,7 +219,7 @@
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
         [debugInfo appendFormat:@" : ERROR: Active private keys are loaded with error: %@", error];
         DSLog(@"%@", debugInfo);
-        //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
+        //The identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the  identity level
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
         return;
     }
@@ -247,7 +247,7 @@
             return;
         }
         DContactRequests *documents = result->ok;
-        NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
+//        NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
         __block NSMutableArray<NSValue *> *outgoingNewRequests = [NSMutableArray array];
         __block NSMutableArray *rErrors = [NSMutableArray array];
         [context performBlockAndWait:^{

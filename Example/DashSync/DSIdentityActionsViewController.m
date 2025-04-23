@@ -46,7 +46,8 @@
             }
         }];
     }
-    DUsernameStatusDtor(username_status);
+    if (username_status)
+        DUsernameStatusDtor(username_status);
 
     [self reloadKeyInfo];
     [self reloadContactInfo];

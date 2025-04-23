@@ -214,6 +214,7 @@
                 BOOL success = [wallet registerIdentities:identities verify:YES];
                 dispatch_async(self.chain.networkingQueue, ^{
                     self.chain.chainManager.syncState.platformSyncInfo.queueCount = keysToCheck;
+                    [self.chain.chainManager notifySyncStateChanged];
                 });
 
                 DSLog(@"%@: Sync Identities: %@", self.logPrefix, DSLocalizedFormat(success ? @"OK (%lu)" :  @"Retrieved (%lu) but can't register in wallet", nil, identities.count));
