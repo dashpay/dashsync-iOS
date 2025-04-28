@@ -682,7 +682,7 @@
                                                                                                       chainLockHashes:chainLockHashes];
     self.sentGetdataTxBlocks = YES;
 #if MESSAGE_LOGGING
-    DSLogWithLocation(self, @"sending getdata (transactions and blocks)");
+    DSLogWithLocation(self, @"sending getdata (transactions and blocks) %lu", totalCount);
 #endif
     [self sendRequest:request];
 }

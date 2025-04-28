@@ -728,6 +728,7 @@
 
     dispatch_async(self.networkingQueue, ^{
         [self.chain.chainManager.syncState.peersSyncInfo addSyncKind:DSPeersSyncStateKind_Connecting];
+        [self.chain.chainManager notifySyncStateChanged];
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) {
             DSLog(@"[%@] [DSPeerManager] failed to connect: check that wallet is created", self.chain.name);
             return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
@@ -802,6 +803,7 @@
             [self chainSyncStopped];
             DSLog(@"[%@] [DSPeerManager] No peers found -> SyncFailed", self.chain.name);
             [self.chain.chainManager.syncState.peersSyncInfo removeSyncKind:DSPeersSyncStateKind_Connecting];
+            [self.chain.chainManager notifySyncStateChanged];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                     object:nil
