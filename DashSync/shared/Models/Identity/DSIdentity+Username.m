@@ -98,7 +98,7 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                       save:(BOOL)save {
     [self addUsername:username
              inDomain:@"dash"
-               status:dash_spv_platform_document_usernames_UsernameStatus_Initial_ctor()
+               status:dash_spv_platform_document_usernames_UsernameStatus_Initial
                  save:save
     registerOnNetwork:YES];
 }
@@ -108,24 +108,24 @@ void usernames_save_context_caller(const void *context, DUsernameStatus *status)
                save:(BOOL)save {
     [self addUsername:username
              inDomain:domain
-               status:dash_spv_platform_document_usernames_UsernameStatus_Initial_ctor()
+               status:dash_spv_platform_document_usernames_UsernameStatus_Initial
                  save:save
     registerOnNetwork:YES];
 }
 
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
-             status:(DUsernameStatus *)status
+             status:(DUsernameStatus)status
                save:(BOOL)save
   registerOnNetwork:(BOOL)registerOnNetwork {
-    DUsernameAdd(self.identity_model, username, domain, status);
+    DUsernameAdd(self.identity_model, username, domain, &status);
     if (save)
         dispatch_async(self.identityQueue, ^{
             [self saveNewUsername:username
                          inDomain:domain
                            status:dash_spv_platform_document_usernames_UsernameStatus_Initial
                         inContext:self.platformContext];
-            if (registerOnNetwork && self.registered && !dash_spv_platform_document_usernames_UsernameStatus_is_confirmed(status))
+            if (registerOnNetwork && self.registered && status != dash_spv_platform_document_usernames_UsernameStatus_Confirmed)
                 [self registerUsernamesWithCompletion:^(BOOL success, NSArray<NSError *> *errors) {}];
         });
 }

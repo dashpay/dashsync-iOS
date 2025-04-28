@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
                save:(BOOL)save;
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
-             status:(DUsernameStatus *)status
+             status:(DUsernameStatus)status
                save:(BOOL)save
   registerOnNetwork:(BOOL)registerOnNetwork;
 - (DUsernameStatus *_Nullable)statusOfUsername:(NSString *)username

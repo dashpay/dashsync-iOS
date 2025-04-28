@@ -733,7 +733,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 + (BOOL)isDenominatedAmount:(uint64_t)amount {
-    return is_denominated_amount(amount);
+    return dash_spv_coinjoin_coinjoin_CoinJoin_is_denominated_amount(amount);
 }
 
 - (BOOL)isCoinJoinOutput:(DSTransactionOutput *)output utxo:(DSUTXO)utxo {

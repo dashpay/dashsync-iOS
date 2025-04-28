@@ -319,7 +319,7 @@
         DIdentifier *owner_id = document->v0->owner_id;
         
         DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-        [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+        [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:NO registerOnNetwork:NO];
         [rIdentities addObject:identity];
 
     }
@@ -481,9 +481,9 @@
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
                 if (!identity) {
                     identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
-                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:NO registerOnNetwork:NO];
                 } else if (![identity hasDashpayUsername:label]) {
-                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:YES registerOnNetwork:NO];
+                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:YES registerOnNetwork:NO];
                 }
                 [rIdentities setObject:identity forKey:userIdData];
                 break;
@@ -522,7 +522,7 @@
                 NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
                 DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(document->v0->owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-                [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+                [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:NO registerOnNetwork:NO];
                 [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
                 [rIdentities addObject:identity];
                 break;

@@ -364,7 +364,45 @@ NSString *dateFormat(NSString *_template) {
         cell.confirmationsLabel.hidden = YES;
         cell.directionLabel.hidden = NO;
     }
-    
+    NSString *txTypeString = @"";
+    switch (tx.type) {
+        case DSTransactionType_ProviderRegistration:
+            txTypeString = @"pro reg";
+            break;
+        case DSTransactionType_ProviderUpdateService:
+            txTypeString = @"pro up srv";
+            break;
+        case DSTransactionType_ProviderUpdateRegistrar:
+            txTypeString = @"pro up reg";
+            break;
+        case DSTransactionType_ProviderUpdateRevocation:
+            txTypeString = @"pro up revoke";
+            break;
+        case DSTransactionType_Coinbase:
+            txTypeString = @"reward";
+            break;
+        case DSTransactionType_QuorumCommitment:
+            txTypeString = @"llmq";
+            break;
+        case DSTransactionType_AssetLock:
+            txTypeString = @"asset lock";
+            break;
+        case DSTransactionType_AssetUnlock:
+            txTypeString = @"asset unlock";
+            break;
+        case DSTransactionType_SubscriptionResetKey:
+            txTypeString = @"sub reset";
+            break;
+        case DSTransactionType_SubscriptionCloseAccount:
+            txTypeString = @"sub close";
+            break;
+        case DSTransactionType_Transition:
+            txTypeString = @"transition";
+            break;
+        default:
+            break;
+    }
+
     DCoinJoinTransactionType *type = [[DSCoinJoinManager sharedInstanceForChain:self.chainManager.chain] coinJoinTxTypeForTransaction:tx];
     DCoinJoinTransactionType type_index = DCoinJoinTransactionTypeIndex(type);
     if (type_index != dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_None) {
@@ -399,19 +437,19 @@ NSString *dateFormat(NSString *_template) {
             cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:sent];
             cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                 [priceManager localCurrencyStringForDashAmount:sent]];
-            cell.directionLabel.text = NSLocalizedString(@"moved", nil);
+            cell.directionLabel.text = DSLocalizedFormat(@"moved | %@", nil, txTypeString);
             cell.directionLabel.textColor = [UIColor blackColor];
         } else if (sent > 0) {
             cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received - sent];
             cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                 [priceManager localCurrencyStringForDashAmount:received - sent]];
-            cell.directionLabel.text = NSLocalizedString(@"sent", nil);
+            cell.directionLabel.text = DSLocalizedFormat(@"sent | %@", nil, txTypeString);
             cell.directionLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
         } else {
             cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received];
             cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                 [priceManager localCurrencyStringForDashAmount:received]];
-            cell.directionLabel.text = NSLocalizedString(@"received", nil);
+            cell.directionLabel.text = DSLocalizedFormat(@"received | %@", nil, txTypeString);
             cell.directionLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
         }
     }
@@ -499,6 +537,7 @@ NSString *dateFormat(NSString *_template) {
         DSTransactionDetailViewController *transactionDetailViewController = (DSTransactionDetailViewController *)segue.destinationViewController;
         DSTransactionEntity *transactionEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForCell:cell]];
         DSTransaction *transaction = self.transactions[transactionEntity.transactionHash.txHash];
+        DSLog(@"TransactionDetailSegue -> %@  %@ %@", transactionEntity.transactionHash.txHash.hexString, uint256_hex(transaction.txHash), transaction.data.hexString);
         transactionDetailViewController.transaction = transaction;
         transactionDetailViewController.txDateString = [self dateForTx:transaction];
     }

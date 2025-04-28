@@ -172,7 +172,10 @@
 
     NSURL *currentURL = storeURL;
     NSArray<DSCoreDataMigrationStep *> *migrationSteps = [self migrationStepsForStoreAtURL:storeURL toVersion:version];
-
+    NSDictionary *options = @{
+        NSMigratePersistentStoresAutomaticallyOption: @YES,
+        NSInferMappingModelAutomaticallyOption: @YES
+    };
     for (DSCoreDataMigrationStep *step in migrationSteps) {
         NSMigrationManager *manager = [[NSMigrationManager alloc] initWithSourceModel:step.sourceModel
                                                                      destinationModel:step.destinationModel];
@@ -181,11 +184,11 @@
         NSError *error = nil;
         [manager migrateStoreFromURL:currentURL
                                 type:NSSQLiteStoreType
-                             options:nil
+                             options:options
                     withMappingModel:step.mappingModel
                     toDestinationURL:destinationURL
                      destinationType:NSSQLiteStoreType
-                  destinationOptions:nil
+                  destinationOptions:options
                                error:&error];
         NSAssert(error == nil, @"failed attempting to migrate from %@ to %@, error %@",
             step.sourceModel, step.destinationModel, error);
