@@ -321,11 +321,20 @@
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     if (chain.isEvolutionEnabled && ![self.syncState.platformSyncInfo hasRecentIdentitiesSync]) {
         DSLog(@"%@ Sync Status: masternode list and quorums: OK -> sync identities", self.logPrefix);
-        [self.identitiesManager syncIdentitiesWithCompletion:^(NSArray<DSIdentity *> *_Nullable identities) {
-            // always from chain.networkingQueue
-            DSLog(@"%@ Sync Status: identities: OK -> sync chain", self.logPrefix);
-            [self syncBlockchain];
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // we can't access derivation keychain items from non-background state
+            if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+                // TODO: implement proper bg management (UIApplicationWillEnterForegroundNotification)
+                DSLog(@"%@ Sync Status: identities: skipped (background) -> sync chain", self.logPrefix);
+                dispatch_async(self.chain.networkingQueue, ^{ [self syncBlockchain]; });
+            } else {
+                [self.identitiesManager syncIdentitiesWithCompletion:^(NSArray<DSIdentity *> *_Nullable identities) {
+                    // always from chain.networkingQueue
+                    DSLog(@"%@ Sync Status: identities: OK -> sync chain", self.logPrefix);
+                    [self syncBlockchain];
+                }];
+            }
+        });
     } else {
         DSLog(@"%@ Sync Status: masternode list and quorums: OK -> sync chain", self.logPrefix);
         [self syncBlockchain];
