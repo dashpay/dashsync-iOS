@@ -279,6 +279,10 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
     return copy;
 }
 
+- (BOOL)hasSyncKind:(DSSyncStateExtKind)kind {
+    return FLAG_IS_SET(self.extKind, kind);
+}
+
 - (void)addSyncKind:(DSSyncStateExtKind)kind {
     if (!FLAG_IS_SET(self.extKind, kind))
         _extKind |= kind;
