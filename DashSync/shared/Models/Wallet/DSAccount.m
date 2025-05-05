@@ -471,8 +471,8 @@
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath containsAddress:address]) return derivationPath;
     }
-    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:address])
-        return self.coinJoinDerivationPath;
+//    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:address])
+//        return self.coinJoinDerivationPath;
     return nil;
 }
 
@@ -482,7 +482,7 @@
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if (![derivationPath hasExtendedPublicKey]) return YES;
     }
-    if (self.coinJoinDerivationPath && ![self.coinJoinDerivationPath hasExtendedPublicKey]) return YES;
+//    if (self.coinJoinDerivationPath && ![self.coinJoinDerivationPath hasExtendedPublicKey]) return YES;
     return NO;
 }
 - (NSArray *)registerAddressesAtStage:(DSGapLimitStage)stage {
@@ -524,8 +524,8 @@
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         [mSet addObjectsFromArray:[(id)derivationPath allReceiveAddresses]];
     }
-    if (self.coinJoinDerivationPath)
-        [mSet addObjectsFromArray:[self.coinJoinDerivationPath allReceiveAddresses]];
+//    if (self.coinJoinDerivationPath)
+//        [mSet addObjectsFromArray:[self.coinJoinDerivationPath allReceiveAddresses]];
 
     if ([mSet containsObject:[NSNull null]]) {
         [mSet removeObject:[NSNull null]];
@@ -541,8 +541,8 @@
             [mSet addObjectsFromArray:[(DSFundsDerivationPath *)derivationPath allChangeAddresses]];
         }
     }
-    if (self.coinJoinDerivationPath)
-        [mSet addObjectsFromArray:[self.coinJoinDerivationPath allChangeAddresses]];
+//    if (self.coinJoinDerivationPath)
+//        [mSet addObjectsFromArray:[self.coinJoinDerivationPath allChangeAddresses]];
     if ([mSet containsObject:[NSNull null]]) {
         [mSet removeObject:[NSNull null]];
     }
@@ -554,8 +554,8 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         [mSet unionSet:[derivationPath allAddresses]];
     }
-    if (self.coinJoinDerivationPath)
-        [mSet unionSet:[self.coinJoinDerivationPath allAddresses]];
+//    if (self.coinJoinDerivationPath)
+//        [mSet unionSet:[self.coinJoinDerivationPath allAddresses]];
     return mSet;
 }
 
@@ -564,8 +564,8 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         [mSet unionSet:[derivationPath usedAddresses]];
     }
-    if (self.coinJoinDerivationPath)
-        [mSet unionSet:[self.coinJoinDerivationPath usedAddresses]];
+//    if (self.coinJoinDerivationPath)
+//        [mSet unionSet:[self.coinJoinDerivationPath usedAddresses]];
     return mSet;
 }
 
@@ -580,7 +580,7 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath containsAddress:address]) return TRUE;
     }
-    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:address]) return YES;
+//    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:address]) return YES;
     return FALSE;
 }
 
@@ -610,7 +610,7 @@
             return TRUE;
         }
     }
-    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsChangeAddress:address]) return YES;
+//    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsChangeAddress:address]) return YES;
     return FALSE;
 }
 
@@ -626,7 +626,7 @@
             return TRUE;
         }
     }
-    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:address]) return YES;
+//    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:address]) return YES;
     return FALSE;
 }
 
@@ -645,7 +645,7 @@
             if ([(DSIncomingFundsDerivationPath *)derivationPath containsAddress:address]) return TRUE; //!OCLINT
         }
     }
-    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsReceiveAddress:address]) return TRUE;
+//    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsReceiveAddress:address]) return TRUE;
     return FALSE;
 }
 
@@ -673,7 +673,7 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath addressIsUsed:address]) return TRUE;
     }
-    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath addressIsUsed:address]) return YES;
+//    if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath addressIsUsed:address]) return YES;
     return FALSE;
 }
 
@@ -704,8 +704,8 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         derivationPath.balance = 0;
     }
-    if (self.coinJoinDerivationPath)
-        self.coinJoinDerivationPath.balance = 0;
+//    if (self.coinJoinDerivationPath)
+//        self.coinJoinDerivationPath.balance = 0;
     
     for (DSTransaction *tx in [self.transactions reverseObjectEnumerator]) {
 #if LOG_BALANCE_UPDATE
@@ -810,15 +810,15 @@
                         balance += amount;
                     }
                 }
-                if (self.coinJoinDerivationPath) {
-                    if ([self.coinJoinDerivationPath containsAddress:output.address]) {
-                        [self.coinJoinDerivationPath setHasKnownBalance];
-                        uint64_t amount = output.amount;
-                        self.coinJoinDerivationPath.balance += amount;
-                        [utxos addObject:dsutxo_obj(((DSUTXO){tx.txHash, n}))];
-                        balance += amount;
-                    }
-                }
+//                if (self.coinJoinDerivationPath) {
+//                    if ([self.coinJoinDerivationPath containsAddress:output.address]) {
+//                        [self.coinJoinDerivationPath setHasKnownBalance];
+//                        uint64_t amount = output.amount;
+//                        self.coinJoinDerivationPath.balance += amount;
+//                        [utxos addObject:dsutxo_obj(((DSUTXO){tx.txHash, n}))];
+//                        balance += amount;
+//                    }
+//                }
 
                 n++;
             }
@@ -843,9 +843,9 @@
                         break;
                     }
                 }
-                if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:output.address]) {
-                    self.coinJoinDerivationPath.balance -= amount;
-                }
+//                if (self.coinJoinDerivationPath && [self.coinJoinDerivationPath containsAddress:output.address]) {
+//                    self.coinJoinDerivationPath.balance -= amount;
+//                }
             }
             
             if (prevBalance < balance) totalReceived += balance - prevBalance;
@@ -1685,21 +1685,21 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
                 [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
             }
-            if (self.coinJoinDerivationPath)
-                [self.coinJoinDerivationPath registerTransactionAddress:address];
+//            if (self.coinJoinDerivationPath)
+//                [self.coinJoinDerivationPath registerTransactionAddress:address];
         }
         for (DSTransactionOutput *output in transaction.outputs) {
             for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
                 [derivationPath registerTransactionAddress:output.address]; //only will register if derivation path contains address
             }
-            if (self.coinJoinDerivationPath)
-                [self.coinJoinDerivationPath registerTransactionAddress:output.address]; //only will register if derivation path contains address
+//            if (self.coinJoinDerivationPath)
+//                [self.coinJoinDerivationPath registerTransactionAddress:output.address]; //only will register if derivation path contains address
         }
 
         [transaction loadIdentitiesFromDerivationPaths:self.fundDerivationPaths];
         [transaction loadIdentitiesFromDerivationPaths:self.outgoingFundDerivationPaths];
-        if (self.coinJoinDerivationPath)
-            [transaction loadIdentitiesFromDerivationPaths:@[self.coinJoinDerivationPath]];
+//        if (self.coinJoinDerivationPath)
+//            [transaction loadIdentitiesFromDerivationPaths:@[self.coinJoinDerivationPath]];
         [self updateBalance];
         if (saveImmediately) {
             if (!self.wallet.isTransient) {
