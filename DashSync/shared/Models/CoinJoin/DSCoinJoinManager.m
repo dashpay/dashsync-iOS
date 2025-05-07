@@ -244,7 +244,7 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)dealloc {
     if (_options != NULL) {
-        free(_options);
+        dash_spv_coinjoin_models_coinjoin_client_options_CoinJoinClientOptions_destroy(_options);
     }
 }
 
