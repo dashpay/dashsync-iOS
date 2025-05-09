@@ -100,7 +100,10 @@
         return;
     }
     
-    [self.identity createAndPublishTopUpTransitionForAmount:topupAmount fundedByAccount:self.fundingAccount pinPrompt:@"Fund Transaction" withCompletion:^(BOOL success, NSError * _Nonnull error) {
+    [self.identity createAndPublishTopUpTransitionForAmount:topupAmount
+                                            fundedByAccount:self.fundingAccount
+                                                  pinPrompt:@"Fund Transaction"
+                                             withCompletion:^(BOOL success, NSError * _Nonnull error) {
         if (error) {
             [self raiseIssue:@"Error" message:error.localizedDescription];
         } else if (!success) {

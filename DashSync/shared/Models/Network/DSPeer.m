@@ -666,7 +666,11 @@
     [self sendRequest:request];
 }
 
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes instantSendLockHashes:(NSArray *)instantSendLockHashes instantSendLockDHashes:(NSArray *)instantSendLockDHashes blockHashes:(NSArray *)blockHashes chainLockHashes:(NSArray *)chainLockHashes {
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes
+                 instantSendLockHashes:(NSArray *)instantSendLockHashes
+                instantSendLockDHashes:(NSArray *)instantSendLockDHashes
+                           blockHashes:(NSArray *)blockHashes
+                       chainLockHashes:(NSArray *)chainLockHashes {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
     NSUInteger totalCount = txHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count + blockHashes.count + chainLockHashes.count;
     if (totalCount > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
@@ -1048,7 +1052,8 @@
         DSLogWithLocation(self, @"Got empty Inv message");
     }
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote)) {
-        DSLogWithLocation(self, @"got inv with %u item%@ (first item %@ with hash %@/%@)", (int)count, count == 1 ? @"" : @"s", [self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]], [NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString, [NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].reverse.hexString);
+        NSData *d = [NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]];
+        DSLogWithLocation(self, @"got inv with %u item%@ (first item %@ with hash %@ (%@))", (int)count, count == 1 ? @"" : @"s", [self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]], d.hexString, d.reverse.hexString);
     }
 #endif
     BOOL onlyPrivateSendTransactions = NO;
@@ -1192,7 +1197,11 @@
     }
 
     if (txHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count > 0 || (!self.needsFilterUpdate && ((blockHashes.count + chainLockHashes.count) > 0))) {
-        [self sendGetdataMessageWithTxHashes:txHashes.array instantSendLockHashes:instantSendLockHashes.array instantSendLockDHashes:instantSendLockDHashes.array blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array chainLockHashes:chainLockHashes.array];
+        [self sendGetdataMessageWithTxHashes:txHashes.array
+                       instantSendLockHashes:instantSendLockHashes.array
+                      instantSendLockDHashes:instantSendLockDHashes.array
+                                 blockHashes:self.needsFilterUpdate ? nil : blockHashes.array
+                             chainLockHashes:chainLockHashes.array];
     }
 
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes

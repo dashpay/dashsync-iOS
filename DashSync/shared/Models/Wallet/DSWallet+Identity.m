@@ -131,7 +131,6 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
             for (DSTransaction *transaction in account.allTransactions) {
                 [transaction loadIdentitiesFromDerivationPaths:account.fundDerivationPaths];
                 [transaction loadIdentitiesFromDerivationPaths:account.outgoingFundDerivationPaths];
-                [transaction loadIdentitiesFromDerivationPaths:@[account.coinJoinDerivationPath]];
             }
         }
     }];

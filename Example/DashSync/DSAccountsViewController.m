@@ -115,8 +115,6 @@
             [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
                                      storeUnderWalletUniqueId:walletUniqueId];
         }
-        if (addAccount.coinJoinDerivationPath)
-            [addAccount.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
         if ([chain isEvolutionEnabled])
             [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
                                                               storeUnderWalletUniqueId:walletUniqueId];
