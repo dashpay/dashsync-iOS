@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) DSIdentity *identity;
 @property (nonatomic, assign) NSManagedObjectContext *context;
 + (instancetype)contextWithUsernames:(NSArray<NSString *> *)usernames forIdentity:(DSIdentity *)identity inContext:(NSManagedObjectContext *)context;
-- (void)setAndSaveUsernameFullPaths:(DUsernameStatus *)status;
+//- (void)setAndSaveUsernameFullPaths:(DUsernameStatus *)status;
 
 @end
 

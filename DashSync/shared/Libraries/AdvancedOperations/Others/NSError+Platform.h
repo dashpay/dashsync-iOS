@@ -45,4 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSError *)ffi_from_quorum_validation_error:(dashcore_sml_quorum_validation_error_QuorumValidationError *)ffi_ref;
 @end
 
+@interface NSError (dash_spv_platform_identity_username_registration_error_UsernameRegistrationError)
++ (NSError *)ffi_from_username_registration_error:(dash_spv_platform_identity_username_registration_error_UsernameRegistrationError *)ffi_ref;
+@end
+
 NS_ASSUME_NONNULL_END

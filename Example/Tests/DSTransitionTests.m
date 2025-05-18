@@ -78,7 +78,7 @@
     
     self.identity = [[DSIdentity alloc] initAtIndex:0 withAssetLockTransaction:fundingTransaction inWallet:self.testWallet];
 
-    dash_spv_platform_identity_model_IdentityModel_set_username_status(self.identity.identity_model, DChar(@"Bob"), dash_spv_platform_document_usernames_UsernameStatus_Initial_ctor());
+    dash_spv_platform_identity_model_IdentityModel_set_username_status(self.identity.model, DChar(@"Bob"), dash_spv_platform_document_usernames_UsernameStatus_Initial_ctor());
 }
 
 - (void)tearDown {

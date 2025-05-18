@@ -52,11 +52,13 @@ NS_ASSUME_NONNULL_BEGIN
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue;
 
-- (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
-                           toStatus:(DUsernameStatus *)status
-                          inContext:(NSManagedObjectContext *)context;
+//- (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
+//                           toStatus:(DUsernameStatus *)status
+//                          inContext:(NSManagedObjectContext *)context;
 
 - (BOOL)hasDashpayUsername:(NSString *)username;
+
+- (void)notifyUsernameUpdate:(nullable NSDictionary *)userInfo;
 
 @end
 

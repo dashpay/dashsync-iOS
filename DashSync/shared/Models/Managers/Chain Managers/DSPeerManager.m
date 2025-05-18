@@ -579,9 +579,9 @@
 }
 
 - (void)updateFilterOnPeers {
+    DSLog(@"[%@] [DSPeerManager] filter update needed? (%u), waiting for pong", self.downloadPeer.needsFilterUpdate, self.chain.name);
     if (self.downloadPeer.needsFilterUpdate) return;
-    self.downloadPeer.needsFilterUpdate = YES;
-    DSLog(@"[%@] [DSPeerManager] filter update needed, waiting for pong", self.chain.name);
+    [self pauseBlockchainSynchronizationOnPeers];
 
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (!success) return;

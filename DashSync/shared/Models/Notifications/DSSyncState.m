@@ -190,7 +190,7 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
 }
 
 - (BOOL)hasRecentIdentitiesSync {
-    return [[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 30;
+    return [[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 180;
 }
 
 - (double)progress {

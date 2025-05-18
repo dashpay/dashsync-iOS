@@ -23,6 +23,7 @@
 #import "DSChain+Wallet.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
+#import "DSDashPlatform.h"
 #import "DSDashSharedCore.h"
 #import "DSIdentity+Protected.h"
 #import "DSKeyManager.h"
@@ -132,6 +133,10 @@
     UpdateMasternodesAddressUsage update_address_usage_of_masternodes = {
         .caller = &update_address_usage_of_masternodes_caller
     };
+    Fn_ARGS_std_os_raw_c_void_data_contracts_SystemDataContract_RTRN_dpp_data_contract_DataContract get_data_contract_from_cache = {
+        .caller = &get_data_contract_from_cache_caller,
+        .destructor = &get_data_contract_from_cache_dtor
+    };
     
     NSArray<NSString *> *addresses = @[@"127.0.0.1"];
     switch (chain.chainType->tag) {
@@ -152,7 +157,7 @@
     }
     Vec_ *address_list = [NSArray ffi_to_vec:addresses];
     dash_spv_masternode_processor_processing_processor_DiffConfig *diff_config = [chain createDiffConfig];
-    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, diff_config, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_block_height_by_hash, get_block_hash_by_height, update_address_usage_of_masternodes, context);
+    self.core = dash_spv_apple_bindings_DashSPVCore_with_callbacks(chain.chainType, diff_config, address_list, get_data_contract, get_platform_activation_height, callback_signer, callback_can_sign, get_data_contract_from_cache, get_block_height_by_hash, get_block_hash_by_height, update_address_usage_of_masternodes, context);
     return self;
 }
 
@@ -171,6 +176,18 @@ MaybeDataContract *get_data_contract_caller(const void *context, DIdentifier *id
 }
 void get_data_contract_dtor(MaybeDataContract *result) {}
 
+DDataContract *get_data_contract_from_cache_caller(const void *context, data_contracts_SystemDataContract *ty) {
+    DSDashSharedCore *core = AS_OBJC(context);
+    switch (ty[0]) {
+        case data_contracts_SystemDataContract_DPNS:
+            return [DSDashPlatform sharedInstanceForChain:core.chain].dpnsRawContract;
+        case data_contracts_SystemDataContract_Dashpay:
+            return [DSDashPlatform sharedInstanceForChain:core.chain].dashPayRawContract;
+        default: return NULL;
+    }
+}
+void get_data_contract_from_cache_dtor(DDataContract *result) {}
+
 MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key, Vec_u8 *data) {
     DSDashSharedCore *core = AS_OBJC(context);
     DBinaryData *ok = NULL;
@@ -184,7 +201,7 @@ MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey 
         ok = DBinaryDataCtor(DOpaqueKeyHashAndSign(maybe_key->ok, data));
     }
     DMaybeOpaqueKeyDtor(maybe_key);
-    dpp_identity_identity_public_key_IdentityPublicKey_destroy(identity_public_key);
+    DIdentityPublicKeyDtor(identity_public_key);
     bytes_dtor(data);
     return Result_ok_platform_value_types_binary_data_BinaryData_err_dpp_errors_protocol_error_ProtocolError_ctor(ok, error);
 
