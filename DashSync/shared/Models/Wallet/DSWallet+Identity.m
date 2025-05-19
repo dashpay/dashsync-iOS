@@ -131,7 +131,6 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
             for (DSTransaction *transaction in account.allTransactions) {
                 [transaction loadIdentitiesFromDerivationPaths:account.fundDerivationPaths];
                 [transaction loadIdentitiesFromDerivationPaths:account.outgoingFundDerivationPaths];
-                [transaction loadIdentitiesFromDerivationPaths:@[account.coinJoinDerivationPath]];
             }
         }
     }];
@@ -189,7 +188,7 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
                   verify:(BOOL)verify {
     NSParameterAssert(identity);
     if (verify && ![identity verifyKeysForWallet:self]) {
-        identity.isLocal = FALSE;
+        dash_spv_platform_identity_model_IdentityModel_set_is_local(identity.model, NO);
         return FALSE;
     }
     if ([self.mIdentities objectForKey:identity.uniqueIDData] == nil)
@@ -336,11 +335,11 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
                         }
                     } else {
                         // We also don't have the registration funding transaction
-                        identity = [[DSIdentity alloc] initAtIndex:index withUniqueId:uniqueIdData.UInt256 inWallet:self];
+                        identity = [[DSIdentity alloc] initAtIndex:index uniqueId:uniqueIdData.UInt256 inWallet:self];
                         [identity registerInWalletForIdentityUniqueId:uniqueIdData.UInt256];
                     }
                 } else {
-                    identity = [[DSIdentity alloc] initAtIndex:index withUniqueId:uniqueIdData.UInt256 inWallet:self];
+                    identity = [[DSIdentity alloc] initAtIndex:index uniqueId:uniqueIdData.UInt256 inWallet:self];
                     [identity registerInWalletForIdentityUniqueId:uniqueIdData.UInt256];
                 }
                 if (identity) {
@@ -371,14 +370,14 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
 
 - (DSIdentity *)createIdentityForUsername:(NSString *)username {
     DSIdentity *identity = [self createIdentity];
-    [identity addDashpayUsername:username save:NO];
+    [identity addDashpayUsername:username];
     return identity;
 }
 
 - (DSIdentity *)createIdentityForUsername:(NSString *)username
                      usingDerivationIndex:(uint32_t)index {
     DSIdentity *identity = [self createIdentityUsingDerivationIndex:index];
-    [identity addDashpayUsername:username save:NO];
+    [identity addDashpayUsername:username];
     return identity;
 }
 

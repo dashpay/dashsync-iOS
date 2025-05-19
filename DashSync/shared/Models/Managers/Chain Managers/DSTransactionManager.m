@@ -1280,13 +1280,13 @@ keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthent
 
     if (peer) {
 #if DEBUG
-        DSLogPrivate(@"[%@: %@:%d] relayed transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+        DSLogPrivate(@"[%@: %@:%d] relayed transaction %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
         DSLog(@"[%@: %@:%d] relayed transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
     } else {
 #if DEBUG
-        DSLogPrivate(@"[%@: %@:%d] accepting local transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+        DSLogPrivate(@"[%@: %@:%d] accepting local transaction %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
         DSLog(@"[%@: %@:%d] accepting local transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1301,13 +1301,13 @@ keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthent
         if (![self.chain transactionHasLocalReferences:transaction]) {
             if (peer) {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
             } else {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+                DSLogPrivate(@"[%@: %@:%d] no account or local references for transaction %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account or local references for transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1316,13 +1316,13 @@ keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthent
         } else {
             if (peer) {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
             } else {
 #if DEBUG
-                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+                DSLogPrivate(@"[%@: %@:%d] no account for transaction with local references %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
                 DSLog(@"[%@: %@:%d] no account for transaction with local references %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
@@ -1341,13 +1341,13 @@ keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthent
             } else {
                 if (peer) {
 #if DEBUG
-                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
                     DSLog(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif
                 } else {
 #if DEBUG
-                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, uint256_hex(txHash));
+                    DSLogPrivate(@"[%@: %@:%d] could not register transaction %@ (%@)", self.chain.name, peer.host, peer.port, uint256_hex(txHash), uint256_reverse_hex(txHash));
 #else
                     DSLog(@"[%@: %@:%d] could not register transaction %@", self.chain.name, peer.host, peer.port, @"<REDACTED>");
 #endif

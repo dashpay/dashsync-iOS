@@ -33,14 +33,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applyUsernameEntitiesFromIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity;
 - (void)collectUsernameEntitiesIntoIdentityEntityInContext:(DSBlockchainIdentityEntity *)identityEntity
                                                    context:(NSManagedObjectContext *)context;
-
+- (void)addDashpayUsername:(NSString *)username;
 - (void)addDashpayUsername:(NSString *)username save:(BOOL)save;
+- (void)addConfirmedUsername:(NSString *)username
+                    inDomain:(NSString *)domain;
+
+- (void)addUsername:(NSString *)username
+           inDomain:(NSString *)domain
+             status:(DUsernameStatus)status;
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
                save:(BOOL)save;
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
-             status:(DUsernameStatus *)status
+             status:(DUsernameStatus)status
                save:(BOOL)save
   registerOnNetwork:(BOOL)registerOnNetwork;
 - (DUsernameStatus *_Nullable)statusOfUsername:(NSString *)username
@@ -52,11 +58,13 @@ NS_ASSUME_NONNULL_BEGIN
                  withCompletion:(void (^)(BOOL success, NSError *error))completion
               onCompletionQueue:(dispatch_queue_t)completionQueue;
 
-- (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
-                           toStatus:(DUsernameStatus *)status
-                          inContext:(NSManagedObjectContext *)context;
+//- (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths
+//                           toStatus:(DUsernameStatus *)status
+//                          inContext:(NSManagedObjectContext *)context;
 
 - (BOOL)hasDashpayUsername:(NSString *)username;
+
+- (void)notifyUsernameUpdate:(nullable NSDictionary *)userInfo;
 
 @end
 

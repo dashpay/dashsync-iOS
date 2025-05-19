@@ -190,13 +190,14 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
 }
 
 - (BOOL)hasRecentIdentitiesSync {
-    return [[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 30;
+    return [[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 180;
 }
 
 - (double)progress {
     uint32_t amountLeft = self.queueCount;
     uint32_t maxAmount = self.queueMaxAmount;
-    return amountLeft && maxAmount ? MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0) : [self hasRecentIdentitiesSync];
+    BOOL uptodate = [self hasRecentIdentitiesSync];
+    return amountLeft && maxAmount ? MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0) : uptodate;
 }
 
 - (double)weight {
@@ -206,7 +207,7 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"[%@: %f %u/%u = %.2f/%.2f]", DSPlatformSyncStateKindDescription(self.kind), self.lastSyncedIndentitiesTimestamp, self.queueCount, self.queueMaxAmount, [self progress], [self weight]];
+    return [NSString stringWithFormat:@"[%@: %.3f %u/%u = %.2f/%.2f]", DSPlatformSyncStateKindDescription(self.kind), self.lastSyncedIndentitiesTimestamp, self.queueCount, self.queueMaxAmount, [self progress], [self weight]];
 }
 
 @end
@@ -277,6 +278,10 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
     copy.platformSyncInfo = [self.platformSyncInfo copy];
     copy.peersSyncInfo = [self.peersSyncInfo copy];
     return copy;
+}
+
+- (BOOL)hasSyncKind:(DSSyncStateExtKind)kind {
+    return FLAG_IS_SET(self.extKind, kind);
 }
 
 - (void)addSyncKind:(DSSyncStateExtKind)kind {

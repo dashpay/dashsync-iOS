@@ -139,6 +139,7 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
 - (NSString *)masternodesDescription;
 - (NSString *)platformDescription;
 
+- (BOOL)hasSyncKind:(DSSyncStateExtKind)kind;
 - (void)addSyncKind:(DSSyncStateExtKind)kind;
 - (void)removeSyncKind:(DSSyncStateExtKind)kind;
 - (void)resetSyncKind;

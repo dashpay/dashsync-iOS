@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
                withCompletion:(void (^)(BOOL success, NSError *error))completion
             onCompletionQueue:(dispatch_queue_t)completionQueue;
 
-- (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser
+- (void)applyProfileChanges:(DTransientUser *)transientDashpayUser
                   inContext:(NSManagedObjectContext *)context
                 saveContext:(BOOL)saveContext
                  completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion

@@ -565,6 +565,7 @@
                 if (quorumValidationError) {
                     dispatch_async(self.chain.networkingQueue, ^{
                         [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                        [self.chain.chainManager notifySyncStateChanged];
                     });
                 } else {
                     [self finishIntitialQrInfoPipeline];
@@ -616,6 +617,7 @@
                                         numOfAttempt++;
                                         [self tryToProcessQrInfo:peer message:message attempt:attempt];
                                     });
+                                    return;
                                 }
                                 break;
                             }
@@ -668,11 +670,13 @@
             } else {
                 dispatch_async(self.chain.networkingQueue, ^{
                     [self.chain.chainManager.syncState.masternodeListSyncInfo addSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                    [self.chain.chainManager notifySyncStateChanged];
                 });
                 NSError *quorumValidationError = [self verifyQuorums];
                 if (quorumValidationError) {
                     dispatch_async(self.chain.networkingQueue, ^{
                         [self.chain.chainManager.syncState.masternodeListSyncInfo removeSyncKind:DSMasternodeListSyncStateKind_Quorums];
+                        [self.chain.chainManager notifySyncStateChanged];
                     });
                 } else {
                     [self finishIntitialQrInfoPipeline];

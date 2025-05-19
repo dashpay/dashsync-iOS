@@ -364,6 +364,7 @@ DTransaction *getTransaction(const void *context, u256 *tx_hash) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *transaction = [wrapper.chain transactionForHash:txHash];
+        DSLog(@"[DSCoinJoinWrapper] getTransaction: %@ == %@ (%@)", uint256_hex(txHash), transaction, [wrapper.chain transactionForHash:uint256_reverse(txHash)]);
         if (transaction)
             tx = [transaction ffi_malloc:wrapper.chain.chainType];
     }

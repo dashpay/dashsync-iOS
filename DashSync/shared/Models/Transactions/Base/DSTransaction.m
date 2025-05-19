@@ -690,8 +690,8 @@
         }
         if (!self.isSigned) return NO;
         // TODO: check if this is wrong
-//        _txHash = self.data.SHA256_2;
-        _txHash = [self toData:anyoneCanPay].SHA256_2;
+        _txHash = self.data.SHA256_2;
+//        _txHash = [self toData:anyoneCanPay].SHA256_2;
         return YES;
     }
 }

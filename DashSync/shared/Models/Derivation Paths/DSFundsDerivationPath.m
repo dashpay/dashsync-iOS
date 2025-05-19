@@ -156,7 +156,7 @@
                                  inContext:(NSManagedObjectContext *)context {
     DSGapLimitFunds *gapLimitSettings = (DSGapLimitFunds *)settings;
     uintptr_t gapLimit = gapLimitSettings.gapLimit;
-    BOOL internal = (gapLimitSettings.direction & DSGapLimitFundsDirection_Internal) == DSGapLimitFundsDirection_Internal;
+    BOOL internal = FLAG_IS_SET(gapLimitSettings.direction, DSGapLimitFundsDirection_Internal);
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }

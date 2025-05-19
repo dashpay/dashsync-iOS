@@ -61,7 +61,7 @@
 // Override to support conditional editing of the table view.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     DIdentityKeyStatus *status = [self.identity statusOfKeyAtIndex:indexPath.row];
-    BOOL is_registered = dash_spv_platform_identity_model_IdentityKeyStatus_is_not_registered(status);
+    BOOL is_registered = dash_spv_platform_identity_key_status_IdentityKeyStatus_is_not_registered(status);
     DIdentityKeyStatusDtor(status);
     return is_registered;
 }

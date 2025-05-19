@@ -58,17 +58,19 @@
                             completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion
                      onCompletionQueue:(dispatch_queue_t)completionQueue {
     if (identity.isTransient) {
-        identity.isTransient = FALSE;
+        dash_spv_platform_identity_model_IdentityModel_set_is_transient(identity.model, NO);
         [self.identitiesManager registerForeignIdentity:identity];
-        if (identity.transientDashpayUser) {
-            [identity applyProfileChanges:identity.transientDashpayUser
+        DTransientUser *user = dash_spv_platform_identity_model_IdentityModel_maybe_user(identity.model);
+        if (user) {
+            [identity applyProfileChanges:user
                                 inContext:context
                               saveContext:YES
                                completion:^(BOOL success, NSError *_Nullable error) {
+                DTransientUserDtor(user);
                 if (success && !error) {
                     DSDashpayUserEntity *dashpayUser = [identity matchingDashpayUserInContext:context];
-                    if (identity.transientDashpayUser.revision == dashpayUser.remoteProfileDocumentRevision)
-                        identity.transientDashpayUser = nil;
+                    if (dash_spv_platform_identity_model_IdentityModel_if_user_matches_revision(identity.model, dashpayUser.remoteProfileDocumentRevision))
+                        dash_spv_platform_identity_model_IdentityModel_set_user(identity.model, NULL);
                 }
             }
                                   onCompletionQueue:self.identityQueue];

@@ -27,10 +27,10 @@
     ctx.context = context;
     return ctx;
 }
-- (void)setAndSaveUsernameFullPaths:(DUsernameStatus *)status {
-    [self.identity setAndSaveUsernameFullPaths:self.usernames
-                                      toStatus:status
-                                     inContext:self.context];
-}
+//- (void)setAndSaveUsernameFullPaths:(DUsernameStatus *)status {
+//    [self.identity setAndSaveUsernameFullPaths:self.usernames
+//                                      toStatus:status
+//                                     inContext:self.context];
+//}
 @end
 

@@ -55,18 +55,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)localContractIdentifier
                                    raw_contract:(DDataContract *)raw_contract
-//                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
                                         onChain:(DSChain *)chain {
     NSParameterAssert(localContractIdentifier);
     NSParameterAssert(raw_contract);
 
     if (!(self = [super init])) return nil;
-//    _version = DEFAULT_VERSION;
     _localContractIdentifier = localContractIdentifier;
-//    _jsonMetaSchema = DEFAULT_SCHEMA;
     _raw_contract = raw_contract;
-//    _mutableDocuments = [documents mutableCopy];
-//    _definitions = @{};
     _chain = chain;
 
     //        [self.chain.chainManagedObjectContext performBlockAndWait:^{
@@ -142,12 +137,14 @@ NS_ASSUME_NONNULL_BEGIN
     self.registeredIdentityUniqueID = identity ? identity.uniqueID : UINT256_ZERO;
     self.contractId = UINT256_ZERO; //will be lazy loaded
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesECDSAKeysDerivationPathForWallet:identity.wallet];
+    // use the last key in 32 bit space (it won't probably ever be used anyways)
+    NSData *lastPublicKeyData = [derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:UINT32_MAX - 1]];
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error *result = dash_spv_platform_contract_manager_ContractsManager_contract_serialized_hash(self.chain.sharedContractsObj, self.raw_contract);
     NSData *serializedHash = NSDataFromPtr(result->ok);
     Result_ok_Vec_u8_err_dash_spv_platform_error_Error_destroy(result);
     NSMutableData *entropyData = [serializedHash mutableCopy];
     [entropyData appendUInt256:identity.uniqueID];
-    [entropyData appendData:[derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:UINT32_MAX - 1]]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    [entropyData appendData:lastPublicKeyData];
 
     self.entropy = [entropyData SHA256];
 }

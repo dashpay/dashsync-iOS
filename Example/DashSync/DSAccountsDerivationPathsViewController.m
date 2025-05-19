@@ -35,17 +35,15 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 3;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case 0:
             return [self.account.fundDerivationPaths count];
-        case 1:
-            return [self.account.outgoingFundDerivationPaths count];
         default:
-            return 1; //coinjoin
+            return [self.account.outgoingFundDerivationPaths count];
     }
 }
 
@@ -54,10 +52,8 @@
     switch (section) {
         case 0:
             return @"Funds";
-        case 1:
-            return @"Friends";
         default:
-            return @"CoinJoin";
+            return @"Friends";
     }
 }
 
@@ -66,14 +62,12 @@
         case 0: {
             DSDerivationPath *derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
             if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                return 299;
+                return 320;
             } else {
-                return 237;
+                return 260;
             }
         }
-        case 1: return 237;
-        default:
-            return 299;
+        default: return 260;
     }
 }
 
@@ -91,14 +85,8 @@
                 return cell;
             }
         }
-        case 1: {
-            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IncomingDerivationPathCellIdentifier" forIndexPath:indexPath];
-            [self configureCell:cell atIndexPath:indexPath];
-            return cell;
-        }
         default: {
-            DSDerivationPath *derivationPath = (DSDerivationPath *)self.account.coinJoinDerivationPath;
-            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"DerivationPathCellIdentifier" forIndexPath:indexPath];
+            DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"IncomingDerivationPathCellIdentifier" forIndexPath:indexPath];
             [self configureCell:cell atIndexPath:indexPath];
             return cell;
         }
@@ -110,8 +98,6 @@
     DSDerivationPath *derivationPath;
     if (indexPath.section == 1) {
         derivationPath = (DSDerivationPath *)[self.account.outgoingFundDerivationPaths objectAtIndex:indexPath.row];
-    } else if (indexPath.section == 2) {
-        derivationPath = (DSDerivationPath *)self.account.coinJoinDerivationPath;
     } else {
         derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
     }
@@ -120,15 +106,17 @@
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
     cell.referenceNameLabel.text = derivationPath.referenceName;
     if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-        cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)fundsDerivationPath.allReceiveAddresses.count];
-        cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)fundsDerivationPath.usedReceiveAddresses.count];
-        cell.knownInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)fundsDerivationPath.allChangeAddresses.count];
-        cell.usedInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)fundsDerivationPath.usedChangeAddresses.count];
+        DSFundsDerivationPath *path = (DSFundsDerivationPath *)derivationPath;
+        cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu", path.allReceiveAddresses.count];
+        cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu", path.usedReceiveAddresses.count];
+        cell.knownInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu", path.allChangeAddresses.count];
+        cell.usedInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu", path.usedChangeAddresses.count];
+        cell.balanceLabel.text = [NSString stringWithFormat:@"%llu", path.balance];
     } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-        cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)incomingFundsDerivationPath.allReceiveAddresses.count];
-        cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)incomingFundsDerivationPath.usedReceiveAddresses.count];
+        DSIncomingFundsDerivationPath *path = (DSIncomingFundsDerivationPath *)derivationPath;
+        cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu", path.allReceiveAddresses.count];
+        cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu", path.usedReceiveAddresses.count];
+        cell.balanceLabel.text = [NSString stringWithFormat:@"%llu", path.balance];
     }
 }
 
@@ -173,8 +161,6 @@
         DSDoubleDerivationPathsAddressesViewController *derivationPathsAddressesViewController = (DSDoubleDerivationPathsAddressesViewController *)segue.destinationViewController;
         if (indexPath.section == 0) {
             derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
-        } else if (indexPath.section == 2) {
-            derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath *)self.account.coinJoinDerivationPath;
         } else {
             derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath *)[self.account.outgoingFundDerivationPaths objectAtIndex:indexPath.row];
         }

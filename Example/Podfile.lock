@@ -18,7 +18,7 @@ PODS:
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `../../dash-shared-core-ferment/`)
+  - DashSharedCore (from `../../dash-shared-core/`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
   - SDWebImage (= 5.21.0)
@@ -36,7 +36,7 @@ EXTERNAL SOURCES:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSharedCore:
-    :path: "../../dash-shared-core-ferment/"
+    :path: "../../dash-shared-core/"
   DashSync:
     :path: "../"
 
@@ -55,6 +55,6 @@ SPEC CHECKSUMS:
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
 
-PODFILE CHECKSUM: 45f72cc47868b7f63c3c149723d1e03b70c88dec
+PODFILE CHECKSUM: ac4ee8d15a12817fc10676b31e9e06c3d05e290a
 
 COCOAPODS: 1.15.2

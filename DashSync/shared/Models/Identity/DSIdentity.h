@@ -32,12 +32,6 @@ typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStep)
     DSIdentityRegistrationStep_Cancelled = 1 << 30
 };
 
-typedef NS_ENUM(NSUInteger, DSIdentityMonitorOptions)
-{
-    DSIdentityMonitorOptions_None = 0,
-    DSIdentityMonitorOptions_AcceptNotFoundAsNotAnError = 1,
-};
-
 typedef NS_ENUM(NSUInteger, DSIdentityQueryStep)
 {
     DSIdentityQueryStep_None = DSIdentityRegistrationStep_None,         //0
@@ -82,6 +76,12 @@ FOUNDATION_EXPORT NSString *const DSIdentityUpdateEventDashpaySyncronizationBloc
 NSString * DSRegistrationStepsDescription(DSIdentityRegistrationStep step);
 NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 
+@interface DSDerivationContext : NSObject
+@property (nonatomic, readwrite) DSDerivationPath *derivationPath;
+@property (nonatomic, readwrite) NSIndexPath *indexPath;
++ (instancetype)withDerivationPath:(DSDerivationPath *)derivationPath indexPath:(NSIndexPath *)indexPath;
+@end
+
 @interface DSIdentity : NSObject
 
 /*! @brief This is the unique identifier representing the blockchain identity. It is derived from the asset lock transaction credit burn UTXO (as of dpp v10). Returned as a 256 bit number */
@@ -105,7 +105,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 /*! @brief This is TRUE only if the blockchain identity is contained within a wallet. It could be in a cleanup phase where it was removed from the wallet but still being help in memory by callbacks. */
 @property (nonatomic, readonly) BOOL isActive;
 /*! @brief This references transient Dashpay user info if on a transient blockchain identity. */
-@property (nonatomic, readonly) DSTransientDashpayUser *transientDashpayUser;
+@property (nonatomic, readonly) DTransientUser *transientDashpayUser;
 /*! @brief This is the bitwise steps that the identity has already performed in registration. */
 @property (nonatomic, readonly) DSIdentityRegistrationStep stepsCompleted;
 /*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity if the blockchain identity is local, but never if it is not. */
@@ -219,6 +219,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (BOOL)hasIdentityExtendedPublicKeys;
 - (DIdentityKeyStatus *)statusOfKeyAtIndex:(NSUInteger)index;
 - (DOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
+- (BOOL)hasKeyAtIndex:(NSUInteger)index;
+
 + (NSString *)localizedStatusOfKeyForIdentityKeyStatus:(DIdentityKeyStatus *)status;
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index;
 - (DMaybeOpaqueKey *_Nullable)createNewKeyOfType:(DKeyKind *)type
@@ -234,6 +236,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 - (BOOL)containsTopupTransaction:(DSAssetLockTransaction *)transaction;
 
 - (NSString *)logPrefix;
+
+- (BOOL)registrationStatusIsPending;
+- (BOOL)registrationStatusIsClaimed;
 
 @end
 

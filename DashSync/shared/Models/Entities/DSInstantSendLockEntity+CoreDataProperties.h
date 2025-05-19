@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *signature;
 @property (nullable, nonatomic, retain) NSData *cycleHash;
-@property (assign, nonatomic) uint8_t version;
+@property (assign, nonatomic) uint16_t version;
 @property (assign, nonatomic) BOOL validSignature;
 @property (nullable, nonatomic, retain) DSTransactionEntity *transaction;
 

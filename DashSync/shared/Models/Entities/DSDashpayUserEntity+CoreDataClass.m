@@ -101,20 +101,21 @@
     return username.stringValue;
 }
 
-- (NSError *)applyTransientDashpayUser:(DSTransientDashpayUser *)transientDashpayUser save:(BOOL)save {
+- (NSError *)applyTransientDashpayUser:(DTransientUser *)transientDashpayUser save:(BOOL)save {
     if (!self.documentIdentifier) {
-        self.documentIdentifier = transientDashpayUser.documentIdentifier;
+        self.documentIdentifier = NSDataFromPtr(transientDashpayUser->document_identifier->_0->_0);
     } else if (self.documentIdentifier) {
         return [NSError errorWithCode:500 localizedDescriptionKey:@"Error when updating profile information"];
     }
-    self.localProfileDocumentRevision = transientDashpayUser.revision;
-    self.remoteProfileDocumentRevision = transientDashpayUser.revision;
-    self.avatarPath = transientDashpayUser.avatarPath;
-    self.publicMessage = transientDashpayUser.publicMessage;
-    self.displayName = transientDashpayUser.displayName;
+    dpp_prelude_Revision *revision = transientDashpayUser->revision;
+    self.localProfileDocumentRevision = revision->_0;
+    self.remoteProfileDocumentRevision = revision->_0;
+    self.avatarPath = NSStringFromPtr(transientDashpayUser->avatar_url);
+    self.publicMessage = NSStringFromPtr(transientDashpayUser->public_message);
+    self.displayName = NSStringFromPtr(transientDashpayUser->display_name);
 
-    self.createdAt = transientDashpayUser.createdAt;
-    self.updatedAt = transientDashpayUser.updatedAt;
+    self.createdAt = transientDashpayUser->created_at->_0;
+    self.updatedAt = transientDashpayUser->updated_at->_0;
 
     if (save) {
         [self.managedObjectContext ds_save];

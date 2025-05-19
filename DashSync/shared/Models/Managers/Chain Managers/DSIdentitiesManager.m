@@ -147,12 +147,13 @@
     }
     DSLog(@"%@ Sync Identities", self.logPrefix);
     dispatch_async(self.identityQueue, ^{
+        DSLog(@"%@ Sync Identities Enter Identity Queue", self.logPrefix);
         NSArray<DSWallet *> *wallets = self.chain.wallets;
 
         __block dispatch_group_t keyHashesDispatchGroup = dispatch_group_create();
         __block NSMutableArray *errors = [NSMutableArray array];
         __block NSMutableArray *allIdentities = [NSMutableArray array];
-        const int keysToCheck = 5;
+        const int keysToCheck = 1;
         dispatch_async(self.chain.networkingQueue, ^{
             [self.chain.chainManager.syncState addSyncKind:DSSyncStateExtKind_Platform];
             [self.chain.chainManager.syncState.platformSyncInfo addSyncKind:DSPlatformSyncStateKind_KeyHashes];
@@ -173,11 +174,12 @@
                 key_hashes[i] = u160_ctor_u(publicKeyData.hash160);
                 [keyIndexes setObject:@(unusedIndex + i) forKey:publicKeyData];
             }
-            dispatch_group_enter(keyHashesDispatchGroup);
-            DRetry *stragegy = DRetryLinear(5);
-            dash_spv_platform_identity_manager_IdentityValidator *options = DAcceptIdentityNotFound();
             
-            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            dispatch_sync(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                DRetry *stragegy = DRetryLinear(5);
+                dash_spv_platform_identity_manager_IdentityValidator *options = DAcceptIdentityNotFound();
+                dispatch_group_enter(keyHashesDispatchGroup);
+                DSLog(@"%@ Sync Identities Enter QOS Queue", self.logPrefix);
                 Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
                             
                 if (result->error) {
@@ -196,9 +198,10 @@
                     switch (identity->tag) {
                         case dpp_identity_identity_Identity_V0: {
                             dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
-                            DMaybeOpaqueKey *maybe_opaque_key = DOpaqueKeyFromIdentityPubKey(identity_v0->public_keys->values[0]);
-                            NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
-                            NSNumber *index = [keyIndexes objectForKey:publicKeyData];
+                            DMaybeKeyData *maybe_public_key_data = DIdentityPubKeyData(identity_v0->public_keys->values[0]);
+//                            NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
+                            NSNumber *index = [keyIndexes objectForKey:NSDataFromPtr(maybe_public_key_data->ok)];
+                            DMaybeKeyDataDtor(maybe_public_key_data);
                             DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
                             [identityModel applyIdentity:identity save:NO inContext:nil];
                             [identities addObject:identityModel];
@@ -214,6 +217,7 @@
                 BOOL success = [wallet registerIdentities:identities verify:YES];
                 dispatch_async(self.chain.networkingQueue, ^{
                     self.chain.chainManager.syncState.platformSyncInfo.queueCount = keysToCheck;
+                    [self.chain.chainManager notifySyncStateChanged];
                 });
 
                 DSLog(@"%@: Sync Identities: %@", self.logPrefix, DSLocalizedFormat(success ? @"OK (%lu)" :  @"Retrieved (%lu) but can't register in wallet", nil, identities.count));
@@ -250,6 +254,7 @@
             }
             [self.chain.chainManager notifySyncStateChanged];
 
+
             dispatch_group_t dispatchGroup = dispatch_group_create();
             __block NSMutableArray *errors = [NSMutableArray array];
             for (DSIdentity *identity in identities) {
@@ -258,16 +263,15 @@
                     dispatch_async(self.chain.networkingQueue, ^{
                         self.chain.chainManager.syncState.platformSyncInfo.queueCount++;
                         [self.chain.chainManager notifySyncStateChanged];
-             });
-                    if (success && identity != nil) {
-                        dispatch_group_leave(dispatchGroup);
-                    } else {
+                    });
+                    if (!success || !identity)
                         [errors addObject:error];
-                    }
+                    dispatch_group_leave(dispatchGroup);
                 }
                                                               completionQueue:self.identityQueue];
             }
             dispatch_group_notify(dispatchGroup, self.chain.networkingQueue, ^{
+                DSLog(@"");
                 self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
                 self.chain.chainManager.syncState.platformSyncInfo.queueCount = 0;
                 self.chain.chainManager.syncState.platformSyncInfo.queueMaxAmount = 0;
@@ -275,6 +279,7 @@
                 [self.chain.chainManager.syncState.platformSyncInfo resetSyncKind];
                 [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Platform];
                 [self.chain.chainManager notifySyncStateChanged];
+                
                 if (!errors.count && completion)
                     completion(identities);
             });
@@ -318,7 +323,7 @@
         DIdentifier *owner_id = document->v0->owner_id;
         
         DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-        [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+        [identity addConfirmedUsername:normalizedLabel inDomain:domain];
         [rIdentities addObject:identity];
 
     }
@@ -329,122 +334,119 @@
         });
 }
 
-- (void)fetchProfileForIdentity:(DSIdentity *)identity
-                 withCompletion:(DashpayUserInfoCompletionBlock)completion
-              onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profile for: %@", self.logPrefix, identity];
-    DSLog(@"%@", debugString);
-    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    if ([dashpayContract contractState] != DPContractState_Registered) {
-        DSLog(@"%@: ERROR: DashPay Contract Not Registered", debugString);
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, nil); });
-        return;
-    }
-    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
-    if (result->error) {
-        NSError *error = [NSError ffi_from_platform_error:result->error];
-        DSLog(@"%@: ERROR: %@", debugString, error);
-        dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
-        DMaybeDocumentDtor(result);
-        return;
-    }
-    if (!result->ok) {
-        DSLog(@"%@: ERROR: Profile is None", debugString);
-        if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil, nil); });
-        DMaybeDocumentDtor(result);
-        return;
-   }
-    DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:result->ok];
-    DSLog(@"%@: OK: %@", debugString, transientDashpayUser);
-    dispatch_async(completionQueue, ^{ if (completion) completion(YES, transientDashpayUser, nil); });
-}
+//- (void)fetchProfileForIdentity:(DSIdentity *)identity
+//                 withCompletion:(DashpayUserInfoCompletionBlock)completion
+//              onCompletionQueue:(dispatch_queue_t)completionQueue {
+//    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profile for: %@", self.logPrefix, identity];
+//    DSLog(@"%@", debugString);
+//    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+//    if ([dashpayContract contractState] != DPContractState_Registered) {
+//        DSLog(@"%@: ERROR: DashPay Contract Not Registered", debugString);
+//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, nil); });
+//        return;
+//    }
+//    Result_ok_dash_spv_platform_models_transient_dashpay_user_TransientDashPayUser_err_dash_spv_platform_error_Error *result = dash_spv_platform_document_manager_DocumentsManager_fetch_profile(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, identity.model, dashpayContract.raw_contract);
+//    
+////    DMaybeDocument *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profile_for_user_id_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor_u(identity.uniqueID), dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
+//    if (result->error) {
+//        NSError *error = [NSError ffi_from_platform_error:result->error];
+//        DSLog(@"%@: ERROR: %@", debugString, error);
+//        dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+//        DMaybeDocumentDtor(result);
+//        return;
+//    }
+//
+//    DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:result->ok];
+//    DSLog(@"%@: OK: %@", debugString, transientDashpayUser);
+//    dispatch_async(completionQueue, ^{ if (completion) completion(YES, transientDashpayUser, nil); });
+//}
+//
+//- (void)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
+//                    withCompletion:(DashpayUserInfosCompletionBlock)completion
+//                 onCompletionQueue:(dispatch_queue_t)completionQueue {
+//    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profiles for: %@", self.logPrefix, identityUserIds];
+//    DSLog(@"%@", debugString);
+//    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+//    if ([dashpayContract contractState] != DPContractState_Registered) {
+//        DSLog(@"%@: ERROR: DashPay Contract Not Registered", debugString);
+//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_CONTRACT_SETUP); });
+//        return;
+//    }
+//    NSUInteger user_ids_count = identityUserIds.count;
+//    u256 **user_ids_values = malloc(sizeof(u256 *) * user_ids_count);
+//    
+//    for (int i = 0; i < user_ids_count; i++) {
+//        NSData *userID = identityUserIds[i];
+//        user_ids_values[i] = u256_ctor(userID);
+//    }
+//    Vec_u8_32 *user_ids = Vec_u8_32_ctor(user_ids_count, user_ids_values);
+//    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, user_ids, dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
+//    if (result->error) {
+//        NSError *error = [NSError ffi_from_platform_error:result->error];
+//        DSLog(@"%@: ERROR: %@", debugString, error);
+//        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
+//        DMaybeDocumentsMapDtor(result);
+//        return;
+//    }
+//    DDocumentsMap *documents = result->ok;
+//    NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
+//    for (int i = 0; i < documents->count; i++) {
+//        DDocument *document = documents->values[i];
+//        switch (document->tag) {
+//            case dpp_document_Document_V0: {
+//                DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:document];
+//                [dashpayUserDictionary setObject:transientDashpayUser forKey:NSDataFromPtr(document->v0->owner_id->_0->_0)];
+//                break;
+//            }
+//            default:
+//                break;
+//        }
+//    }
+//    DMaybeDocumentsMapDtor(result);
+//    DSLog(@"%@: OK: %@", debugString, dashpayUserDictionary);
+//    if (completion) dispatch_async(completionQueue, ^{ completion(YES, dashpayUserDictionary, nil); });
+//}
 
-- (void)fetchProfilesForIdentities:(NSArray<NSData *> *)identityUserIds
-                    withCompletion:(DashpayUserInfosCompletionBlock)completion
-                 onCompletionQueue:(dispatch_queue_t)completionQueue {
-    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profiles for: %@", self.logPrefix, identityUserIds];
-    DSLog(@"%@", debugString);
-    DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    if ([dashpayContract contractState] != DPContractState_Registered) {
-        DSLog(@"%@: ERROR: DashPay Contract Not Registered", debugString);
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, ERROR_CONTRACT_SETUP); });
-        return;
-    }
-    NSUInteger user_ids_count = identityUserIds.count;
-    u256 **user_ids_values = malloc(sizeof(u256 *) * user_ids_count);
-    
-    for (int i = 0; i < user_ids_count; i++) {
-        NSData *userID = identityUserIds[i];
-        user_ids_values[i] = u256_ctor(userID);
-    }
-    Vec_u8_32 *user_ids = Vec_u8_32_ctor(user_ids_count, user_ids_values);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_stream_dashpay_profiles_for_user_ids_using_contract(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, user_ids, dashpayContract.raw_contract, DRetryDown20(5), DNotFoundAsAnError(), 2000);
-    if (result->error) {
-        NSError *error = [NSError ffi_from_platform_error:result->error];
-        DSLog(@"%@: ERROR: %@", debugString, error);
-        if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil, error); });
-        DMaybeDocumentsMapDtor(result);
-        return;
-    }
-    DDocumentsMap *documents = result->ok;
-    NSMutableDictionary *dashpayUserDictionary = [NSMutableDictionary dictionary];
-    for (int i = 0; i < documents->count; i++) {
-        DDocument *document = documents->values[i];
-        switch (document->tag) {
-            case dpp_document_Document_V0: {
-                DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:document];
-                [dashpayUserDictionary setObject:transientDashpayUser forKey:NSDataFromPtr(document->v0->owner_id->_0->_0)];
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    DMaybeDocumentsMapDtor(result);
-    DSLog(@"%@: OK: %@", debugString, dashpayUserDictionary);
-    if (completion) dispatch_async(completionQueue, ^{ completion(YES, dashpayUserDictionary, nil); });
-}
-
-- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-                                 withCompletion:(IdentitiesCompletionBlock)completion {
-    [self searchIdentitiesByDashpayUsernamePrefix:namePrefix
-                                       startAfter:nil
-                                            limit:100
-                          queryDashpayProfileInfo:queryDashpayProfileInfo
-                                   withCompletion:completion];
-}
-
-- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-                                     startAfter:(NSData* _Nullable)startAfter
-                                          limit:(uint32_t)limit
-                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-                                 withCompletion:(IdentitiesCompletionBlock)completion {
-    [self searchIdentitiesByNamePrefix:namePrefix
-                            startAfter:startAfter
-                                 limit:limit
-                        withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
-        if (errors.count) {
-            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
-        } else if (queryDashpayProfileInfo && identities.count) {
-            __block NSMutableDictionary<NSData *, DSIdentity *> *identityDictionary = [NSMutableDictionary dictionary];
-            for (DSIdentity *identity in identities) {
-                [identityDictionary setObject:identity forKey:identity.uniqueIDData];
-            }
-            [self fetchProfilesForIdentities:identityDictionary.allKeys
-                              withCompletion:^(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByIdentityUniqueId, NSError *_Nullable error) {
-                for (NSData *identityUniqueIdData in dashpayUserInfosByIdentityUniqueId) {
-                    DSIdentity *identity = identityDictionary[identityUniqueIdData];
-                    identity.transientDashpayUser = dashpayUserInfosByIdentityUniqueId[identityUniqueIdData];
-                }
-                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
-            }
-                           onCompletionQueue:self.identityQueue];
-        } else if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
-        }
-    }];
-}
+//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+//                                 withCompletion:(IdentitiesCompletionBlock)completion {
+//    [self searchIdentitiesByDashpayUsernamePrefix:namePrefix
+//                                       startAfter:nil
+//                                            limit:100
+//                          queryDashpayProfileInfo:queryDashpayProfileInfo
+//                                   withCompletion:completion];
+//}
+//
+//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+//                                     startAfter:(NSData* _Nullable)startAfter
+//                                          limit:(uint32_t)limit
+//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+//                                 withCompletion:(IdentitiesCompletionBlock)completion {
+//    [self searchIdentitiesByNamePrefix:namePrefix
+//                            startAfter:startAfter
+//                                 limit:limit
+//                        withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
+//        if (errors.count) {
+//            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+//        } else if (queryDashpayProfileInfo && identities.count) {
+//            __block NSMutableDictionary<NSData *, DSIdentity *> *identityDictionary = [NSMutableDictionary dictionary];
+//            for (DSIdentity *identity in identities) {
+//                [identityDictionary setObject:identity forKey:identity.uniqueIDData];
+//            }
+//            [self fetchProfilesForIdentities:identityDictionary.allKeys
+//                              withCompletion:^(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByIdentityUniqueId, NSError *_Nullable error) {
+//                for (NSData *identityUniqueIdData in dashpayUserInfosByIdentityUniqueId) {
+//                    DSIdentity *identity = identityDictionary[identityUniqueIdData];
+//                    identity.transientDashpayUser = dashpayUserInfosByIdentityUniqueId[identityUniqueIdData];
+//                }
+//                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+//            }
+//                           onCompletionQueue:self.identityQueue];
+//        } else if (completion) {
+//            dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+//        }
+//    }];
+//}
 
 - (void)searchIdentitiesByNamePrefix:(NSString *)namePrefix
                           startAfter:(NSData* _Nullable)startAfter
@@ -480,9 +482,9 @@
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
                 if (!identity) {
                     identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
-                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+                    [identity addConfirmedUsername:label inDomain:domain];
                 } else if (![identity hasDashpayUsername:label]) {
-                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:YES registerOnNetwork:NO];
+                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:YES registerOnNetwork:NO];
                 }
                 [rIdentities setObject:identity forKey:userIdData];
                 break;
@@ -521,7 +523,7 @@
                 NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
                 DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(document->v0->owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-                [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor() save:NO registerOnNetwork:NO];
+                [identity addConfirmedUsername:normalizedLabel inDomain:domain];
                 [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
                 [rIdentities addObject:identity];
                 break;
@@ -570,6 +572,7 @@
     }
                                     onCompletionQueue:dispatch_get_main_queue()];
 }
+
 
 // MARK: - DSChainIdentitiesDelegate
 

@@ -27,10 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) DSWallet *wallet;
 
 @property (nonatomic, readonly) DSBlockchainIdentityEntity *identityEntity;
-@property (nullable, nonatomic, strong) DSTransientDashpayUser *transientDashpayUser;
+@property (nullable, nonatomic) DTransientUser *transientDashpayUser;
 @property (nonatomic, weak) DSInvitation *associatedInvitation;
 @property (nonatomic, assign) DMaybeOpaqueKey *registrationFundingPrivateKey;
-@property (nonatomic, assign) BOOL isLocal;
 @property (nonatomic, assign) UInt256 registrationAssetLockTransactionHash;
 
 @property (nonatomic, readonly) NSManagedObjectContext *platformContext;
@@ -41,12 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t currentMainKeyIndex;
 @property (nonatomic, readonly) uint32_t keysCreated;
 
-@property (nonatomic, assign) IdentityModel *identity_model;
-
-@property (nonatomic, assign) BOOL isTransient;
-
-@property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;
-@property (nonatomic, assign) uint64_t lastCheckedOutgoingContactsTimestamp;
+@property (nonatomic, assign) IdentityModel *model;
 
 - (BOOL)isDashpayReady;
 - (void)saveProfileTimestamp;
@@ -54,6 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSBlockchainIdentityEntity *)identityEntityInContext:(NSManagedObjectContext *)context;
 
 - (instancetype)initWithIdentityEntity:(DSBlockchainIdentityEntity *)entity;
+
+- (instancetype)initWithModel:(IdentityModel *)model
+                      onChain:(DSChain *)chain;
 
 //This one is called for a local identity that is being recreated from the network
 - (instancetype)initAtIndex:(uint32_t)index
@@ -84,9 +81,9 @@ NS_ASSUME_NONNULL_BEGIN
          withLockedOutpoint:(DSUTXO)lockedOutpoint
                    inWallet:(DSWallet *)wallet;
 
-- (instancetype)initAtIndex:(uint32_t)index
-               withUniqueId:(UInt256)uniqueId
-                   inWallet:(DSWallet *)wallet;
+//- (instancetype)initAtIndex:(uint32_t)index
+//               withUniqueId:(UInt256)uniqueId
+//                   inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
@@ -138,6 +135,24 @@ NS_ASSUME_NONNULL_BEGIN
 - (DAssetLockProof *)createProof:(DSInstantSendTransactionLock *_Nullable)isLock;
 
 - (UInt256)contractIdIfRegistered:(DDataContract *)contract;
+
+- (DSAuthenticationKeysDerivationPath *)derivationPathForType:(DKeyKind *)type;
+- (BOOL)createNewKey:(DOpaqueKey *)key
+   forIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity
+              atPath:(NSIndexPath *)path
+          withStatus:(DIdentityKeyStatus *)status
+          withSecurityLevel:(DSecurityLevel *)security_level
+          withPurpose:(DPurpose *)purpose
+  fromDerivationPath:(DSDerivationPath *)derivationPath
+           inContext:(NSManagedObjectContext *)context;
+- (BOOL)saveNewKeyForCurrentEntity:(DOpaqueKey *)key
+              atPath:(NSIndexPath *)path
+          withStatus:(DIdentityKeyStatus *)status
+          withSecurityLevel:(DSecurityLevel *)security_level
+          withPurpose:(DPurpose *)purpose
+  fromDerivationPath:(DSDerivationPath *)derivationPath
+                           inContext:(NSManagedObjectContext *)context;
+
 
 @end
 

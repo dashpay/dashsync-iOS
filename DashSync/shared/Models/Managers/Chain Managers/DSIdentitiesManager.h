@@ -62,24 +62,24 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
                     inDomain:(NSString *)domain
               withCompletion:(IdentityCompletionBlock)completion;
 
-- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-                                 withCompletion:(IdentitiesCompletionBlock)completion;
-
-- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-                                     startAfter:(NSData* _Nullable)startAfter
-                                          limit:(uint32_t)limit
-                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-                                 withCompletion:(IdentitiesCompletionBlock)completion;
+//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+//                                 withCompletion:(IdentitiesCompletionBlock)completion;
+//
+//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+//                                     startAfter:(NSData* _Nullable)startAfter
+//                                          limit:(uint32_t)limit
+//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+//                                 withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)searchIdentitiesByNamePrefix:(NSString *)namePrefix
                           startAfter:(NSData* _Nullable)startAfter
                                limit:(uint32_t)limit
                       withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (void)fetchProfileForIdentity:(DSIdentity *)identity
-                 withCompletion:(DashpayUserInfoCompletionBlock)completion
-              onCompletionQueue:(dispatch_queue_t)completionQueue;
+//- (void)fetchProfileForIdentity:(DSIdentity *)identity
+//                 withCompletion:(DashpayUserInfoCompletionBlock)completion
+//              onCompletionQueue:(dispatch_queue_t)completionQueue;
 
 - (void)searchIdentitiesByDPNSRegisteredIdentityUniqueID:(NSData *)userID
                                           withCompletion:(IdentitiesCompletionBlock)completion;

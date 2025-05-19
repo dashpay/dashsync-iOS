@@ -303,13 +303,10 @@
         [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
                                  storeUnderWalletUniqueId:self.uniqueIDString];
     }
-    if (addAccount.coinJoinDerivationPath)
-        [addAccount.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:self.uniqueIDString];
     
-    if ([self.chain isEvolutionEnabled]) {
+    if ([self.chain isEvolutionEnabled])
         [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
                                                           storeUnderWalletUniqueId:self.uniqueIDString];
-    }
 
     [self addAccount:addAccount];
     [addAccount loadDerivationPaths];
@@ -621,8 +618,6 @@
             for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             }
-            if (account.coinJoinDerivationPath)
-                [account.coinJoinDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             if ([chain isEvolutionEnabled]) {
                 [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             }
@@ -641,7 +636,6 @@
 
         BOOL usingBiometricAuthentication = amount ? [[DSAuthenticationManager sharedInstance] canUseBiometricAuthenticationForAmount:amount] : NO;
 
-//        __weak typeof(self) weakSelf = self;
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt
                                             usingBiometricAuthentication:usingBiometricAuthentication
                                                           alertIfLockout:YES
@@ -1001,8 +995,6 @@
         for (DSDerivationPath *derivationPath in account.fundDerivationPaths) {
             [derivationPath reloadAddresses];
         }
-        if (account.coinJoinDerivationPath)
-            [account.coinJoinDerivationPath reloadAddresses];
     }
     for (DSDerivationPath *derivationPath in self.specializedDerivationPaths) {
         [derivationPath reloadAddresses];

@@ -127,7 +127,7 @@
     DOutPoints *inputs = DOutPointsCtor(inputsCount, values);
     
     DTxid *txid = DTxidCtor(u256_ctor(transactionHash));
-    DCycleHash *chash = dashcore_hash_types_CycleHash_ctor(u256_ctor(cycleHash));
+    DCycleHash *chash = dashcore_hash_types_CycleHash_ctor(cycleHash ? u256_ctor(cycleHash) : u256_ctor_u(UINT256_ZERO));
     self.lock = DInstantLockCtor(version, inputs, txid, chash, DBLSSignatureCtor(u768_ctor(signature)));
     self.signatureVerified = signatureVerified;
     self.quorumVerified = quorumVerified;

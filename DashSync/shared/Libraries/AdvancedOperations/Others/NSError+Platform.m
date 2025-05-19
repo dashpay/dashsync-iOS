@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "NSArray+Dash.h"
 #import "NSData+Dash.h"
 #import "NSError+Dash.h"
 #import "NSError+Platform.h"
@@ -32,6 +33,8 @@
         case dash_spv_platform_error_Error_MaxRetryExceeded:
         case dash_spv_platform_error_Error_InstantSendSignatureVerificationError:
             return [NSError errorWithCode:0 localizedDescriptionKey:NSStringFromPtr(ffi_ref->instant_send_signature_verification_error)];
+        case dash_spv_platform_error_Error_UsernameRegistrationError:
+            return [NSError ffi_from_username_registration_error:ffi_ref->username_registration_error];
     }
 }
 
@@ -244,6 +247,20 @@
             return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"SmlError::InvalidIndexInSignatureSet: %u", nil, ffi_ref->invalid_index_in_signature_set)];
         case dashcore_sml_error_SmlError_IncompleteSignatureSet:
             return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"SmlError::IncompleteSignatureSet", nil)];
+    }
+}
+@end
+
+@implementation NSError (dash_spv_platform_identity_username_registration_error_UsernameRegistrationError)
++ (NSError *)ffi_from_username_registration_error:(dash_spv_platform_identity_username_registration_error_UsernameRegistrationError *)ffi_ref {
+    
+    switch (ffi_ref->tag) {
+        case dash_spv_platform_identity_username_registration_error_UsernameRegistrationError_NoUsernameFullPathsWithStatus:
+            return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"UsernameRegistrationError::NoUsernameFullPathsWithStatus(%u)", nil, DUsernameStatusIndex(ffi_ref->no_username_full_paths_with_status))];
+        case dash_spv_platform_identity_username_registration_error_UsernameRegistrationError_NoUsernamePreorderDocuments:
+            return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"UsernameRegistrationError::NoUsernamePreorderDocuments(%u, %@)", nil, DUsernameStatusIndex(ffi_ref->no_username_preorder_documents._0), [NSArray ffi_from_vec_of_string:ffi_ref->no_username_preorder_documents._1])];
+        case dash_spv_platform_identity_username_registration_error_UsernameRegistrationError_NotSupported:
+            return [NSError errorWithCode:0 descriptionKey:DSLocalizedFormat(@"UsernameRegistrationError::NotSupported(%u)", nil, DUsernameStatusIndex(ffi_ref->not_supported))];
     }
 }
 @end

@@ -44,6 +44,7 @@
         NSData *script = NSDataFromPtr(script_sig);
         if (!script.length) {
             DSTransaction *inputTx = [chain transactionForHash:hashValue];
+            DSLog(@"[DSTransaction] ffi_from: %@ == %@ (%@)", uint256_hex(hashValue), inputTx, [chain transactionForHash:uint256_reverse(hashValue)]);
             if (inputTx)
                 script = inputTx.outputs[index].outScript;
         }

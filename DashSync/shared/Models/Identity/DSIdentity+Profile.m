@@ -35,56 +35,78 @@
 @implementation DSIdentity (Profile)
 
 - (NSString *)avatarPath {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.avatarPath;
+    char *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_avatar_path(self.model);
+    if (maybe_result) {
+        NSString *result = NSStringFromPtr(maybe_result);
+        str_destroy(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.avatarPath;
     }
 }
 
 - (NSData *)avatarFingerprint {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.avatarFingerprint;
+    Vec_u8 *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_avatar_fingerprint(self.model);
+    if (maybe_result) {
+        NSData *result = NSDataFromPtr(maybe_result);
+        bytes_dtor(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.avatarFingerprint;
     }
 }
 
 - (NSData *)avatarHash {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.avatarHash;
+    u256 *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_avatar_hash(self.model);
+    if (maybe_result) {
+        NSData *result = NSDataFromPtr(maybe_result);
+        u256_dtor(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.avatarHash;
     }
 }
 
 - (NSString *)displayName {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.displayName;
+    char *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_display_name(self.model);
+    if (maybe_result) {
+        NSString *result = NSStringFromPtr(maybe_result);
+        str_destroy(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.displayName;
     }
 }
 
 - (NSString *)publicMessage {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.publicMessage;
+    char *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_public_message(self.model);
+    if (maybe_result) {
+        NSString *result = NSStringFromPtr(maybe_result);
+        str_destroy(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.publicMessage;
     }
+
 }
 
 - (uint64_t)dashpayProfileUpdatedAt {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.updatedAt;
+    uint64_t *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_profile_updated_at(self.model);
+    if (maybe_result) {
+        uint64_t result = maybe_result[0];
+        u64_destroy(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.updatedAt;
     }
 }
 
 - (uint64_t)dashpayProfileCreatedAt {
-    if (self.transientDashpayUser) {
-        return self.transientDashpayUser.createdAt;
+    uint64_t *maybe_result = dash_spv_platform_identity_model_IdentityModel_maybe_profile_created_at(self.model);
+    if (maybe_result) {
+        uint64_t result = maybe_result[0];
+        u64_destroy(maybe_result);
+        return result;
     } else {
         return self.matchingDashpayUserInViewContext.createdAt;
     }
@@ -473,16 +495,26 @@
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DASHPAY_CONTRACT_NOT_REGISTERED); });
         return;
     }
-    [self.identitiesManager fetchProfileForIdentity:self
-                                     withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
-        if (!success || error || dashpayUserInfo == nil) {
-            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
-            return;
-        }
-        [self applyProfileChanges:dashpayUserInfo
+    
+    NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profile for: %@", self.logPrefix, self];
+    DSLog(@"%@", debugString);
+    DMaybeTransientUser *result = dash_spv_platform_document_manager_DocumentsManager_fetch_profile(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, self.model, dashpayContract.raw_contract);
+    
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        DSLog(@"%@: ERROR: %@", debugString, error);
+        if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
+        DMaybeTransientUserDtor(result);
+        return;
+    }
+    
+    dispatch_async(self.identityQueue, ^{
+        [self applyProfileChanges:result->ok
                         inContext:context
                       saveContext:YES
                        completion:^(BOOL success, NSError *_Nullable error) {
+            DMaybeTransientUserDtor(result);
+
             if (!success) {
                 [self fetchUsernamesInContext:context
                                withCompletion:completion
@@ -495,12 +527,42 @@
             
         }
                 onCompletionQueue:self.identityQueue];
-    }
-                                            onCompletionQueue:self.identityQueue];
+    });
+
+    
+//    DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDocument:result->ok];
+//    DSLog(@"%@: OK: %@", debugString, transientDashpayUser);
+//    dispatch_async(completionQueue, ^{ if (completion) completion(YES, transientDashpayUser, nil); });
+
+    
+//    [self.identitiesManager fetchProfileForIdentity:self
+//                                     withCompletion:^(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error) {
+//        if (!success || error || dashpayUserInfo == nil) {
+//            if (completion) dispatch_async(completionQueue, ^{ completion(success, error); });
+//            return;
+//        }
+//        [self applyProfileChanges:dashpayUserInfo
+//                        inContext:context
+//                      saveContext:YES
+//                       completion:^(BOOL success, NSError *_Nullable error) {
+//            if (!success) {
+//                [self fetchUsernamesInContext:context
+//                               withCompletion:completion
+//                            onCompletionQueue:completionQueue];
+//
+//            } else if (completion) {
+//                dispatch_async(completionQueue, ^{ completion(success, error); });
+//            }
+//            
+//            
+//        }
+//                onCompletionQueue:self.identityQueue];
+//    }
+//                                            onCompletionQueue:self.identityQueue];
 }
 
 
-- (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser
+- (void)applyProfileChanges:(DTransientUser *)transientDashpayUser
                   inContext:(NSManagedObjectContext *)context
                 saveContext:(BOOL)saveContext
                  completion:(void (^)(BOOL success, NSError *error))completion
@@ -525,7 +587,7 @@
             NSAssert(contact, @"It is weird to get here");
             if (!contact)
                 contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", self.uniqueIDData];
-            if (!contact || transientDashpayUser.updatedAt > contact.updatedAt) {
+            if (!contact || dash_spv_platform_models_transient_dashpay_user_TransientDashPayUser_is_updated_after(transientDashpayUser, contact.updatedAt)) {
                 if (!contact) {
                     contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
                     contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
