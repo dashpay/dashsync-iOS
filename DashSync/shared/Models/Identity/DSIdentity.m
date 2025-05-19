@@ -552,23 +552,14 @@ Fn_ARGS_std_os_raw_c_void_bool_std_collections_Map_keys_u32_values_dash_spv_plat
     return self;
 }
 
-//- (instancetype)initAtIndex:(uint32_t)index
-//               withUniqueId:(UInt256)uniqueId
-//                   inWallet:(DSWallet *)wallet {
-//    if (!(self = [self initAtIndex:index uniqueId:uniqueId inWallet:wallet])) return nil;
-////    self.uniqueID = uniqueId;
-//    return self;
-//}
-
 - (instancetype)initAtIndex:(uint32_t)index
          withLockedOutpoint:(DSUTXO)lockedOutpoint
                    inWallet:(DSWallet *)wallet {
     
-    if (!(self = [self initAtIndex:index uniqueId:[dsutxo_data(lockedOutpoint) SHA256_2] inWallet:wallet])) return nil;
     NSAssert(dsutxo_hash_is_not_zero(lockedOutpoint), @"utxo must not be nil");
-
+    if (!(self = [self initAtIndex:index uniqueId:[dsutxo_data(lockedOutpoint) SHA256_2] inWallet:wallet]))
+        return nil;
     self.lockedOutpoint = lockedOutpoint;
-//    self.uniqueID = [dsutxo_data(lockedOutpoint) SHA256_2];
     DSLog(@"%@ initAtIndex: %u lockedOutpoint: %@: %lu", self.logPrefix, index, uint256_hex(lockedOutpoint.hash), lockedOutpoint.n);
     return self;
 }
@@ -578,7 +569,8 @@ Fn_ARGS_std_os_raw_c_void_bool_std_collections_Map_keys_u32_values_dash_spv_plat
                    inWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
     NSAssert(index != UINT32_MAX, @"index must be found");
-    if (!(self = [self initAtIndex:index withLockedOutpoint:transaction.lockedOutpoint inWallet:wallet])) return nil;
+    if (!(self = [self initAtIndex:index withLockedOutpoint:transaction.lockedOutpoint inWallet:wallet]))
+        return nil;
     self.registrationAssetLockTransaction = transaction;
     return self;
 }
@@ -895,7 +887,7 @@ Fn_ARGS_std_os_raw_c_void_bool_std_collections_Map_keys_u32_values_dash_spv_plat
             completion(NO, nil, error);
             return;
         }
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(self.identityQueue, ^{
             dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 50 * NSEC_PER_SEC));
             [[NSNotificationCenter defaultCenter] removeObserver:observer];
             completion(transactionSuccessfullyPublished, instantSendLock, nil);
@@ -2404,7 +2396,7 @@ Fn_ARGS_std_os_raw_c_void_bool_std_collections_Map_keys_u32_values_dash_spv_plat
 - (BOOL)registrationStatusIsClaimed {
     DIdentityRegistrationStatus *status = self.registrationStatus;
     BOOL is_claimed = dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_is_registering(status) || dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_is_registered(status);
-    is_claimed = dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_is_unknown(status) || dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_is_not_registered(status);
+//    is_claimed = dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_is_unknown(status) || dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_is_not_registered(status);
     DIdentityRegistrationStatusDtor(status);
     return is_claimed;
 }

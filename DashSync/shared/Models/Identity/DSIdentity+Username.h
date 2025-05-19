@@ -33,8 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applyUsernameEntitiesFromIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity;
 - (void)collectUsernameEntitiesIntoIdentityEntityInContext:(DSBlockchainIdentityEntity *)identityEntity
                                                    context:(NSManagedObjectContext *)context;
-
+- (void)addDashpayUsername:(NSString *)username;
 - (void)addDashpayUsername:(NSString *)username save:(BOOL)save;
+- (void)addConfirmedUsername:(NSString *)username
+                    inDomain:(NSString *)domain;
+
+- (void)addUsername:(NSString *)username
+           inDomain:(NSString *)domain
+             status:(DUsernameStatus)status;
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
                save:(BOOL)save;

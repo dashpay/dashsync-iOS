@@ -617,6 +617,7 @@
                                         numOfAttempt++;
                                         [self tryToProcessQrInfo:peer message:message attempt:attempt];
                                     });
+                                    return;
                                 }
                                 break;
                             }

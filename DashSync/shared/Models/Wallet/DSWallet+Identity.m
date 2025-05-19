@@ -370,14 +370,14 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
 
 - (DSIdentity *)createIdentityForUsername:(NSString *)username {
     DSIdentity *identity = [self createIdentity];
-    [identity addDashpayUsername:username save:NO];
+    [identity addDashpayUsername:username];
     return identity;
 }
 
 - (DSIdentity *)createIdentityForUsername:(NSString *)username
                      usingDerivationIndex:(uint32_t)index {
     DSIdentity *identity = [self createIdentityUsingDerivationIndex:index];
-    [identity addDashpayUsername:username save:NO];
+    [identity addDashpayUsername:username];
     return identity;
 }
 

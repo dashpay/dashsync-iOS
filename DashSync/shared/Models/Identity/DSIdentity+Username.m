@@ -20,41 +20,17 @@
 #import "DSIdentity+Username.h"
 #import "DSChainManager.h"
 #import "DSDashPlatform.h"
-//#import "DSUsernameFullPathSaveContext.h"
 #import "DSWallet.h"
 #import "NSArray+Dash.h"
 #import "NSError+Dash.h"
 #import "NSError+Platform.h"
 #import "NSManagedObject+Sugar.h"
-//#import <objc/runtime.h>
 
 #define DEFAULT_FETCH_USERNAMES_RETRY_COUNT 5
 
 #define ERROR_DPNS_CONTRACT_NOT_REGISTERED [NSError errorWithCode:500 localizedDescriptionKey:@"DPNS Contract is not yet registered on network"]
 #define ERROR_TRANSITION_SIGNING [NSError errorWithCode:501 localizedDescriptionKey:@"Unable to sign transition"]
 #define ERROR_UNSUPPORTED_DOCUMENT_VERSION(version) [NSError errorWithCode:500 descriptionKey:DSLocalizedFormat(@"Unsupported document version: %u", nil, version)]
-
-//void usernames_save_context_caller(const void *context, DUsernameStatus *status) {
-//    DSUsernameFullPathSaveContext *saveContext = ((__bridge DSUsernameFullPathSaveContext *)(context));
-//    switch (*status) {
-//        case dash_spv_platform_document_usernames_UsernameStatus_PreorderRegistrationPending: {
-//            [saveContext setAndSaveUsernameFullPaths:dash_spv_platform_document_usernames_UsernameStatus_PreorderRegistrationPending_ctor()];
-//            break;
-//        }
-//        case dash_spv_platform_document_usernames_UsernameStatus_Preordered:
-//            [saveContext setAndSaveUsernameFullPaths:dash_spv_platform_document_usernames_UsernameStatus_Preordered_ctor()];
-//            break;
-//        case dash_spv_platform_document_usernames_UsernameStatus_RegistrationPending:
-//            [saveContext setAndSaveUsernameFullPaths:dash_spv_platform_document_usernames_UsernameStatus_RegistrationPending_ctor()];
-//            break;
-//        case dash_spv_platform_document_usernames_UsernameStatus_Confirmed:
-//            [saveContext setAndSaveUsernameFullPaths:dash_spv_platform_document_usernames_UsernameStatus_Confirmed_ctor()];
-//            break;
-//        default:
-//            break;
-//    }
-//    DUsernameStatusDtor(status);
-//}
 
 @implementation DSIdentity (Username)
 
@@ -94,6 +70,11 @@
 
 // MARK: Usernames
 
+- (void)addDashpayUsername:(NSString *)username {
+    [self addUsername:username
+             inDomain:@"dash"
+               status:dash_spv_platform_document_usernames_UsernameStatus_Initial];
+}
 - (void)addDashpayUsername:(NSString *)username
                       save:(BOOL)save {
     [self addUsername:username
@@ -112,19 +93,28 @@
                  save:save
     registerOnNetwork:YES];
 }
+- (void)addConfirmedUsername:(NSString *)username
+                    inDomain:(NSString *)domain {
+    [self addUsername:username
+             inDomain:domain
+               status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed];
+}
+
+- (void)addUsername:(NSString *)username
+           inDomain:(NSString *)domain
+             status:(DUsernameStatus)status {
+    DUsernameAdd(self.model, username, domain, &status);
+
+}
 
 - (void)addUsername:(NSString *)username
            inDomain:(NSString *)domain
              status:(DUsernameStatus)status
                save:(BOOL)save
   registerOnNetwork:(BOOL)registerOnNetwork {
-    DUsernameAdd(self.model, username, domain, &status);
+    [self addUsername:username inDomain:domain status:status];
     if (save)
         dispatch_async(self.identityQueue, ^{
-//            [self saveNewUsername:username
-//                         inDomain:domain
-//                           status:dash_spv_platform_document_usernames_UsernameStatus_Initial
-//                        inContext:self.platformContext];
             NSAssert([username containsString:@"."] == FALSE, @"This is most likely an error");
             NSAssert(domain, @"Domain must not be nil");
             if (self.isTransient || !self.isActive) return;
@@ -453,7 +443,8 @@
 
 - (void)registerUsernamesWithCompletion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion {
     [self registerUsernamesAtStage:dash_spv_platform_document_usernames_UsernameStatus_Initial_ctor()
-                         inContext:self.platformContext completion:completion
+                         inContext:self.platformContext
+                        completion:completion
                  onCompletionQueue:dispatch_get_main_queue()];
 }
 

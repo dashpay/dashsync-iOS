@@ -153,15 +153,15 @@
         steps |= DSIdentityRegistrationStep_Username;
     }
     [identity generateIdentityExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
-                                                                    completion:^(BOOL registered) {
+                                                completion:^(BOOL registered) {
         [identity createFundingPrivateKeyWithPrompt:@"Register?" completion:^(BOOL success, BOOL cancelled) {
             if (success && !cancelled) {
                 [identity registerOnNetwork:steps
-                                   withFundingAccount:self.fundingAccount
-                                       forTopupAmount:topupAmount
-                                            pinPrompt:@"Enter your PIN?"
-                                       stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
-                                           completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
+                         withFundingAccount:self.fundingAccount
+                             forTopupAmount:topupAmount
+                                  pinPrompt:@"Enter your PIN?"
+                             stepCompletion:^(DSIdentityRegistrationStep stepCompleted) {}
+                                 completion:^(DSIdentityRegistrationStep stepsCompleted, NSArray<NSError *> *errors) {
                     if ([errors count]) {
                         [self raiseIssue:@"Error" message:[NSError errorsDescription:errors]];
                         return;

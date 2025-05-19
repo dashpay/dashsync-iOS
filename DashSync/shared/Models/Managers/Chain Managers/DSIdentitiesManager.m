@@ -323,7 +323,7 @@
         DIdentifier *owner_id = document->v0->owner_id;
         
         DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-        [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+        [identity addConfirmedUsername:normalizedLabel inDomain:domain];
         [rIdentities addObject:identity];
 
     }
@@ -482,7 +482,7 @@
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
                 if (!identity) {
                     identity = [[DSIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
-                    [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+                    [identity addConfirmedUsername:label inDomain:domain];
                 } else if (![identity hasDashpayUsername:label]) {
                     [identity addUsername:label inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:YES registerOnNetwork:NO];
                 }
@@ -523,7 +523,7 @@
                 NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
                 NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
                 DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(document->v0->owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-                [identity addUsername:normalizedLabel inDomain:domain status:dash_spv_platform_document_usernames_UsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+                [identity addConfirmedUsername:normalizedLabel inDomain:domain];
                 [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {}];
                 [rIdentities addObject:identity];
                 break;
@@ -572,6 +572,7 @@
     }
                                     onCompletionQueue:dispatch_get_main_queue()];
 }
+
 
 // MARK: - DSChainIdentitiesDelegate
 
