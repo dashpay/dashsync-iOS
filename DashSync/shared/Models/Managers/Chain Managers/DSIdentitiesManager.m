@@ -300,38 +300,48 @@
               withCompletion:(IdentityCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identity by name: %@, domain: %@", self.logPrefix, name, domain];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(name));
-    if (result->error) {
-        NSError *error = [NSError ffi_from_platform_error:result->error];
-        DMaybeDocumentsMapDtor(result);
-        DSLog(@"%@: ERROR: %@", debugString, error);
-        if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, error); });
-        return;
-    }
-    
-    // TODO: in wallet we have unusuable but cancelable request, so...
-    __block NSMutableArray *rIdentities = [NSMutableArray array];
-    DDocumentsMap *documents = result->ok;
-    for (int i = 0; i < documents->count; i++) {
-        DDocument *document = documents->values[i];
-        DSLog(@"%@: document[%i]: ", debugString, i);
-        dash_spv_platform_document_print_document(document);
+    __weak typeof(self) weakSelf = self;
+    dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_UTILITY, 0);
+    //NSLog(@"Queue address: %p", queue);
+    dispatch_async(queue, ^{
 
-        if (!document) continue;
-        NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
-        NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
-        DIdentifier *owner_id = document->v0->owner_id;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(strongSelf.chain.sharedRuntime, strongSelf.chain.sharedDocumentsObj, DChar(name));
+        if (result->error) {
+            NSError *error = [NSError ffi_from_platform_error:result->error];
+            DMaybeDocumentsMapDtor(result);
+            DSLog(@"%@: ERROR: %@", debugString, error);
+            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, error); });
+            return;
+        }
         
-        DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:self.chain];
-        [identity addConfirmedUsername:normalizedLabel inDomain:domain];
-        [rIdentities addObject:identity];
+        // TODO: in wallet we have unusuable but cancelable request, so...
+        __block NSMutableArray *rIdentities = [NSMutableArray array];
+        DDocumentsMap *documents = result->ok;
+        for (int i = 0; i < documents->count; i++) {
+            DDocument *document = documents->values[i];
+            DSLog(@"%@: document[%i]: ", debugString, i);
+            dash_spv_platform_document_print_document(document);
 
-    }
-    DSLog(@"%@: OK: %@", debugString, [rIdentities firstObject]);
-    if (completion)
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(YES, [rIdentities firstObject], nil);
-        });
+            if (!document) continue;
+            NSString *normalizedLabel = DGetTextDocProperty(document, @"normalizedLabel");
+            NSString *domain = DGetTextDocProperty(document, @"normalizedParentDomainName");
+            DIdentifier *owner_id = document->v0->owner_id;
+            
+            DSIdentity *identity = [[DSIdentity alloc] initWithUniqueId:u256_cast(owner_id->_0->_0) isTransient:TRUE onChain:strongSelf.chain];
+            [identity addConfirmedUsername:normalizedLabel inDomain:domain];
+            [rIdentities addObject:identity];
+
+        }
+        DSLog(@"%@: OK: %@", debugString, [rIdentities firstObject]);
+        if (completion)
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(YES, [rIdentities firstObject], nil);
+            });
+    });
 }
 
 //- (void)fetchProfileForIdentity:(DSIdentity *)identity
@@ -407,32 +417,33 @@
 //    if (completion) dispatch_async(completionQueue, ^{ completion(YES, dashpayUserDictionary, nil); });
 //}
 
-//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-//                                 withCompletion:(IdentitiesCompletionBlock)completion {
-//    [self searchIdentitiesByDashpayUsernamePrefix:namePrefix
-//                                       startAfter:nil
-//                                            limit:100
-//                          queryDashpayProfileInfo:queryDashpayProfileInfo
-//                                   withCompletion:completion];
-//}
-//
-//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-//                                     startAfter:(NSData* _Nullable)startAfter
-//                                          limit:(uint32_t)limit
-//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-//                                 withCompletion:(IdentitiesCompletionBlock)completion {
-//    [self searchIdentitiesByNamePrefix:namePrefix
-//                            startAfter:startAfter
-//                                 limit:limit
-//                        withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
-//        if (errors.count) {
-//            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
-//        } else if (queryDashpayProfileInfo && identities.count) {
-//            __block NSMutableDictionary<NSData *, DSIdentity *> *identityDictionary = [NSMutableDictionary dictionary];
-//            for (DSIdentity *identity in identities) {
-//                [identityDictionary setObject:identity forKey:identity.uniqueIDData];
-//            }
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion {
+    [self searchIdentitiesByDashpayUsernamePrefix:namePrefix
+                                       startAfter:nil
+                                            limit:100
+                          queryDashpayProfileInfo:queryDashpayProfileInfo
+                                   withCompletion:completion];
+}
+
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                                     startAfter:(NSData* _Nullable)startAfter
+                                          limit:(uint32_t)limit
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion {
+    [self searchIdentitiesByNamePrefix:namePrefix
+                            startAfter:startAfter
+                                 limit:limit
+                        withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable identities, NSArray<NSError *> *_Nonnull errors) {
+        if (errors.count) {
+            if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+        } else if (queryDashpayProfileInfo && identities.count) {
+            __block NSMutableDictionary<NSData *, DSIdentity *> *identityDictionary = [NSMutableDictionary dictionary];
+            for (DSIdentity *identity in identities) {
+                [identityDictionary setObject:identity forKey:identity.uniqueIDData];
+            }
+            completion(success, identityDictionary.allValues, errors);
 //            [self fetchProfilesForIdentities:identityDictionary.allKeys
 //                              withCompletion:^(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByIdentityUniqueId, NSError *_Nullable error) {
 //                for (NSData *identityUniqueIdData in dashpayUserInfosByIdentityUniqueId) {
@@ -442,11 +453,11 @@
 //                if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
 //            }
 //                           onCompletionQueue:self.identityQueue];
-//        } else if (completion) {
-//            dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
-//        }
-//    }];
-//}
+        } else if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{ completion(success, identities, errors); });
+        }
+    }];
+}
 
 - (void)searchIdentitiesByNamePrefix:(NSString *)namePrefix
                           startAfter:(NSData* _Nullable)startAfter

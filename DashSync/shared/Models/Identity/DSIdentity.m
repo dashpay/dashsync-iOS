@@ -276,7 +276,7 @@ void save_username_caller(const void *context, DSaveUsernameContext* save_userna
         return;
     }
     NSManagedObjectContext *platformContext = identity.platformContext;
-    __block NSDictionary *maybeUserInfo = NULL;
+
     [platformContext performBlockAndWait:^{
         switch (save_username_context->tag) {
             case dash_spv_platform_identity_storage_username_SaveUsernameContext_NewUsername: {
@@ -1612,6 +1612,10 @@ Fn_ARGS_std_os_raw_c_void_bool_std_collections_Map_keys_u32_values_dash_spv_plat
     return dash_spv_platform_identity_model_IdentityModel_is_registered(self.model);
 }
 
+- (BOOL)isUnknown {
+    return DIdentityRegistrationStatusIndex(self.model) == dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_Unknown;
+}
+
 - (NSString *)localizedRegistrationStatusString {
     char *status_string = dash_spv_platform_identity_registration_status_IdentityRegistrationStatus_string(self.registrationStatus);
     NSString *status = NSStringFromPtr(status_string);
@@ -2688,7 +2692,7 @@ Fn_ARGS_std_os_raw_c_void_bool_std_collections_Map_keys_u32_values_dash_spv_plat
 
 
 - (NSString *)debugDescription {
-    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@}", self.currentDashpayUsername, self.uniqueIdString]];
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@-%u}", self.currentDashpayUsername, self.uniqueIdString, DIdentityRegistrationStatusIndex(self.model)]];
 }
 
 - (NSString *)logPrefix {

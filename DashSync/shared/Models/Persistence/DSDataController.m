@@ -160,6 +160,7 @@
     dispatch_once(&oncePlatformToken, ^{
         _platformContext = [self.persistentContainer newBackgroundContext];
         [_platformContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
+        [_platformContext setAutomaticallyMergesChangesFromParent:YES];
     });
     return _platformContext;
 }

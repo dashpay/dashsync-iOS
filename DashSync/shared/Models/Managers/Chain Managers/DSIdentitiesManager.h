@@ -62,15 +62,15 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
                     inDomain:(NSString *)domain
               withCompletion:(IdentityCompletionBlock)completion;
 
-//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-//                                 withCompletion:(IdentitiesCompletionBlock)completion;
-//
-//- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
-//                                     startAfter:(NSData* _Nullable)startAfter
-//                                          limit:(uint32_t)limit
-//                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
-//                                 withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion;
+
+- (void)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix
+                                     startAfter:(NSData* _Nullable)startAfter
+                                          limit:(uint32_t)limit
+                        queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo
+                                 withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)searchIdentitiesByNamePrefix:(NSString *)namePrefix
                           startAfter:(NSData* _Nullable)startAfter

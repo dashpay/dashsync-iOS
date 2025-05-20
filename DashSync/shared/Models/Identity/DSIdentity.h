@@ -141,6 +141,8 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 @property (nonatomic, readonly) NSString *localizedRegistrationStatusString;
 /*! @brief This is a convenience method that checks to see if registrationStatus is confirmed */
 @property (nonatomic, readonly, getter=isRegistered) BOOL registered;
+/*! @brief This is a convenience method that checks to see if registrationStatus is unknown */
+@property (nonatomic, readonly, getter=isUnknown) BOOL unknown;
 /*! @brief DashpaySyncronizationBlock represents the last L1 block height for which Dashpay would be synchronized, if this isn't at the end of the chain then we need to query L2 to make sure we don't need to update our bloom filter */
 @property (nonatomic, readonly) uint32_t dashpaySyncronizationBlockHeight;
 /*! @brief DashpaySyncronizationBlock represents the last L1 block hash for which Dashpay would be synchronized */
