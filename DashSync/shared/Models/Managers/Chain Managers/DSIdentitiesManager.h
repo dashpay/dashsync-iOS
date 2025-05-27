@@ -35,7 +35,7 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
 @property (nonatomic, readonly) DSChain *chain;
 
 /*! @brief Returns the timestamp of the last time identities were synced.  */
-@property (nonatomic, readonly) NSTimeInterval lastSyncedIndentitiesTimestamp;
+//@property (nonatomic, readonly) NSTimeInterval lastSyncedIndentitiesTimestamp;
 
 
 - (instancetype)initWithChain:(DSChain *)chain;
@@ -46,7 +46,7 @@ typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayU
 //
 //- (DSIdentity *)foreignIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing inContext:(NSManagedObjectContext *_Nullable)context;
 
-- (NSArray *)unsyncedIdentities;
+//- (NSArray *)unsyncedIdentities;
 //- (void)syncPlatformWithCompletion:(IdentitiesSuccessCompletionBlock)completion;
 
 - (void)syncIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion;

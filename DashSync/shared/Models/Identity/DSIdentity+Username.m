@@ -119,8 +119,8 @@
             NSAssert(domain, @"Domain must not be nil");
             if (self.isTransient || !self.isActive) return;
             NSManagedObjectContext *storageContext = self.platformContext;
-            [self.platformContext performBlockAndWait:^{
-                DSBlockchainIdentityEntity *entity = [self identityEntityInContext:self.platformContext];
+            [storageContext performBlockAndWait:^{
+                DSBlockchainIdentityEntity *entity = [self identityEntityInContext:storageContext];
                 DSBlockchainIdentityUsernameEntity *usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:storageContext];
                 usernameEntity.status = status;
                 usernameEntity.stringValue = username;
@@ -369,20 +369,23 @@
     DSLog(@"%@", debugInfo);
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     if (contract.contractState != DPContractState_Registered) {
-        DSLog(@"%@: ERROR: %@", debugInfo, ERROR_DPNS_CONTRACT_NOT_REGISTERED);
+        DSLog(@"%@: ERROR: %@", debugInfo, ERROR_DPNS_CONTRACT_NOT_REGISTERED.debugDescription);
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, ERROR_DPNS_CONTRACT_NOT_REGISTERED); });
         return;
     }
-    
-    Result_ok_bool_err_dash_spv_platform_error_Error *result = dash_spv_platform_document_manager_DocumentsManager_fetch_usernames(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, self.model, contract.raw_contract, ((__bridge void *)(self)));
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+
+    Result_ok_bool_err_dash_spv_platform_error_Error *result = dash_spv_platform_document_manager_DocumentsManager_fetch_usernames(runtime, self.chain.sharedDocumentsObj, self.model, contract.raw_contract, ((__bridge void *)(self)));
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         Result_ok_bool_err_dash_spv_platform_error_Error_destroy(result);
 //        DMaybeDocumentsMapDtor(result);
-        DSLog(@"%@: ERROR: %@", debugInfo, error);
+        DSLog(@"%@: ERROR: %@", debugInfo, error.debugDescription);
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
         return;
     }
+    DSLog(@"%@: OK", debugInfo);
     if (completion) dispatch_async(completionQueue, ^{ completion(YES, nil); });
 
     
@@ -448,53 +451,25 @@
                  onCompletionQueue:dispatch_get_main_queue()];
 }
 
-//- (NSError *_Nullable)registerUsernameWithSaltedDomainHash:(NSData *)saltedDomainHashData
-//                                             usingContract:(DDataContract *)contract
-//                                            andEntropyData:(NSData *)entropyData
-//                                     withIdentityPublicKey:(DIdentityPublicKey *)identity_public_key
-//                                            withPrivateKey:(DMaybeOpaqueKey *)maybe_private_key {
-//    NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"[%@] Register Username With SaltedDomainHash [%@]", self.logPrefix, saltedDomainHashData.hexString];
-//    DDocumentResult *result = dash_spv_platform_PlatformSDK_register_preordered_salted_domain_hash_for_username_full_path(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract, u256_ctor_u(self.uniqueID), identity_public_key, bytes_ctor(saltedDomainHashData), u256_ctor(entropyData));
-//    if (result->error) {
-//        NSError *error = [NSError ffi_from_platform_error:result->error];
-//        DDocumentResultDtor(result);
-//        DSLog(@"%@: ERROR: (%@)", debugInfo, error);
-//        return error;
-//    }
-//    DDocument *document = result->ok;
-//    switch (document->tag) {
-//        case dpp_document_Document_V0: {
-//            DSLog(@"%@: OK: (%@)", debugInfo, u256_hex(document->v0->id->_0->_0));
-//            DDocumentResultDtor(result);
-//            return nil;
-//        }
-//        default: {
-//            NSError *error = ERROR_UNSUPPORTED_DOCUMENT_VERSION(document->tag);
-//            DSLog(@"%@: ERROR: (%@)", debugInfo, error);
-//            DDocumentResultDtor(result);
-//            return error;
-//        }
-//    }
-//}
-
 - (void)registerUsernamesAtStage:(DUsernameStatus *)status
                        inContext:(NSManagedObjectContext *)context
                       completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion
                onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Register Usernames At Stage [%hhu]", self.logPrefix, DUsernameStatusIndex(status)];
     DSLog(@"%@", debugInfo);
-    Result_ok_bool_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_register_usernames_at_stage(self.chain.sharedRuntime, self.chain.sharedPlatformObj, self.model, status, ((__bridge void *)(self)));
-    
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    Result_ok_bool_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_register_usernames_at_stage(runtime, self.chain.sharedPlatformObj, self.model, status, ((__bridge void *)(self)));
+    runtime_destroy(runtime);
     
     if (result->error) {
         NSError *err = [NSError ffi_from_platform_error:result->error];
-        DSLog(@"%@: Error: %@", debugInfo, err);
+        DSLog(@"%@: Error: %@", debugInfo, err.debugDescription);
         switch (result->error->tag) {
             case dash_spv_platform_error_Error_UsernameRegistrationError: {
                 DUsernameStatus *next_status = dash_spv_platform_document_usernames_UsernameStatus_next_status(status);
                 BOOL proceedToNext = result->error->username_registration_error->tag != dash_spv_platform_identity_username_registration_error_UsernameRegistrationError_NotSupported && next_status != nil;
                 Result_ok_bool_err_dash_spv_platform_error_Error_destroy(result);
-                DSLog(@"%@: UsernameRegistrationError: next? %u", debugInfo, DUsernameStatusIndex(status), proceedToNext);
+                DSLog(@"%@: UsernameRegistrationError: %u next? %u", debugInfo, DUsernameStatusIndex(status), proceedToNext);
                 if (proceedToNext) {
                     [self registerUsernamesAtStage:next_status inContext:context completion:completion onCompletionQueue:completionQueue];
                 } else {

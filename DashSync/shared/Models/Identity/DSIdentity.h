@@ -26,6 +26,7 @@ typedef NS_ENUM(NSUInteger, DSIdentityRegistrationStep)
     DSIdentityRegistrationStep_RegistrationSteps = DSIdentityRegistrationStep_L1Steps | DSIdentityRegistrationStep_Identity,
     DSIdentityRegistrationStep_Username = 32,
     DSIdentityRegistrationStep_RegistrationStepsWithUsername = DSIdentityRegistrationStep_RegistrationSteps | DSIdentityRegistrationStep_Username,
+    DSIdentityRegistrationStep_InvitationSteps = DSIdentityRegistrationStep_LocalInWalletPersistence | DSIdentityRegistrationStep_Identity | DSIdentityRegistrationStep_Username,
     DSIdentityRegistrationStep_Profile = 64,
     DSIdentityRegistrationStep_RegistrationStepsWithUsernameAndDashpayProfile = DSIdentityRegistrationStep_RegistrationStepsWithUsername | DSIdentityRegistrationStep_Profile,
     DSIdentityRegistrationStep_All = DSIdentityRegistrationStep_RegistrationStepsWithUsernameAndDashpayProfile,
@@ -186,8 +187,9 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
                                completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
 - (void)createFundingPrivateKeyForInvitationWithPrompt:(NSString *)prompt
                                             completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
-- (void)createAndPublishRegistrationTransitionWithCompletion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion;
-
+- (void)createFundingPrivateKeyWithPromptAndPublishRegistrationTransition:(NSString *)prompt
+                                                           withCompletion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion;
+//- (void)createFundingPrivateKeyWithPromptAndPublishRegistrationTransitionWithCompletion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion;
 - (void)createAndPublishTopUpTransitionForAmount:(uint64_t)amount
                                  fundedByAccount:(DSAccount *)fundingAccount
                                        pinPrompt:(NSString *)prompt
@@ -217,7 +219,7 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 
 - (void)generateIdentityExtendedPublicKeysWithPrompt:(NSString *)prompt
                                           completion:(void (^_Nullable)(BOOL registered))completion;
-- (BOOL)setExternalFundingPrivateKey:(DMaybeOpaqueKey *)privateKey;
+- (BOOL)setExternalFundingPrivateKey:(DOpaqueKey *)privateKey;
 - (BOOL)hasIdentityExtendedPublicKeys;
 - (DIdentityKeyStatus *)statusOfKeyAtIndex:(NSUInteger)index;
 - (DOpaqueKey *_Nullable)keyAtIndex:(NSUInteger)index;
@@ -225,11 +227,11 @@ NSString * DSIdentityQueryStepsDescription(DSIdentityQueryStep step);
 
 + (NSString *)localizedStatusOfKeyForIdentityKeyStatus:(DIdentityKeyStatus *)status;
 - (NSString *)localizedStatusOfKeyAtIndex:(NSUInteger)index;
-- (DMaybeOpaqueKey *_Nullable)createNewKeyOfType:(DKeyKind *)type
-                                   securityLevel:(DSecurityLevel *)security_level
-                                         purpose:(DPurpose *)purpose
-                                         saveKey:(BOOL)saveKey
-                                     returnIndex:(uint32_t *)rIndex;
+- (BOOL)createNewKeyOfType:(DKeyKind)type
+             securityLevel:(DSecurityLevel)security_level
+                   purpose:(DPurpose)purpose
+                   saveKey:(BOOL)saveKey
+               returnIndex:(uint32_t *)rIndex;
 - (BOOL)containsPublicKey:(DIdentityPublicKey *)identity_public_key;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError **)error;

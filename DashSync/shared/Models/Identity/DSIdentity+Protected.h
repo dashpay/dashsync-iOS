@@ -29,16 +29,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSBlockchainIdentityEntity *identityEntity;
 @property (nullable, nonatomic) DTransientUser *transientDashpayUser;
 @property (nonatomic, weak) DSInvitation *associatedInvitation;
-@property (nonatomic, assign) DMaybeOpaqueKey *registrationFundingPrivateKey;
+@property (nonatomic, readonly) DOpaqueKey *registrationFundingPrivateKey;
 @property (nonatomic, assign) UInt256 registrationAssetLockTransactionHash;
 
 @property (nonatomic, readonly) NSManagedObjectContext *platformContext;
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, readonly) DSIdentitiesManager *identitiesManager;
-@property (nonatomic, assign) DKeyKind *currentMainKeyType;
-@property (nonatomic, assign) uint32_t currentMainKeyIndex;
-@property (nonatomic, readonly) uint32_t keysCreated;
+@property (nonatomic, readonly) DKeyKind *currentMainKeyType;
+@property (nonatomic, readonly) uint32_t currentMainKeyIndex;
 
 @property (nonatomic, assign) IdentityModel *model;
 
@@ -81,10 +80,6 @@ NS_ASSUME_NONNULL_BEGIN
          withLockedOutpoint:(DSUTXO)lockedOutpoint
                    inWallet:(DSWallet *)wallet;
 
-//- (instancetype)initAtIndex:(uint32_t)index
-//               withUniqueId:(UInt256)uniqueId
-//                   inWallet:(DSWallet *)wallet;
-
 - (instancetype)initAtIndex:(uint32_t)index
                    uniqueId:(UInt256)uniqueId
                    inWallet:(DSWallet *)wallet;
@@ -94,11 +89,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DIdentityPublicKey *_Nullable)firstIdentityPublicKeyOfSecurityLevel:(DSecurityLevel *)security_level
                                                             andPurpose:(DPurpose *)purpose;
-- (DMaybeOpaqueKey *_Nullable)publicKeyAtIndex:(uint32_t)index
-                                        ofType:(DKeyKind *)type;
+- (DOpaqueKey *_Nullable)publicKeyAtIndex:(uint32_t)index
+                                   ofType:(DKeyKind *)type;
 
-- (DMaybeOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
-                                         ofType:(DKeyKind *)type;
+- (DOpaqueKey *_Nullable)privateKeyAtIndex:(uint32_t)index
+                                    ofType:(DKeyKind *)type;
 - (void)deletePersistentObjectAndSave:(BOOL)save
                             inContext:(NSManagedObjectContext *)context;
 
@@ -126,7 +121,6 @@ NS_ASSUME_NONNULL_BEGIN
                                   onCompletionQueue:(dispatch_queue_t)completionQueue;
 - (void)saveInContext:(NSManagedObjectContext *)context;
 - (void)applyIdentity:(DIdentity *)identity
-                 save:(BOOL)save
             inContext:(NSManagedObjectContext *_Nullable)context;
 - (uint32_t)firstIndexOfKeyOfType:(DKeyKind *)type
                createIfNotPresent:(BOOL)createIfNotPresent
@@ -137,23 +131,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt256)contractIdIfRegistered:(DDataContract *)contract;
 
 - (DSAuthenticationKeysDerivationPath *)derivationPathForType:(DKeyKind *)type;
-- (BOOL)createNewKey:(DOpaqueKey *)key
-   forIdentityEntity:(DSBlockchainIdentityEntity *)identityEntity
-              atPath:(NSIndexPath *)path
-          withStatus:(DIdentityKeyStatus *)status
-          withSecurityLevel:(DSecurityLevel *)security_level
-          withPurpose:(DPurpose *)purpose
-  fromDerivationPath:(DSDerivationPath *)derivationPath
-           inContext:(NSManagedObjectContext *)context;
-- (BOOL)saveNewKeyForCurrentEntity:(DOpaqueKey *)key
-              atPath:(NSIndexPath *)path
-          withStatus:(DIdentityKeyStatus *)status
-          withSecurityLevel:(DSecurityLevel *)security_level
-          withPurpose:(DPurpose *)purpose
-  fromDerivationPath:(DSDerivationPath *)derivationPath
-                           inContext:(NSManagedObjectContext *)context;
 
+- (BOOL)saveNewKeyInfoForCurrentEntity:(DKeyInfo *)key_info
+                           atIndexPath:(NSIndexPath *)indexPath
+                    fromDerivationPath:(DSDerivationPath *)derivationPath
+                             inContext:(NSManagedObjectContext *)context;
 
+- (NSIndexPath *)hardenedIndexPathForIndex:(uint32_t)index;
+
+- (NSIndexPath *)indexPathForIndex:(uint32_t)index;
 @end
 
 NS_ASSUME_NONNULL_END

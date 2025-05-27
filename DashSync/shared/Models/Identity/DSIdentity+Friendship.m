@@ -86,8 +86,21 @@
             dispatch_async(completionQueue, ^{ completion(NO, @[ERROR_INCOMPLETE_ACTIONS]); });
             return;
         }
-        uint32_t destinationKeyIndex = [identity firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO saveKey:NO];
-        uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO saveKey:NO];
+        
+        uint32_t destinationKeyIndex = UINT32_MAX;
+        uint32_t *first_destination_index = dash_spv_platform_identity_model_IdentityModel_first_index_of_key_kind(identity.model, self.currentMainKeyType);
+        if (first_destination_index) {
+            uint32_t index = first_destination_index[0];
+            u32_destroy(first_destination_index);
+            destinationKeyIndex = index;
+        }
+        uint32_t sourceKeyIndex = UINT32_MAX;
+        uint32_t *first_source_index = dash_spv_platform_identity_model_IdentityModel_first_index_of_key_kind(self.model, self.currentMainKeyType);
+        if (first_source_index) {
+            uint32_t index = first_source_index[0];
+            u32_destroy(first_source_index);
+            sourceKeyIndex = index;
+        }
         
         
         if (sourceKeyIndex == UINT32_MAX) { //not found
@@ -124,7 +137,9 @@
                                     completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion {
     NSAssert(self.isLocal, @"This should not be performed on a non local blockchain identity");
     if (!self.isLocal) return;
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(potentialContact.username));
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(runtime, self.chain.sharedDocumentsObj, DChar(potentialContact.username));
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, @[error]); });
@@ -137,7 +152,9 @@
 
     switch (document->tag) {
         case dpp_document_Document_V0: {
-            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, document->v0->owner_id);
+            const Runtime *runtime = self.chain.sharedRuntimeObj;
+            DMaybeIdentity *identity_result = dash_spv_platform_identity_manager_IdentitiesManager_fetch_by_id(runtime, self.chain.sharedIdentitiesObj, document->v0->owner_id);
+            runtime_destroy(runtime);
             if (identity_result->error) {
                 NSError *error = [NSError ffi_from_platform_error:identity_result->error];
                 DMaybeIdentityDtor(identity_result);
@@ -166,7 +183,7 @@
                                                                                        createIfMissing:YES
                                                                                              inContext:self.platformContext];
                     }
-                    [potentialContactIdentity applyIdentity:identity save:YES inContext:self.platformContext];
+                    [potentialContactIdentity applyIdentity:identity inContext:self.platformContext];
                     [self sendNewFriendRequestToIdentity:potentialContactIdentity
                                                inContext:self.platformContext
                                               completion:completion
@@ -202,15 +219,19 @@
     u256 *entropy = u256_ctor(entropyData);
     DValue *value = [potentialFriendship toValue];
     uint32_t index = 0;
-    if (!self.keysCreated) {
-        [self createNewKeyOfType:DKeyKindECDSA()
-                   securityLevel:DSecurityLevelMaster()
-                         purpose:DPurposeAuth()
+    if (!DIdentityModelKeysCreated(self.model)) {
+        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA
+                   securityLevel:dpp_identity_identity_public_key_security_level_SecurityLevel_MASTER
+                         purpose:dpp_identity_identity_public_key_purpose_Purpose_AUTHENTICATION
                          saveKey:!self.wallet.isTransient
                      returnIndex:&index];
     }
-    DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, identity_id, value, entropy, private_key->ok);
+    DOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_send_friend_request_with_value(runtime, self.chain.sharedPlatformObj, contract.raw_contract, identity_id, value, entropy, private_key);
+    runtime_destroy(runtime);
+    
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeStateTransitionProofResultDtor(result);

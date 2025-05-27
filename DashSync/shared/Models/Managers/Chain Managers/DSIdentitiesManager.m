@@ -46,12 +46,28 @@
 #define ERROR_UNKNOWN_KEYS [NSError errorWithCode:500 localizedDescriptionKey:@"Identity has unknown keys"]
 #define ERROR_CONTRACT_SETUP [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]
 
+Vec_u8 *get_public_key_at_index_path_caller(const void *context, Vec_u32 *indexes) {
+    DSDerivationPath *derivationPath = ((__bridge DSDerivationPath *)(context));
+    NSIndexPath *indexPath = [NSIndexPath ffi_from:indexes];
+    Vec_u32_destroy(indexes);
+    NSData *publicKeyData = [derivationPath publicKeyDataAtIndexPath:indexPath];
+    return publicKeyData ? bytes_ctor(publicKeyData) : NULL;
+}
+
+void get_public_key_at_index_path_dtor(Vec_u8 *result) {}
+
+Fn_ARGS_std_os_raw_c_void_Vec_u32_RTRN_Vec_u8 get_public_key_at_index_path = {
+    .caller = &get_public_key_at_index_path_caller,
+    .destructor = &get_public_key_at_index_path_dtor
+};
+
+
 @interface DSIdentitiesManager ()
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
 @property (nonatomic, strong) NSMutableDictionary *foreignIdentities;
-@property (nonatomic, assign) NSTimeInterval lastSyncedIndentitiesTimestamp;
+//@property (nonatomic, assign) NSTimeInterval lastSyncedIndentitiesTimestamp;
 
 @end
 
@@ -124,11 +140,11 @@
     NSMutableArray *unsyncedIdentities = [NSMutableArray array];
     for (DSIdentity *identity in [self.chain localIdentities]) {
         if (!identity.registrationAssetLockTransaction || (identity.registrationAssetLockTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
-            DSLog(@"%@ Unsynced identity (asset lock tx unknown or has unknown height) %@ %@", self.logPrefix, uint256_hex(identity.registrationAssetLockTransactionHash), identity.registrationAssetLockTransaction);
+            DSLog(@"%@ Unsynced identity %@ (asset lock tx unknown or has unknown height) %@ %@", self.logPrefix, identity.uniqueIDData.hexString, uint256_hex(identity.registrationAssetLockTransactionHash), identity.registrationAssetLockTransaction);
 
             [unsyncedIdentities addObject:identity];
         } else if (self.chain.lastSyncBlockHeight > identity.dashpaySyncronizationBlockHeight) {
-            DSLog(@"%@ Unsynced identity (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
+            DSLog(@"%@ Unsynced identity %@ (lastSyncBlockHeight (%u) > dashpaySyncronizationBlockHeight %u)", self.logPrefix, identity.uniqueIDData.hexString, self.chain.lastSyncBlockHeight, identity.dashpaySyncronizationBlockHeight);
             //If they are equal then the blockchain identity is synced
             //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
             //That's because it is set at the time with the hash of the last
@@ -145,6 +161,7 @@
         if (completion) dispatch_async(self.chain.networkingQueue, ^{ completion(@[]); });
         return;
     }
+    
     DSLog(@"%@ Sync Identities", self.logPrefix);
     dispatch_async(self.identityQueue, ^{
         DSLog(@"%@ Sync Identities Enter Identity Queue", self.logPrefix);
@@ -165,45 +182,34 @@
         for (DSWallet *wallet in wallets) {
             uint32_t unusedIndex = [wallet unusedIdentityIndex];
             DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:wallet];
-            NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionaryWithCapacity:keysToCheck];
-            u160 **key_hashes = malloc(keysToCheck * sizeof(u160 *));
-            for (int i = 0; i < keysToCheck; i++) {
-                const NSUInteger indexes[] = {(unusedIndex + i) | BIP32_HARD, 0 | BIP32_HARD};
-                NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
-                NSData *publicKeyData = [derivationPath publicKeyDataAtIndexPath:indexPath];
-                key_hashes[i] = u160_ctor_u(publicKeyData.hash160);
-                [keyIndexes setObject:@(unusedIndex + i) forKey:publicKeyData];
-            }
             
             dispatch_sync(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-                DRetry *stragegy = DRetryLinear(5);
-                dash_spv_platform_identity_manager_IdentityValidator *options = DAcceptIdentityNotFound();
-                dispatch_group_enter(keyHashesDispatchGroup);
                 DSLog(@"%@ Sync Identities Enter QOS Queue", self.logPrefix);
-                Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_for_key_hashes(self.chain.sharedRuntime, self.chain.sharedIdentitiesObj, Vec_u8_20_ctor(keysToCheck, key_hashes), stragegy, options);
-                            
+                dispatch_group_enter(keyHashesDispatchGroup);
+                const Runtime *runtime = self.chain.sharedRuntimeObj;
+
+                Result_ok_std_collections_Map_keys_u32_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error *result = dash_spv_platform_identity_manager_IdentitiesManager_monitor_key_hash_one_by_one(runtime, self.chain.sharedIdentitiesObj, unusedIndex, ((__bridge void *)derivationPath), get_public_key_at_index_path);
+                runtime_destroy(runtime);
+                
                 if (result->error) {
                     NSError *error = [NSError ffi_from_platform_error:result->error];
                     DSLog(@"%@: Sync Identities: ERROR %@", self.logPrefix, error);
-                    Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
+                    Result_ok_std_collections_Map_keys_u32_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
                     [errors addObject:error];
                     dispatch_group_leave(keyHashesDispatchGroup);
                     return;
                 }
-                std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity *ok = result->ok;
+                std_collections_Map_keys_u32_values_dpp_identity_identity_Identity *ok = result->ok;
                 NSMutableArray *identities = [NSMutableArray array];
                 
                 for (int j = 0; j < ok->count; j++) {
+                    uint32_t keyIndex = ok->keys[j];
                     DIdentity *identity = ok->values[j];
                     switch (identity->tag) {
                         case dpp_identity_identity_Identity_V0: {
                             dpp_identity_v0_IdentityV0 *identity_v0 = identity->v0;
-                            DMaybeKeyData *maybe_public_key_data = DIdentityPubKeyData(identity_v0->public_keys->values[0]);
-//                            NSData *publicKeyData = [DSKeyManager publicKeyData:maybe_opaque_key->ok];
-                            NSNumber *index = [keyIndexes objectForKey:NSDataFromPtr(maybe_public_key_data->ok)];
-                            DMaybeKeyDataDtor(maybe_public_key_data);
-                            DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:index.intValue uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
-                            [identityModel applyIdentity:identity save:NO inContext:nil];
+                            DSIdentity *identityModel = [[DSIdentity alloc] initAtIndex:keyIndex uniqueId:u256_cast(identity_v0->id->_0->_0) inWallet:wallet];
+                            [identityModel applyIdentity:identity inContext:nil];
                             [identities addObject:identityModel];
                             break;
                         }
@@ -213,7 +219,7 @@
                     }
                 }
                 
-                Result_ok_std_collections_Map_keys_u8_arr_20_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
+                Result_ok_std_collections_Map_keys_u32_values_dpp_identity_identity_Identity_err_dash_spv_platform_error_Error_destroy(result);
                 BOOL success = [wallet registerIdentities:identities verify:YES];
                 dispatch_async(self.chain.networkingQueue, ^{
                     self.chain.chainManager.syncState.platformSyncInfo.queueCount = keysToCheck;
@@ -233,9 +239,8 @@
                     [errors addObject:ERROR_UNKNOWN_KEYS];
                 }
                 dispatch_group_leave(keyHashesDispatchGroup);
+
             });
-
-
         }
         
         dispatch_group_notify(keyHashesDispatchGroup, self.chain.networkingQueue, ^{
@@ -271,11 +276,10 @@
                                                               completionQueue:self.identityQueue];
             }
             dispatch_group_notify(dispatchGroup, self.chain.networkingQueue, ^{
-                DSLog(@"");
-                self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
+                DSLog(@"%@: Finished", deb_id);
                 self.chain.chainManager.syncState.platformSyncInfo.queueCount = 0;
                 self.chain.chainManager.syncState.platformSyncInfo.queueMaxAmount = 0;
-                self.chain.chainManager.syncState.platformSyncInfo.lastSyncedIndentitiesTimestamp = self.lastSyncedIndentitiesTimestamp;
+                self.chain.chainManager.syncState.platformSyncInfo.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
                 [self.chain.chainManager.syncState.platformSyncInfo resetSyncKind];
                 [self.chain.chainManager.syncState removeSyncKind:DSSyncStateExtKind_Platform];
                 [self.chain.chainManager notifySyncStateChanged];
@@ -283,7 +287,6 @@
                 if (!errors.count && completion)
                     completion(identities);
             });
-
         });
     });
 }
@@ -309,11 +312,13 @@
         if (!strongSelf) {
             return;
         }
-        DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(strongSelf.chain.sharedRuntime, strongSelf.chain.sharedDocumentsObj, DChar(name));
+        const Runtime *runtime = strongSelf.chain.sharedRuntimeObj;
+        DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username(runtime, strongSelf.chain.sharedDocumentsObj, DChar(name));
+        runtime_destroy(runtime);
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];
             DMaybeDocumentsMapDtor(result);
-            DSLog(@"%@: ERROR: %@", debugString, error);
+            DSLog(@"%@: ERROR: %@", debugString, error.debugDescription);
             if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, error); });
             return;
         }
@@ -465,10 +470,12 @@
                       withCompletion:(IdentitiesCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By Name Prefix: %@", self.logPrefix, namePrefix];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, DChar(namePrefix));
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_username_prefix(runtime, self.chain.sharedDocumentsObj, DChar(namePrefix));
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
-        DSLog(@"%@: ERROR: %@", debugString, error);
+        DSLog(@"%@: ERROR: %@", debugString, error.debugDescription);
         DMaybeDocumentsMapDtor(result);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
         return;
@@ -513,11 +520,13 @@
                                           withCompletion:(IdentitiesCompletionBlock)completion {
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Search Identities By DPNS identity id: %@", self.logPrefix, userID.hexString];
     DSLog(@"%@", debugString);
-    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, u256_ctor(userID));
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    DMaybeDocumentsMap *result = dash_spv_platform_document_manager_DocumentsManager_dpns_documents_for_identity_with_user_id(runtime, self.chain.sharedDocumentsObj, u256_ctor(userID));
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeDocumentsMapDtor(result);
-        DSLog(@"%@: ERROR: %@", debugString, error);
+        DSLog(@"%@: ERROR: %@", debugString, error.debugDescription);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, nil, @[error]); });
         return;
     }

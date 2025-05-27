@@ -6,6 +6,7 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
+#import "DSIdentity+Protected.h"
 #import "DSIdentityActionsViewController.h"
 #import "DSIdentityTransitionsViewController.h"
 #import "DSTopupIdentityViewController.h"
@@ -194,19 +195,17 @@
 
 - (IBAction)registerIdentity:(id)sender {
     if (self.identity.isRegistered) return;
-    [self.identity createFundingPrivateKeyWithPrompt:@""
-                                          completion:^(BOOL success, BOOL cancelled) {
-        [self.identity createAndPublishRegistrationTransitionWithCompletion:^(BOOL success, NSError *_Nullable error) {
-            if (error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self raiseIssue:@"Unable to register." message:error.localizedDescription];
-                });
-            } else if (success) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self raiseIssue:@"Identity registered" message:error.localizedDescription];
-                });
-            }
-        }];
+    [self.identity createFundingPrivateKeyWithPromptAndPublishRegistrationTransition:@""
+                                          withCompletion:^(BOOL success, NSError *_Nullable error) {
+        if (error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self raiseIssue:@"Unable to register." message:error.localizedDescription];
+            });
+        } else if (success) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self raiseIssue:@"Identity registered" message:error.localizedDescription];
+            });
+        }
     }];
 }
 
@@ -224,12 +223,11 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    DUsernameStatus *username_status = [self.identity statusOfDashpayUsername:self.identity.currentDashpayUsername];
     if (indexPath.section == 0) {
         if (indexPath.row == 2) { // About me / Register
             if (!self.identity.registered) {
                 [self registerIdentity:self];
-            } else if (self.identity.currentDashpayUsername && dash_spv_platform_document_usernames_UsernameStatus_is_confirmed(username_status)) {
+            } else if (self.identity.currentDashpayUsername && dash_spv_platform_identity_model_IdentityModel_is_dashpay_username_confirmed(self.identity.model, DChar(self.identity.currentDashpayUsername))) {
                 [self.identity registerUsernamesWithCompletion:^(BOOL success, NSArray<NSError *> *errors) {
 
                 }];
@@ -268,7 +266,6 @@
             //            }];
         }
     }
-    DUsernameStatusDtor(username_status);
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 

@@ -134,13 +134,13 @@ Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_std_os_raw_c_void_RTRN_bool has_contact
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[error ? error : ERROR_IDENTITY_NOT_ACTIVATED]); });
         return;
     }
-//    u256 *user_id = u256_ctor_u(self.uniqueID);
     uint64_t lastCheckedIncomingContactsTimestamp = DIdentityModelLastCheckedIncomingContactsTimestamp(self.model);
     uint64_t since = lastCheckedIncomingContactsTimestamp ? (lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
     Vec_u8 *start_after = startAfter ? bytes_ctor(startAfter) : nil;
     
-    DMaybeContactRequests *result = DFetchIncomingContactRequests(self, dashpayContract.raw_contract, since, start_after, ((__bridge void *)(context)), has_contact_request_with_id);
-    
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_fetch_incoming_contact_requests_in_context(runtime, self.chain.sharedContactsObj, self.model, dashpayContract.raw_contract, since, start_after, ((__bridge void *)(context)), ((__bridge void *)(self)), has_contact_request_with_id);
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
@@ -310,7 +310,10 @@ Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_std_os_raw_c_void_RTRN_bool has_contact
     Vec_u8 *start_after = startAfter ? bytes_ctor(startAfter) : NULL;
     uint64_t lastCheckedOutgoingContactsTimestamp = DIdentityModelLastCheckedOutgoingContactsTimestamp(self.model);
     uint64_t since = lastCheckedOutgoingContactsTimestamp ? (lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0;
-    DMaybeContactRequests *result = DFetchOutgoingContactRequests(self, dashpayContract.raw_contract, since, start_after, ((__bridge void *)(context)), has_contact_request_with_id);
+//    DMaybeContactRequests *result = DFetchOutgoingContactRequests(self, dashpayContract.raw_contract, since, start_after, ((__bridge void *)(context)), has_contact_request_with_id);
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    DMaybeContactRequests *result = dash_spv_platform_document_contact_request_ContactRequestManager_fetch_outgoing_contact_requests_in_context(runtime, self.chain.sharedContactsObj, self.model, dashpayContract.raw_contract, since, start_after, ((__bridge void *)(context)), ((__bridge void *)(self)), has_contact_request_with_id);
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
         DMaybeContactRequestsDtor(result);
@@ -453,13 +456,13 @@ Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_std_os_raw_c_void_RTRN_bool has_contact
                                   request:(dash_spv_platform_models_contact_request_ContactRequest *)request {
     NSParameterAssert(key);
     DKeyKind *kind = DOpaqueKeyKind(key);
-    uint32_t index = uint256_eq(self.uniqueID, u256_cast(request->recipient)) ? request->sender_key_index : request->recipient_key_index;
-    DMaybeOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
-    NSAssert(maybe_key->ok, @"Key should exist");
-    DMaybeKeyData *key_data = DOpaqueKeyDecrypt(maybe_key->ok, key, request->encrypted_public_key);
+    uint32_t index = uint256_eq(self.uniqueID, u256_cast(request->recipient)) ? (uint32_t) request->sender_key_index : (uint32_t) request->recipient_key_index;
+    DOpaqueKey *maybe_key = [self privateKeyAtIndex:index ofType:kind];
+    NSAssert(maybe_key, @"Key should exist");
+    DMaybeKeyData *key_data = DOpaqueKeyDecrypt(maybe_key, key, request->encrypted_public_key);
     NSData *data = key_data->ok ? NSDataFromPtr(key_data->ok) : nil;
     DMaybeKeyDataDtor(key_data);
-    DMaybeOpaqueKeyDtor(maybe_key);
+    DOpaqueKeyDtor(maybe_key);
     return data;
 }
 
@@ -511,7 +514,7 @@ Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_std_os_raw_c_void_RTRN_bool has_contact
                     //it's also local (aka both contacts are local to this device), we should store the extended public key for the destination
                     DSIdentity *sourceIdentity = [self.chain identityForUniqueId:externalIdentityEntity.uniqueID.UInt256];
                     DSAccount *account = [sourceIdentity.wallet accountWithNumber:0];
-                    DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationIdentity:self destinationKeyIndex:request->recipient_key_index sourceIdentity:sourceIdentity sourceKeyIndex:request->sender_key_index account:account];
+                    DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationIdentity:self destinationKeyIndex:(uint32_t) request->recipient_key_index sourceIdentity:sourceIdentity sourceKeyIndex:(uint32_t) request->sender_key_index account:account];
                     if (![DSFriendRequestEntity existingFriendRequestEntityWithSourceIdentifier:sourceIdentity.uniqueID destinationIdentifier:self.uniqueID onAccountIndex:account.accountNumber inContext:context]) {
                         dispatch_group_enter(dispatchGroup);
                         [potentialFriendship createDerivationPathAndSaveExtendedPublicKeyWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath *_Nonnull incomingFundsDerivationPath) {
@@ -631,9 +634,9 @@ Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_std_os_raw_c_void_RTRN_bool has_contact
                                                                 withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
                     if (!failureStep) {
                         [self addFriendshipFromSourceIdentity:self
-                                               sourceKeyIndex:request->sender_key_index
+                                               sourceKeyIndex:(uint32_t) request->sender_key_index
                                           toRecipientIdentity:recipientIdentity
-                                            recipientKeyIndex:request->recipient_key_index
+                                            recipientKeyIndex:(uint32_t) request->recipient_key_index
                                                   atTimestamp:request->created_at
                                                     inContext:context];
                     } else {
@@ -663,9 +666,9 @@ Fn_ARGS_std_os_raw_c_void_bool_Arr_u8_32_std_os_raw_c_void_RTRN_bool has_contact
                                                          withCompletion:^(DSIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable networkErrors) {
                     if (!failureStep) {
                         [self addFriendshipFromSourceIdentity:self
-                                               sourceKeyIndex:request->sender_key_index
+                                               sourceKeyIndex:(uint32_t) request->sender_key_index
                                           toRecipientIdentity:recipientIdentity
-                                            recipientKeyIndex:request->recipient_key_index
+                                            recipientKeyIndex:(uint32_t) request->recipient_key_index
                                                   atTimestamp:request->created_at
                                                     inContext:context];
                     } else {

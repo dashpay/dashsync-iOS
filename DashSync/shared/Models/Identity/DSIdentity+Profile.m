@@ -405,7 +405,7 @@
     }];
 }
 
-- (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion {
+- (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *_Nullable error))completion {
     NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Sign & Publish Profile", self.logPrefix];
     DSLog(@"%@", debugInfo);
     NSManagedObjectContext *context = self.platformContext;
@@ -448,20 +448,22 @@
         return;
     }
 
-    if (!self.keysCreated) {
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if (!DIdentityModelKeysCreated(self.model)) {
         uint32_t index;
-        [self createNewKeyOfType:DKeyKindECDSA()
-                   securityLevel:DSecurityLevelMaster()
-                         purpose:DPurposeAuth()
+        [self createNewKeyOfType:dash_spv_crypto_keys_key_KeyKind_ECDSA
+                   securityLevel:dpp_identity_identity_public_key_security_level_SecurityLevel_MASTER
+                         purpose:dpp_identity_identity_public_key_purpose_Purpose_AUTHENTICATION
                          saveKey:!self.wallet.isTransient
                      returnIndex:&index];
     }
-    DMaybeOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
-    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(self.chain.sharedRuntime, self.chain.sharedPlatformObj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key->ok);
+    DOpaqueKey *private_key = [self privateKeyAtIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType];
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    DMaybeStateTransitionProofResult *result = dash_spv_platform_PlatformSDK_sign_and_publish_profile(runtime, self.chain.sharedPlatformObj, contract.raw_contract, u256_ctor_u(self.uniqueID), profile, u256_ctor(entropyData), u256_ctor(documentIdentifier), private_key);
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
-        DSLog(@"%@: ERROR: %@", debugInfo, error);
+        DSLog(@"%@: ERROR: %@", debugInfo, error.debugDescription);
         DMaybeStateTransitionProofResultDtor(result);
         if (completion) dispatch_async(dispatch_get_main_queue(), ^{ completion(NO, NO, error); });
         return;
@@ -498,11 +500,13 @@
     
     NSMutableString *debugString = [NSMutableString stringWithFormat:@"%@ Fetch Profile for: %@", self.logPrefix, self];
     DSLog(@"%@", debugString);
-    DMaybeTransientUser *result = dash_spv_platform_document_manager_DocumentsManager_fetch_profile(self.chain.sharedRuntime, self.chain.sharedDocumentsObj, self.model, dashpayContract.raw_contract);
-    
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+
+    DMaybeTransientUser *result = dash_spv_platform_document_manager_DocumentsManager_fetch_profile(runtime, self.chain.sharedDocumentsObj, self.model, dashpayContract.raw_contract);
+    runtime_destroy(runtime);
     if (result->error) {
         NSError *error = [NSError ffi_from_platform_error:result->error];
-        DSLog(@"%@: ERROR: %@", debugString, error);
+        DSLog(@"%@: ERROR: %@", debugString, error.debugDescription);
         if (completion) dispatch_async(completionQueue, ^{ completion(NO, error); });
         DMaybeTransientUserDtor(result);
         return;
@@ -604,4 +608,5 @@
         }];
     });
 }
+
 @end
