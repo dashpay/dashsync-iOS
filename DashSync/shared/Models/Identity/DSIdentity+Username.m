@@ -482,26 +482,29 @@
                       completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion
                onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSMutableString *debugInfo = [NSMutableString stringWithFormat:@"%@ Register Usernames At Stage [%hhu]", self.logPrefix, DUsernameStatusIndex(status)];
-
-    Result_ok_bool_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_register_usernames_at_stage(self.chain.sharedRuntime, self.chain.sharedPlatformObj, self.model, status, ((__bridge void *)(context)));
+    DSLog(@"%@", debugInfo);
+    Result_ok_bool_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_register_usernames_at_stage(self.chain.sharedRuntime, self.chain.sharedPlatformObj, self.model, status, ((__bridge void *)(self)));
     
     
     if (result->error) {
+        NSError *err = [NSError ffi_from_platform_error:result->error];
+        DSLog(@"%@: Error: %@", debugInfo, err);
         switch (result->error->tag) {
             case dash_spv_platform_error_Error_UsernameRegistrationError: {
                 DUsernameStatus *next_status = dash_spv_platform_document_usernames_UsernameStatus_next_status(status);
                 BOOL proceedToNext = result->error->username_registration_error->tag != dash_spv_platform_identity_username_registration_error_UsernameRegistrationError_NotSupported && next_status != nil;
                 Result_ok_bool_err_dash_spv_platform_error_Error_destroy(result);
+                DSLog(@"%@: UsernameRegistrationError: next? %u", debugInfo, DUsernameStatusIndex(status), proceedToNext);
                 if (proceedToNext) {
                     [self registerUsernamesAtStage:next_status inContext:context completion:completion onCompletionQueue:completionQueue];
                 } else {
-                    if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil); });
+                    if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[err]); });
                 }
                 break;
             }
             default: {
                 Result_ok_bool_err_dash_spv_platform_error_Error_destroy(result);
-                if (completion) dispatch_async(completionQueue, ^{ completion(NO, nil); });
+                if (completion) dispatch_async(completionQueue, ^{ completion(NO, @[err]); });
                 break;
             }
         }
@@ -509,6 +512,7 @@
     }
     DUsernameStatus *next_status = dash_spv_platform_document_usernames_UsernameStatus_next_status(status);
     BOOL ok = result->ok[0];
+    DSLog(@"%@: Ok(%u) next? %@", debugInfo, ok, next_status ? [NSString stringWithFormat:@"%u", DUsernameStatusIndex(next_status)] : @"None");
     Result_ok_bool_err_dash_spv_platform_error_Error_destroy(result);
     if (next_status) {
         [self registerUsernamesAtStage:next_status inContext:context completion:completion onCompletionQueue:completionQueue];
