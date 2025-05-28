@@ -38,10 +38,10 @@
 #define AS_OBJC(context) ((__bridge DSDashSharedCore *)(context))
 #define AS_RUST(context) ((__bridge void *)(context))
 
-#define GetDataContract Fn_ARGS_std_os_raw_c_void_platform_value_types_identifier_Identifier_RTRN_Result_ok_Option_std_sync_Arc_dpp_data_contract_DataContract_err_drive_proof_verifier_error_ContextProviderError
+#define GetDataContract Fn_ARGS_std_os_raw_c_void_Arr_u8_32_RTRN_Option_dpp_data_contract_DataContract
 
 #define SignerCallback Fn_ARGS_std_os_raw_c_void_dpp_identity_identity_public_key_IdentityPublicKey_Vec_u8_RTRN_Result_ok_platform_value_types_binary_data_BinaryData_err_dpp_errors_protocol_error_ProtocolError
-#define GetPlatformActivationHeight Fn_ARGS_std_os_raw_c_void_RTRN_Result_ok_dpp_prelude_CoreBlockHeight_err_drive_proof_verifier_error_ContextProviderError
+#define GetPlatformActivationHeight Fn_ARGS_std_os_raw_c_void_RTRN_u32
 
 #define CanSign Fn_ARGS_std_os_raw_c_void_dpp_identity_identity_public_key_IdentityPublicKey_RTRN_bool
 
@@ -78,7 +78,7 @@
 - (DArcPlatformSDK *)platform {
     return dash_spv_apple_bindings_DashSPVCore_platform(self.core);
 }
-- (Runtime *)runtime {
+- (const Runtime *)runtime {
     return dash_spv_apple_bindings_DashSPVCore_runtime(self.core);
 }
 
@@ -106,14 +106,16 @@
     if (!(self = [super init])) return nil;
     self.chain = chain;
     const void *context = AS_RUST(self);
+    
     GetDataContract get_data_contract = {
         .caller = &get_data_contract_caller,
         .destructor = &get_data_contract_dtor
     };
-    SignerCallback callback_signer = {
+    Fn_ARGS_std_os_raw_c_void_dpp_identity_identity_public_key_IdentityPublicKey_RTRN_Option_dash_spv_crypto_keys_key_OpaqueKey callback_signer = {
         .caller = &callback_signer_caller,
         .destructor = &callback_signer_dtor
     };
+    
     GetPlatformActivationHeight get_platform_activation_height = {
         .caller = &get_platform_activation_height_caller,
         .destructor = &get_platform_activation_height_dtor
@@ -170,51 +172,50 @@
     }
 }
 
-MaybeDataContract *get_data_contract_caller(const void *context, DIdentifier *identitifier) {
-    // TODO: implement it
-    return NULL;
-}
-void get_data_contract_dtor(MaybeDataContract *result) {}
-
-DDataContract *get_data_contract_from_cache_caller(const void *context, data_contracts_SystemDataContract *ty) {
+DDataContract *get_data_contract_caller(const void *context, u256 *identitifier) {
     DSDashSharedCore *core = AS_OBJC(context);
+    UInt256 contractId = u256_cast(identitifier);
+    u256_dtor(identitifier);
+    return [[DSDashPlatform sharedInstanceForChain:core.chain] rawContractById:contractId];
+}
+void get_data_contract_dtor(DDataContract *result) {}
+
+DDataContract *get_data_contract_from_cache_caller(const void *context, DSystemDataContract *ty) {
+    DSDashSharedCore *core = AS_OBJC(context);
+    DDataContract *contract = NULL;
     switch (ty[0]) {
         case data_contracts_SystemDataContract_DPNS:
-            return [DSDashPlatform sharedInstanceForChain:core.chain].dpnsRawContract;
+            contract = [DSDashPlatform sharedInstanceForChain:core.chain].dpnsRawContract;
+            break;
         case data_contracts_SystemDataContract_Dashpay:
-            return [DSDashPlatform sharedInstanceForChain:core.chain].dashPayRawContract;
-        default: return NULL;
+            contract = [DSDashPlatform sharedInstanceForChain:core.chain].dashPayRawContract;
+            break;
+        default: break;
     }
+    data_contracts_SystemDataContract_destroy(ty);
+    return contract;
 }
 void get_data_contract_from_cache_dtor(DDataContract *result) {}
 
-MaybeSignedData *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key, Vec_u8 *data) {
+DOpaqueKey *callback_signer_caller(const void *context, DIdentityPublicKey *identity_public_key) {
     DSDashSharedCore *core = AS_OBJC(context);
-    DBinaryData *ok = NULL;
-    dpp_errors_protocol_error_ProtocolError *error = NULL;
-    NSData *dataToSign = NSDataFromPtr(data);
-    DSLog(@"[SDK] callback_signer: identity_public_key: %p, data: %@", identity_public_key, dataToSign.hexString);
-    DMaybeOpaqueKey *maybe_key = [core.chain identityPrivateKeyForIdentityPublicKey:identity_public_key];
-    if (!maybe_key || maybe_key->error) {
-        error = dpp_errors_protocol_error_ProtocolError_Generic_ctor(DSLocalizedChar(@"Can't find a signer for identity public key: %p", nil, identity_public_key));
-    } else {
-        ok = DBinaryDataCtor(DOpaqueKeyHashAndSign(maybe_key->ok, data));
-    }
-    DMaybeOpaqueKeyDtor(maybe_key);
+    DSLog(@"[SDK] callback_signer: identity_public_key: %p", identity_public_key);
+    DOpaqueKey *maybe_key = [core.chain identityPrivateKeyForIdentityPublicKey:identity_public_key];
     DIdentityPublicKeyDtor(identity_public_key);
-    bytes_dtor(data);
-    return Result_ok_platform_value_types_binary_data_BinaryData_err_dpp_errors_protocol_error_ProtocolError_ctor(ok, error);
+    DSLog(@"[SDK] callback_signer: result: %p", maybe_key);
+    return maybe_key;
 
 }
-void callback_signer_dtor(MaybeSignedData *result) {}
+void callback_signer_dtor(DOpaqueKey *result) {}
 
-MaybePlatformActivationHeight *get_platform_activation_height_caller(const void *context) {
-    return NULL;
+uint32_t get_platform_activation_height_caller(const void *context) {
+    return UINT32_MAX;
 }
-void get_platform_activation_height_dtor(MaybePlatformActivationHeight *result) {}
+void get_platform_activation_height_dtor(uint32_t result) {}
 
 bool callback_can_sign_caller(const void *context, DIdentityPublicKey *identity_public_key) {
     // TODO: impl
+    DIdentityPublicKeyDtor(identity_public_key);
     return TRUE;
 }
 void callback_can_sign_dtor(bool result) {}

@@ -24,6 +24,7 @@
 
 #import "BigIntTypes.h"
 #import "DSBIP39Mnemonic.h"
+#import "DSDerivationPathFactory.h"
 #import "DSIdentity.h"
 #import "DSGapLimit.h"
 #import <Foundation/Foundation.h>
@@ -186,7 +187,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (NSString *_Nullable)seedPhraseIfAuthenticated;
 
-- (DMaybeOpaqueKey *_Nullable)privateKeyForAddress:(NSString *_Nonnull)address
+- (DOpaqueKey *_Nullable)privateKeyForAddress:(NSString *_Nonnull)address
                                           fromSeed:(NSData *_Nonnull)seed;
 - (NSString *_Nullable)privateKeyAddressForAddress:(NSString *)address
                                           fromSeed:(NSData *)seed;
@@ -247,6 +248,11 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 - (NSUInteger)indexOfPlatformNodeAuthenticationHash:(UInt160)hash;
 - (NSUInteger)indexOfHoldingAddress:(NSString *)holdingAddress;
+
+
+- (BOOL)hasExtendedPublicKeyForDerivationPathOfKind:(DSDerivationPathKind)kind;
+- (DMaybeOpaqueKey *_Nullable)generateExtendedPublicKeyFromSeedForDerivationPathKind:(NSData *)seed
+                                                                                kind:(DSDerivationPathKind)kind;
 
 @end
 

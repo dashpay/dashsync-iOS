@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)nameForContractWithIdentifier:(NSString *)identifier;
 
 + (instancetype)sharedInstanceForChain:(DSChain *)chain;
+- (DDataContract *_Nullable)rawContractById:(UInt256)contractId;
 
 @end
 

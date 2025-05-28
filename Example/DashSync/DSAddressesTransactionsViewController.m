@@ -27,10 +27,10 @@
     [self.wallet seedWithPrompt:@""
                       forAmount:0
                      completion:^(NSData *_Nullable seed, BOOL cancelled) {
-        DMaybeOpaqueKey *result = [self.wallet privateKeyForAddress:self.address fromSeed:seed];
+        DOpaqueKey *result = [self.wallet privateKeyForAddress:self.address fromSeed:seed];
         if (result) {
-            self.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:result->ok chainType:self.wallet.chain.chainType];
-            DMaybeOpaqueKeyDtor(result);
+            self.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:result chainType:self.wallet.chain.chainType];
+            DOpaqueKeyDtor(result);
         }
     }];
 }

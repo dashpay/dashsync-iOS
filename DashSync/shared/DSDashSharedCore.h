@@ -22,6 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define DProcessor MasternodeProcessor
+#define DArcRuntime std_sync_Arc_Runtime
 #define DArcProcessor std_sync_Arc_dash_spv_masternode_processor_processing_processor_MasternodeProcessor
 #define DArcPlatformSDK std_sync_Arc_dash_spv_platform_PlatformSDK
 #define DArcIdentitiesManager std_sync_Arc_dash_spv_platform_identity_manager_IdentitiesManager
@@ -39,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DArcProcessor *)processor;
 - (DArcPlatformSDK *)platform;
-- (Runtime *)runtime;
+- (const Runtime *)runtime;
 - (DArcIdentitiesManager *)identitiesManager;
 - (DArcContractsManager *)contractsManager;
 - (DArcDocumentsManager *)documentsManager;

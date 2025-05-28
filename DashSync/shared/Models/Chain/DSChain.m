@@ -197,9 +197,12 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     return self;
 }
 
-- (Runtime *)sharedRuntime {
+- (const Runtime *)sharedRuntimeObj {
     return self.shareCore.runtime;
 }
+//- (DArcRuntime *)sharedRuntime {
+//    return self.shareCore.runtime;
+//}
 
 - (DArcProcessor *)sharedProcessor {
     return self.shareCore.processor;

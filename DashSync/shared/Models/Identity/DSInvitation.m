@@ -202,8 +202,7 @@
     return TRUE;
 }
 
-//- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion
-- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result))completion
+- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion
                            completionQueue:(dispatch_queue_t)completionQueue {
     [DSInvitation verifyInvitationLink:self.link
                                onChain:self.wallet.chain
@@ -213,10 +212,8 @@
 
 + (void)verifyInvitationLink:(NSString *)invitationLink
                      onChain:(DSChain *)chain
-                  completion:(void (^_Nullable)(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result))completion
-//                  completion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion
+                  completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion
              completionQueue:(dispatch_queue_t)completionQueue {
-//    DSDAPICoreNetworkService *coreNetworkService = chain.chainManager.DAPIClient.DAPICoreNetworkService;
     NSURLComponents *components = [NSURLComponents componentsWithString:invitationLink];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
@@ -225,24 +222,30 @@
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-//            isEmptyFundingPrivateKey = key_ecdsa_secret_key_is_empty(DChar(queryItem.value), chain.chainType);
             isEmptyFundingPrivateKey = DECDSAKeyContainsSecretKey(DChar(queryItem.value), chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
-        if (completion) completion(nil);
-//        if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
+        if (completion) completion(NO, ERROR_INVITATION_FORMAT);
         return;
     }
     if (isEmptyFundingPrivateKey) {
-        if (completion) completion(nil);
+        if (completion) completion(NO, ERROR_INVALID_FUNDING_PRV_KEY);
         return;
     }
-    
-    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(chain.sharedRuntime, chain.sharedPlatformObj, u256_ctor_u(assetLockTransactionHash));
-
+    const Runtime *runtime = chain.sharedRuntimeObj;
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(runtime, chain.sharedPlatformObj, u256_ctor_u(assetLockTransactionHash));
+    runtime_destroy(runtime);
+    if (result->error) {
+        NSError *error = [NSError ffi_from_platform_error:result->error];
+        Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
+        dispatch_async(completionQueue, ^{ if (completion) completion(NO, error); });
+        return;
+    }
+    BOOL ok = result->ok;
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
     dispatch_async(completionQueue, ^{
-        if (completion) completion(result);
+        if (completion) completion(ok, nil);
 //        if (result->error) {
 //            Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error_destroy(result);
 //            if (completion) completion(nil, NO, ERROR_INVITATION_FORMAT);
@@ -283,24 +286,25 @@
     NSURLComponents *components = [NSURLComponents componentsWithString:self.link];
     NSArray *queryItems = components.queryItems;
     UInt256 assetLockTransactionHash = UINT256_ZERO;
-    DMaybeOpaqueKey *fundingPrivateKey = nil;
+    DOpaqueKey *fundingPrivateKey = nil;
     for (NSURLQueryItem *queryItem in queryItems) {
         if ([queryItem.name isEqualToString:@"assetlocktx"]) {
             assetLockTransactionHash = queryItem.value.hexToData.UInt256;
         } else if ([queryItem.name isEqualToString:@"pk"]) {
-            fundingPrivateKey = DMaybeOpaqueKeyWithPrivateKey(DKeyKindECDSA(), DChar(queryItem.value), self.chain.chainType);
+            fundingPrivateKey = DMaybeOpaqueKeyWithPrivateKeyOpt(DKeyKindECDSA(), DChar(queryItem.value), self.chain.chainType);
         }
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
         if (completion) completion(DSIdentityRegistrationStep_None, @[ERROR_INVITATION_FORMAT]);
         return;
     }
-    if (!fundingPrivateKey || !DOpaqueKeyHasPrivateKey(fundingPrivateKey->ok)) {
+    if (!fundingPrivateKey || !DOpaqueKeyHasPrivateKey(fundingPrivateKey)) {
         if (completion) completion(DSIdentityRegistrationStep_None, @[ERROR_INVALID_FUNDING_PRV_KEY]);
         return;
     }
-    
-    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(self.chain.sharedRuntime, self.chain.sharedPlatformObj, u256_ctor_u(assetLockTransactionHash));
+    const Runtime *runtime = self.chain.sharedRuntimeObj;
+    Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result = dash_spv_platform_PlatformSDK_get_transaction_with_hash(runtime, self.chain.sharedPlatformObj, u256_ctor_u(assetLockTransactionHash));
+    runtime_destroy(runtime);
     dispatch_async(self.chain.chainManager.identitiesManager.identityQueue, ^{
         if (result->error) {
             NSError *error = [NSError ffi_from_platform_error:result->error];
@@ -319,7 +323,7 @@
         [self.identity registerInWalletForAssetLockTransaction:tx];
         BOOL success = [self.identity setExternalFundingPrivateKey:fundingPrivateKey];
         if (!success && fundingPrivateKey != NULL)
-            DMaybeOpaqueKeyDtor(fundingPrivateKey);
+            DOpaqueKeyDtor(fundingPrivateKey);
 
         NSAssert(success, @"We must be able to set the external funding private key");
         if (success) {
@@ -395,7 +399,7 @@
         NSString *senderDisplayName = identity.displayName;
         NSString *senderAvatarPath = identity.avatarPath;
         NSString *fundingTransactionHexString = uint256_reverse_hex(self.identity.registrationAssetLockTransaction.txHash);
-        __block DMaybeOpaqueKey *registrationFundingPrivateKey = self.identity.registrationFundingPrivateKey;
+        __block DOpaqueKey *registrationFundingPrivateKey = self.identity.registrationFundingPrivateKey;
         __block BOOL rCancelled = FALSE;
 
         if (!registrationFundingPrivateKey) {
@@ -409,9 +413,11 @@
                     rCancelled = cancelled;
                     if (seed) {
                         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                            DSAssetLockDerivationPath *path = [[DSDerivationPathFactory sharedInstance] identityInvitationFundingDerivationPathForWallet:self.wallet];
                             // TODO: cleanup?
-                            registrationFundingPrivateKey = [path privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index] fromSeed:seed];
+                            registrationFundingPrivateKey = [[DSDerivationPathFactory sharedInstance] privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index]
+                                                                                                                   fromSeed:seed
+                                                                                                                     ofKind:DSDerivationPathKind_InvitationFunding
+                                                                                                                  forWallet:self.wallet];
                             dispatch_semaphore_signal(sem);
                         });
                     } else {
@@ -426,7 +432,8 @@
             return;
         }
         //in WIF format
-        NSString *registrationFundingPrivateKeyString = [DSKeyManager serializedPrivateKey:registrationFundingPrivateKey->ok chainType:self.chain.chainType];
+        NSString *registrationFundingPrivateKeyString = [DSKeyManager serializedPrivateKey:registrationFundingPrivateKey chainType:self.chain.chainType];
+        DOpaqueKeyDtor(registrationFundingPrivateKey);
         NSString *serializedISLock = [self.identity.registrationAssetLockTransaction.instantSendLockAwaitingProcessing.toData hexString];
         NSURLComponents *components = [NSURLComponents componentsWithString:@"https://invitations.dashpay.io/applink"];
         NSMutableArray *queryItems = [NSMutableArray array];

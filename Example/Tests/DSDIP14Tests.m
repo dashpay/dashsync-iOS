@@ -75,8 +75,8 @@
     BOOL hardened1[] = {NO, YES, NO};
 
     DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Unknown onChain:self.chain];
-    DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
-    NSString *string = [DSKeyManager secretKeyHexString:key->ok];
+    DOpaqueKey *key = [derivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
+    NSString *string = [DSKeyManager secretKeyHexString:key];
     XCTAssertEqualObjects(string, @"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09", @"keys should match");
 
     [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
@@ -101,8 +101,8 @@
 
     DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DKeyKindECDSA() reference:DSDerivationPathReference_Unknown onChain:self.chain];
 
-    DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
-    NSString *string = [DSKeyManager secretKeyHexString:key->ok];
+    DOpaqueKey *key = [derivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
+    NSString *string = [DSKeyManager secretKeyHexString:key];
     XCTAssertEqualObjects(string, @"fac40790776d171ee1db90899b5eb2df2f7d2aaf35ad56f07ffb8ed2c57f8e60", @"keys should match");
 }
 

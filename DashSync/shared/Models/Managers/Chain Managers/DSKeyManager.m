@@ -199,15 +199,15 @@
                         fromSeed:(NSData *)seed
                      atIndexPath:(NSIndexPath *)indexPath
                           digest:(UInt256)digest {
-    DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
+    DOpaqueKey *key = [derivationPath privateKeyAtIndexPathAsOpt:indexPath fromSeed:seed];
     NSData *data = NULL;
-    if (key->ok) {
+    if (key) {
         Slice_u8 *slice = slice_u256_ctor_u(digest);
-        Vec_u8 *bytes = DOpaqueKeySign(key->ok, slice);
+        Vec_u8 *bytes = DOpaqueKeySign(key, slice);
         data = NSDataFromPtr(bytes);
         bytes_dtor(bytes);
+        DOpaqueKeyDtor(key);
     }
-    DMaybeOpaqueKeyDtor(key);
     return data;
 }
 

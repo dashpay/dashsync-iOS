@@ -454,29 +454,31 @@
         }
         // TODO: how do we know which version we should use: (self.version == 2 /*BLS Basic*/ && self.providerType == 1)
         // based on protocol_version?
-        DMaybeOpaqueKey *platformNodeKey;
+        DOpaqueKey *platformNodeKey;
         if (self.platformNodeWalletIndex == UINT32_MAX) {
             self.platformNodeWalletIndex = [platformNodeKeysDerivationPath firstUnusedIndex];
             platformNodeKey = [platformNodeKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         } else {
-            platformNodeKey = [platformNodeKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.platformNodeWalletIndex] fromSeed:seed];
+            platformNodeKey = [platformNodeKeysDerivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:self.platformNodeWalletIndex] fromSeed:seed];
         }
-        
-        UInt256 platformNodeHash = [DSKeyManager publicKeyData:platformNodeKey->ok].SHA256;
+    
+        UInt256 platformNodeHash = [DSKeyManager publicKeyData:platformNodeKey].SHA256;
+        DOpaqueKeyDtor(platformNodeKey);
         UInt160 platformNodeID = *(UInt160 *)&platformNodeHash;
 
-        DMaybeOpaqueKey *ownerKey;
+        DOpaqueKey *ownerKey;
         if (self.ownerWalletIndex == UINT32_MAX) {
             self.ownerWalletIndex = [providerOwnerKeysDerivationPath firstUnusedIndex];
             ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         } else {
-            ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.ownerWalletIndex] fromSeed:seed];
+            ownerKey = [providerOwnerKeysDerivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:self.ownerWalletIndex] fromSeed:seed];
         }
 
         UInt160 votingKeyHash;
 
-        UInt160 ownerKeyHash = [DSKeyManager publicKeyData:ownerKey->ok].hash160;
-
+        UInt160 ownerKeyHash = [DSKeyManager publicKeyData:ownerKey].hash160;
+        DOpaqueKeyDtor(ownerKey);
+        
         if ([fundingAccount.wallet.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
             DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
             if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {

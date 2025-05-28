@@ -20,7 +20,13 @@
 @implementation NSIndexPath (Vec_u32)
 
 + (NSIndexPath *)ffi_from:(Vec_u32 *)ffi_ref {
-    return [NSIndexPath indexPathWithIndexes:(NSUInteger *) ffi_ref->values length:ffi_ref->count];
+    uintptr_t count = ffi_ref->count;
+    uint32_t *values = ffi_ref->values;
+    NSUInteger indexes[count];
+    for (uintptr_t i = 0; i < count; i++) {
+        indexes[i] = (NSUInteger)values[i];
+    }
+    return [NSIndexPath indexPathWithIndexes:indexes length:count];
 }
 
 + (Vec_u32 *)ffi_to:(NSIndexPath *)obj {

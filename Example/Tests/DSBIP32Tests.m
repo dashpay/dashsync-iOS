@@ -578,14 +578,14 @@
     const NSUInteger indexes2[] = {4, 6};
     NSIndexPath *indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
     NSIndexPath *indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
-    DMaybeOpaqueKey *privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1 fromSeed:self.seed];
-    DMaybeOpaqueKey *publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
-    Vec_u8 *publicKey1_data = DOpaqueKeyPublicKeyData(publicKey1->ok);
-    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1->ok, publicKey1_data), @"the public keys must match");
-    DMaybeOpaqueKey *privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2 fromSeed:self.seed];
-    DMaybeOpaqueKey *publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
-    Vec_u8 *publicKey2_data = DOpaqueKeyPublicKeyData(publicKey2->ok);
-    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2->ok, publicKey2_data), @"the public keys must match");
+    DOpaqueKey *privateKey1 = [derivationPath privateKeyAtIndexPathAsOpt:indexPath1 fromSeed:self.seed];
+    DOpaqueKey *publicKey1 = [derivationPath publicKeyAtIndexPathAsOpt:indexPath1];
+    Vec_u8 *publicKey1_data = DOpaqueKeyPublicKeyData(publicKey1);
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1, publicKey1_data), @"the public keys must match");
+    DOpaqueKey *privateKey2 = [derivationPath privateKeyAtIndexPathAsOpt:indexPath2 fromSeed:self.seed];
+    DOpaqueKey *publicKey2 = [derivationPath publicKeyAtIndexPathAsOpt:indexPath2];
+    Vec_u8 *publicKey2_data = DOpaqueKeyPublicKeyData(publicKey2);
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2, publicKey2_data), @"the public keys must match");
     
     DMaybeOpaqueKeys *privateKeys = [DSDerivationPathFactory privateKeysAtIndexPaths:@[indexPath1, indexPath2]
                                                                             fromSeed:self.seed
@@ -594,10 +594,10 @@
     DOpaqueKey *privateKey1FromMultiIndex = privateKeys->ok->values[0];
     DOpaqueKey *privateKey2FromMultiIndex = privateKeys->ok->values[1];
 
-    Vec_u8 *privateKey1_public_key_data = DOpaqueKeyPublicKeyData(privateKey1->ok);
-    Vec_u8 *privateKey2_public_key_data = DOpaqueKeyPublicKeyData(privateKey2->ok);
-    DMaybeKeyData *privateKey1_private_key_data = DOpaqueKeyPrivateKeyData(privateKey1->ok);
-    DMaybeKeyData *privateKey2_private_key_data = DOpaqueKeyPrivateKeyData(privateKey2->ok);
+    Vec_u8 *privateKey1_public_key_data = DOpaqueKeyPublicKeyData(privateKey1);
+    Vec_u8 *privateKey2_public_key_data = DOpaqueKeyPublicKeyData(privateKey2);
+    DMaybeKeyData *privateKey1_private_key_data = DOpaqueKeyPrivateKeyData(privateKey1);
+    DMaybeKeyData *privateKey2_private_key_data = DOpaqueKeyPrivateKeyData(privateKey2);
     u256 *privateKey1_private_key_data_u = Arr_u8_32_ctor(privateKey1_private_key_data->ok->count, privateKey1_private_key_data->ok->values);
     u256 *privateKey2_private_key_data_u = Arr_u8_32_ctor(privateKey2_private_key_data->ok->count, privateKey2_private_key_data->ok->values);
     XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1FromMultiIndex, privateKey1_public_key_data), @"the public keys must match");
@@ -613,19 +613,19 @@
     const NSUInteger indexes2[] = {4, 6};
     NSIndexPath *indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
     NSIndexPath *indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
-    DMaybeOpaqueKey *privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1];
-    DMaybeOpaqueKey *publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
+    DOpaqueKey *privateKey1 = [derivationPath privateKeyAtIndexPathAsOpt:indexPath1];
+    DOpaqueKey *publicKey1 = [derivationPath publicKeyAtIndexPathAsOpt:indexPath1];
     
-    Vec_u8 *publicKey1_public_key_data = DOpaqueKeyPublicKeyData(publicKey1->ok);
+    Vec_u8 *publicKey1_public_key_data = DOpaqueKeyPublicKeyData(publicKey1);
     
-    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1->ok, publicKey1_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey1, publicKey1_public_key_data), @"the public keys must match");
 //    XCTAssert(keys_public_key_data_is_equal(privateKey1, publicKey1), @"the public keys must match");
-    DMaybeOpaqueKey *privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2];
-    DMaybeOpaqueKey *publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
+    DOpaqueKey *privateKey2 = [derivationPath privateKeyAtIndexPathAsOpt:indexPath2];
+    DOpaqueKey *publicKey2 = [derivationPath publicKeyAtIndexPathAsOpt:indexPath2];
     
-    Vec_u8 *publicKey2_public_key_data = DOpaqueKeyPublicKeyData(publicKey2->ok);
+    Vec_u8 *publicKey2_public_key_data = DOpaqueKeyPublicKeyData(publicKey2);
 
-    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2->ok, publicKey2_public_key_data), @"the public keys must match");
+    XCTAssert(DOpaqueKeyPublicKeyDataEqualTo(privateKey2, publicKey2_public_key_data), @"the public keys must match");
     DMaybeOpaqueKeys *privateKeys = [DSDerivationPathFactory privateKeysAtIndexPaths:@[indexPath1, indexPath2]
                                                                             fromSeed:self.seed
                                                                       derivationPath:derivationPath];
@@ -634,10 +634,10 @@
     DOpaqueKey *privateKey2FromMultiIndex = privateKeys->ok->values[1];
     
     
-    Vec_u8 *privateKey1_public_key_data = DOpaqueKeyPublicKeyData(privateKey1->ok);
-    Vec_u8 *privateKey2_public_key_data = DOpaqueKeyPublicKeyData(privateKey2->ok);
-    DMaybeKeyData *privateKey1_private_key_data = DOpaqueKeyPrivateKeyData(privateKey1->ok);
-    DMaybeKeyData *privateKey2_private_key_data = DOpaqueKeyPrivateKeyData(privateKey2->ok);
+    Vec_u8 *privateKey1_public_key_data = DOpaqueKeyPublicKeyData(privateKey1);
+    Vec_u8 *privateKey2_public_key_data = DOpaqueKeyPublicKeyData(privateKey2);
+    DMaybeKeyData *privateKey1_private_key_data = DOpaqueKeyPrivateKeyData(privateKey1);
+    DMaybeKeyData *privateKey2_private_key_data = DOpaqueKeyPrivateKeyData(privateKey2);
     u256 *privateKey1_private_key_data_u = Arr_u8_32_ctor(privateKey1_private_key_data->ok->count, privateKey1_private_key_data->ok->values);
     u256 *privateKey2_private_key_data_u = Arr_u8_32_ctor(privateKey2_private_key_data->ok->count, privateKey2_private_key_data->ok->values);
 
@@ -734,13 +734,13 @@
     DKeyKind *kind = DKeyKindBLS();
     DMaybeOpaqueKey *bobKeyPairBLS = DMaybeOpaqueKeyFromSeed(kind, seed_slice);
 //    DOpaqueKey *bobKeyPairBLS = key_with_seed_data((uint8_t[10]) {10, 9, 8, 7, 6, 6, 7, 8, 9, 10}, 10, (int16_t) KeyKind_BLS);
-    DMaybeOpaqueKey *privateKeyBLS = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
+    DOpaqueKey *privateKeyBLS = [derivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     NSData *extendedPublicKeyFromMasterContactDerivationPathData = [DSKeyManager extendedPublicKeyData:extendedPublicKeyFromMasterContactDerivationPath->ok];
-    NSData *encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyBLS->ok forPublicKey:bobKeyPairBLS->ok];
+    NSData *encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyBLS forPublicKey:bobKeyPairBLS->ok];
     XCTAssertEqual([encryptedDataBLS.base64String length], 128, @"The size of the base64 should be 128");
     // Destroying in dealloc of DSDerivationPath
     DMaybeOpaqueKeyDtor(bobKeyPairBLS);
-    DMaybeOpaqueKeyDtor(privateKeyBLS);
+    DOpaqueKeyDtor(privateKeyBLS);
 }
 
 - (void)testBase64ExtendedPublicKeySizeECDSA {
@@ -757,14 +757,14 @@
     
     Slice_u8 *bob_secret_slice = slice_ctor(bobSecretData);
     
-    DMaybeOpaqueKey *bobKeyPairECDSA = DMaybeOpaqueKeyWithPrivateKeyData(DKeyKindECDSA(), bob_secret_slice);
+    DOpaqueKey *bobKeyPairECDSA = DMaybeOpaqueKeyWithPrivateKeyDataAsOpt(DKeyKindECDSA(), bob_secret_slice);
     
-    DMaybeOpaqueKey *privateKeyECDSA = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
-    NSData *encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyECDSA->ok forPublicKey:bobKeyPairECDSA->ok];
+    DOpaqueKey *privateKeyECDSA = [derivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
+    NSData *encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPathData encryptWithSecretKey:privateKeyECDSA forPublicKey:bobKeyPairECDSA];
     XCTAssertEqual([encryptedDataECDSA.base64String length], 128, @"The size of the base64 should be 128");
     
-    DMaybeOpaqueKeyDtor(bobKeyPairECDSA);
-    DMaybeOpaqueKeyDtor(privateKeyECDSA);
+    DOpaqueKeyDtor(bobKeyPairECDSA);
+    DOpaqueKeyDtor(privateKeyECDSA);
 }
 
 - (void)testIdDer {
@@ -784,12 +784,12 @@
     for (int i = 0; i < keysToCheck; i++) {
         const NSUInteger indexes[] = {(unusedIndex + i) | BIP32_HARD, 0 | BIP32_HARD};
         NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
-        DMaybeOpaqueKey *key = [derivationPath publicKeyAtIndexPath:indexPath];
-        u160 *key_hash = DOpaqueKeyPublicKeyHash(key->ok);
+        DOpaqueKey *key = [derivationPath publicKeyAtIndexPathAsOpt:indexPath];
+        u160 *key_hash = DOpaqueKeyPublicKeyHash(key);
         NSData *keyHash = NSDataFromPtr(key_hash);
         u160_dtor(key_hash);
         [keyHashes addObject:keyHash];
-        Vec_u8 *pub_key_data = DOpaqueKeyPublicKeyData(key->ok);
+        Vec_u8 *pub_key_data = DOpaqueKeyPublicKeyData(key);
         [keyIndexes setObject:@(unusedIndex + i) forKey:NSDataFromPtr(pub_key_data)];
         Vec_u8_destroy(pub_key_data);
     }

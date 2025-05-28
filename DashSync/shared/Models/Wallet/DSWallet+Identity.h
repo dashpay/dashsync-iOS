@@ -53,7 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSIdentity *_Nullable)identityThatCreatedContract:(DDataContract *)contract withContractId:(UInt256)contractId;
 - (DSIdentity *_Nullable)identityForUniqueId:(UInt256)uniqueId;
 - (DSIdentity *_Nullable)identityForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key;
-- (DMaybeOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key;
+//- (DMaybeOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key;
+- (DOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(DIdentityPublicKey *)identity_public_key;
 
 //- (NSUInteger)indexOfIdentityAuthenticationHash:(UInt160)hash;
 - (NSUInteger)indexOfIdentityAssetLockRegistrationHash:(UInt160)hash;

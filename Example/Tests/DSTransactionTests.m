@@ -15,6 +15,7 @@
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSDerivationPath.h"
+#import "DSDerivationPath.h"
 #import "DSFundsDerivationPath.h"
 #import "DSKeyManager.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
@@ -24,8 +25,10 @@
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSSporkManager.h"
+#import "DSTransaction+FFI.h"
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
 #import "DSTransactionOutput.h"
@@ -110,14 +113,43 @@
     XCTAssertEqualObjects(tx.creditOutputs[1].address, @"yXfXh3jFYHHxnJZVsXnPcktCENqPaAhcX1", @"Unexpected credit output address at index 1");
 }
 
+- (void)testFFITransactions {
+    DSChain *chain = [DSChain testnet];
+    NSData *txData = @"03000800018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be010000006a4730440220765c83e5e908448ab2117a4abb806d21a3786d9642fc1883405c34367c1e5f3702207a0d1eae897e842b45632e57d02647ae193e8c7a247674399bc24d2d80799a88012102e25c6bbcbb1aa0a0c42283ded2d44e5c75551318a3c01d65906ac97aae1603e8ffffffff0240420f0000000000026a00c90ced02000000001976a914e97fe30aafd3666e70493b99cc35c0371d26654088ac0000000024010140420f00000000001976a91467575fc9d201b5ff36b5d8405497f1d961a56dbf88ac".hexToData;
+    NSData *isdData = @"01018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be01000000b16fcb9a165b8e14542becf5292b16f90650d13ad4b55fe20768db51d81020766a93587154beb1624054fbef93d73a2403295e459e6d85c3245021487e02000094325d06a52a1f3cfaa74de4ca28f9c5b16c5ee2b472e50219cc78a111cf1c987c1d861e0a6018fdaf41960caf6ba349126e99446f00edc19856b9dab8fa15e12ae42c67d4f958a8e5fbc8af224fe4cc2c85d2e186296d7433e2fec0112a862a".hexToData;
 
+    DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initWithMessage:txData onChain:chain];
+    DSInstantSendTransactionLock *islock = [DSInstantSendTransactionLock instantSendTransactionLockWithDeterministicMessage:isdData onChain:chain];
+
+    NSData *txDataRestored = tx.toData;
+    NSData *isdDataRestored = islock.toData;
+
+    XCTAssertEqualObjects(txData, txDataRestored, @"Transaction data doesn't match");
+
+    UInt256 isdTxHash = @"762010d851db6807e25fb5d43ad15006f9162b29f5ec2b54148e5b169acb6fb1".hexToData.reverse.UInt256;
+
+    XCTAssertEqualObjects(isdData, isdDataRestored, @"Instant Lock data doesn't match");
+    
+    DTxid *isLockTxid = dashcore_ephemerealdata_instant_lock_InstantLock_get_txid(islock.lock);
+    u256 *isLockTxid_arr = dashcore_hash_types_Txid_inner(isLockTxid);
+    UInt256 isLockUint = u256_cast(isLockTxid_arr);
+
+    DTransaction *ffi_tx = [tx ffi_malloc:chain.chainType];
+    DTxid *txid = dashcore_blockdata_transaction_Transaction_txid(ffi_tx);
+    u256 *txid_arr = dashcore_hash_types_Txid_inner(txid);
+    UInt256 txidUint = u256_cast(txid_arr);
+    
+    XCTAssertTrue(uint256_eq(isLockUint, txidUint), @"Instant Lock and Transaction txid doesn't match");
+    XCTAssertTrue(uint256_eq(isLockUint, isdTxHash), @"Instant Lock and Transaction txid doesn't match");
+    XCTAssertTrue(uint256_eq(txidUint, isdTxHash), @"Instant Lock and Transaction txid doesn't match");
+}
 
 - (void)testAssetLockTxSigning {
 
     NSData *transactionData = @"03000800018ff03cc8d42a5e27be416d38e1b02718a111f03e6d7bfd178bd6cda26f33d3be010000006a4730440220765c83e5e908448ab2117a4abb806d21a3786d9642fc1883405c34367c1e5f3702207a0d1eae897e842b45632e57d02647ae193e8c7a247674399bc24d2d80799a88012102e25c6bbcbb1aa0a0c42283ded2d44e5c75551318a3c01d65906ac97aae1603e8ffffffff0240420f0000000000026a00c90ced02000000001976a914e97fe30aafd3666e70493b99cc35c0371d26654088ac0000000024010140420f00000000001976a91467575fc9d201b5ff36b5d8405497f1d961a56dbf88ac".hexToData;
     DSAssetLockTransaction *tx = [[DSAssetLockTransaction alloc] initWithMessage:transactionData onChain:[DSChain testnet]];
     
-    
+        
     NSData *txData = tx.toData;
     DSUTXO lockedOutpoint = tx.lockedOutpoint;
     NSLog(@"transaction: %@", txData.hexString);

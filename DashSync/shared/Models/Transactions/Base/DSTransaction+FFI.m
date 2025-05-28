@@ -18,9 +18,16 @@
 #import "BigIntTypes.h"
 #import "DSChain+Transaction.h"
 #import "DSAssetLockTransaction.h"
+#import "DSAssetUnlockTransaction.h"
+#import "DSCoinbaseTransaction.h"
+#import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
 #import "DSTransaction+FFI.h"
 #import "DSTransactionInput+FFI.h"
 #import "DSTransactionOutput+FFI.h"
+#import "DSQuorumCommitmentTransaction.h"
 #import "NSData+Dash.h"
 #import "DSKeyManager.h"
 
@@ -103,20 +110,135 @@
     return tx;
 }
 
+- (DTransactionPayload *_Nullable)ffi_payload {
+    DTransactionPayload *payload = NULL;
+    if ([self isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction *tx = (DSProviderRegistrationTransaction *)self;
+        
+        DOutPoint *collateral_outpoint = DOutPointFromUTXO(tx.collateralOutpoint);
+        SocketAddr *service_address = DSocketAddrFrom(u128_ctor_u(tx.ipAddress), tx.port);
+        DPubkeyHash *owner_key_hash = DPubkeyHashCtor(u160_ctor_u(tx.ownerKeyHash));
+        DBLSPublicKey *operator_public_key = DBLSPublicKeyCtor(u384_ctor_u(tx.operatorKey));
+        DPubkeyHash *voting_key_hash = DPubkeyHashCtor(u160_ctor_u(tx.votingKeyHash));
+        DScriptBuf *script_payout = DScriptBufCtor(bytes_ctor(tx.scriptPayout));
+        DInputsHash *inputs_hash = DInputsHashCtor(u256_ctor_u(tx.inputsHash));
+        Vec_u8 *signature = bytes_ctor(tx.payloadSignature);
+        DPubkeyHash *platform_node_id = DPubkeyHashCtor(u160_ctor_u(tx.platformNodeID));
+        uint16_t *platform_p2p_port = tx.platformP2PPort ? u16_ctor(tx.platformP2PPort) : NULL;
+        uint16_t *platform_http_port = tx.platformHTTPPort ? u16_ctor(tx.platformHTTPPort) : NULL;
+        DProviderMasternodeType *masternode_type = tx.providerType == DProviderMasternodeTypeHighPerformance ? DProviderMasternodeTypeHighPerformanceCtor() : DProviderMasternodeTypeRegularCtor();
+        uint16_t version = tx.providerRegistrationTransactionVersion;
+        uint16_t masternode_mode = tx.providerMode;
+        uint16_t operator_reward = tx.operatorReward;
+        payload = DTransactionPayloadProviderRegistrationCtor(DProviderRegistrationPayloadCtor(version, masternode_type, masternode_mode, collateral_outpoint, service_address, owner_key_hash, operator_public_key, voting_key_hash, operator_reward, script_payout, inputs_hash, signature, platform_node_id, platform_p2p_port, platform_http_port));
+        
+    } else if ([self isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction *tx = (DSProviderUpdateServiceTransaction *)self;
+        uint16_t version = tx.providerUpdateServiceTransactionVersion;
+        DTxid *pro_tx_hash = DTxidCtor(u256_ctor_u(tx.providerRegistrationTransactionHash));
+        uint8_t (*ip_address)[16] = malloc(sizeof(uint8_t) * 16);
+        memcpy(ip_address, tx.ipAddress.u8, sizeof(sizeof(uint8_t) * 16));
+        uint16_t port = tx.port;
+        DScriptBuf *script_payout = DScriptBufCtor(bytes_ctor(tx.scriptPayout));
+        DInputsHash *inputs_hash = DInputsHashCtor(u256_ctor_u(tx.inputsHash));
+        DBLSSignature *payload_sig = DBLSSignatureCtor(u768_ctor(tx.payloadSignature));
+        payload = DTransactionPayloadProviderUpdateServiceCtor(DProviderUpdateServicePayloadCtor(version, pro_tx_hash, ip_address, port, script_payout, inputs_hash, payload_sig));
+    } else if ([self isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction *tx = (DSProviderUpdateRegistrarTransaction *)self;
+        uint16_t version = tx.providerUpdateRegistrarTransactionVersion;
+        DTxid *pro_tx_hash = DTxidCtor(u256_ctor_u(tx.providerRegistrationTransactionHash));
+        uint16_t provider_mode = tx.providerMode;
+        DBLSPublicKey *operator_public_key = DBLSPublicKeyCtor(u384_ctor_u(tx.operatorKey));
+        DPubkeyHash *voting_key_hash = DPubkeyHashCtor(u160_ctor_u(tx.votingKeyHash));
+        DScriptBuf *script_payout = DScriptBufCtor(bytes_ctor(tx.scriptPayout));
+        DInputsHash *inputs_hash = DInputsHashCtor(u256_ctor_u(tx.inputsHash));
+        Vec_u8 *payload_sig = bytes_ctor(tx.payloadSignature);
+        payload = DTransactionPayloadProviderUpdateRegistrarCtor(DProviderUpdateRegistrarPayloadCtor(version, pro_tx_hash, provider_mode, operator_public_key, voting_key_hash, script_payout, inputs_hash, payload_sig));
+    } else if ([self isMemberOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        DSProviderUpdateRevocationTransaction *tx = (DSProviderUpdateRevocationTransaction *)self;
+        uint16_t version = tx.providerUpdateRevocationTransactionVersion;
+        DTxid *pro_tx_hash = DTxidCtor(u256_ctor_u(tx.providerRegistrationTransactionHash));
+        uint16_t reason = tx.reason;
+        DInputsHash *inputs_hash = DInputsHashCtor(u256_ctor_u(tx.inputsHash));
+        DBLSSignature *payload_sig = DBLSSignatureCtor(u768_ctor(tx.payloadSignature));
+        payload = DTransactionPayloadProviderUpdateRevocationCtor(DProviderUpdateRevocationPayloadCtor(version, pro_tx_hash, reason, inputs_hash, payload_sig));
+    } else if ([self isMemberOfClass:[DSCoinbaseTransaction class]]) {
+        DSCoinbaseTransaction *tx = (DSCoinbaseTransaction *)self;
+        uint16_t version = tx.coinbaseTransactionVersion;
+        uint32_t height = tx.height;
+        DMerkleRootMasternodeList *merkle_root_masternode_list = DMerkleRootMasternodeListCtor(u256_ctor_u(tx.merkleRootMNList));
+        DMerkleRootQuorums *merkle_root_quorums = DMerkleRootQuorumsCtor(u256_ctor_u(tx.merkleRootLLMQList));
+        uint32_t *best_cl_height = tx.bestCLHeightDiff ? u32_ctor((uint32_t) tx.bestCLHeightDiff) : NULL;
+        DBLSSignature *best_cl_signature = uint768_is_zero(tx.bestCLSignature) ? NULL : DBLSSignatureCtor(u768_ctor_u(tx.bestCLSignature));
+        uint64_t *asset_locked_amount = tx.creditPoolBalance ? u64_ctor(tx.creditPoolBalance) : NULL;
+        payload = DTransactionPayloadCoinbaseCtor(DCoinbasePayloadCtor(version, height, merkle_root_masternode_list, merkle_root_quorums, best_cl_height, best_cl_signature, asset_locked_amount));
+    } else if ([self isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
+        DSQuorumCommitmentTransaction *tx = (DSQuorumCommitmentTransaction *)self;
+        uint16_t version = tx.quorumCommitmentTransactionVersion;
+        uint32_t height = tx.blockHeight;
+        uint16_t qf_commit_version = tx.qfCommitVersion;
+        DLLMQType *llmq_type = dashcore_sml_llmq_type_LLMQType_from_u16(tx.llmqType);
+        DQuorumHash *quorum_hash = DQuorumHashCtor(u256_ctor_u(tx.quorumHash));
+        // TODO: ?????
+        int16_t *quorum_index = NULL;
+        uintptr_t signers_count = tx.signersCount;
+        BOOL *signers_values = malloc(sizeof(BOOL) * signers_count);
+        for (uint32_t i = 0; i < signers_count; i++) {
+            signers_values[i] = [tx.signersBitset bitIsTrueAtLEIndex:i];
+        }
+        Vec_bool *signers = Vec_bool_ctor(signers_count, signers_values);
+        uintptr_t valid_members_count = tx.validMembersCount;
+        BOOL *valid_members_values = malloc(sizeof(BOOL) * valid_members_count);
+        for (uint32_t i = 0; i < valid_members_count; i++) {
+            valid_members_values[i] = [tx.validMembersBitset bitIsTrueAtLEIndex:i];
+        }
+        Vec_bool *valid_members = Vec_bool_ctor(valid_members_count, valid_members_values);
+        DBLSPublicKey *quorum_public_key = DBLSPublicKeyCtor(u384_ctor_u(tx.quorumPublicKey));
+        DQuorumVVecHash *quorum_vvec_hash = DQuorumVVecHashCtor(u256_ctor_u(tx.quorumVerificationVectorHash));
+        DBLSSignature *threshold_sig = DBLSSignatureCtor(u768_ctor_u(tx.quorumThresholdSignature));
+        DBLSSignature *all_commitment_aggregated_signature = DBLSSignatureCtor(u768_ctor_u(tx.allCommitmentAggregatedSignature));
+        DQuorumEntry *quorum_entry = DQuorumEntryCtor(qf_commit_version, llmq_type, quorum_hash, quorum_index, signers, valid_members, quorum_public_key, quorum_vvec_hash, threshold_sig, all_commitment_aggregated_signature);
+        payload = DTransactionPayloadQuorumCommitmentCtor(DQuorumCommitmentPayloadCtor(version, height, quorum_entry));
+    } else if ([self isMemberOfClass:[DSAssetLockTransaction class]]) {
+        DSAssetLockTransaction *tx = (DSAssetLockTransaction *)self;
+        NSArray<DSTransactionOutput *> *creditOutputs = tx.creditOutputs;
+        uintptr_t credit_outputs_count = creditOutputs.count;
+        DTxOut **credit_output_values = malloc(credit_outputs_count * sizeof(DTxOut *));
+        for (uintptr_t i = 0; i < credit_outputs_count; i++) {
+            credit_output_values[i] = [creditOutputs[i] ffi_malloc];
+        }
+        DTxOutputs *credit_outputs = DTxOutputsCtor(credit_outputs_count, credit_output_values);
+        DAssetLockPayload *asset_lock_payload = DAssetLockPayloadCtor(tx.specialTransactionVersion, credit_outputs);
+        payload = DTransactionPayloadAssetLockCtor(asset_lock_payload);
+    } else if ([self isMemberOfClass:[DSAssetUnlockTransaction class]]) {
+        DSAssetUnlockTransaction *tx = (DSAssetUnlockTransaction *)self;
+        DAssetUnlockBasePayload *base = DAssetUnlockBasePayloadCtor(tx.specialTransactionVersion, tx.index, tx.fee);
+        DAssetUnlockRequestInfo *request_info = DAssetUnlockRequestInfoCtor(tx.requestedHeight, DQuorumHashCtor(u256_ctor_u(tx.quorumHash)));
+        DBLSSignature *quorum_sig = DBLSSignatureCtor(u768_ctor_u(tx.quorumSignature));
+        payload = DTransactionPayloadAssetUnlockCtor(DAssetUnlockPayloadCtor(base, request_info, quorum_sig));
+    }
+    return payload;
+}
+
 - (DTransaction *)ffi_malloc:(DChainType *)chainType {
-    uintptr_t inputsCount = self.inputs.count;
-    uintptr_t outputsCount = self.outputs.count;
+    NSArray<DSTransactionInput *> *tx_inputs = self.inputs;
+    uintptr_t inputsCount = tx_inputs.count;
     DTxIn **input_values = malloc(inputsCount * sizeof(DTxIn *));
-    DTxOut **output_values = malloc(outputsCount * sizeof(DTxOut *));
-    for (uintptr_t i = 0; i < inputsCount; ++i) {
-        input_values[i] = [self.inputs[i] ffi_malloc];
+    for (uintptr_t i = 0; i < inputsCount; i++) {
+        input_values[i] = [tx_inputs[i] ffi_malloc];
     }
     
-    for (uintptr_t i = 0; i < outputsCount; ++i) {
-        DSTransactionOutput *output = self.outputs[i];
-        output_values[i] = [output ffi_malloc];
+    NSArray<DSTransactionOutput *> *tx_outputs = self.outputs;
+    uintptr_t outputsCount = tx_outputs.count;
+    DTxOut **output_values = malloc(outputsCount * sizeof(DTxOut *));
+    for (uintptr_t i = 0; i < outputsCount; i++) {
+        output_values[i] = [tx_outputs[i] ffi_malloc];
     }
-    DTransaction *transaction = DTransactionCtor(self.version, self.lockTime, DTxInputsCtor(inputsCount, input_values), DTxOutputsCtor(outputsCount, output_values), NULL);
+    
+    DTransactionPayload *payload = [self ffi_payload];
+    DTxInputs *inputs = DTxInputsCtor(inputsCount, input_values);
+    DTxOutputs *outputs = DTxOutputsCtor(outputsCount, output_values);
+    DTransaction *transaction = DTransactionCtor(self.version, self.lockTime, inputs, outputs, payload);
     return transaction;
 }
 

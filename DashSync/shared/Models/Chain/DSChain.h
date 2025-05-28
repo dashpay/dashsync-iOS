@@ -68,7 +68,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, nullable) DSDashSharedCore *shareCore;
 
 /*! @brief Tokio Runtime Reference  */
-@property (nonatomic, nullable) Runtime *sharedRuntime;
+//@property (nonatomic, nullable) DArcRuntime *sharedRuntime;
+@property (nonatomic, nullable) const Runtime *sharedRuntimeObj;
 
 /*! @brief Masternode Processor Reference  */
 @property (nonatomic, nullable) DArcProcessor *sharedProcessor;

@@ -123,6 +123,7 @@
     self.mMasternodeOwnerPrivateKeyLocations = [NSMutableDictionary dictionary];
     self.mMasternodeVoterKeyLocations = [NSMutableDictionary dictionary];
     self.mMasternodeOperatorPublicKeyLocations = [NSMutableDictionary dictionary];
+    self.mPlatformNodeKeyLocations = [NSMutableDictionary dictionary];
     self.checkedWalletCreationTime = NO;
     self.checkedGuessedWalletCreationTime = NO;
     self.checkedVerifyWalletCreationTime = NO;
@@ -950,7 +951,7 @@
     return -1;
 }
 
-- (DMaybeOpaqueKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed {
+- (DOpaqueKey *)privateKeyForAddress:(NSString *)address fromSeed:(NSData *)seed {
     NSParameterAssert(address);
     NSParameterAssert(seed);
 
@@ -959,21 +960,18 @@
     DSFundsDerivationPath *derivationPath = (DSFundsDerivationPath *)[account derivationPathContainingAddress:address];
     if (!derivationPath) return nil;
     NSIndexPath *indexPath = [derivationPath indexPathForKnownAddress:address];
-    return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
+    return [derivationPath privateKeyAtIndexPathAsOpt:indexPath fromSeed:seed];
 }
 
 - (NSString *)privateKeyAddressForAddress:(NSString *)address fromSeed:(NSData *)seed {
-    DMaybeOpaqueKey *result = [self privateKeyForAddress:address fromSeed:seed];
+    DOpaqueKey *result = [self privateKeyForAddress:address fromSeed:seed];
     NSString *keyAddress = NULL;
     if (result) {
-        if (result->ok) {
-            char *c_string = DOpaqueKeyPubAddress(result->ok, self.chain.chainType);
-            keyAddress = NSStringFromPtr(c_string);
-            if (c_string) {
-                DCharDtor(c_string);
-            }
-        }
-        DMaybeOpaqueKeyDtor(result);
+        char *c_string = DOpaqueKeyPubAddress(result, self.chain.chainType);
+        keyAddress = NSStringFromPtr(c_string);
+        if (c_string)
+            DCharDtor(c_string);
+        DOpaqueKeyDtor(result);
     }
     return keyAddress;
 }
@@ -981,12 +979,12 @@
 - (NSData *_Nullable)signDigest:(UInt256)digest
       usingPrivateKeyForAddress:(NSString *)address
                        fromSeed:(NSData *)seed {
-    DMaybeOpaqueKey *opaque_key = [self privateKeyForAddress:address fromSeed:seed];
-    if (opaque_key->error) {
+    DOpaqueKey *opaque_key = [self privateKeyForAddress:address fromSeed:seed];
+    if (!opaque_key) {
         return nil;
     }
-    NSData *signature = [DSKeyManager signMesasageDigest:opaque_key->ok digest:digest];
-    DMaybeOpaqueKeyDtor(opaque_key);
+    NSData *signature = [DSKeyManager signMesasageDigest:opaque_key digest:digest];
+    DOpaqueKeyDtor(opaque_key);
     return signature;
 }
 
@@ -1250,5 +1248,14 @@
     NSParameterAssert(holdingAddress);
     return [[DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self] indexOfKnownAddress:holdingAddress];
 }
+
+- (BOOL)hasExtendedPublicKeyForDerivationPathOfKind:(DSDerivationPathKind)kind {
+    return [[DSDerivationPathFactory sharedInstance] hasExtendedPublicKeyForDerivationPathOfKind:kind forWallet:self];
+}
+
+- (DMaybeOpaqueKey *_Nullable)generateExtendedPublicKeyFromSeedForDerivationPathKind:(NSData *)seed kind:(DSDerivationPathKind)kind {
+    return [[DSDerivationPathFactory sharedInstance] generateExtendedPublicKeyFromSeedForDerivationPathKind:kind fromSeed:seed forWallet:self];
+}
+
 
 @end

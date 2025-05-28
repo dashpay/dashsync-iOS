@@ -88,13 +88,22 @@
 - (void)testIdentityCreationUsingInstantProof {
     BOOL keyCreated = [self.identity createFundingPrivateKeyWithSeed:self.seedData isForInvitation:NO];
     XCTAssertTrue(keyCreated, @"No error should be produced");
-    uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
+    
+    Result_ok_u32_err_dash_spv_platform_error_Error *maybe_index = dash_spv_platform_identity_model_IdentityModel_first_index_of_ecdsa_auth_key_create_if_needed(self.identity.model, DSecurityLevelMaster(), !self.identity.wallet.isTransient, (__bridge void *)self.identity);
+    if (maybe_index->error) {
+        XCTAssertTrue(NO, @"Index should be known");
+        Result_ok_u32_err_dash_spv_platform_error_Error_destroy(maybe_index);
+        return;
+    }
+    uint32_t index = maybe_index->ok[0];
+    Result_ok_u32_err_dash_spv_platform_error_Error_destroy(maybe_index);
+
     DOpaqueKey *publicKey = [self.identity keyAtIndex:index];
     DIdentityPublicKey *public_key = DIdentityRegistrationPublicKey(index, publicKey);
-    DMaybeOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
+    DOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
     DSAssetLockTransaction *transaction = self.identity.registrationAssetLockTransaction;
     DAssetLockProof *instant_proof = [self.identity createProof:transaction.instantSendLockAwaitingProcessing];
-    DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, instant_proof, private_key->ok);
+    DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, instant_proof, private_key);
     #if (defined(DPP_STATE_TRANSITIONS))
     dpp_state_transition_state_transitions_identity_identity_create_transition_v0_IdentityCreateTransitionV0 *identity_create_v0 = result->ok->identity_create->v0;
     dpp_state_transition_state_transitions_identity_public_key_in_creation_v0_IdentityPublicKeyInCreationV0 *first_key_v0 = identity_create_v0->public_keys->values[0]->v0;
@@ -110,12 +119,21 @@
 - (void)testIdentityCreationUsingChainProof {
     BOOL keyCreated = [self.identity createFundingPrivateKeyWithSeed:self.seedData isForInvitation:NO];
     XCTAssertTrue(keyCreated, @"No error should be produced");
-    uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
+//    uint32_t index = [self.identity firstIndexOfKeyOfType:DKeyKindECDSA() createIfNotPresent:YES saveKey:!self.identity.wallet.isTransient];
+    Result_ok_u32_err_dash_spv_platform_error_Error *maybe_index = dash_spv_platform_identity_model_IdentityModel_first_index_of_ecdsa_auth_key_create_if_needed(self.identity.model, DSecurityLevelMaster(), !self.identity.wallet.isTransient, (__bridge void *)self.identity);
+    if (maybe_index->error) {
+        XCTAssertTrue(NO, @"Index should be known");
+        Result_ok_u32_err_dash_spv_platform_error_Error_destroy(maybe_index);
+        return;
+    }
+    uint32_t index = maybe_index->ok[0];
+    Result_ok_u32_err_dash_spv_platform_error_Error_destroy(maybe_index);
+
     DOpaqueKey *publicKey = [self.identity keyAtIndex:index];
     DIdentityPublicKey *public_key = DIdentityRegistrationPublicKey(index, publicKey);
-    DMaybeOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
+    DOpaqueKey *private_key = self.identity.registrationFundingPrivateKey;
     DAssetLockProof *chain_proof = [self.identity createProof:nil];
-    DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, chain_proof, private_key->ok);
+    DMaybeStateTransition *result = dash_spv_platform_PlatformSDK_identity_registration_signed_transition_with_public_key_at_index(self.chain.sharedPlatformObj, public_key, index, chain_proof, private_key);
     #if (defined(DPP_STATE_TRANSITIONS))
     dpp_state_transition_state_transitions_identity_identity_create_transition_v0_IdentityCreateTransitionV0 *identity_create_v0 = result->ok->identity_create->v0;
     dpp_state_transition_state_transitions_identity_public_key_in_creation_v0_IdentityPublicKeyInCreationV0 *first_key_v0 = identity_create_v0->public_keys->values[0]->v0;
@@ -130,17 +148,18 @@
 
 - (void)testIdentitySigning {
     UInt256 digest = uint256_random;
-    const NSUInteger indexes[] = {self.identity.index | BIP32_HARD, 0 | BIP32_HARD};
-    NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
-    DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] identityECDSAKeysDerivationPathForWallet:self.identity.wallet];
-    DMaybeOpaqueKey *key = [derivationPath privateKeyAtIndexPath:indexPath fromSeed:self.seedData];
-    Vec_u8 *sig = DOpaqueKeySign(key->ok, slice_u256_ctor_u(digest));
+    NSIndexPath *indexPath = [self.identity hardenedIndexPathForIndex:0];
+    DOpaqueKey *key = [[DSDerivationPathFactory sharedInstance] privateKeyAtIndexPath:indexPath
+                                                                             fromSeed:self.seedData
+                                                                               ofKind:DSDerivationPathKind_IdentityECDSA
+                                                                            forWallet:self.identity.wallet];
+    Vec_u8 *sig = DOpaqueKeySign(key, slice_u256_ctor_u(digest));
     NSData *signature = NSDataFromPtr(sig);
     bytes_dtor(sig);
     XCTAssertFalse([signature isZeroBytes], "The blockchain identity should be able to sign a message digest");
-    DMaybeOpaqueKey *publicKey = [self.identity publicKeyAtIndex:0 ofType:DKeyKindECDSA()];
-    BOOL verified = [DSKeyManager verifyMessageDigest:publicKey->ok digest:digest signature:signature];
-    DMaybeOpaqueKeyDtor(publicKey);
+    DOpaqueKey *publicKey = [self.identity publicKeyAtIndex:0 ofType:DKeyKindECDSA()];
+    BOOL verified = [DSKeyManager verifyMessageDigest:publicKey digest:digest signature:signature];
+    DOpaqueKeyDtor(publicKey);
     XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
 }
 

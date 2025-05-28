@@ -108,8 +108,8 @@
         return [NSError errorWithCode:500 localizedDescriptionKey:@"Error when updating profile information"];
     }
     dpp_prelude_Revision *revision = transientDashpayUser->revision;
-    self.localProfileDocumentRevision = revision->_0;
-    self.remoteProfileDocumentRevision = revision->_0;
+    self.localProfileDocumentRevision = (uint32_t) revision->_0;
+    self.remoteProfileDocumentRevision = (uint32_t) revision->_0;
     self.avatarPath = NSStringFromPtr(transientDashpayUser->avatar_url);
     self.publicMessage = NSStringFromPtr(transientDashpayUser->public_message);
     self.displayName = NSStringFromPtr(transientDashpayUser->display_name);

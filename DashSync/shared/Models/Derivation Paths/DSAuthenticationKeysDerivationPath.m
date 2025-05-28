@@ -239,9 +239,9 @@
     return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
-- (DMaybeOpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed {
+- (DOpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed {
     uint32_t index = [self firstUnusedIndex];
-    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
+    return [self privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
 }
 
 - (DMaybeOpaqueKey *)privateKeyForHash160:(UInt160)hash160
@@ -270,6 +270,13 @@
     Vec_u32 *index_path = [NSIndexPath ffi_to:indexPath];
     return DMaybeDeriveOpaqueKeyFromExtendedPrivateKeyDataForIndexPath(self.signingAlgorithm, slice, index_path);
 }
+- (DOpaqueKey *_Nullable)privateKeyAtIndexPathAsOpt:(NSIndexPath *)indexPath {
+    NSData *extendedPrivateKeyData = self.extendedPrivateKeyData;
+    if (!extendedPrivateKeyData) return nil;
+    Slice_u8 *slice = slice_ctor(extendedPrivateKeyData);
+    Vec_u32 *index_path = [NSIndexPath ffi_to:indexPath];
+    return DMaybeDeriveOpaqueKeyFromExtendedPrivateKeyDataForIndexPathAsOpt(self.signingAlgorithm, slice, index_path);
+}
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath {
     BOOL hasHardenedDerivation = FALSE;
@@ -280,14 +287,10 @@
     }
     if (hasHardenedDerivation || self.reference == DSDerivationPathReference_ProviderPlatformNodeKeys) {
         if ([self hasExtendedPrivateKey]) {
-            DMaybeOpaqueKey *result = [self privateKeyAtIndexPath:indexPath];
+            DOpaqueKey *result = [self privateKeyAtIndexPathAsOpt:indexPath];
             if (!result) return nil;
-            if (!result->ok) {
-                DMaybeOpaqueKeyDtor(result);
-                return nil;
-            }
-            NSData *data = [DSKeyManager publicKeyData:result->ok];
-            DMaybeOpaqueKeyDtor(result);
+            NSData *data = [DSKeyManager publicKeyData:result];
+            DOpaqueKeyDtor(result);
             return data;
         } else {
             return nil;

@@ -109,10 +109,10 @@
     return nil;
 }
 
-- (DMaybeOpaqueKey *)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key {
+- (DOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(DIdentityPublicKey *)identity_public_key {
     for (DSWallet *wallet in self.wallets) {
-        DMaybeOpaqueKey *identity_private_key = [wallet identityPrivateKeyForIdentityPublicKey:identity_public_key];
-        if (identity_private_key && identity_private_key->ok)
+        DOpaqueKey *identity_private_key = [wallet identityPrivateKeyForIdentityPublicKey:identity_public_key];
+        if (identity_private_key)
             return identity_private_key;
     }
     return nil;

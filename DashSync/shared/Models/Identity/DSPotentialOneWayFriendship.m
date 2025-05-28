@@ -129,12 +129,12 @@
     NSData *data = NSDataFromPtr(pub_key_data->ok);
     DMaybeKeyDataDtor(pub_key_data);
     DKeyKind *kind = DOpaqueKeyKind(recipient_key);
-    DMaybeOpaqueKey *privateKey = [self.sourceIdentity privateKeyAtIndex:self.sourceKeyIndex ofType:kind];
+    DOpaqueKey *privateKey = [self.sourceIdentity privateKeyAtIndex:self.sourceKeyIndex ofType:kind];
     Slice_u8 *slice = slice_ctor(data);
-    DMaybeKeyData *result = DOpaqueKeyEncryptData(privateKey->ok, recipient_key, slice);
+    DMaybeKeyData *result = DOpaqueKeyEncryptData(privateKey, recipient_key, slice);
     NSData *encrypted = result->ok ? NSDataFromPtr(result->ok) : nil;
     DMaybeKeyDataDtor(result);
-    DMaybeOpaqueKeyDtor(privateKey);
+//    DOpaqueKeyDtor(privateKey);
     self.encryptedExtendedPublicKeyData = encrypted;
     return encrypted;
 }

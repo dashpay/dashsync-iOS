@@ -51,6 +51,49 @@
     return singleton;
 }
 
+- (DSDerivationPath *)derivationPathOfKind:(DSDerivationPathKind)kind forWallet:(DSWallet *)wallet {
+    switch (kind) {
+        case DSDerivationPathKind_ProviderVoting:
+            return [self providerVotingKeysDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_ProviderOwner:
+            return [self providerOwnerKeysDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_ProviderOperator:
+            return [self providerOperatorKeysDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_PlatformNode:
+            return [self platformNodeKeysDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_IdentityRegistrationFunding:
+            return [self identityRegistrationFundingDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_IdentityTopupFunding:
+            return [self identityTopupFundingDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_InvitationFunding:
+            return [self identityInvitationFundingDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_IdentityBLS:
+            return [self identityBLSKeysDerivationPathForWallet:wallet];
+        case DSDerivationPathKind_IdentityECDSA:
+            return [self identityECDSAKeysDerivationPathForWallet:wallet];
+    }
+}
+
+- (BOOL)hasExtendedPublicKeyForDerivationPathOfKind:(DSDerivationPathKind)kind forWallet:(DSWallet *)wallet {
+    return [[self derivationPathOfKind:kind forWallet:wallet] hasExtendedPublicKey];
+}
+
+- (DOpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath
+                                           fromSeed:(NSData *)seed
+                                             ofKind:(DSDerivationPathKind)kind
+                                          forWallet:(DSWallet *)wallet {
+    DSDerivationPath *path = [self derivationPathOfKind:kind forWallet:wallet];
+    return [path privateKeyAtIndexPathAsOpt:indexPath fromSeed:seed];
+}
+
+- (DMaybeOpaqueKey *_Nullable)generateExtendedPublicKeyFromSeedForDerivationPathKind:(DSDerivationPathKind)kind
+                                                                            fromSeed:(NSData *)seed
+                                                                           forWallet:(DSWallet *)wallet {
+    DSDerivationPath *path = [self derivationPathOfKind:kind forWallet:wallet];
+    return [path generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
+}
+
+
 - (DSAuthenticationKeysDerivationPath *)providerVotingKeysDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t votingKeysDerivationPathByWalletToken = 0;
     dispatch_once(&votingKeysDerivationPathByWalletToken, ^{

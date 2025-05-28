@@ -71,7 +71,7 @@
 
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath identitiesBLSKeysDerivationPathForWallet:wallet];
 
-    DMaybeOpaqueKey *key0 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
+    DOpaqueKey *key0 = [derivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:0] fromSeed:seed];
 //    DOpaqueKey *key1 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:1] fromSeed:seed];
 //    DOpaqueKey *key2 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:2] fromSeed:seed];
 //    DOpaqueKey *key3 = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:3] fromSeed:seed];
@@ -97,7 +97,7 @@
 //    UInt256 hash2 = [[NSData dataWithUInt512:concat2] SHA256_2];
 //    UInt256 hash3 = [[NSData dataWithUInt512:concat3] SHA256_2];
     Slice_u8 *hash0_slice = slice_u256_ctor_u(hash0);
-    Vec_u8 *signature_data0 = DOpaqueKeySign(key0->ok, hash0_slice);
+    Vec_u8 *signature_data0 = DOpaqueKeySign(key0, hash0_slice);
     NSData *signatureData0 = [DSKeyManager NSDataFrom:signature_data0];
     NSLog(@"signatureData0: %@", signatureData0.hexString);
 //    UInt768 signature0 = [key0 signDigest:hash0];

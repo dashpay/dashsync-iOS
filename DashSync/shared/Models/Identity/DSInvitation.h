@@ -55,7 +55,7 @@ FOUNDATION_EXPORT NSString *const DSInvitationUpdateEventLink;
 /*! @brief Verifies the current invitation link in the invitation was created with a link. If the invitation is valid a transaction will be returned, as well as if the transaction has already been spent.
     TODO:Spent currently does not work
  */
-- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result))completion
+- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion
                            completionQueue:(dispatch_queue_t)completionQueue;
 
 /*! @brief Verifies an invitation link. The chain must support platform features. If the invitation is valid a transaction will be returned, as well as if the transaction has already been spent.
@@ -63,7 +63,7 @@ FOUNDATION_EXPORT NSString *const DSInvitationUpdateEventLink;
  */
 + (void)verifyInvitationLink:(NSString *)invitationLink
                      onChain:(DSChain *)chain
-                  completion:(void (^_Nullable)(Result_ok_dashcore_blockdata_transaction_Transaction_err_dash_spv_platform_error_Error *result))completion
+                  completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion
              completionQueue:(dispatch_queue_t)completionQueue;
 
 /*! @brief Registers the blockchain identity if the invitation was created with an invitation link. The blockchain identity is then associated with the invitation. */

@@ -604,10 +604,26 @@
     DMaybeOpaqueKey *result = DMaybeOpaquePrivateKeyAtIndexPathWrapped(self.signingAlgorithm, seed_slice, index_path, path);
     return result;
 }
+- (DOpaqueKey *_Nullable)privateKeyAtIndexPathAsOpt:(NSIndexPath *)indexPath
+                                           fromSeed:(NSData *)seed {
+    NSParameterAssert(indexPath);
+    NSParameterAssert(seed);
+    if (!seed || !indexPath) return nil;
+    if (!self->_length) return nil; //there needs to be at least 1 length
+    Slice_u8 *seed_slice = slice_ctor(seed);
+    Vec_u32 *index_path = [NSIndexPath ffi_to:indexPath];
+    DIndexPathU256 *path = [DSDerivationPath ffi_to:self];
+    DOpaqueKey *result = DMaybeOpaquePrivateKeyAtIndexPathOpt(self.signingAlgorithm, seed_slice, index_path, path);
+    return result;
+}
 
 - (DMaybeOpaqueKey *_Nullable)publicKeyAtIndexPath:(NSIndexPath *)indexPath {
     NSData *publicKeyData = [self publicKeyDataAtIndexPath:indexPath];
     return DMaybeOpaqueKeyWithPublicKeyData(self.signingAlgorithm, slice_ctor(publicKeyData));
+}
+- (DOpaqueKey *_Nullable)publicKeyAtIndexPathAsOpt:(NSIndexPath *)indexPath {
+    NSData *publicKeyData = [self publicKeyDataAtIndexPath:indexPath];
+    return DMaybeOpaqueKeyWithPublicKeyDataAsOpt(self.signingAlgorithm, slice_ctor(publicKeyData));
 }
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath {

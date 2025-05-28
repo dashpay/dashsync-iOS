@@ -192,6 +192,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 // gets a private key at an index path
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath
                                            fromSeed:(NSData *)seed;
+- (DOpaqueKey *_Nullable)privateKeyAtIndexPathAsOpt:(NSIndexPath *)indexPath
+                                           fromSeed:(NSData *)seed;
 
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
@@ -209,6 +211,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
 
 
 - (DMaybeOpaqueKey *_Nullable)publicKeyAtIndexPath:(NSIndexPath *)indexPath;
+- (DOpaqueKey *_Nullable)publicKeyAtIndexPathAsOpt:(NSIndexPath *)indexPath;
 
 - (NSData *_Nullable)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath;
 

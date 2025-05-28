@@ -108,4 +108,15 @@ static dispatch_once_t platformChainToken = 0;
 //    return _dashThumbnailContract;
 //}
 
+- (DDataContract *_Nullable)rawContractById:(UInt256)contractId {
+    NSDictionary *contracts = self.knownContracts;
+    for (NSString *localId in contracts) {
+        DPContract *contract = contracts[localId];
+        if (uint256_eq(contractId, contract.contractId)) {
+            return contract.raw_contract;
+        }
+    }
+    return NULL;
+}
+
 @end

@@ -130,10 +130,11 @@
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u", self.derivationPath.stringRepresentation, addressEntity.index];
     cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:addressEntity.index]].hexString;
-    DMaybeOpaqueKey *maybeKey = [self.derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:addressEntity.index] fromSeed:self.seed];
-    if (!maybeKey || !maybeKey->ok) return;
+    DOpaqueKey *maybeKey = [self.derivationPath privateKeyAtIndexPathAsOpt:[NSIndexPath indexPathWithIndex:addressEntity.index] fromSeed:self.seed];
+    if (!maybeKey) return;
     
-    cell.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:maybeKey->ok chainType:self.derivationPath.chain.chainType];
+    cell.privateKeyLabel.text = [DSKeyManager serializedPrivateKey:maybeKey chainType:self.derivationPath.chain.chainType];
+    DOpaqueKeyDtor(maybeKey);
 }
 
 

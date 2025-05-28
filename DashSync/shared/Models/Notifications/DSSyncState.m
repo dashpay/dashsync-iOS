@@ -18,6 +18,8 @@
 #import "DSOptionsManager.h"
 #import "DSSyncState.h"
 
+#define IDENTITY_UPDATE_INTERVAL 600
+
 NSString * DSSyncStateExtKindDescription(DSSyncStateExtKind kind) {
     NSMutableArray<NSString *> *components = [NSMutableArray array];
     if (FLAG_IS_SET(kind, DSSyncStateExtKind_Peers))
@@ -190,7 +192,7 @@ NSString * DSMasternodeListSyncStateKindDescription(DSMasternodeListSyncStateKin
 }
 
 - (BOOL)hasRecentIdentitiesSync {
-    return [[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 180;
+    return [[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < IDENTITY_UPDATE_INTERVAL;
 }
 
 - (double)progress {

@@ -247,20 +247,13 @@ NSString const *defaultIdentityKey = @"defaultIdentityKey";
     return foundIdentity;
 }
 
-- (DMaybeOpaqueKey *)identityPrivateKeyForIdentityPublicKey:(dpp_identity_identity_public_key_IdentityPublicKey *)identity_public_key {
-    switch (identity_public_key->tag) {
-        case dpp_identity_identity_public_key_IdentityPublicKey_V0: {
-            dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 *v0 = identity_public_key->v0;
-            uint32_t key_index = v0->id->_0;
-            for (DSIdentity *identity in [self.mIdentities allValues]) {
-                DOpaqueKey *key = [identity keyAtIndex:key_index];
-                if (key && DOpaqueKeyPublicKeyDataEqualTo(key, v0->data->_0))
-                    return [identity privateKeyAtIndex:key_index ofType:dash_spv_platform_identity_manager_key_kind_from_key_type(v0->key_type)];
-            }
-            return nil;
-        }
-        default: return nil;
+- (DOpaqueKey *_Nullable)identityPrivateKeyForIdentityPublicKey:(DIdentityPublicKey *)identity_public_key {
+    for (DSIdentity *identity in [self.mIdentities allValues]) {
+        DOpaqueKey *maybe_private_key = dash_spv_platform_identity_model_IdentityModel_maybe_private_key_for_identity_public_key(identity.model, identity_public_key, (__bridge void *) identity);
+        if (maybe_private_key)
+            return maybe_private_key;
     }
+    return nil;
 }
 
 - (uint32_t)identitiesCount {

@@ -23,11 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)identitiesECDSAKeysDerivationPathForWallet:(DSWallet *)wallet;
 
 - (NSData *)firstUnusedPublicKey;
-- (DMaybeOpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed;
+- (DOpaqueKey *)firstUnusedPrivateKeyFromSeed:(NSData *)seed;
 - (DMaybeOpaqueKey *)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData *)seed;
 - (NSData *)publicKeyDataForHash160:(UInt160)hash160;
 
 - (DMaybeOpaqueKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath;
+- (DOpaqueKey *_Nullable)privateKeyAtIndexPathAsOpt:(NSIndexPath *)indexPath;
 
 - (UInt256)keyIdAtIndex:(uint32_t)index;
 @end
