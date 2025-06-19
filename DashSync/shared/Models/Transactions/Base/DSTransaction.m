@@ -360,7 +360,12 @@
         amount = 0;
     }
 
-    self.cachedDashAmount = amount;
+    BOOL isChainSynced = self.chain.chainManager.syncPhase == DSChainSyncPhase_Synced;
+    
+    if (isChainSynced || self.timestamp + (30 * 60) < [[NSDate date] timeIntervalSince1970]) {
+        // Don't cache recent transactions if still syncing
+        self.cachedDashAmount = amount;
+    }
     
     return amount;
 }
