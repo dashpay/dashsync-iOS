@@ -31,11 +31,6 @@
                     @autoreleasepool {
                         while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
                         if (![DSKeyManager isValidDashAddress:e.address forChain:self.wallet.chain]) {
-#if DEBUG
-                            DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
-#else
-                                DSLog(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, @"<REDACTED>");
-#endif /* DEBUG */
                             continue;
                         }
                         self.mOrderedAddresses[e.index] = e.address;
@@ -121,7 +116,6 @@
             NSData *pubKey = [self publicKeyDataAtIndex:n];
             NSString *addr = [DSKeyManager addressWithPublicKeyData:pubKey forChain:self.chain];
             if (!addr) {
-                DSLog(@"[%@] error generating keys", self.chain.name);
                 if (error) {
                     *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }

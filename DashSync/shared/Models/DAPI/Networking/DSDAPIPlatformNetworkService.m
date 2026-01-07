@@ -669,7 +669,6 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
     NSParameterAssert(completionQueue);
-    DSLogPrivate(@"Broadcasting state transition to ip %@ with data %@ rawData %@", self.ipAddress, stateTransition.keyValueDictionary, stateTransition.data.hexString);
 
     WaitForStateTransitionResultRequest *waitForStateTransitionResultRequest = [[WaitForStateTransitionResultRequest alloc] init];
     waitForStateTransitionResultRequest.prove = DSPROVE_PUSH_PLATFORM;

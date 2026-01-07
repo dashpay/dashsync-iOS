@@ -55,7 +55,6 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
         OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
 
         if (status == noErr) return YES;
-        DSLogPrivate(@"SecItemAdd error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
         return NO;
     }
 
@@ -63,7 +62,6 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
         OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
 
         if (status == noErr) return YES;
-        DSLogPrivate(@"SecItemDelete error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
         return NO;
     }
 
@@ -72,7 +70,6 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
 
     if (status == noErr) return YES;
-    DSLogPrivate(@"SecItemUpdate error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
     return NO;
 }
 
@@ -89,7 +86,6 @@ BOOL hasKeychainData(NSString *key, NSError **error) {
 
     if (status == errSecItemNotFound) return NO;
     if (status == noErr) return YES;
-    DSLogPrivate(@"SecItemCopyMatching error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
     if (error) *error = [NSError osStatusErrorWithCode:status];
     return NO;
 }
@@ -104,7 +100,6 @@ NSData *getKeychainData(NSString *key, NSError **error) {
 
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    DSLogPrivate(@"SecItemCopyMatching error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
     if (error) *error = [NSError osStatusErrorWithCode:status];
     return nil;
 }
@@ -164,9 +159,6 @@ NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error) 
     ]];
     set = [set setByAddingObjectsFromArray:classes];
     NSDictionary *dictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
-    if (*error) {
-        DSLogPrivate(@"error retrieving dictionary from keychain %@", *error);
-    }
     return dictionary;
     //}
 }
@@ -189,9 +181,6 @@ NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error) {
         ]];
         set = [set setByAddingObjectsFromArray:classes];
         NSArray *array = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
-        if (*error) {
-            DSLogPrivate(@"error retrieving array from keychain %@", *error);
-        }
         return array;
     }
 }

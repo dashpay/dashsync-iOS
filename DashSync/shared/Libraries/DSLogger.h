@@ -25,15 +25,36 @@ static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif /* DEBUG */
 
-#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__) //!OCLINT
+NS_ASSUME_NONNULL_BEGIN
+
+// Thread name helper
+NSString *DSCurrentThreadName(void);
+
+#pragma mark - Android-style logging macros
+// Format: "HH:MM:SS [thread] ClassName - message"
+// These match the Android/DashJ log format
+
+#define DSLogInfo(className, frmt, ...) DDLogInfo(@"[%@] %@ - " frmt, DSCurrentThreadName(), className, ##__VA_ARGS__)
+#define DSLogDebug(className, frmt, ...) DDLogDebug(@"[%@] %@ - " frmt, DSCurrentThreadName(), className, ##__VA_ARGS__)
+#define DSLogWarn(className, frmt, ...) DDLogWarn(@"[%@] %@ - " frmt, DSCurrentThreadName(), className, ##__VA_ARGS__)
+#define DSLogError(className, frmt, ...) DDLogError(@"[%@] %@ - " frmt, DSCurrentThreadName(), className, ##__VA_ARGS__)
+
+#ifdef DEBUG
+#define DSLogVerbose(className, frmt, ...) DDLogVerbose(@"[%@] %@ - " frmt, DSCurrentThreadName(), className, ##__VA_ARGS__)
+#else
+#define DSLogVerbose(className, frmt, ...)
+#endif /* DEBUG */
+
+#pragma mark - Legacy logging macros (deprecated - for backward compatibility during migration)
+// These will be removed after full migration to Android-style logging
+
+#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__)
 
 #ifdef DEBUG
 #define DSLogPrivate(s, ...) DDLogVerbose(s, ##__VA_ARGS__)
 #else
 #define DSLogPrivate(s, ...)
 #endif /* DEBUG */
-
-NS_ASSUME_NONNULL_BEGIN
 
 @interface DSLogger : NSObject
 
@@ -42,10 +63,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSURL *> *)logFiles;
 
 /** @fn log:
- *  @brief This method is identical to `DSLog` macro
+ *  @brief This method logs a message with default class name
  *  @param message Final message to log
  */
 + (void)log:(NSString *)message;
+
+/** @fn log:className:
+ *  @brief This method logs a message with specified class name
+ *  @param message Final message to log
+ *  @param className The class name to include in the log
+ */
++ (void)log:(NSString *)message className:(NSString *)className;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

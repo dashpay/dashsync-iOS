@@ -253,7 +253,6 @@
 }
 
 - (void)wipeMasternodeInfo {
-    DSLog(@"[%@] wipeMasternodeInfo", self.chain.name);
     [self clearProcessorCache];
     [self.store removeAllMasternodeLists];
     [self.masternodeListDiffService cleanAllLists];
@@ -268,7 +267,6 @@
 - (DSQuorumSnapshot *_Nullable)quorumSnapshotForBlockHeight:(uint32_t)blockHeight {
     DSBlock *block = [self.chain blockAtHeight:blockHeight];
     if (!block) {
-        DSLog(@"[%@] No block for snapshot at height: %ul: ", self.chain.name, blockHeight);
         return nil;
     }
     return [self.store.cachedQuorumSnapshots objectForKey:uint256_data(block.blockHash)];
@@ -287,7 +285,6 @@
 - (NSData *_Nullable)CLSignatureForBlockHeight:(uint32_t)blockHeight {
     DSBlock *block = [self.chain blockAtHeight:blockHeight];
     if (!block) {
-        DSLog(@"[%@] No block for snapshot at height: %ul: ", self.chain.name, blockHeight);
         return nil;
     }
     return [self.store.cachedCLSignatures objectForKey:uint256_data(block.blockHash)];
@@ -313,13 +310,11 @@
 
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash {
     /// TODO: need to properly store in CoreData or wait for rust SQLite
-    //DSLog(@"[%@] ••• cache mnlist -> %@: %@", self.chain.name, uint256_hex(blockHash), masternodeList);
     [self.store.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(blockHash)];
     uint32_t lastHeight = self.lastMasternodeListBlockHeight;
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = lastHeight;
         self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = self.store.masternodeListsByBlockHash.count;
-        DSLog(@"[%@] [DSMasternodeManager] New List Stored: %u/%lu", self.chain.name, lastHeight, self.store.masternodeListsByBlockHash.count);
         [self.chain.chainManager notifySyncStateChanged];
     }
     return YES;
@@ -340,13 +335,11 @@
 // MARK: - Requesting Masternode List
 
 - (void)startSync {
-    DSLog(@"[%@] [DSMasternodeManager] startSync", self.chain.name);
     self.isSyncing = YES;
     [self getRecentMasternodeList];
 }
 
 - (void)stopSync {
-    DSLog(@"[%@] [DSMasternodeManager] stopSync", self.chain.name);
     self.isSyncing = NO;
     [self cancelMasternodeListTimer];
     if (self.chain.isRotatedQuorumsPresented) {
@@ -356,7 +349,6 @@
 }
 
 - (void)getRecentMasternodeList {
-    DSLog(@"[%@] getRecentMasternodeList at tip", self.chain.name);
     [self.masternodeListDiffService getRecentMasternodeList];
     if (self.chain.isRotatedQuorumsPresented) {
         [self.quorumRotationService getRecentMasternodeList];
@@ -434,7 +426,7 @@
     if (!message) {
         return NULL;
     }
-    
+
     MerkleBlockFinder blockFinder = ^DSMerkleBlock *(UInt256 blockHash) {
         return [self.chain blockForBlockHash:blockHash];
     };
@@ -442,15 +434,13 @@
         return blockFinder(blockHash).merkleRoot;
     }];
     DSMnDiffProcessingResult *result = [self processMasternodeDiffFromFile:message protocolVersion:[checkpoint protocolVersion] withContext:context];
-    
+
     __block DSMerkleBlock *block = blockFinder(blockHash);
     if (![result isValid]) {
-        DSLog(@"[%@] Invalid File for block at height %u with merkleRoot %@ (foundCoinbase %@ | validQuorums %@ | rootMNListValid %@ | rootQuorumListValid %@)", self.chain.name, block.height, uint256_hex(block.merkleRoot), result.foundCoinbase?@"Yes":@"No", result.validQuorums?@"Yes":@"No", result.rootMNListValid?@"Yes":@"No", result.rootQuorumListValid?@"Yes":@"No");
         return NULL;
     }
     // valid Coinbase might be false if no merkle block
     if (block && !result.validCoinbase) {
-        DSLog(@"[%@] Invalid Coinbase for block at height %u with merkleRoot %@", self.chain.name, block.height, uint256_hex(block.merkleRoot));
         return NULL;
     }
     DSMasternodeList *masternodeList = result.masternodeList;
@@ -458,7 +448,6 @@
                   addedMasternodes:result.addedMasternodes
                modifiedMasternodes:result.modifiedMasternodes
                         completion:^(NSError *_Nonnull error) {
-        DSLog(@"[%@] MNL Saved from file", self.chain.name);
     }];
     return masternodeList;
 }
@@ -529,7 +518,6 @@
         return;
     }
     if (heightToDelete > 0 && heightToDelete != UINT32_MAX) {
-        DSLog(@"[%@] --> removeOldMasternodeLists (removeOutdatedMasternodeListsBeforeBlockHash): %u (%u, %u)", self.chain.name, heightToDelete, diffMasternodeList.height, qrinfoMasternodeList.height);
         uint32_t h = heightToDelete - 50;
         NSDictionary *lists = [[self.store masternodeListsByBlockHash] copy];
         for (NSData *proRegTxHashData in lists) {
@@ -544,10 +532,8 @@
 
 - (void)processMasternodeListDiffResult:(DSMnDiffProcessingResult *)result forPeer:(DSPeer *)peer skipPresenceInRetrieval:(BOOL)skipPresenceInRetrieval completion:(void (^)(void))completion {
     DSMasternodeList *masternodeList = result.masternodeList;
-    DSLog(@"[%@] •••• processMasternodeListDiffResult: isValid: %d validCoinbase: %d", self.chain.name, [result isValid], result.validCoinbase);
     if ([self.masternodeListDiffService shouldProcessDiffResult:result skipPresenceInRetrieval:skipPresenceInRetrieval]) {
         NSOrderedSet *neededMissingMasternodeLists = result.neededMissingMasternodeLists;
-        DSLog(@"[%@] •••• processMasternodeListDiffResult: missingMasternodeLists: %@", self.chain.name, [self logListSet:neededMissingMasternodeLists]);
         UInt256 masternodeListBlockHash = masternodeList.blockHash;
         NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
         BOOL hasAwaitingQuorumValidation;
@@ -566,11 +552,9 @@
                     [self.store.masternodeListQueriesNeedingQuorumsValidated removeObject:masternodeListBlockHashData];
                 }
             }
-            DSLog(@"[%@] ••• updateStoreWithMasternodeList: %u: %@ (%@)", self.chain.name, masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
             [self updateStoreWithProcessingResult:masternodeList result:result completion:^(NSError *error) {
                 if ([result hasRotatedQuorumsForChain:self.chain] && !self.chain.isRotatedQuorumsPresented) {
                     uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
-                    DSLog(@"[%@] •••• processMasternodeListDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", self.chain.name, masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
                     self.chain.isRotatedQuorumsPresented = YES;
                     self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
                     if (self.isSyncing) {
@@ -589,14 +573,13 @@
     }
 }
 - (void)processQRInfoResult:(DSQRInfoProcessingResult *)result forPeer:(DSPeer *)peer completion:(void (^)(void))completion {
-    
+
     DSMnDiffProcessingResult *mnListDiffResultAtTip = result.mnListDiffResultAtTip;
     DSMnDiffProcessingResult *mnListDiffResultAtH = result.mnListDiffResultAtH;
     DSMnDiffProcessingResult *mnListDiffResultAtHC = result.mnListDiffResultAtHC;
     DSMnDiffProcessingResult *mnListDiffResultAtH2C = result.mnListDiffResultAtH2C;
     DSMnDiffProcessingResult *mnListDiffResultAtH3C = result.mnListDiffResultAtH3C;
     DSMnDiffProcessingResult *mnListDiffResultAtH4C = result.mnListDiffResultAtH4C;
-    DSLog(@"[%@] •••• processQRInfoResult tip: %d", self.chain.name, [mnListDiffResultAtTip isValid]);
 
     NSOrderedSet *missingMasternodeListsAtTip = mnListDiffResultAtTip.neededMissingMasternodeLists;
     NSOrderedSet *missingMasternodeListsAtH = mnListDiffResultAtH.neededMissingMasternodeLists;
@@ -612,8 +595,7 @@
     [missingMasternodeLists addObjectsFromArray:[missingMasternodeListsAtH2C array]];
     [missingMasternodeLists addObjectsFromArray:[missingMasternodeListsAtH3C array]];
     [missingMasternodeLists addObjectsFromArray:[missingMasternodeListsAtH4C array]];
-    DSLog(@"[%@] •••• processQRInfoResult: missingMasternodeLists: %@", self.chain.name, [self logListSet:missingMasternodeLists]);
-    
+
     DSMasternodeList *masternodeListAtTip = mnListDiffResultAtTip.masternodeList;
     DSMasternodeList *masternodeListAtH = mnListDiffResultAtH.masternodeList;
     DSMasternodeList *masternodeListAtHC = mnListDiffResultAtHC.masternodeList;
@@ -689,9 +671,8 @@
     [self.store saveQuorumSnapshot:result.snapshotAtH2C completion:^(NSError * _Nonnull error) {}];
     [self.store saveQuorumSnapshot:result.snapshotAtH3C completion:^(NSError * _Nonnull error) {}];
     [self.store saveQuorumSnapshot:result.snapshotAtH4C completion:^(NSError * _Nonnull error) {}];
-    
+
     for (DSMnDiffProcessingResult *diffResult in result.mnListDiffList) {
-        DSLog(@"[%@] •••• -> processed qrinfo +++ %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:diffResult.baseBlockHash], [self heightForBlockHash:diffResult.blockHash], uint256_hex(diffResult.baseBlockHash), uint256_hex(diffResult.blockHash));
         DSMasternodeList *diffMasternodeList = diffResult.masternodeList;
         UInt256 diffBlockHash = diffMasternodeList.blockHash;
         NSData *diffBlockHashData = uint256_data(diffBlockHash);
@@ -704,7 +685,7 @@
     for (DSQuorumSnapshot *snapshot in result.snapshotList) {
         [self.store saveQuorumSnapshot:snapshot completion:^(NSError * _Nonnull error) {}];
     }
-    
+
     [self.store.activeQuorums unionOrderedSet:result.lastQuorumPerIndex];
 }
 
@@ -740,7 +721,6 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
-    DSLog(@"[%@: %@:%d] •••• -> received mnlistdiff: %@", self.chain.name, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.masternodeListDiffService) {
         self.masternodeListDiffService.timedOutAttempt = 0;
     }
@@ -750,7 +730,6 @@
             DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
             if (!lastBlock) {
                 [self.masternodeListDiffService issueWithMasternodeListFromPeer:peer];
-                DSLog(@"[%@] Last Block missing", self.chain.name);
                 return UINT256_ZERO;
             }
             return lastBlock.merkleRoot;
@@ -759,13 +738,10 @@
         #if SAVE_MASTERNODE_DIFF_TO_FILE
             UInt256 baseBlockHash = result.baseBlockHash;
             UInt256 blockHash = result.blockHash;
-            DSLog(@"[%@] •••• -> processed mnlistdiff %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
             NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
-            DSLog(@"[%@] •-• File %@ saved", self.chain.name, fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
         #endif
             if (result.errorStatus) {
-                DSLog(@"[%@] Processing status: %ul", self.chain.name, result.errorStatus);
                 dispatch_group_leave(self.processingGroup);
                 return;
             }
@@ -777,7 +753,6 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
-    DSLog(@"[%@: %@:%d] •••• -> received qrinfo: %@", self.chain.name, peer.host, peer.port, uint256_hex(message.SHA256));
     @synchronized (self.quorumRotationService) {
         self.quorumRotationService.timedOutAttempt = 0;
     }
@@ -787,7 +762,6 @@
             DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
             if (!lastBlock) {
                 [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
-                DSLog(@"[%@] Last Block missing", self.chain.name);
                 return UINT256_ZERO;
             }
             return lastBlock.merkleRoot;
@@ -795,23 +769,13 @@
         DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet isFromSnapshot:NO isDIP0024:YES peer:peer merkleRootLookup:merkleRootLookup];
         [self processQRInfoWith:message context:ctx completion:^(DSQRInfoProcessingResult * _Nonnull result) {
             if (result.errorStatus) {
-                DSLog(@"[%@] •••• Processing status: %u", self.chain.name, result.errorStatus);
                 dispatch_group_leave(self.processingGroup);
                 return;
             }
     #if SAVE_MASTERNODE_DIFF_TO_FILE
             UInt256 baseBlockHash = result.mnListDiffResultAtTip.baseBlockHash;
             UInt256 blockHash = result.mnListDiffResultAtTip.blockHash;
-            DSLog(@"[%@] •••• -> processed qrinfo tip %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
-            DSLog(@"[%@] •••• -> processed qrinfo h %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtH.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH.blockHash], uint256_hex(result.mnListDiffResultAtH.baseBlockHash), uint256_hex(result.mnListDiffResultAtH.blockHash));
-            DSLog(@"[%@] •••• -> processed qrinfo h-c %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtHC.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtHC.blockHash], uint256_hex(result.mnListDiffResultAtHC.baseBlockHash), uint256_hex(result.mnListDiffResultAtHC.blockHash));
-            DSLog(@"[%@] •••• -> processed qrinfo h-2c %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtH2C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH2C.blockHash], uint256_hex(result.mnListDiffResultAtH2C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH2C.blockHash));
-            DSLog(@"[%@] •••• -> processed qrinfo h-3c %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtH3C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH3C.blockHash], uint256_hex(result.mnListDiffResultAtH3C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH3C.blockHash));
-            if (result.extraShare) {
-                DSLog(@"[%@] •••• -> processed qrinfo h-4c %u..%u %@ .. %@", self.chain.name, [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
-            }
             NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@__%d.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash]), peer.version];
-            DSLog(@"[%@] •-• File %@ saved", self.chain.name, fileName);
             [message saveToFile:fileName inDirectory:NSCachesDirectory];
     #endif
             [self processQRInfoResult:result forPeer:peer completion:^{

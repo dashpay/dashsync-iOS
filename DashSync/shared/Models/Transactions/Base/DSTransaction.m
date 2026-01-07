@@ -953,7 +953,6 @@
             if (![context ds_save]) {
                 self.persistenceStatus = DSTransactionPersistenceStatus_Saved;
             } else {
-                DSLog(@"[%@] There was an error saving the transaction", self.chain.name);
                 self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
             }
         } else {

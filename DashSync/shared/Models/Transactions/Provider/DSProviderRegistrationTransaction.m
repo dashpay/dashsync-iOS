@@ -133,7 +133,6 @@
     self.platformNodeID = platformNodeID;
     self.operatorReward = operatorReward;
     self.scriptPayout = scriptPayout;
-    DSLogPrivate(@"[%@] Creating provider (masternode) with ownerKeyHash %@", chain.name, uint160_data(ownerKeyHash));
     return self;
 }
 
@@ -164,7 +163,6 @@
     self.scriptPayout = scriptPayout;
     [self hasSetInputsAndOutputs];
 
-    DSLogPrivate(@"[%@] Creating provider (masternode) with ownerKeyHash %@", chain.name, uint160_data(ownerKeyHash));
     return self;
 }
 

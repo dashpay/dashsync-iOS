@@ -24,11 +24,9 @@
     uint8_t errorStatus = result->error_status;
     processingResult.errorStatus = errorStatus;
     if (errorStatus > 0) {
-        DSLog(@"[%@] DSQRInfoProcessingResult.error %ul", chain.name, errorStatus);
         return processingResult;
     }
     if (result->result_at_tip == NULL) {
-        DSLog(@"[%@] DSQRInfoProcessingResult.error.unknown", chain.name);
         processingResult.errorStatus = ProcessingError_ParseError;
         return processingResult;
     }

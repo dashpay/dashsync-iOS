@@ -37,7 +37,6 @@
     NSParameterAssert(chain);
     if (!(self = [super init])) return nil;
     _keysCache = [DSKeyManager createKeysCache];
-    DSLog(@"[%@] DSKeyManager.initWithChain: %@: ", chain.name, chain);
     return self;
 }
 

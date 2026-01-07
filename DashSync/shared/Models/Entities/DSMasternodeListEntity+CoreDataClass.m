@@ -48,7 +48,6 @@
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity {
     NSArray *masternodeLists = [self objectsInContext:chainEntity.managedObjectContext matching:@"(block.chain == %@)", chainEntity];
     for (DSMasternodeListEntity *masternodeList in masternodeLists) {
-        DSLog(@"MasternodeListEntity.deleteAllOnChainEntity: %@", masternodeList);
         [chainEntity.managedObjectContext deleteObject:masternodeList];
     }
 }

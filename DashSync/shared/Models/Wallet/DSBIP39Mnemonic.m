@@ -225,9 +225,6 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
     uint32_t wordArrayCount = (uint32_t)wordArray.count;
 
     if ((wordArrayCount % 3) != 0 || wordArrayCount > 24) {
-#if DEBUG
-        DSLogPrivate(@"phrase has wrong number of words");
-#endif
         return nil;
     }
 
@@ -236,9 +233,6 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
         y = (i * 8 / 11 + 1 < wordArrayCount) ? (uint32_t)[words indexOfObject:wordArray[i * 8 / 11 + 1]] : 0;
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
-#if DEBUG
-            DSLogPrivate(@"phrase contained unknown word: %@ in %lu", wordArray[i * 8 / 11 + (x == (uint32_t)NSNotFound ? 0 : 1)], (unsigned long)language);
-#endif
             return nil;
         }
 

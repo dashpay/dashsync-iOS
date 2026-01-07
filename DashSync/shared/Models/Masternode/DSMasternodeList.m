@@ -125,7 +125,6 @@
     NSMutableArray *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableArray array];
     uint32_t height = blockHeightLookup(self.blockHash);
     if (height == UINT32_MAX) {
-        DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
         return nil; //this should never happen
     }
     for (NSData *proTxHash in proTxHashes) {
@@ -142,7 +141,6 @@
     NSMutableDictionary *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableDictionary dictionary];
     uint32_t height = blockHeightLookup(self.blockHash);
     if (height == UINT32_MAX) {
-        DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
         return nil; //this should never happen
     }
     for (NSData *proTxHash in proTxHashes) {
@@ -241,7 +239,6 @@
                                  blockHeight:^uint32_t(UInt256 blockHash) {
                                      DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
                                      if (!block) {
-                                         DSLog(@"Unknown block %@", uint256_reverse_hex(blockHash));
                                          NSAssert(block, @"block should be known");
                                      }
                                      return block.height;
@@ -416,7 +413,7 @@
                                      uint256_hex(entry.quorumVerificationVectorHash),
                                      uint768_hex(entry.quorumThresholdSignature),
                                      uint768_hex(entry.allCommitmentAggregatedSignature)];
-            
+
             [json_quorums addObject:json_quorum];
         }
     }
@@ -425,7 +422,6 @@
     NSString *list = [NSString stringWithFormat:@"{\n\"blockHash\":\"%@\", \n\"knownHeight\":%@, \n\"masternodeMerkleRoot\":\"%@\", \n\"quorumMerkleRoot\":\"%@\", \n%@, \n%@\n}", uint256_hex(self.blockHash), @(self.knownHeight), uint256_hex(self.masternodeMerkleRoot), uint256_hex(self.quorumMerkleRoot), nodes, quorums];
     NSData* data = [list dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
     [data saveToFile:fileName inDirectory:NSCachesDirectory];
-    DSLog(@"•-• File %@ saved", fileName);
 }
 
 - (void)saveToJsonFileExtended:(NSString *)fileName {
@@ -499,7 +495,6 @@
     NSString *list = [NSString stringWithFormat:@"{\n\"blockHash\":\"%@\", \n\"knownHeight\":%@, \n\"masternodeMerkleRoot\":\"%@\", \n\"quorumMerkleRoot\":\"%@\", \n%@, \n%@\n}", uint256_hex(self.blockHash), @(self.knownHeight), uint256_hex(self.masternodeMerkleRoot), uint256_hex(self.quorumMerkleRoot), nodes, quorums];
     NSData* data = [list dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
     [data saveToFile:fileName inDirectory:NSCachesDirectory];
-    DSLog(@"•-• File %@ saved", fileName);
 }
 
 - (NSString *)description {

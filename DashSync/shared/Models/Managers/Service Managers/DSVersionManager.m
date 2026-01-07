@@ -86,8 +86,6 @@
     }
     BOOL hasV0BIP44Data = (hasV2BIP44Data) ? NO : hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
     if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
-        DSLog(@"fixing public key");
-
         BOOL authTimeMigrated = getKeychainInt(AUTHENTICATION_TIME_VALUES_MIGRATED, nil);
         if (!authTimeMigrated) {
             //update pin unlock time

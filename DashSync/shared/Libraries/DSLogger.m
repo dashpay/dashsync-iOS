@@ -20,12 +20,49 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NoTimestampLogFormatter : NSObject <DDLogFormatter>
-@end
-@implementation NoTimestampLogFormatter
-- (nullable NSString *)formatLogMessage:(DDLogMessage *)logMessage {
-    return logMessage.message;
+// Thread name helper - returns current thread name or identifier
+NSString *DSCurrentThreadName(void) {
+    NSThread *thread = [NSThread currentThread];
+    NSString *name = thread.name;
+    if (name.length > 0) {
+        return name;
+    }
+    if ([thread isMainThread]) {
+        return @"main";
+    }
+    // Use thread number as fallback
+    NSString *description = thread.description;
+    NSRange numRange = [description rangeOfString:@"number = "];
+    if (numRange.location != NSNotFound) {
+        NSUInteger start = numRange.location + numRange.length;
+        NSRange endRange = [description rangeOfString:@"," options:0 range:NSMakeRange(start, description.length - start)];
+        if (endRange.location != NSNotFound) {
+            return [NSString stringWithFormat:@"Thread-%@", [description substringWithRange:NSMakeRange(start, endRange.location - start)]];
+        }
+    }
+    return @"Thread";
 }
+
+// Custom log formatter that adds timestamp in Android format (HH:MM:SS)
+@interface DSAndroidStyleLogFormatter : NSObject <DDLogFormatter>
+@end
+
+@implementation DSAndroidStyleLogFormatter
+
+- (nullable NSString *)formatLogMessage:(DDLogMessage *)logMessage {
+    // Get time components
+    static NSDateFormatter *formatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"HH:mm:ss";
+    });
+    NSString *timestamp = [formatter stringFromDate:logMessage.timestamp];
+
+    // The message already contains [thread] ClassName - message format from our macros
+    return [NSString stringWithFormat:@"%@ %@", timestamp, logMessage.message];
+}
+
 @end
 
 @interface DSLogger ()
@@ -48,15 +85,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [DDLog addLogger:[DDOSLogger sharedInstance]]; // os_log
+        DSAndroidStyleLogFormatter *formatter = [[DSAndroidStyleLogFormatter alloc] init];
 
-        unsigned long long maxFileSize = 1024 * 1024 * 5; // 5 MB max. Then log files are ziped
+        // Console logger with formatter
+        DDOSLogger *osLogger = [DDOSLogger sharedInstance];
+        [osLogger setLogFormatter:formatter];
+        [DDLog addLogger:osLogger];
+
+        // File logger with formatter
+        unsigned long long maxFileSize = 1024 * 1024 * 5; // 5 MB max
         CompressingLogFileManager *logFileManager = [[CompressingLogFileManager alloc] initWithFileSize:maxFileSize];
         DDFileLogger *fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
         fileLogger.rollingFrequency = 60 * 60 * 24;     // 24 hour rolling
         fileLogger.maximumFileSize = maxFileSize;
         fileLogger.logFileManager.maximumNumberOfLogFiles = 10;
-        
+        [fileLogger setLogFormatter:formatter];
+
         [DDLog addLogger:fileLogger];
         _fileLogger = fileLogger;
     }
@@ -70,22 +114,26 @@ NS_ASSUME_NONNULL_BEGIN
 
     for (NSString *fileName in fileNames) {
         BOOL hasProperSuffix = [fileName hasSuffix:@".log"] || [fileName hasSuffix:@".gz"];
-        
+
         if (hasProperSuffix) {
             NSString *filePath = [logsDirectory stringByAppendingPathComponent:fileName];
             NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-            
+
             if (fileURL) {
                 [logFiles addObject:fileURL];
             }
         }
     }
-    
+
     return [logFiles copy];
 }
 
 + (void)log:(NSString *)message {
-    DSLog(@"%@", message);
+    DDLogInfo(@"%@", message);
+}
+
++ (void)log:(NSString *)message className:(NSString *)className {
+    DSLogInfo(className, @"%@", message);
 }
 
 @end

@@ -192,7 +192,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
                           blockHeightLookup:^uint32_t(UInt256 blockHash) {
                               DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
                               if (!block) {
-                                  DSLog(@"[%@] Unknown block %@", self.chain.name, uint256_reverse_hex(blockHash));
                                   NSAssert(block, @"block should be known");
                               }
                               return block.height;
@@ -201,7 +200,6 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (!masternodeList) {
-        DSLog(@"[%@] Trying to validate a quorum without a masternode list", self.chain.name);
         return NO;
     }
     MasternodeList *list = [masternodeList ffi_malloc];

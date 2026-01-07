@@ -31,7 +31,6 @@
         return processingResult;
     }
     if (result->masternode_list == NULL) {
-        DSLog(@"[%@] DSQRInfoProcessingResult.error.unknown", chain.name);
         processingResult.errorStatus = ProcessingError_ParseError;
         return processingResult;
     }

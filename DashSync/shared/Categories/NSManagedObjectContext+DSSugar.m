@@ -72,7 +72,6 @@
 #endif
     NSError *error = nil;
     if (![self save:&error]) { // persist changes
-        DSLog(@"%s: %@", __func__, error);
 #if DEBUG
         abort();
 #endif

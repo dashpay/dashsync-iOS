@@ -107,13 +107,9 @@
                     NSLog(@"%@", error.localizedDescription);
                 } else {
                     NSURL *url = [NSURL fileURLWithPath:appSupportDir];
-                    if (![url setResourceValue:@YES
-                                        forKey:NSURLIsExcludedFromBackupKey
-                                         error:&error]) {
-                        DSLog(@"Error excluding %@ from backup %@", url.lastPathComponent, error.localizedDescription);
-                    } else {
-                        DSLog(@"Excluding");
-                    }
+                    [url setResourceValue:@YES
+                                   forKey:NSURLIsExcludedFromBackupKey
+                                    error:&error];
                 }
             }
             NSAssert(error == nil, @"Creation should have succeeded");
@@ -214,7 +210,6 @@
     }
     DSCoreDataMigrationVersionValue sourceVersion = [DSCoreDataMigrationVersion compatibleVersionForStoreMetadata:metadata];
     if (sourceVersion == NSNotFound) {
-        DSLog(@"unknown source version at URL %@", storeURL);
         return @[];
     }
 

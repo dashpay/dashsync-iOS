@@ -96,19 +96,15 @@
 
     [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
         if (error != nil) {
-            DSLog(@"Failed to load Core Data stack: %@", error);
 #if (DEBUG && 1)
             abort();
 #else
                 NSURL *storeURL = [self.class storeURL];
                 // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
-                if (![[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                    DSLog(@"%s: %@", __func__, error);
-                }
+                [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error];
 
                 [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
                     if (error != nil) {
-                        DSLog(@"Failed to load Core Data stack again: %@", error);
                         abort();
                     }
                 }];

@@ -11,7 +11,6 @@
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSKeyManager.h"
-#import "DSLogger.h"
 #import "NSError+Dash.h"
 
 #define DERIVATION_PATH_IS_USED_KEY @"DERIVATION_PATH_IS_USED_KEY"
@@ -97,11 +96,6 @@
 
                     while (e.index >= a.count) [a addObject:[NSNull null]];
                     if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
-#if DEBUG
-                        DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
-#else
-                            DSLog(@"[%@] address %@ loaded but was not valid on chain %@", self.account.wallet.chain.name, @"<REDACTED>");
-#endif /* DEBUG */
                         continue;
                     }
                     a[e.index] = e.address;
@@ -191,7 +185,6 @@
             NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
 
             if (!addr) {
-                DSLog(@"[%@] error generating keys", self.account.wallet.chain.name);
                 if (error) {
                     *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }

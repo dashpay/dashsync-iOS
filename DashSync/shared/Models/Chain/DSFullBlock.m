@@ -83,17 +83,8 @@
     self.totalTransactions = (uint32_t)transactions.count;
 
     if (![self isMerkleTreeValid]) {
-        DSLog(@"[%@] Merkle tree not valid for block", self.chain.name);
         return nil;
     }
-
-#if LOG_BLOCKS || LOG_BLOCKS_FULL
-#if LOG_BLOCKS_FULL
-    DSLog(@"[%@] %d - block %@ (%@) has %d transactions", self.chain.name, self.height, uint256_hex(self.blockHash), message.hexString, self.totalTransactions);
-#else
-    DSLog(@"[%@] %d - block %@ has %d transactions", self.chain.name, self.height, uint256_hex(self.blockHash), self.totalTransactions);
-#endif
-#endif
 
     return self;
 }
@@ -171,10 +162,6 @@
     NSMutableData *preNonceMutableData = [self preNonceMutableData];
     uint32_t i = 0;
     UInt256 fullTarget = setCompactLE(block.target);
-    DSLog(@"[%@] Trying to mine a block at height %d with target %@", self.chain.name, block.height, uint256_bin(fullTarget));
-#if LOG_MINING_BEST_TRIES
-    UInt256 bestTry = UINT256_MAX;
-#endif
     do {
         NSMutableData *d = [preNonceMutableData mutableCopy];
         [d appendUInt32:i];
@@ -182,17 +169,10 @@
 
         if (!uint256_sup(potentialBlockHash, fullTarget)) {
             //We found a block
-            DSLog(@"[%@] A Block was found %@ %@", self.chain.name, uint256_bin(fullTarget), uint256_bin(potentialBlockHash));
             self.blockHash = potentialBlockHash;
             found = TRUE;
             break;
         }
-#if LOG_MINING_BEST_TRIES
-        else if (uint256_sup(bestTry, potentialBlockHash)) {
-            DSLog(@"[%@] New best try (%d) found for target %@ %@", self.chain.name, i, uint256_bin(fullTarget), uint256_bin(potentialBlockHash));
-            bestTry = potentialBlockHash;
-        }
-#endif
         i++;
     } while (i != UINT32_MAX);
     if (!found) {

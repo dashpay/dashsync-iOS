@@ -74,8 +74,6 @@
     off += sizeof(UInt768);
     self.chain = chain;
 
-    DSLog(@"[%@] the chain lock signature received for height %d (sig %@) (blockhash %@)", chain.name, self.height, uint768_hex(_signature), uint256_hex(_blockHash));
-
     return self;
 }
 
@@ -102,7 +100,6 @@
     [data appendString:@"clsig"];
     [data appendUInt32:self.height];
     _requestID = [data SHA256_2];
-    DSLog(@"[%@] the chain lock request ID is %@ for height %d", self.chain.name, uint256_hex(_requestID), self.height);
     return _requestID;
 }
 
@@ -118,11 +115,6 @@
 - (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
     BOOL verified = key_bls_verify(quorumEntry.quorumPublicKey.u8, quorumEntry.useLegacyBLSScheme, signId.u8, self.signature.u8);
-#if DEBUG
-    DSLog(@"[%@] verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %u", self.chain.name, verified, quorumEntry.llmqType, quorumEntry.verified, @"<REDACTED>", uint384_hex(quorumEntry.quorumPublicKey), @"<REDACTED>", quorumEntry.useLegacyBLSScheme);
-#else
-    DSLogPrivate(@"[%@] verifySignatureAgainstQuorum (%u): %u: %u: %@: %@: %@: %u", self.chain.name, verified, quorumEntry.llmqType, quorumEntry.verified, uint256_hex(signId), uint384_hex(quorumEntry.quorumPublicKey), uint768_hex(self.signature), quorumEntry.useLegacyBLSScheme);
-#endif
     return verified;
 }
 
@@ -146,16 +138,6 @@
     DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
-        if (!self.signatureVerified) {
-            DSLog(@"[%@] unable to verify signature with offset %d", self.chain.name, offset);
-        } else {
-            DSLog(@"[%@] signature verified with offset %d", self.chain.name, offset);
-        }
-
-    } else if (quorumEntry) {
-        DSLog(@"[%@] quorum entry %@ found but is not yet verified", self.chain.name, uint256_hex(quorumEntry.quorumHash));
-    } else {
-        DSLog(@"[%@] no quorum entry found", self.chain.name);
     }
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
@@ -166,14 +148,11 @@
         }
     } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
-        DSLog(@"[%@] trying with offset 0", self.chain.name);
         return [self verifySignatureWithQuorumOffset:0];
     } else if (quorumEntry.verified && offset == 0) {
         //try again a few blocks more in the future
-        DSLog(@"[%@] trying with offset 16", self.chain.name);
         return [self verifySignatureWithQuorumOffset:16];
     }
-    DSLog(@"[%@] returning chain lock signature verified %d with offset %d", self.chain.name, self.signatureVerified, offset);
     return self.signatureVerified;
 }
 

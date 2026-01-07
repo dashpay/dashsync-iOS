@@ -115,9 +115,6 @@
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                    timeoutInterval:20.0];
     req.HTTPMethod = @"GET";
-    DSLogPrivate(@"%@ GET: %@", req.URL.absoluteString,
-        [[NSString alloc] initWithData:req.HTTPBody
-                              encoding:NSUTF8StringEncoding]);
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
                                      completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -129,7 +126,6 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
 
         if (error) {
-            DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                        req.URL.host]]);
             return;
@@ -178,9 +174,6 @@
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                    timeoutInterval:20.0];
     req.HTTPMethod = @"GET";
-    DSLogPrivate(@"%@ GET: %@", req.URL.absoluteString,
-        [[NSString alloc] initWithData:req.HTTPBody
-                              encoding:NSUTF8StringEncoding]);
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
                                      completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -192,7 +185,6 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
 
         if (error) {
-            DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                        req.URL.host]]);
             return;
@@ -217,9 +209,6 @@
                                                            stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
-    DSLogPrivate(@"%@ POST: %@", req.URL.absoluteString,
-        [[NSString alloc] initWithData:req.HTTPBody
-                              encoding:NSUTF8StringEncoding]);
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
                                      completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -231,7 +220,6 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
 
         if (error || ![json isKindOfClass:[NSDictionary class]] || ![json objectForKey:@"items"]) {
-            DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                        req.URL.host]]);
             return;
@@ -271,9 +259,6 @@
                                                            stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
-    DSLogPrivate(@"%@ POST: %@", req.URL.absoluteString,
-        [[NSString alloc] initWithData:req.HTTPBody
-                              encoding:NSUTF8StringEncoding]);
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
                                      completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -288,7 +273,6 @@
         DSUTXO o;
 
         if (error || ![json isKindOfClass:[NSArray class]]) {
-            DSLogPrivate(@"Error decoding response %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, nil, nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                                  req.URL.host]]);
             return;
