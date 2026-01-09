@@ -48,6 +48,7 @@
 #import "DSAuthenticationManager.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSLogger.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
@@ -786,6 +787,8 @@
     _totalReceived = totalReceived;
 
     if (balance != _balance) {
+        DSLogInfo(@"DSAccount", @"Balance updated: %llu -> %llu DASH, UTXOs: %lu, totalSent: %llu, totalReceived: %llu",
+                  _balance, balance, (unsigned long)utxos.count, totalSent, totalReceived);
         _balance = balance;
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1147,6 +1150,13 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
         [transaction hasSetInputsAndOutputs];
 
+        DSLogInfo(@"DSAccount", @"Completing send tx with %lu outputs, %lu inputs, spending %llu DASH, fee %llu DASH, txId: %@",
+                  (unsigned long)transaction.outputs.count,
+                  (unsigned long)transaction.inputs.count,
+                  amount,
+                  feeAmount,
+                  uint256_reverse_hex(transaction.txHash));
+
         return transaction;
     }
 }
@@ -1417,6 +1427,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
         //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
         if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
+        DSLogInfo(@"DSAccount", @"Registering transaction %@, inputs: %lu, outputs: %lu, blockHeight: %u",
+                  uint256_reverse_hex(txHash), (unsigned long)transaction.inputs.count, (unsigned long)transaction.outputs.count, transaction.blockHeight);
         self.allTx[hash] = transaction;
         [self.transactions insertObject:transaction atIndex:0];
         for (NSString *address in transaction.inputAddresses) {

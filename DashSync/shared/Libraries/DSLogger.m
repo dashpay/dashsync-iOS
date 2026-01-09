@@ -56,6 +56,7 @@ NSString *DSCurrentThreadName(void) {
     dispatch_once(&onceToken, ^{
         formatter = [[NSDateFormatter alloc] init];
         formatter.dateFormat = @"HH:mm:ss";
+        formatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
     });
     NSString *timestamp = [formatter stringFromDate:logMessage.timestamp];
 

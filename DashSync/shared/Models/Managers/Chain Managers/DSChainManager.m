@@ -279,6 +279,17 @@
     self.syncState.chainSyncStartHeight = 0;
     self.syncState.syncPhase = DSChainSyncPhase_Synced;
     DSLogInfo(@"DSChainManager", @"chain sync completed at height %u", chain.lastSyncBlockHeight);
+
+    // Log transaction list after sync completion
+    for (DSWallet *wallet in chain.wallets) {
+        NSArray *transactions = wallet.allTransactions;
+        DSLogInfo(@"DSChainManager", @"Wallet has %lu transactions after sync", (unsigned long)transactions.count);
+        for (DSTransaction *tx in transactions) {
+            NSString *status = tx.blockHeight == TX_UNCONFIRMED ? @"unconfirmed" : [NSString stringWithFormat:@"confirmed at %u", tx.blockHeight];
+            DSLogDebug(@"DSChainManager", @"  TX %@ - %@", uint256_reverse_hex(tx.txHash), status);
+        }
+    }
+
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];

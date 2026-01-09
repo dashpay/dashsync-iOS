@@ -64,14 +64,33 @@
     if ((self = [super initWithLogsDirectory:aLogsDirectory]))
     {
         upToDate = NO;
-        
+
         // Check for any files that need to be compressed.
         // But don't start right away.
         // Wait for the app startup process to finish.
-        
+
         [self performSelector:@selector(compressNextLogFile) withObject:nil afterDelay:5.0];
     }
     return self;
+}
+
+- (NSString *)newLogFileName {
+    // Format: ios-YYYY-MM-DD--HH-mm-ss.log
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd'--'HH-mm-ss"];
+    [dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
+
+    NSString *timestamp = [dateFormatter stringFromDate:[NSDate date]];
+    return [NSString stringWithFormat:@"ios-%@.log", timestamp];
+}
+
+- (BOOL)isLogFile:(NSString *)fileName {
+    // Match both old "log-" prefix and new "ios-" prefix
+    BOOL hasValidPrefix = [fileName hasPrefix:@"log-"] || [fileName hasPrefix:@"ios-"];
+    BOOL hasLogExtension = [[fileName pathExtension] isEqualToString:@"log"];
+    BOOL hasGzExtension = [[fileName pathExtension] isEqualToString:@"gz"];
+
+    return hasValidPrefix && (hasLogExtension || hasGzExtension);
 }
 
 - (void)dealloc

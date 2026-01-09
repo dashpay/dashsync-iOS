@@ -35,6 +35,7 @@
 #import "DSBlock.h"
 #import "DSKeyManager.h"
 #import "DSDerivationPath+Protected.h"
+#import "DSLogger.h"
 
 int32_t const DEFAULT_MIN_DEPTH = 0;
 int32_t const DEFAULT_MAX_DEPTH = 9999999;
@@ -267,8 +268,10 @@ static dispatch_once_t managerChainToken = 0;
     DSTransaction *lastTransaction = wallet.accounts.firstObject.recentTransactions.firstObject;
 
     if ([self.wrapper isMixingFeeTx:lastTransaction.txHash]) {
+        DSLogInfo(@"DSCoinJoinManager", @"CoinJoin mixing fee transaction detected: %@", uint256_reverse_hex(lastTransaction.txHash));
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_MixingFee];
     } else if ([self coinJoinTxTypeForTransaction:lastTransaction] == CoinJoinTransactionType_Mixing) {
+        DSLogInfo(@"DSCoinJoinManager", @"CoinJoin mixing transaction detected: %@", uint256_reverse_hex(lastTransaction.txHash));
         [self.wrapper unlockOutputs:lastTransaction];
         [self onTransactionProcessed:lastTransaction.txHash type:CoinJoinTransactionType_Mixing];
     }

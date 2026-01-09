@@ -1169,11 +1169,11 @@
     void (^callback)(NSError *error) = self.publishedCallback[hash];
 
     if (block) {
-        DSLogInfo(@"DSTransactionManager", @"received tx %@ in block %@ from peer %@",
-                  uint256_reverse_hex(transaction.txHash), uint256_reverse_hex(block.blockHash), peer.host);
+        DSLogInfo(@"DSTransactionManager", @"received tx %@ in block %@ from peer %@, lockTime: %u",
+                  uint256_reverse_hex(transaction.txHash), uint256_reverse_hex(block.blockHash), peer.host, transaction.lockTime);
     } else {
-        DSLogInfo(@"DSTransactionManager", @"received tx %@ from peer %@",
-                  uint256_reverse_hex(transaction.txHash), peer.host);
+        DSLogInfo(@"DSTransactionManager", @"received tx %@ from peer %@, lockTime: %u",
+                  uint256_reverse_hex(transaction.txHash), peer.host, transaction.lockTime);
     }
 
     transaction.timestamp = block ? block.timestamp : [NSDate timeIntervalSince1970];

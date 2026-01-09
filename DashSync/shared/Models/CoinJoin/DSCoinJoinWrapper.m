@@ -644,9 +644,9 @@ CoinJoinKeys* getCoinJoinKeys(bool used, const void *context) {
         NSArray *addresses;
 
         if (used) {
-            addresses = [wrapper.manager getIssuedReceiveAddresses];
-        } else {
             addresses = [wrapper.manager getUsedReceiveAddresses];
+        } else {
+            addresses = [wrapper.manager getIssuedReceiveAddresses];
         }
 
         CoinJoinKeys *keys = malloc(sizeof(CoinJoinKeys));
@@ -655,9 +655,10 @@ CoinJoinKeys* getCoinJoinKeys(bool used, const void *context) {
 
         for (NSUInteger i = 0; i < addresses.count; i++) {
             NSString *address = addresses[i];
+            ByteArray scriptPubKey = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
             ByteArray *byteArray = malloc(sizeof(ByteArray));
-            byteArray->ptr = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType).ptr;
-            byteArray->len = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType).len;
+            byteArray->ptr = scriptPubKey.ptr;
+            byteArray->len = scriptPubKey.len;
             keys->items[i] = byteArray;
         }
 
