@@ -1,0 +1,27 @@
+# CodeRabbit Configuration
+# Documentation: https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en-US
+
+reviews:
+  # Automatically review new PRs and incremental pushes
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - master
+      - develop
+
+  # Automatically resolve comments when code changes address the feedback
+  auto_resolve:
+    enabled: true
+
+  # Review profile - concise keeps feedback focused
+  profile: concise
+
+  # Request changes when issues are found
+  request_changes_workflow: true
+
+chat:
+  # Allow interaction with CodeRabbit via comments
+  auto_reply: true
