@@ -12,12 +12,8 @@ reviews:
       - master
       - develop
 
-  # Automatically resolve comments when code changes address the feedback
-  auto_resolve:
-    enabled: true
-
-  # Review profile - concise keeps feedback focused
-  profile: concise
+  # Review profile - chill for balanced feedback
+  profile: chill
 
   # Request changes when issues are found
   request_changes_workflow: true
