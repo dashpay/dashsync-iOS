@@ -11,6 +11,7 @@
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
 #import "DSKeyManager.h"
+#import "DSLogger.h"
 #import "NSError+Dash.h"
 
 #define DERIVATION_PATH_IS_USED_KEY @"DERIVATION_PATH_IS_USED_KEY"
@@ -180,22 +181,53 @@
 
         NSMutableDictionary *addAddresses = [NSMutableDictionary dictionary];
 
-        while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
-            NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+        NSUInteger keysNeeded = gapLimit - a.count;
+        if (keysNeeded > 0) {
+            NSTimeInterval keyGenStart = [NSDate timeIntervalSince1970];
+            NSUInteger numChildren = [(internal) ? self.internalAddresses : self.externalAddresses count];
+            DSLogInfo(@"DSFundsDerivationPath", @"%lu keys needed for %@ = %lu issued + %lu lookahead size + %lu lookahead threshold - %lu num children",
+                      (unsigned long)keysNeeded, self.stringRepresentation,
+                      (unsigned long)(n - keysNeeded), (unsigned long)gapLimit, (unsigned long)0,
+                      (unsigned long)numChildren);
 
-            if (!addr) {
-                if (error) {
-                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+            while (a.count < gapLimit) { // generate new addresses up to gapLimit
+                NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
+                NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+
+                if (!addr) {
+                    if (error) {
+                        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+                    }
+                    return nil;
                 }
-                return nil;
+
+                [self.mAllAddresses addObject:addr];
+                [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
+                [a addObject:addr];
+                [addAddresses setObject:addr forKey:@(n)];
+                n++;
             }
 
-            [self.mAllAddresses addObject:addr];
-            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
-            [a addObject:addr];
-            [addAddresses setObject:addr forKey:@(n)];
-            n++;
+            NSTimeInterval keyGenTime = ([NSDate timeIntervalSince1970] - keyGenStart) * 1000.0;
+            DSLogInfo(@"DSFundsDerivationPath", @"Took %.2f ms", keyGenTime);
+        } else {
+            while (a.count < gapLimit) { // generate new addresses up to gapLimit
+                NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
+                NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
+
+                if (!addr) {
+                    if (error) {
+                        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
+                    }
+                    return nil;
+                }
+
+                [self.mAllAddresses addObject:addr];
+                [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
+                [a addObject:addr];
+                [addAddresses setObject:addr forKey:@(n)];
+                n++;
+            }
         }
 
         if (!self.account.wallet.isTransient) {

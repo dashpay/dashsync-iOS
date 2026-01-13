@@ -688,6 +688,13 @@
                 inputs = [NSSet set];
             }
 
+            // Log UTXO state changes - inputs being marked as spent
+            for (NSValue *spentOutput in spent) {
+                DSUTXO o;
+                [spentOutput getValue:&o];
+                DSLogInfo(@"DSAccount", @"  marked %@:%u as spent by %@",
+                          uint256_reverse_hex(o.hash), o.n, uint256_reverse_hex(tx.txHash));
+            }
             [spentOutputs unionSet:spent]; // add inputs to spent output set
             n = 0;
 
@@ -761,11 +768,12 @@
                 [output getValue:&o];
                 transaction = self.allTx[uint256_obj(o.hash)];
                 [utxos removeObject:output];
-                DSTransactionOutput *output = transaction.outputs[o.n];
-                uint64_t amount = output.amount;
+                DSTransactionOutput *txOutput = transaction.outputs[o.n];
+                uint64_t amount = txOutput.amount;
+                DSLogInfo(@"DSAccount", @"  %@:%u prevtx <-unspent ->spent", uint256_reverse_hex(o.hash), o.n);
                 balance -= amount;
                 for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-                    if ([derivationPath containsAddress:output.address]) {
+                    if ([derivationPath containsAddress:txOutput.address]) {
                         derivationPath.balance -= amount;
                         break;
                     }

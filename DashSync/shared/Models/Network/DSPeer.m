@@ -427,6 +427,7 @@
     @synchronized (self) {
         self.sentFilter = YES;
     }
+    DSLogInfo(@"DSPeer", @"Sending Bloom filter to peer %@ (%lu bytes)", self.host, (unsigned long)filter.length);
     [self sendRequest:[DSFilterLoadRequest requestWithBloomFilterData:filter]];
 }
 

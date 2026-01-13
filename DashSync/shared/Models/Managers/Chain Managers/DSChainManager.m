@@ -25,6 +25,7 @@
 
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
+#import "DSChainSyncSpeedCalculator.h"
 #import "DSLogger.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager+Mining.h"
@@ -127,12 +128,15 @@
 
 - (void)startSync {
     DSLogInfo(@"DSChainManager", @"starting sync for chain %@", self.chain.name);
+    [[DSChainSyncSpeedCalculator sharedInstance] reset];
+    [[DSChainSyncSpeedCalculator sharedInstance] startCalculating];
     [self notify:DSChainManagerSyncWillStartNotification userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     [self.peerManager connect];
 }
 
 - (void)stopSync {
     DSLogInfo(@"DSChainManager", @"stopping sync for chain %@", self.chain.name);
+    [[DSChainSyncSpeedCalculator sharedInstance] stopCalculating];
     [self.masternodeManager stopSync];
     [self.peerManager disconnect:DSDisconnectReason_ChainSwitch];
     self.syncState.syncPhase = DSChainSyncPhase_Offline;

@@ -25,6 +25,7 @@
 
 #import "DSTransactionManager.h"
 #import "DSAccount.h"
+#import "DSChainSyncSpeedCalculator.h"
 #import "DSLogger.h"
 #import "DSAuthenticationManager.h"
 #import "DSBlock.h"
@@ -1168,16 +1169,29 @@
     BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
 
-    if (block) {
-        DSLogInfo(@"DSTransactionManager", @"received tx %@ in block %@ from peer %@, lockTime: %u",
-                  uint256_reverse_hex(transaction.txHash), uint256_reverse_hex(block.blockHash), peer.host, transaction.lockTime);
-    } else {
-        DSLogInfo(@"DSTransactionManager", @"received tx %@ from peer %@, lockTime: %u",
-                  uint256_reverse_hex(transaction.txHash), peer.host, transaction.lockTime);
-    }
-
     transaction.timestamp = block ? block.timestamp : [NSDate timeIntervalSince1970];
     NSArray<DSAccount *> *accounts = [self.chain accountsThatCanContainTransaction:transaction];
+
+    // Calculate transaction amount for logging (matching Android format)
+    int64_t txAmount = 0;
+    for (DSAccount *account in accounts) {
+        int64_t received = (int64_t)[account amountReceivedFromTransaction:transaction];
+        int64_t sent = (int64_t)[account amountSentByTransaction:transaction];
+        txAmount += (received - sent);
+    }
+    double txAmountDash = (double)txAmount / 100000000.0;
+
+    if (block) {
+        DSLogInfo(@"DSTransactionManager", @"received tx for %.8f DASH: %@ [%lu] in block %@",
+                  txAmountDash, uint256_reverse_hex(transaction.txHash), (unsigned long)transaction.outputs.count, uint256_reverse_hex(block.blockHash));
+    } else {
+        DSLogInfo(@"DSTransactionManager", @"received tx for %.8f DASH: %@ [%lu] from peer %@",
+                  txAmountDash, uint256_reverse_hex(transaction.txHash), (unsigned long)transaction.outputs.count, peer.host);
+    }
+
+    // Record transaction for speed calculator
+    [[DSChainSyncSpeedCalculator sharedInstance] recordTransactionReceived];
+
     NSMutableArray<DSAccount *> *accountsAcceptingTransaction = [NSMutableArray array];
     NSMutableArray<DSAccount *> *accountsWithValidTransaction = [NSMutableArray array];
     NSMutableArray<DSAccount *> *accountsSendingValueInTransaction = [NSMutableArray array];
@@ -1523,6 +1537,12 @@
     if (!self.chainManager.syncPhase) {
         return;
     }
+
+    // Record block for speed calculator
+    [[DSChainSyncSpeedCalculator sharedInstance] recordBlockReceived];
+    [[DSChainSyncSpeedCalculator sharedInstance] updateChainHeight:self.chain.lastSyncBlockHeight
+                                                      commonHeight:self.chain.lastSyncBlockHeight
+                                                      targetHeight:self.chain.estimatedBlockHeight];
     //DSLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
