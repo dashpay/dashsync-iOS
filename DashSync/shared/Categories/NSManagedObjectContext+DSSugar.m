@@ -68,7 +68,7 @@
 - (NSError *)ds_save {
     if (!self.hasChanges) return nil;
 
-    NSTimeInterval saveStart = [NSDate timeIntervalSince1970];
+    NSTimeInterval saveStart = [[NSDate date] timeIntervalSince1970];
     NSUInteger insertedCount = self.insertedObjects.count;
     NSUInteger updatedCount = self.updatedObjects.count;
     NSUInteger deletedCount = self.deletedObjects.count;
@@ -87,7 +87,7 @@
     [[UIApplication sharedApplication] endBackgroundTask:taskId];
 #endif
 
-    NSTimeInterval saveTime = ([NSDate timeIntervalSince1970] - saveStart) * 1000.0;
+    NSTimeInterval saveTime = ([[NSDate date] timeIntervalSince1970] - saveStart) * 1000.0;
     DSLogInfo(@"CoreData", @"Save completed in %.1f ms (inserted: %lu, updated: %lu, deleted: %lu)",
               saveTime, (unsigned long)insertedCount, (unsigned long)updatedCount, (unsigned long)deletedCount);
 

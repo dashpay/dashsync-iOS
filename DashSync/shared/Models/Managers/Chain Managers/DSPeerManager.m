@@ -537,13 +537,13 @@
     if (self.downloadPeer.needsFilterUpdate) return;
     self.downloadPeer.needsFilterUpdate = YES;
     DSLogInfo(@"DSPeerManager", @"Updating Bloom filter on peers");
-    NSTimeInterval filterUpdateStart = [NSDate timeIntervalSince1970];
+    NSTimeInterval filterUpdateStart = [[NSDate date] timeIntervalSince1970];
 
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (!success) return;
         //we are on chainPeerManagerQueue
         [self.transactionManager clearTransactionsBloomFilter];
-        NSTimeInterval filterBuildTime = ([NSDate timeIntervalSince1970] - filterUpdateStart) * 1000.0;
+        NSTimeInterval filterBuildTime = ([[NSDate date] timeIntervalSince1970] - filterUpdateStart) * 1000.0;
         DSLogInfo(@"DSPeerManager", @"Bloom filter rebuild took %.2f ms", filterBuildTime);
 
         if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer

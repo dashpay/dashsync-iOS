@@ -75,6 +75,12 @@ NSString *DSCurrentThreadName(void);
  */
 + (void)log:(NSString *)message className:(NSString *)className;
 
+/** @fn logVersionInfo
+ *  @brief Logs the app version and DashSync version at startup
+ *  Called automatically when DSLogger is initialized.
+ */
++ (void)logVersionInfo;
+
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 

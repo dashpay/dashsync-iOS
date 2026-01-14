@@ -183,7 +183,7 @@
 
         NSUInteger keysNeeded = gapLimit - a.count;
         if (keysNeeded > 0) {
-            NSTimeInterval keyGenStart = [NSDate timeIntervalSince1970];
+            NSTimeInterval keyGenStart = [[NSDate date] timeIntervalSince1970];
             NSUInteger numChildren = [(internal) ? self.internalAddresses : self.externalAddresses count];
             DSLogInfo(@"DSFundsDerivationPath", @"%lu keys needed for %@ = %lu issued + %lu lookahead size + %lu lookahead threshold - %lu num children",
                       (unsigned long)keysNeeded, self.stringRepresentation,
@@ -208,7 +208,7 @@
                 n++;
             }
 
-            NSTimeInterval keyGenTime = ([NSDate timeIntervalSince1970] - keyGenStart) * 1000.0;
+            NSTimeInterval keyGenTime = ([[NSDate date] timeIntervalSince1970] - keyGenStart) * 1000.0;
             DSLogInfo(@"DSFundsDerivationPath", @"Took %.2f ms", keyGenTime);
         } else {
             while (a.count < gapLimit) { // generate new addresses up to gapLimit

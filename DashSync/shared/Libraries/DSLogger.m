@@ -104,6 +104,9 @@ NSString *DSCurrentThreadName(void) {
 
         [DDLog addLogger:fileLogger];
         _fileLogger = fileLogger;
+
+        // Log version info at startup
+        [DSLogger logVersionInfo];
     }
     return self;
 }
@@ -135,6 +138,24 @@ NSString *DSCurrentThreadName(void) {
 
 + (void)log:(NSString *)message className:(NSString *)className {
     DSLogInfo(className, @"%@", message);
+}
+
++ (void)logVersionInfo {
+    // Get host app version info
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *appVersion = mainBundle.infoDictionary[@"CFBundleShortVersionString"] ?: @"Unknown";
+    NSString *appBuild = mainBundle.infoDictionary[@"CFBundleVersion"] ?: @"Unknown";
+    NSString *appName = mainBundle.infoDictionary[@"CFBundleDisplayName"] ?: mainBundle.infoDictionary[@"CFBundleName"] ?: @"DashWallet";
+
+    // Get DashSync framework version
+    NSBundle *dashSyncBundle = [NSBundle bundleForClass:[DSLogger class]];
+    NSString *dashSyncVersion = dashSyncBundle.infoDictionary[@"CFBundleShortVersionString"] ?: @"Unknown";
+
+    // Log version info at startup (matching Android format)
+    DSLogInfo(@"DSLogger", @"===== Application Startup =====");
+    DSLogInfo(@"DSLogger", @"%@ v%@ (build %@)", appName, appVersion, appBuild);
+    DSLogInfo(@"DSLogger", @"DashSync Framework v%@", dashSyncVersion);
+    DSLogInfo(@"DSLogger", @"===============================");
 }
 
 @end

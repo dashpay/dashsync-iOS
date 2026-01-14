@@ -75,7 +75,7 @@ static const NSTimeInterval kStallDetectionSeconds = 30.0;
 - (void)startCalculating {
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.logTimer invalidate];
-        self.startTime = [NSDate timeIntervalSince1970];
+        self.startTime = [[NSDate date] timeIntervalSince1970];
         self.lastProgressTime = self.startTime;
         self.logTimer = [NSTimer scheduledTimerWithTimeInterval:kLogIntervalSeconds
                                                          target:self
@@ -160,7 +160,7 @@ static const NSTimeInterval kStallDetectionSeconds = 30.0;
 - (void)updateChainHeight:(uint32_t)chainHeight commonHeight:(uint32_t)commonHeight targetHeight:(uint32_t)targetHeight {
     dispatch_async(self.statsQueue, ^{
         if (chainHeight > self.lastChainHeight) {
-            self.lastProgressTime = [NSDate timeIntervalSince1970];
+            self.lastProgressTime = [[NSDate date] timeIntervalSince1970];
             self.lastChainHeight = chainHeight;
         }
         self.chainHeight = chainHeight;
@@ -188,7 +188,7 @@ static const NSTimeInterval kStallDetectionSeconds = 30.0;
         targetH = self.targetHeight;
         lastProgress = self.lastProgressTime;
         totalB = (double)self.totalBytes;
-        elapsed = [NSDate timeIntervalSince1970] - self.startTime;
+        elapsed = [[NSDate date] timeIntervalSince1970] - self.startTime;
     });
 
     // Calculate KB/sec
@@ -196,7 +196,7 @@ static const NSTimeInterval kStallDetectionSeconds = 30.0;
     double avgKBPerSec = (elapsed > 0) ? (totalB / 1024.0 / elapsed) : 0;
 
     // Stall detection
-    NSTimeInterval now = [NSDate timeIntervalSince1970];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     BOOL isStalled = (now - lastProgress) > kStallDetectionSeconds;
     NSString *stallStatus = isStalled ? @"STALLED" : @"not stalled";
 
@@ -278,7 +278,7 @@ static const NSTimeInterval kStallDetectionSeconds = 30.0;
         self.totalBlocks = 0;
         self.totalTransactions = 0;
         self.totalBytes = 0;
-        self.startTime = [NSDate timeIntervalSince1970];
+        self.startTime = [[NSDate date] timeIntervalSince1970];
         self.avgKBPerSec = 0;
         self.lastKBPerSec = 0;
         self.chainHeight = 0;
