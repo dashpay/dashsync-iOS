@@ -795,8 +795,13 @@
     _totalReceived = totalReceived;
 
     if (balance != _balance) {
-        DSLogInfo(@"DSAccount", @"Balance updated: %llu -> %llu DASH, UTXOs: %lu, totalSent: %llu, totalReceived: %llu",
-                  _balance, balance, (unsigned long)utxos.count, totalSent, totalReceived);
+        // Only log if not the initial UINT64_MAX state (used to trigger notifications on first load)
+        if (_balance != UINT64_MAX) {
+            DSLogInfo(@"DSAccount", @"Balance updated: %.8f -> %.8f DASH, UTXOs: %lu, totalSent: %.8f, totalReceived: %.8f",
+                      (double)_balance / 100000000.0, (double)balance / 100000000.0,
+                      (unsigned long)utxos.count,
+                      (double)totalSent / 100000000.0, (double)totalReceived / 100000000.0);
+        }
         _balance = balance;
 
         dispatch_async(dispatch_get_main_queue(), ^{
