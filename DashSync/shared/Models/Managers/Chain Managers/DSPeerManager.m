@@ -940,6 +940,7 @@
 }
 
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error {
+    DSLogInfo(@"DSPeerManager", @"[%@: %@:%d] disconnected%@%@", self.chain.name, peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     BOOL banned = NO;
     if ([error.domain isEqual:@"DashSync"]) {                                //} && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
@@ -978,12 +979,14 @@
         @synchronized(self) {
             _peers = nil;
         }
-        if (_desiredState != DSPeerManagerDesiredState_Disconnected)
+        if (_desiredState != DSPeerManagerDesiredState_Disconnected) {
+            DSLogInfo(@"DSPeerManager", @"[%@: %@:%d] max connect failures exceeded", self.chain.name, peer.host, peer.port);
             dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                         object:nil
                                                                       userInfo:(error) ? @{@"error": error, DSChainManagerNotificationChainKey: self.chain} : @{DSChainManagerNotificationChainKey: self.chain}];
                 });
+        }
     } else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
 #if TARGET_OS_IOS

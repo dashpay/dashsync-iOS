@@ -142,6 +142,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)configureMixingWithAmount:(uint64_t)amount rounds:(int32_t)rounds sessions:(int32_t)sessions withMultisession:(BOOL)multisession denominationGoal:(int32_t)denomGoal denominationHardCap:(int32_t)denomHardCap {
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: mixing configuration: { rounds: %d, sessions: %d, amount: %llu, multisession: %s, denomGoal: %d, denomHardCap: %d }", self.chain.name, rounds, sessions, amount, multisession ? "YES" : "NO", denomGoal, denomHardCap);
     self.options->enable_coinjoin = true;
     self.options->coinjoin_amount = amount;
     self.options->coinjoin_rounds = rounds;
@@ -167,6 +168,7 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)start {
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoinManager starting", self.chain.name);
     [self cancelCoinjoinTimer];
     uint32_t interval = 1;
     uint32_t delay = 1;
@@ -215,6 +217,7 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)initiateShutdown {
     if (self.isMixing && !self.isShuttingDown) {
+        DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoinManager initiated shutdown", self.chain.name);
         self.isShuttingDown = true;
         [self updateOptionsWithSessions:0];
         [self.wrapper initiateShutdown];
@@ -228,6 +231,7 @@ static dispatch_once_t managerChainToken = 0;
 
 - (void)stop {
     if (self.isMixing) {
+        DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoinManager stopping", self.chain.name);
         self.isMixing = false;
         [self cancelCoinjoinTimer];
         self.cachedLastSuccessBlock = 0;
@@ -287,17 +291,21 @@ static dispatch_once_t managerChainToken = 0;
         return;
     }
 
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: doAutomaticDenominatingWithDryRun: %@", self.chain.name, dryRun ? @"YES" : @"NO");
+
     dispatch_async(self.processingQueue, ^{
         BOOL result = [self.wrapper doAutomaticDenominatingWithDryRun:dryRun];
 
         if (!dryRun) {
             if (result) {
                 if (!self.hasReportedSuccess) {
+                    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: Mixing started successfully", self.chain.name);
                     self.hasReportedSuccess = YES;
                     self.hasReportedFailure = NO;
                 }
             } else {
                 if (!self.hasReportedFailure) {
+                    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: Mixing start failed, will retry", self.chain.name);
                     self.hasReportedFailure = YES;
                     self.hasReportedSuccess = NO;
                 }
@@ -670,6 +678,7 @@ static dispatch_once_t managerChainToken = 0;
 
     if (self.lastReportedProgress != progress) {
         _lastReportedProgress = progress;
+        DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: getMixingProgress: %f = %d / (%f * %d)", self.chain.name, progress, totalRounds, requiredRounds, totalInputs);
     }
 
     return fmax(0.0, fmin(progress, 1.0));
@@ -822,9 +831,15 @@ static dispatch_once_t managerChainToken = 0;
     BOOL signedTransaction = [account signTransaction:transaction];
 
     if (!signedTransaction || !transaction.isSigned) {
+        DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin error: not signed", self.chain.name);
         return NO;
     } else {
         [self.chain.chainManager.transactionManager publishTransaction:transaction completion:^(NSError *error) {
+            if (error) {
+                DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin publish error: %@ for tx: %@", self.chain.name, error.description, uint256_reverse_hex(transaction.txHash));
+            } else {
+                DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin publish success: %@", self.chain.name, uint256_reverse_hex(transaction.txHash));
+            }
             dispatch_async(self.processingQueue, ^{
                 onPublished(transaction.txHash, error);
             });
@@ -866,6 +881,7 @@ static dispatch_once_t managerChainToken = 0;
             DSCoinJoinSignedInputs *request = [DSCoinJoinSignedInputs requestWithData:message];
             [peer sendRequest:request];
         } else {
+            DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: unknown message type: %@", self.chain.name, messageType);
             return NO;
         }
 

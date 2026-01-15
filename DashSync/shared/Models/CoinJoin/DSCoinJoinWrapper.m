@@ -25,6 +25,7 @@
 #import "DSChainManager.h"
 #import "DSCoinJoinWrapper.h"
 #import "DSBlock.h"
+#import "DSLogger.h"
 
 #define AS_OBJC(context) ((__bridge DSCoinJoinWrapper *)(context))
 #define AS_RUST(context) ((__bridge void *)(context))
@@ -481,12 +482,27 @@ bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinContr
         result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts coinControl:cc onPublished:^(UInt256 txId, NSError * _Nullable error) {
             @synchronized (context) {
                 if (error) {
+                    DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin: commit tx error: %@, tx type: %@", wrapper.chain.name, error, is_denominating ? @"denominations" : @"collateral");
                 } else if (is_denominating) {
+                    #if DEBUG
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    #else
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, @"<REDACTED>");
+                    #endif
                     bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
+
+                    if (!isFinished) {
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin: auto_denom not finished", wrapper.chain.name);
+                    }
 
                     processor_destroy_block_hash(client_session_id);
                     [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_CreateDenomination];
                 } else {
+                    #if DEBUG
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                    #else
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, @"<REDACTED>");
+                    #endif
                     [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_MakeCollateralInputs];
                 }
             }

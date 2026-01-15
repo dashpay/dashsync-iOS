@@ -268,7 +268,7 @@ static const NSTimeInterval kStallDetectionSeconds = 30.0;
 }
 
 - (void)reset {
-    dispatch_async(self.statsQueue, ^{
+    dispatch_sync(self.statsQueue, ^{
         self.blocksThisInterval = 0;
         self.transactionsThisInterval = 0;
         self.preFilteredTxThisInterval = 0;

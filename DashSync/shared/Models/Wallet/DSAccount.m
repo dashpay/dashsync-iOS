@@ -710,16 +710,19 @@
                     if (tx.lockTime < TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > self.wallet.chain.bestBlockHeight + 1) {
                         pending = YES; // future lockTime
+                        DSLogInfo(@"DSAccount", @"received input with future lockTime %d for transaction %@", tx.lockTime, uint256_reverse_hex(tx.txHash));
                     }
                     if (tx.lockTime >= TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > now) {
                         pending = YES; // future locktime
+                        DSLogInfo(@"DSAccount", @"received input with future lockTime %d for transaction %@", tx.lockTime, uint256_reverse_hex(tx.txHash));
                     }
                 }
 
                 for (DSTransactionOutput *output in tx.outputs) { // check that no outputs are dust
                     if (output.amount < TX_MIN_OUTPUT_AMOUNT) {
                         pending = YES;
+                        DSLogInfo(@"DSAccount", @"received dust output %llu for transaction %@", output.amount, uint256_reverse_hex(tx.txHash));
                     }
                 }
             }
@@ -1095,6 +1098,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
                 // check for sufficient total funds before building a smaller transaction
                 if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]) {
+                    DSLogInfo(@"DSAccount", @"[%@] Insufficient funds. %llu is less than transaction amount:%llu", self.wallet.chain.name, self.balance,
+                        amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]);
                     return nil;
                 }
                 uint64_t lastAmount = [amounts.lastObject unsignedLongLongValue];
@@ -1132,6 +1137,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
 
         if (balance < amount + feeAmount) { // insufficient funds
+            DSLogInfo(@"DSAccount", @"[%@] Insufficient funds. %llu is less than transaction amount:%llu", self.wallet.chain.name, balance, amount + feeAmount);
             return nil;
         }
 
@@ -1192,6 +1198,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             UInt256 h;
 
             if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
+            DSLogInfo(@"DSAccount", @"[%@] Setting account tx %@ height to %d", self.wallet.chain.name, uint256_reverse_hex(tx.txHash), height);
             tx.blockHeight = height;
             if (tx.timestamp == UINT32_MAX || tx.timestamp == 0) {
                 //We should only update the timestamp one time
