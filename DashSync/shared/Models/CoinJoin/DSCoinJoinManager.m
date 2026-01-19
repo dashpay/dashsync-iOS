@@ -965,20 +965,24 @@ static dispatch_once_t managerChainToken = 0;
         NSArray *issuedAddresses = [self getIssuedReceiveAddresses];
         NSArray *usedAddresses = [self getUsedReceiveAddresses];
         double percent = (double)usedAddresses.count * 100.0 / (double)issuedAddresses.count;
+        DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin init. Used addresses count %lu out of %lu (%.2f %%)", self.chain.name, (unsigned long)usedAddresses.count, (unsigned long)issuedAddresses.count, percent);
     });
 }
 
 // Events
 
 - (void)onSessionStarted:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined {
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: onSessionStarted: baseId: %d, clientId: %@, denom: %d, state: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
     [self.managerDelegate sessionStartedWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
 }
 
 - (void)onSessionComplete:(int32_t)baseId clientSessionId:(UInt256)clientId denomination:(uint32_t)denom poolState:(PoolState)state poolMessage:(PoolMessage)message poolStatus:(PoolStatus)status ipAddress:(UInt128)address isJoined:(BOOL)joined {
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: onSessionComplete: baseId: %d, clientId: %@, denom: %d, state: %d, status: %d, message: %d, address: %@, isJoined: %s", self.chain.name, baseId, [uint256_hex(clientId) substringToIndex:7], denom, state, status, message, [self.masternodeGroup hostFor:address], joined ? "yes" : "no");
     [self.managerDelegate sessionCompleteWithId:baseId clientSessionId:clientId denomination:denom poolState:state poolMessage:message poolStatus:status ipAddress:address isJoined:joined];
 }
 
 - (void)onMixingStarted:(nonnull NSArray *)statuses {
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: onMixingStarted, statuses: %@", self.chain.name, statuses.count > 0 ? [NSString stringWithFormat:@"%@", statuses] : @"empty");
     [self.managerDelegate mixingStarted];
 }
 
@@ -1007,6 +1011,11 @@ static dispatch_once_t managerChainToken = 0;
 }
 
 - (void)onTransactionProcessed:(UInt256)txId type:(CoinJoinTransactionType)type {
+#if DEBUG
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, uint256_reverse_hex(txId), type);
+#else
+    DSLogInfo(@"DSCoinJoinManager", @"[%@] CoinJoin: onTransactionProcessed: %@, type: %d", self.chain.name, @"<REDACTED>", type);
+#endif
     [self.managerDelegate transactionProcessedWithId:txId type:type];
 }
 
