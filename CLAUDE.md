@@ -162,10 +162,43 @@ Supports 15+ languages: en, de, es, ja, zh-Hans, zh-Hant-TW, uk, bg, el, it, cs,
 
 ## Development Workflow
 
-### Commit Policy
-- **DO NOT commit changes until the user has tested them**
-- Wait for explicit approval before creating commits
-- This applies to all code changes, especially logging and behavioral modifications
+### Git Workflow Policy
+
+**NEVER commit or push changes without explicit user permission.**
+
+When the user asks you to make code changes:
+1. Make the requested changes to the code
+2. Show what was changed (using `git diff` or explanation)
+3. **STOP and WAIT** for explicit permission to commit/push
+4. Only commit/push when the user explicitly says to do so
+
+**Example phrases that give permission to commit/push:**
+- "commit these changes"
+- "push to github"
+- "create a commit and push"
+- "commit and push all changes"
+
+**Do NOT commit/push** just because the user asked for code changes. They may want to test first.
+
+#### Permission Does NOT Carry Over
+
+**Each set of changes requires its own explicit permission.** If the user gave permission to commit earlier in the conversation, that permission applies ONLY to those specific changes - NOT to any subsequent changes.
+
+**Example scenario:**
+1. User: "Fix bug X, then commit and push" → Permission granted for bug X fix only
+2. User: "Now fix bug Y" → Make the fix, show diff, **STOP AND WAIT** - no permission to commit yet
+3. User: "Looks good, commit it" → NOW permission is granted for bug Y fix
+
+**Common mistake to avoid:** After completing a task like "address review comments" or "fix these issues", do NOT automatically commit. The user needs to test the changes first. Always pause after showing the diff and wait for explicit commit instruction.
+
+#### Testing Before Commit
+
+This is especially important for DashSync because:
+- Changes affect downstream projects (dashwallet-ios, other consumers)
+- Logging and behavioral changes need runtime verification
+- The user must run the code to confirm changes work as expected
+
+Always wait for the user to confirm they have tested and verified the changes before committing.
 
 ### Related Repositories
 - **DashJ** (Android equivalent): https://github.com/dashpay/dashj
