@@ -189,10 +189,6 @@
             [mArray addObject:document];
         }
         if (error) {
-            DSLog(@"Decoding error for parseDocumentsMessage cborData %@", cborData);
-            if (self.request) {
-                DSLog(@"request was %@", self.request.predicate);
-            }
             break;
         }
     }
@@ -225,7 +221,6 @@
     }
     self.responseObject = [dataContractData ds_decodeCborError:&error];
     if (error) {
-        DSLog(@"Decoding error for parseDataContractMessage cborData %@", dataContractData);
         self.decodingError = error;
     }
 }
@@ -273,10 +268,6 @@
                 [mArray addObject:document];
             }
             if (error) {
-                DSLog(@"Decoding error for parseDocumentsMessage cborData %@", cborData);
-                if (self.request) {
-                    DSLog(@"request was %@", self.request.predicate);
-                }
                 break;
             }
         }
@@ -388,7 +379,6 @@
 }
 
 - (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
-    DSLog(@"didReceiveInitialMetadata");
 }
 
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
@@ -414,7 +404,6 @@
             self.decodingError = error;
         }
     }
-    DSLog(@"didReceiveProtoMessage");
 }
 
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
@@ -429,11 +418,6 @@
                 self.errorHandler(error);
             });
         }
-        DSLog(@"error in didCloseWithTrailingMetadata from IP %@ %@", self.host ? self.host : @"Unknown", error);
-        if (self.request) {
-            DSLog(@"request contract ID was %@", self.request.contract.base58ContractId);
-        }
-
     } else {
         if (self.successHandler) {
             dispatch_async(self.completionQueue, ^{
@@ -441,11 +425,9 @@
             });
         }
     }
-    DSLog(@"didCloseWithTrailingMetadata");
 }
 
 - (void)didWriteMessage {
-    DSLog(@"didWriteMessage");
 }
 
 - (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData error:(NSError **)error {
@@ -466,9 +448,6 @@
         return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:quorum_type_for_platform(chain.chainType) error:error];
     } else if (quorumEntry) {
         *error = [NSError errorWithCode:400 descriptionKey:DSLocalizedString(@"Quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash))];
-        DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
-    } else {
-        DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
     }
     return nil;
 }

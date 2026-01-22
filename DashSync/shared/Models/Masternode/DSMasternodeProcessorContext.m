@@ -71,7 +71,6 @@
     uint32_t baseBlockHeight = [self blockHeightForBlockHash:baseBlockHash];
     uint32_t blockHeight = [self blockHeightForBlockHash:blockHash];
     if (blockHeight == UINT32_MAX) {
-        DSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
         return ProcessingError_UnknownBlockHash;
     }
     DSChain *chain = self.chain;
@@ -79,7 +78,6 @@
     DSMasternodeListService *service = self.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
     BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
     if (!hasRemovedFromRetrieval) {
-        DSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
         return ProcessingError_PersistInRetrieval;
     }
     NSData *blockHashData = uint256_data(blockHash);
@@ -89,7 +87,6 @@
     BOOL noNeedToVerifyQuorums = !(needToVerifyRotatedQuorums || needToVerifyNonRotatedQuorums);
     BOOL hasLocallyStored = [manager.store hasMasternodeListAt:blockHashData];
     if (hasLocallyStored && noNeedToVerifyQuorums) {
-        DSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ needToVerifyRotatedQuorums: %d needToVerifyNonRotatedQuorums: %d", blockHeight, uint256_reverse_hex(blockHash), needToVerifyRotatedQuorums, needToVerifyNonRotatedQuorums);
         [service removeFromRetrievalQueue:blockHashData];
         return ProcessingError_LocallyStored;
     }
@@ -97,7 +94,6 @@
     if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
         // this could have been deleted in the meantime, if so rerequest
         [service issueWithMasternodeListFromPeer:self.peer];
-        DSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_reverse_hex(baseBlockHash));
         return ProcessingError_HasNoBaseBlockHash;
     }
     return ProcessingError_None;

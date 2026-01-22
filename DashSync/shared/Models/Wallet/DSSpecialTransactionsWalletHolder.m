@@ -388,11 +388,6 @@
         UInt256 h;
 
         if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
-#if DEBUG
-        DSLogPrivate(@"[%@] Setting special tx %@ height to %d", self.wallet.chain.name, tx, height);
-#else
-        DSLog(@"[%@] Setting special tx %@ height to %d", self.wallet.chain.name, @"<REDACTED>", height);
-#endif
         tx.blockHeight = height;
         if (tx.timestamp == UINT32_MAX || tx.timestamp == 0) {
             //We should only update the timestamp one time

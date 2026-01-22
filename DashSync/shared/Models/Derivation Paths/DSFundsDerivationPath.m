@@ -97,11 +97,6 @@
 
                     while (e.index >= a.count) [a addObject:[NSNull null]];
                     if (![DSKeyManager isValidDashAddress:e.address forChain:self.account.wallet.chain]) {
-#if DEBUG
-                        DSLogPrivate(@"[%@] address %@ loaded but was not valid on chain", self.account.wallet.chain.name, e.address);
-#else
-                            DSLog(@"[%@] address %@ loaded but was not valid on chain %@", self.account.wallet.chain.name, @"<REDACTED>");
-#endif /* DEBUG */
                         continue;
                     }
                     a[e.index] = e.address;
@@ -186,12 +181,20 @@
 
         NSMutableDictionary *addAddresses = [NSMutableDictionary dictionary];
 
+        // keysNeeded is always > 0 here since we return early if a.count >= gapLimit
+        NSUInteger keysNeeded = gapLimit - a.count;
+        NSTimeInterval keyGenStart = [[NSDate date] timeIntervalSince1970];
+        NSUInteger numChildren = [(internal) ? self.internalAddresses : self.externalAddresses count];
+        DSLogInfo(@"DSFundsDerivationPath", @"%lu keys needed for %@ = %lu issued + %lu lookahead size + %lu lookahead threshold - %lu num children",
+                  (unsigned long)keysNeeded, self.stringRepresentation,
+                  (unsigned long)(n - keysNeeded), (unsigned long)gapLimit, (unsigned long)0,
+                  (unsigned long)numChildren);
+
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
             NSString *addr = [DSKeyManager ecdsaKeyAddressFromPublicKeyData:pubKey forChainType:self.chain.chainType];
 
             if (!addr) {
-                DSLog(@"[%@] error generating keys", self.account.wallet.chain.name);
                 if (error) {
                     *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }
@@ -204,6 +207,9 @@
             [addAddresses setObject:addr forKey:@(n)];
             n++;
         }
+
+        NSTimeInterval keyGenTime = ([[NSDate date] timeIntervalSince1970] - keyGenStart) * 1000.0;
+        DSLogInfo(@"DSFundsDerivationPath", @"Took %.2f ms", keyGenTime);
 
         if (!self.account.wallet.isTransient) {
             [self.managedObjectContext performBlock:^{ // store new address in core data

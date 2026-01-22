@@ -103,8 +103,6 @@ inline static int ceil_log2(int x) {
 // true if the given tx hash is included in the block
 - (BOOL)containsHash:(UInt256)hash {
     for (NSUInteger i = 0; i < self.hashes.length; i += sizeof(UInt256)) {
-        DSLogPrivate(@"hash %@", [NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
-        DSLogPrivate(@"looking for %@", [NSData dataWithUInt256:hash].hexString);
         if (uint256_eq(hash, [self.hashes UInt256AtOffset:i])) return YES;
     }
 

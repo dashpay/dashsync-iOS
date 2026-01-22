@@ -269,10 +269,7 @@ typedef enum : NSUInteger
             case details_merchant_data:
                 if (d) _merchantData = d;
                 break;
-            default: {
-                DSLog(@"Unknown details type: %lu", (unsigned long)details);
-                break;
-            }
+            default: break;
         }
 
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
@@ -516,10 +513,8 @@ typedef enum : NSUInteger
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
                 _errorMessage = DSLocalizedString(@"Unsupported signature type", nil);
-                DSLog(@"%@", _errorMessage);
             } else {
-                _errorMessage = [NSError osStatusErrorWithCode:status].localizedDescription;                
-                DSLog(@"SecKeyRawVerify error: %@", _errorMessage);
+                _errorMessage = [NSError osStatusErrorWithCode:status].localizedDescription;
             }
 
             r = NO;

@@ -16,6 +16,7 @@
 //
 
 #import "DSDataController.h"
+#import "DSLogger.h"
 #import "NSManagedObjectContext+DSSugar.h"
 
 
@@ -66,13 +67,18 @@
 
 - (NSError *)ds_save {
     if (!self.hasChanges) return nil;
+
+    NSTimeInterval saveStart = [[NSDate date] timeIntervalSince1970];
+    NSUInteger insertedCount = self.insertedObjects.count;
+    NSUInteger updatedCount = self.updatedObjects.count;
+    NSUInteger deletedCount = self.deletedObjects.count;
+
 #if TARGET_OS_IOS
     NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
     }];
 #endif
     NSError *error = nil;
     if (![self save:&error]) { // persist changes
-        DSLog(@"%s: %@", __func__, error);
 #if DEBUG
         abort();
 #endif
@@ -80,6 +86,11 @@
 #if TARGET_OS_IOS
     [[UIApplication sharedApplication] endBackgroundTask:taskId];
 #endif
+
+    NSTimeInterval saveTime = ([[NSDate date] timeIntervalSince1970] - saveStart) * 1000.0;
+    DSLogInfo(@"CoreData", @"Save completed in %.1f ms (inserted: %lu, updated: %lu, deleted: %lu)",
+              saveTime, (unsigned long)insertedCount, (unsigned long)updatedCount, (unsigned long)deletedCount);
+
     return error;
 }
 

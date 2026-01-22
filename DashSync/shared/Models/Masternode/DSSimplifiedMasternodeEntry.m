@@ -18,14 +18,6 @@
 #import "NSMutableData+Dash.h"
 #import <arpa/inet.h>
 
-#define LOG_SMNE_CHANGES 1
-
-#if LOG_SMNE_CHANGES
-#define DSDSMNELog(s, ...) DSLog(s, ##__VA_ARGS__)
-#else
-#define DSDSMNELog(s, ...)
-#endif
-
 @interface DSSimplifiedMasternodeEntry ()
 
 @property (nonatomic, assign) UInt256 providerRegistrationTransactionHash;
@@ -151,7 +143,6 @@
         uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDSMNELog(@"Validity for proTxHash %@ : Using %@ instead of %@ for list at block height %u (previousBlock.height %u)", uint256_hex(self.providerRegistrationTransactionHash), previousValidity[previousBlock].boolValue ? @"YES" : @"NO", isValid ? @"YES" : @"NO", blockHeight, prevHeight);
             isValid = [previousValidity[previousBlock] boolValue];
         }
     }
@@ -195,7 +186,6 @@
         uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSLog(@"[%@] SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", self.chain.name,  uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(*(UInt256 *)(blockInfo.u8)), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
        }
     }
@@ -235,7 +225,6 @@
         uint32_t distance = prevHeight - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDSMNELog(@"OperatorKey : Using %@ instead of %@ for list at block height %u", uint384_hex(previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384), uint384_hex(usedPreviousOperatorPublicKeyAtBlockHash), blockHeight);
             usedPreviousOperatorPublicKeyAtBlockHash = previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384;
         }
     }

@@ -218,12 +218,9 @@
         if (inet_aton([address UTF8String], &addrV4) != 0) {
             uint32_t ip = ntohl(addrV4.s_addr);
             ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-            DSLog(@"%08x", ip);
         } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
             //todo support IPV6
-            DSLog(@"we do not yet support IPV6");
         } else {
-            DSLog(@"invalid address");
         }
 
         [peerManager registerPeerAtLocation:ipAddress
@@ -251,7 +248,7 @@
     NSError *error = nil;
 
     DSChain *chain = [DSChain setUpDevnetWithIdentifier:devnetType protocolVersion:protocolVersion?protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:minProtocolVersion?minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:NO];
-    
+
     if (sporkAddress && [sporkAddress isValidDashDevnetAddress]) {
         chain.sporkAddress = sporkAddress;
     }
@@ -270,12 +267,9 @@
         if (inet_aton([address UTF8String], &addrV4) != 0) {
             uint32_t ip = ntohl(addrV4.s_addr);
             ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-            DSLog(@"%08x", ip);
         } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
             //todo support IPV6
-            DSLog(@"we do not yet support IPV6");
         } else {
-            DSLog(@"invalid address");
         }
 
         [peerManager registerPeerAtLocation:ipAddress
@@ -332,7 +326,7 @@
             [self.knownChains removeObject:chain];
             NSValue *genesisValue = uint256_obj(chain.genesisHash);
             [self.devnetGenesisDictionary removeObjectForKey:genesisValue];
-          
+
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
             });

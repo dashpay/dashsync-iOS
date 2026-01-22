@@ -148,7 +148,6 @@
 
 - (void)signPayloadWithKey:(OpaqueKey *)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    //DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
     self.payloadSignature = [DSKeyManager NSDataFrom:key_ecdsa_compact_sign(privateKey->ecdsa, [self payloadHash].u8)];;
 }
 

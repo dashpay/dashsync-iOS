@@ -48,7 +48,6 @@
                 [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
             }
         } else {
-            DSLog(@"[%@] Missing block (%@)", self.chain.name, blockHashData.hexString);
             [self removeFromRetrievalQueue:blockHashData];
         }
     }
@@ -58,10 +57,8 @@
     DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:previousBlockHash blockHash:blockHash];
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:previousBlockHash blockHash:blockHash];
     if (matchedRequest) {
-        DSLog(@"[%@] •••• mnlistdiff request with such a range already in retrieval: %u..%u %@ .. %@", self.chain.name, [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
         return;
     }
-    DSLog(@"[%@] •••• requestMasternodeListDiff: %u..%u %@ .. %@", self.chain.name, [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
     [self sendMasternodeListRequest:request];
 }
 

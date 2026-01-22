@@ -209,7 +209,6 @@ static NSUInteger _fetchBatchSize = 100;
 
     [context performBlockAndWait:^{
         a = [context executeFetchRequest:request error:&error];
-        if (error) DSLog(@"%s: %@", __func__, error);
     }];
 
     return a;
@@ -277,7 +276,6 @@ static NSUInteger _fetchBatchSize = 100;
 
     [context performBlockAndWait:^{
         count = [context countForFetchRequest:request error:&error];
-        if (error) DSLog(@"%s: %@", __func__, error);
     }];
 
     return count;

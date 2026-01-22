@@ -55,8 +55,6 @@
             self.localAddress = addressEntities[0];
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
-    } else {
-        DSLog(@"Output had no address");
     }
     return self;
 }

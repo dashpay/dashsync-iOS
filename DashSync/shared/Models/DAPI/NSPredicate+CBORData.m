@@ -236,10 +236,6 @@
 }
 
 - (NSData *)dashPlatormWhereData {
-    NSArray *array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
-    NSData *json = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
-    DSLogPrivate(@"json where %@", [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
-    DSLogPrivate(@"cbor hex %@", [[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 

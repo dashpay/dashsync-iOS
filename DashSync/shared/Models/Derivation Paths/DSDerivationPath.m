@@ -280,26 +280,6 @@
             }
         } else {
             NSData *extendedPublicKeyData = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
-#ifdef DEBUG
-            if (!extendedPublicKeyData) {
-                if ([self isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                    DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:self.managedObjectContext matching:@"derivationPath.publicKeyIdentifier == %@", self.standaloneExtendedPublicKeyUniqueID];
-
-                    NSAssert(friendRequest, @"friend request must exist");
-
-                    DSBlockchainIdentityUsernameEntity *sourceUsernameEntity = [friendRequest.sourceContact.associatedBlockchainIdentity.usernames anyObject];
-                    DSBlockchainIdentityUsernameEntity *destinationUsernameEntity = [friendRequest.destinationContact.associatedBlockchainIdentity.usernames anyObject];
-#if DEBUG
-                    DSLogPrivate(@"[%@] No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ", self.chain.name, sourceUsernameEntity.stringValue, destinationUsernameEntity.stringValue, sourceUsernameEntity.stringValue);
-#else
-                    DSLog(@"[%@] No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ", self.chain.name, 
-                        @"<REDACTED-1>",
-                        @"<REDACTED-2>",
-                        @"<REDACTED-1>");
-#endif /* DEBUG */
-                }
-            }
-#endif
             _extendedPublicKey = key_create_from_extended_public_key_data(extendedPublicKeyData.bytes, extendedPublicKeyData.length, (int16_t) self.signingAlgorithm);
             [self maybeRevertBLSMigration:extendedPublicKeyData];
         }

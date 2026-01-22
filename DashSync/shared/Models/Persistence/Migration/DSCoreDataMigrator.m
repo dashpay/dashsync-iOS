@@ -104,19 +104,15 @@
             if (![[NSFileManager defaultManager] fileExistsAtPath:appSupportDir isDirectory:NULL]) {
                 //Create one
                 if (![[NSFileManager defaultManager] createDirectoryAtPath:appSupportDir withIntermediateDirectories:YES attributes:nil error:&error]) {
-                    NSLog(@"%@", error.localizedDescription);
+                    NSLog(@"Failed to create App Support directory: %@", error.localizedDescription);
+                    NSAssert(NO, @"App Support directory creation failed: %@", error.localizedDescription);
                 } else {
                     NSURL *url = [NSURL fileURLWithPath:appSupportDir];
-                    if (![url setResourceValue:@YES
-                                        forKey:NSURLIsExcludedFromBackupKey
-                                         error:&error]) {
-                        DSLog(@"Error excluding %@ from backup %@", url.lastPathComponent, error.localizedDescription);
-                    } else {
-                        DSLog(@"Excluding");
+                    if (![url setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:&error]) {
+                        NSLog(@"Failed to exclude App Support from backup: %@", error.localizedDescription);
                     }
                 }
             }
-            NSAssert(error == nil, @"Creation should have succeeded");
             if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsWALURL] path]]) {
                 [[NSFileManager defaultManager] copyItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:&error];
                 NSAssert(error == nil, @"Copy should have succeeded");
@@ -214,7 +210,6 @@
     }
     DSCoreDataMigrationVersionValue sourceVersion = [DSCoreDataMigrationVersion compatibleVersionForStoreMetadata:metadata];
     if (sourceVersion == NSNotFound) {
-        DSLog(@"unknown source version at URL %@", storeURL);
         return @[];
     }
 

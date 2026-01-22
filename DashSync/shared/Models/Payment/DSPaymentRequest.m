@@ -238,17 +238,11 @@
 - (BOOL)isValidAsNonDashpayPaymentRequest {
     if ([self.scheme isEqualToString:@"dash"]) {
         BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]);
-        if (!valid) {
-            DSLog(@"Not a valid dash request");
-        }
         return valid;
     }
 #if SHAPESHIFT_ENABLED
     else if ([self.scheme isEqualToString:@"bitcoin"]) {
         BOOL valid = [self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r]);
-        if (!valid) {
-            DSLog(@"Not a valid bitcoin request");
-        }
         return valid;
     }
 #endif
@@ -270,17 +264,11 @@
             }
         }];
         BOOL valid = [DSKeyManager isValidDashAddress:self.paymentAddress forChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath;
-        if (!valid) {
-            DSLog(@"Not a valid dash request");
-        }
         return valid;
     }
 #if SHAPESHIFT_ENABLED
     else if ([self.scheme isEqualToString:@"bitcoin"]) {
         BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
-        if (!valid) {
-            DSLog(@"Not a valid bitcoin request");
-        }
         return valid;
     }
 #endif
@@ -469,9 +457,6 @@
                                          }
 
                                          if (!request) {
-                                             DSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                 [[NSString alloc] initWithData:data
-                                                                       encoding:NSUTF8StringEncoding]);
                                              completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                                                         req.URL.host]]);
                                          } else if (![request.details.chain isEqual:chain]) {
@@ -518,9 +503,6 @@
                                          }
 
                                          if (!ack) {
-                                             DSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                 [[NSString alloc] initWithData:data
-                                                                       encoding:NSUTF8StringEncoding]);
                                              if (completion) {
                                                  completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil), req.URL.host]]);
                                              }

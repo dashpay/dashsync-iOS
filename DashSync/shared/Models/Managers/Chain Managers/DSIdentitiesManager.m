@@ -216,11 +216,6 @@
                 completion(NO, nil, error);
             });
         }
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentityByName %@", error);
-#else
-        DSLog(@"Failure in searchIdentityByName %@", @"<REDACTED>");
-#endif
     }];
     return call;
 }
@@ -423,11 +418,6 @@
                 completion(NO, nil, @[error]);
             });
         }
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentitiesByNamePrefix %@", error);
-#else
-        DSLog(@"Failure in searchIdentitiesByNamePrefix %@", @"<REDACTED>");
-#endif
     }];
     return call;
 }
@@ -461,11 +451,6 @@
                 completion(NO, nil, @[error]);
             });
         }
-#if DEBUG
-        DSLogPrivate(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@", error);
-#else
-        DSLog(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@", @"<REDACTED>");
-#endif
     }];
 }
 

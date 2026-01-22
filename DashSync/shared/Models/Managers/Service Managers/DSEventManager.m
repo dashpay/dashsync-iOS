@@ -96,7 +96,6 @@
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         if (![defs boolForKey:HAS_DETERMINED_SAMPLE_GROUP]) {
             u_int32_t chosenNumber = arc4random_uniform(100);
-            DSLog(@"DSEventManager chosen number %d < %d", chosenNumber, SAMPLE_CHANCE);
             bool isInSample = chosenNumber < SAMPLE_CHANCE;
             [defs setBool:isInSample forKey:IS_IN_SAMPLE_GROUP];
             [defs setBool:YES forKey:HAS_DETERMINED_SAMPLE_GROUP];
@@ -129,7 +128,6 @@
                          queue:self.myQueue
                     usingBlock:^(NSNotification *note) {
                         [self saveEvent:key];
-                        DSLog(@"DSEventManager received notification %@", note.name);
 #if TARGET_OS_IOS
                         if ([note.name isEqualToString:UIApplicationDidEnterBackgroundNotification]) {
                             [self _persistToDisk];
@@ -172,10 +170,6 @@
 }
 
 - (BOOL)shouldAskForPermission {
-    DSLog(@"---Sampling Metadata---");
-    DSLog(@"User is in sample group: %d", [self isInSampleGroup]);
-    DSLog(@"User is been asked for permission: %d", [self hasAskedForPermission]);
-    DSLog(@"User has approved event collection: %d", [self hasAcquiredPermission]);
     return [self isInSampleGroup] && ![self hasAskedForPermission];
 }
 
@@ -238,14 +232,6 @@
 
 - (void)_pushEventNamed:(NSString *)evtName withAttributes:(NSDictionary *)attrs {
     [self.myQueue addOperationWithBlock:^{
-#if DEBUG // notify when in debug mode
-        [attrs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            if (![key isKindOfClass:[NSString class]] || ![obj isKindOfClass:[NSString class]]) {
-                DSLog(@"warning: key or value in attributes dictionary is not of type string, "
-                      @"will be implicitly converted");
-            }
-        }];
-#endif
         NSMutableDictionary *safeDict = [NSMutableDictionary dictionary];
         [attrs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
             safeDict[[key description]] = [obj description];
@@ -293,7 +279,6 @@
                                            withIntermediateDirectories:NO
                                                             attributes:nil
                                                                  error:&error]) {
-                DSLog(@"Unable to create directory for storing event data: %@", error);
                 return;
             }
         }
@@ -308,9 +293,7 @@
         // now write to disk
         NSOutputStream *os = [[NSOutputStream alloc] initToFileAtPath:fullPath append:NO];
         [os open];
-        if (![NSJSONSerialization writeJSONObject:self._buffer toStream:os options:0 error:&error]) {
-            DSLog(@"Unable to write JSON for events file: %@", error);
-        }
+        [NSJSONSerialization writeJSONObject:self._buffer toStream:os options:0 error:&error];
         [os close];
 
         // empty the buffer if we can't write JSON data, it's likely an unrecoverable error anyway
@@ -397,7 +380,6 @@
         NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self _unsentDataDirectory]
                                                                              error:&error];
         if (error != nil) {
-            DSLog(@"Unable to read contents of event data directory: %@", error);
             return; // bail here as this is likely unrecoverable
         }
 
@@ -405,9 +387,7 @@
             NSString *fileName = [[self _unsentDataDirectory] stringByAppendingPathComponent:
                                                                   [NSString stringWithFormat:@"/%@", baseName]];
             NSError *removeErr = nil;
-            if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
-                DSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
-            }
+            [[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr];
         }];
     }];
 }

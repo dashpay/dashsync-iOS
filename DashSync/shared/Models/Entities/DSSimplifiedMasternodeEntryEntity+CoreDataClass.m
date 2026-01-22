@@ -171,9 +171,6 @@
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     self.updateHeight = blockHeight;
     
-    if (simplifiedMasternodeEntry.updateHeight != blockHeight) {
-        DSLog(@"• setAttributesFromSimplifiedMasternodeEntry: list.height %u != entry.height %u", blockHeight, simplifiedMasternodeEntry.updateHeight);
-    }
     // TODO: make sure we're doing
 //    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) for %@ should be the same as the entry update height (%i)", blockHeight, uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), simplifiedMasternodeEntry.updateHeight]));
     if (!chainEntity) {
@@ -205,7 +202,6 @@
 + (void)deleteHavingProviderTransactionHashes:(NSArray *)providerTransactionHashes onChainEntity:(DSChainEntity *)chainEntity {
     NSArray *hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (providerRegistrationTransactionHash IN %@)", chainEntity, providerTransactionHashes];
     for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in hashesToDelete) {
-        DSLog(@"deleteHavingProviderTransactionHashes: %@", simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.hexString);
         [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
     }
 }

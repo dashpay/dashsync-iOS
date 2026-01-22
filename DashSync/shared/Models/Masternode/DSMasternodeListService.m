@@ -78,7 +78,6 @@
                     NSMutableSet *leftToGet = [requestsInRetrieval mutableCopy];
                     [leftToGet intersectSet:requestsInRetrieval2];
                     if ((masternodeListCount == [self.store knownMasternodeListsCount]) && [requestsInRetrieval isEqualToSet:leftToGet]) {
-                        DSLog(@"[%@] %@ TimedOut", self.chain.name, self);
                         self.timedOutAttempt++;
                         [self disconnectFromDownloadPeer];
                         [self cleanRequestsInRetrieval];
@@ -138,7 +137,6 @@
         DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
         if (!merkleBlock) {
             // sometimes it happens while rescan
-            DSLog(@"[%@] getRecentMasternodeList: (no block exist) for tip", self.chain.name);
             return;
         }
         UInt256 merkleBlockHash = merkleBlock.blockHash;
@@ -147,7 +145,6 @@
             return;
         }
         if ([self.store addBlockToValidationQueue:merkleBlock]) {
-            DSLog(@"[%@] MasternodeListService.Getting masternode list %u", self.chain.name, merkleBlock.height);
             NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
             BOOL emptyRequestQueue = ![self retrievalQueueCount];
             [self addToRetrievalQueue:merkleBlockHashData];
@@ -224,9 +221,6 @@
         return NO;
     }
     BOOL isValid = [diffResult isTotallyValid];
-    if (!isValid) {
-        DSLog(@"[%@] Invalid diff result: %@", self.chain.name, diffResult.debugDescription);
-    }
     return isValid;
 
 }
@@ -262,7 +256,6 @@
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = count;
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) self.retrievalQueueMaxAmount;
-        DSLog(@"[%@] Masternode list queue updated: %f/%lu", self.chain.name, count, self.retrievalQueueMaxAmount);
         [self.chain.chainManager notifySyncStateChanged];
     }
 }
@@ -276,7 +269,6 @@
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = 0;
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) self.retrievalQueueMaxAmount;
-        DSLog(@"[%@] Masternode list queue cleaned up: 0/%lu", self.chain.name, self.retrievalQueueMaxAmount);
         [self.chain.chainManager notifySyncStateChanged];
     }
 }
@@ -304,19 +296,16 @@
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueCount = (uint32_t) currentCount;
         self.chain.chainManager.syncState.masternodeListSyncInfo.retrievalQueueMaxAmount = (uint32_t) self.retrievalQueueMaxAmount;
-        DSLog(@"[%@] Masternode list queue updated: %lu/%lu", self.chain.name, currentCount, self.retrievalQueueMaxAmount);
         [self.chain.chainManager notifySyncStateChanged];
     }
 }
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
     if (![self retrievalQueueCount]) {
-        DSLog(@"[%@] No masternode lists in retrieval: %@", self.chain.name, self);
         [self.delegate masternodeListSerivceEmptiedRetrievalQueue:self];
         return;
     }
     if ([self.requestsInRetrieval count]) {
-        DSLog(@"[%@] A masternode list is already in retrieval: %@", self.chain.name, self);
         return;
     }
     BOOL peerIsDisconnected;
@@ -348,19 +337,6 @@
 - (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:baseBlockHash blockHash:blockHash];
     if (!matchedRequest) {
-        #if DEBUG
-        NSSet *requestsInRetrieval;
-        @synchronized (self.requestsInRetrieval) {
-            requestsInRetrieval = [self.requestsInRetrieval copy];
-        }
-        NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
-        for (DSMasternodeListRequest *requestInRetrieval in requestsInRetrieval) {
-            [requestsInRetrievalStrings addObject:[requestInRetrieval logWithBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-                return [self.store heightForBlockHash:blockHash];
-            }]];
-        }
-        DSLog(@"[%@] A masternode list (%@ .. %@) was received that is not set to be retrieved (%@)", self.chain.name, uint256_hex(baseBlockHash), uint256_hex(blockHash), [requestsInRetrievalStrings componentsJoinedByString:@", "]);
-        #endif /* DEBUG */
         return NO;
     }
     @synchronized (self.requestsInRetrieval) {
@@ -381,7 +357,6 @@
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
     NSArray *faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
     if (faultyPeers.count >= MAX_FAULTY_DML_PEERS) {
-        DSLog(@"[%@] Exceeded max failures for masternode list, starting from scratch", self.chain.name);
         //no need to remove local masternodes
         [self cleanListsRetrievalQueue];
         [self.store deleteAllOnChain];

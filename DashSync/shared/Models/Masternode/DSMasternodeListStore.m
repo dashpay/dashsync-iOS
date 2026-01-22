@@ -155,7 +155,6 @@
 }
 
 - (void)deleteAllOnChain {
-    DSLog(@"[%@] DSMasternodeListStore.deleteAllOnChain", self.chain.name);
     [self.managedObjectContext performBlockAndWait:^{
         DSChainEntity *chainEntity = [self.chain chainEntityInContext:self.managedObjectContext];
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
@@ -172,7 +171,6 @@
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"block.chain == %@ && masternodes.@count == 0", [self.chain chainEntityInContext:self.managedObjectContext]]];
         NSArray *masternodeListEntities = [DSMasternodeListEntity fetchObjects:fetchRequest inContext:self.managedObjectContext];
         for (DSMasternodeListEntity *entity in [masternodeListEntities copy]) {
-            DSLog(@"[%@] DSMasternodeListStore.deleteEmptyMasternodeLists: %@", self.chain.name, entity);
            [self.managedObjectContext deleteObject:entity];
         }
         [self.managedObjectContext ds_save];
@@ -237,7 +235,6 @@
         NSMutableDictionary *quorumEntryPool = [NSMutableDictionary dictionary];
         masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
         if (masternodeList) {
-            DSLog(@"[%@] ••• addMasternodeList (loadMasternodeListAtBlockHash) -> %@: %@", self.chain.name, blockHash.hexString, masternodeList);
             double count;
             @synchronized (self.masternodeListsByBlockHash) {
                 [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
@@ -252,7 +249,6 @@
                 [self.chain.chainManager notifySyncStateChanged];
                 [self.chain.chainManager notifySyncStateChanged];
             }
-            DSLog(@"[%@] Loading Masternode List at height %u for blockHash %@ with %lu entries", self.chain.name, masternodeList.height, uint256_hex(masternodeList.blockHash), (unsigned long)masternodeList.simplifiedMasternodeEntries.count);
         }
     }];
     dispatch_group_leave(self.savingGroup);
@@ -285,7 +281,6 @@
                 [self.cachedBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:uint256_data(masternodeList.blockHash)];
                 [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
                 [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
-                DSLog(@"[%@] Loading Masternode List at height %u for blockHash %@ with %lu entries", self.chain.name, masternodeList.height, uint256_hex(masternodeList.blockHash), (unsigned long)masternodeList.simplifiedMasternodeEntries.count);
                 if (i == masternodeListEntities.count - 1) {
                     currentList = masternodeList;
                 }
@@ -336,7 +331,6 @@
 }
 
 - (void)removeAllMasternodeLists {
-    DSLog(@"[%@] ••• removeAllMasternodeLists -> ", self.chain.name);
     @synchronized (self.masternodeListsByBlockHash) {
         [self.masternodeListsByBlockHash removeAllObjects];
     }
@@ -347,7 +341,6 @@
     @synchronized (self.chain.chainManager.syncState) {
         self.chain.chainManager.syncState.masternodeListSyncInfo.lastBlockHeight = UINT32_MAX;
         self.chain.chainManager.syncState.masternodeListSyncInfo.storedCount = 0;
-        DSLog(@"[%@] [DSMasternodeManager] All List Removed: %u/%u", self.chain.name, UINT32_MAX, 0);
         [self.chain.chainManager notifySyncStateChanged];
     }
 }
@@ -361,8 +354,6 @@
             NSArray<DSMasternodeListEntity *> *masternodeListEntities = [DSMasternodeListEntity objectsInContext:self.managedObjectContext matching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0)", @(lastBlockHeight - 50), masternodeListBlockHashes];
             BOOL removedItems = !!masternodeListEntities.count;
             for (DSMasternodeListEntity *masternodeListEntity in [masternodeListEntities copy]) {
-                DSLog(@"[%@] Removing masternodeList at height %u", self.chain.name, masternodeListEntity.block.height);
-                DSLog(@"[%@] quorums are %@", self.chain.name, masternodeListEntity.block.usedByQuorums);
                 //A quorum is on a block that can only have one masternode list.
                 //A block can have one quorum of each type.
                 //A quorum references the masternode list by it's block
@@ -409,7 +400,6 @@
         BOOL deletedSomething = FALSE;
         NSUInteger deletionCount = 0;
         for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in [simplifiedMasternodeEntryEntities copy]) {
-            DSLog(@"[%@] removeOldSimplifiedMasternodeEntries: %@", self.chain.name, simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.hexString);
             [self.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
             deletedSomething = TRUE;
             deletionCount++;
@@ -472,9 +462,6 @@
                                completion:^(NSError *error) {
         self.masternodeListCurrentlyBeingSavedCount--;
         dispatch_group_leave(self.savingGroup);
-        if (error) {
-            DSLog(@"[%@] Finished saving MNL at height %u with error: %@", self.chain.name, [self heightForBlockHash:masternodeList.blockHash], error.description);
-        }
         completion(error);
     }];
 }
@@ -490,7 +477,6 @@
     if ([self.cachedQuorumSnapshots objectForKey:blockHashData]) {
         return;
     }
-    DSLog(@"[%@] Queued saving Quorum Snapshot for: %u: %@", self.chain.name, blockHeight, uint256_hex(blockHash));
     [self.cachedQuorumSnapshots setObject:quorumSnapshot forKey:blockHashData];
     dispatch_group_enter(self.savingGroup);
     NSManagedObjectContext *context = self.managedObjectContext;
@@ -508,11 +494,9 @@
                 if (createUnknownBlocks) {
                     merkleBlockEntity = [DSMerkleBlockEntity createMerkleBlockEntityForBlockHash:blockHash blockHeight:blockHeight chainEntity:chainEntity inContext:context];
                 } else {
-                    DSLog(@"[%@] Merkle block should exist for block hash %@", self.chain.name, blockHashData.hexString);
                     error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
                 }
             } else if (merkleBlockEntity.quorumSnapshot) {
-                DSLog(@"[%@] Merkle block already have quorum snapshot for %@", self.chain.name, blockHashData.hexString);
                 error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a quorum snapshot already"]; // DGaF
                 // skip we're just processing saved snapshot
                 //[merkleBlockEntity.quorumSnapshot updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity]
@@ -522,7 +506,6 @@
             } else {
                 DSQuorumSnapshotEntity *quorumSnapshotEntity = [DSQuorumSnapshotEntity managedObjectInBlockedContext:context];
                 [quorumSnapshotEntity updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity];
-                DSLog(@"[%@] Finished saving Quorum Snapshot at height %u: %@", self.chain.name, blockHeight, uint256_hex(blockHash));
             }
             error = [context ds_save];
             if (completion) {
@@ -539,7 +522,6 @@
        createUnknownBlocks:(BOOL)createUnknownBlocks
                  inContext:(NSManagedObjectContext *)context
                 completion:(void (^)(NSError *error))completion {
-    DSLog(@"[%@] Queued saving MNL at height %u: %@", chain.name, masternodeList.height, uint256_hex(masternodeList.blockHash));
     [context performBlockAndWait:^{
         //masternodes
         @autoreleasepool {
@@ -558,7 +540,6 @@
                 if (createUnknownBlocks) {
                     merkleBlockEntity = [DSMerkleBlockEntity createMerkleBlockEntityForBlockHash:mnlBlockHash blockHeight:mnlHeight chainEntity:chainEntity inContext:context];
                 } else {
-                    DSLog(@"[%@] Merkle block should exist for block hash %@", chain.name, mnlBlockHashData);
                     error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
                 }
             } else if (merkleBlockEntity.masternodeList) {
@@ -623,7 +604,6 @@
                     }
                 }
                 chainEntity.baseBlockHash = mnlBlockHashData;
-                DSLog(@"[%@] Finished merging MNL at height %u: %@", chain.name, mnlHeight, mnlBlockHashData.hexString);
 
             } else if (!error) {
                 DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity managedObjectInBlockedContext:context];
@@ -682,7 +662,6 @@
                     }
                 }
                 chainEntity.baseBlockHash = mnlBlockHashData;
-                DSLog(@"[%@] Finished saving MNL at height %u", chain.name, mnlHeight);
             } else {
                 chainEntity.baseBlockHash = uint256_data(chain.genesisHash);
                 [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
@@ -719,11 +698,9 @@
         masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
     }
     if (!masternodeList) {
-        DSLog(@"[%@] No masternode list found yet", self.chain.name);
         return nil;
     }
     if (block.height - masternodeList.height > 32) {
-        DSLog(@"[%@] Masternode list is too old", self.chain.name);
         return nil;
     }
     DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
@@ -747,12 +724,9 @@
     }
     DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:blockHash];
     if (!masternodeList) {
-        DSLog(@"[%@] No masternode list found yet", self.chain.name);
         return nil;
     }
     if (merkleBlock.height - masternodeList.height > offset) {
-        DSLog(@"[%@] Masternode list for is too old (age: %d masternodeList height %d merkle block height %d)", self.chain.name,
-              merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
         return nil;
     }
     
@@ -778,7 +752,6 @@
     //DSLog(@"addBlockToValidationQueue: %u:%@", merkleBlock.height, uint256_hex(merkleBlockHash));
     NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
     if ([self hasMasternodeListAt:merkleBlockHashData]) {
-        DSLog(@"[%@] Already have that masternode list (or in stub) %u", self.chain.name, merkleBlock.height);
         return NO;
     }
     self.lastQueriedBlockHash = merkleBlockHash;

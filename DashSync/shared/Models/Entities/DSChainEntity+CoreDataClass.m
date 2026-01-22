@@ -135,7 +135,6 @@
                 DSChainEntity *chainEntityToRemove = objects[i];
                 [context deleteObject:chainEntityToRemove];
                 [context ds_save];
-                DSLog(@"Removing extra chain entity of type %d", type.tag);
             }
         }
         DSChainEntity *chainEntity = [objects objectAtIndex:0];

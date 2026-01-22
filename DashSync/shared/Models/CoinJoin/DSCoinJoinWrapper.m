@@ -25,6 +25,7 @@
 #import "DSChainManager.h"
 #import "DSCoinJoinWrapper.h"
 #import "DSBlock.h"
+#import "DSLogger.h"
 
 #define AS_OBJC(context) ((__bridge DSCoinJoinWrapper *)(context))
 #define AS_RUST(context) ((__bridge void *)(context))
@@ -83,7 +84,7 @@
         Balance *balance = [[self.manager getBalance] ffi_malloc];
         BOOL result = do_automatic_denominating(_clientManager, *balance, dryRun);
         [DSCoinJoinBalance ffi_free:balance];
-        
+
         return result;
     }
 }
@@ -117,14 +118,14 @@
         ByteArray *array = malloc(sizeof(ByteArray));
         array->len = (uintptr_t)message.length;
         array->ptr = data_malloc(message);
-        
+
         process_ds_queue(_clientManager, peer.address.u8, peer.port, array);
-        
+
         if (array) {
             if (array->ptr) {
                 free((void *)array->ptr);
             }
-            
+
             free(array);
         }
     }
@@ -135,13 +136,13 @@
         ByteArray *array = malloc(sizeof(ByteArray));
         array->len = (uintptr_t)message.length;
         array->ptr = data_malloc(message);
-        
+
         process_coinjoin_message(_clientManager, peer.address.u8, peer.port, array, [type UTF8String]);
-        
+
         if (array->ptr) {
             free((void *)array->ptr);
         }
-        
+
         free(array);
     }
 }
@@ -167,18 +168,18 @@
 
 + (CoinJoinTransactionType)coinJoinTxTypeForTransaction:(DSTransaction *)transaction account:(DSAccount *)account {
     NSArray *amountsSent = [account amountsSentByTransaction:transaction];
-    
+
     Transaction *tx = [transaction ffi_malloc:transaction.chain.chainType];
     uint64_t *inputValues = malloc(amountsSent.count * sizeof(uint64_t));
 
     for (uintptr_t i = 0; i < amountsSent.count; i++) {
         inputValues[i] = [amountsSent[i] unsignedLongLongValue];
     }
-    
+
     CoinJoinTransactionType type = get_coinjoin_tx_type(tx, inputValues, amountsSent.count);
     [DSTransaction ffi_free:tx];
     free(inputValues);
-    
+
     return type;
 }
 
@@ -204,11 +205,11 @@
     @synchronized (self) {
         CoinJoinDenominations *denominations = get_standard_denominations();
         NSMutableArray<NSNumber *> *result = [NSMutableArray arrayWithCapacity:denominations->length];
-        
+
         for (size_t i = 0; i < denominations->length; i++) {
             [result addObject:@(denominations->denoms[i])];
         }
-        
+
         destroy_coinjoin_denomination(denominations);
         return result;
     }
@@ -242,17 +243,17 @@
 - (NSArray<NSNumber *> *)getSessionStatuses {
     @synchronized (self) {
         CoinJoinSessionStatuses* statuses = get_sessions_status(_clientManager);
-        
+
         if (statuses) {
             NSMutableArray<NSNumber *> *statusArray = [NSMutableArray arrayWithCapacity:statuses->length];
-            
+
             for (size_t i = 0; i < statuses->length; i++) {
                 PoolStatus status = statuses->statuses[i];
                 [statusArray addObject:@(status)];
             }
-            
+
             destroy_coinjoin_session_statuses(statuses);
-            
+
             return statusArray;
         } else {
             return @[];
@@ -290,13 +291,13 @@
 InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t index, const void *context) {
     UInt256 txHash = *((UInt256 *)prevout_hash);
     InputValue *inputValue = NULL;
-    
+
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         inputValue = malloc(sizeof(InputValue));
         DSWallet *wallet = wrapper.chain.wallets.firstObject;
         int64_t value = [wallet inputValue:txHash inputIndex:index];
-            
+
         if (value != -1) {
             inputValue->is_valid = TRUE;
             inputValue->value = value;
@@ -304,26 +305,26 @@ InputValue *getInputValueByPrevoutHash(uint8_t (*prevout_hash)[32], uint32_t ind
             inputValue->is_valid = FALSE;
         }
     }
-    
+
     return inputValue;
 }
 
 
 bool hasChainLock(Block *block, const void *context) {
     BOOL hasChainLock = NO;
-    
+
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         hasChainLock = [wrapper.chain blockHeightChainLocked:block->height];
     }
-    
+
     return hasChainLock;
 }
 
 Transaction *getTransaction(uint8_t (*tx_hash)[32], const void *context) {
     UInt256 txHash = *((UInt256 *)tx_hash);
     Transaction *tx = NULL;
-    
+
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *transaction = [wrapper.chain transactionForHash:txHash];
@@ -332,60 +333,60 @@ Transaction *getTransaction(uint8_t (*tx_hash)[32], const void *context) {
             tx = [transaction ffi_malloc:wrapper.chain.chainType];
         }
     }
-    
+
     return tx;
 }
 
 bool isMineInput(uint8_t (*tx_hash)[32], uint32_t index, const void *context) {
     UInt256 txHash = *((UInt256 *)tx_hash);
     BOOL result = NO;
-    
+
     @synchronized (context) {
         result = [AS_OBJC(context).manager isMineInput:txHash index:index];
     }
-    
+
     return result;
 }
 
 GatheredOutputs* availableCoins(bool onlySafe, CoinControl *coinControl, WalletEx *walletEx, const void *context) {
     GatheredOutputs *gatheredOutputs;
-    
+
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         ChainType chainType = wrapper.chain.chainType;
         DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl chainType:wrapper.chain.chainType];
         NSArray<DSInputCoin *> *coins = [wrapper.manager availableCoins:walletEx onlySafe:onlySafe coinControl:cc minimumAmount:1 maximumAmount:MAX_MONEY minimumSumAmount:MAX_MONEY maximumCount:0];
-        
+
         gatheredOutputs = malloc(sizeof(GatheredOutputs));
         InputCoin **coinsArray = malloc(coins.count * sizeof(InputCoin *));
-        
+
         for (uintptr_t i = 0; i < coins.count; ++i) {
             coinsArray[i] = [coins[i] ffi_malloc:chainType];
         }
-        
+
         gatheredOutputs->items = coinsArray;
         gatheredOutputs->item_count = (uintptr_t)coins.count;
     }
-    
+
     return gatheredOutputs;
 }
 
 SelectedCoins* selectCoinsGroupedByAddresses(bool skipDenominated, bool anonymizable, bool skipUnconfirmed, int maxOupointsPerAddress, WalletEx* walletEx, const void *context) {
     SelectedCoins *vecTallyRet;
-    
+
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         NSArray<DSCompactTallyItem *> *tempVecTallyRet = [wrapper.manager selectCoinsGroupedByAddresses:walletEx skipDenominated:skipDenominated anonymizable:anonymizable skipUnconfirmed:skipUnconfirmed maxOupointsPerAddress:maxOupointsPerAddress];
-        
+
         vecTallyRet = malloc(sizeof(SelectedCoins));
         vecTallyRet->item_count = tempVecTallyRet.count;
         vecTallyRet->items = malloc(tempVecTallyRet.count * sizeof(CompactTallyItem *));
-        
+
         for (uint32_t i = 0; i < tempVecTallyRet.count; i++) {
             vecTallyRet->items[i] = [tempVecTallyRet[i] ffi_malloc:wrapper.chain.chainType];
         }
     }
-    
+
     return vecTallyRet;
 }
 
@@ -405,15 +406,15 @@ void destroySelectedCoins(SelectedCoins *selectedCoins) {
     if (!selectedCoins) {
         return;
     }
-    
+
     if (selectedCoins->items) {
         for (int i = 0; i < selectedCoins->item_count; i++) {
             [DSCompactTallyItem ffi_free:selectedCoins->items[i]];
         }
-        
+
         free(selectedCoins->items);
     }
-    
+
     free(selectedCoins);
 }
 
@@ -421,15 +422,15 @@ void destroyGatheredOutputs(GatheredOutputs *gatheredOutputs) {
     if (!gatheredOutputs) {
         return;
     }
-    
+
     if (gatheredOutputs->items) {
         for (int i = 0; i < gatheredOutputs->item_count; i++) {
             [DSInputCoin ffi_free:gatheredOutputs->items[i]];
         }
-        
+
         free(gatheredOutputs->items);
     }
-    
+
     free(gatheredOutputs);
 }
 
@@ -438,12 +439,12 @@ Transaction* signTransaction(Transaction *transaction, bool anyoneCanPay, const 
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSTransaction *tx = [[DSTransaction alloc] initWithTransaction:transaction onChain:wrapper.chain];
         BOOL isSigned = [wrapper.chain.wallets.firstObject.accounts.firstObject signTransaction:tx anyoneCanPay:anyoneCanPay];
-        
+
         if (isSigned) {
             return [tx ffi_malloc:wrapper.chain.chainType];
         }
     }
-    
+
     return nil;
 }
 
@@ -457,7 +458,7 @@ ByteArray freshCoinJoinAddress(bool internal, const void *context) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         NSString *address = [wrapper.manager freshAddress:internal];
-        
+
         return script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
     }
 }
@@ -465,60 +466,60 @@ ByteArray freshCoinJoinAddress(bool internal, const void *context) {
 bool commitTransaction(struct Recipient **items, uintptr_t item_count, CoinControl *coinControl, bool is_denominating, uint8_t (*client_session_id)[32], const void *context) {
     NSMutableArray *amounts = [NSMutableArray array];
     NSMutableArray *scripts = [NSMutableArray array];
-    
+
     for (uintptr_t i = 0; i < item_count; i++) {
         Recipient *recipient = items[i];
         [amounts addObject:@(recipient->amount)];
         NSData *script = [NSData dataWithBytes:recipient->script_pub_key.ptr length:recipient->script_pub_key.len];
         [scripts addObject:script];
     }
-    
+
     bool result = false;
-    
+
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         DSCoinControl *cc = [[DSCoinControl alloc] initWithFFICoinControl:coinControl chainType:wrapper.chain.chainType];
         result = [wrapper.manager commitTransactionForAmounts:amounts outputs:scripts coinControl:cc onPublished:^(UInt256 txId, NSError * _Nullable error) {
             @synchronized (context) {
                 if (error) {
-                    DSLog(@"[%@] CoinJoin: commit tx error: %@, tx type: %@", wrapper.chain.name, error, is_denominating ? @"denominations" : @"collateral");
+                    DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin: commit tx error: %@, tx type: %@", wrapper.chain.name, error, is_denominating ? @"denominations" : @"collateral");
                 } else if (is_denominating) {
                     #if DEBUG
-                        DSLog(@"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
                     #else
-                        DSLog(@"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, @"<REDACTED>");
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Denominations Created: %@", wrapper.chain.name, @"<REDACTED>");
                     #endif
                     bool isFinished = finish_automatic_denominating(wrapper.clientManager, client_session_id);
-                    
+
                     if (!isFinished) {
-                        DSLog(@"[%@] CoinJoin: auto_denom not finished", wrapper.chain.name);
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin: auto_denom not finished", wrapper.chain.name);
                     }
-                    
+
                     processor_destroy_block_hash(client_session_id);
                     [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_CreateDenomination];
                 } else {
                     #if DEBUG
-                        DSLog(@"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, uint256_reverse_hex(txId));
                     #else
-                        DSLog(@"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, @"<REDACTED>");
+                        DSLogInfo(@"DSCoinJoinWrapper", @"[%@] CoinJoin tx: Collateral Created: %@", wrapper.chain.name, @"<REDACTED>");
                     #endif
                     [wrapper.manager onTransactionProcessed:txId type:CoinJoinTransactionType_MakeCollateralInputs];
                 }
             }
         }];
     }
-    
+
     return result;
 }
 
 MasternodeEntry* masternodeByHash(uint8_t (*hash)[32], const void *context) {
     UInt256 mnHash = *((UInt256 *)hash);
     MasternodeEntry *masternode;
-    
+
     @synchronized (context) {
         masternode = [[AS_OBJC(context).manager masternodeEntryByHash:mnHash] ffi_malloc];
     }
-    
+
     return masternode;
 }
 
@@ -526,7 +527,7 @@ void destroyMasternodeEntry(MasternodeEntry *masternodeEntry) {
     if (!masternodeEntry) {
         return;
     }
-    
+
     [DSSimplifiedMasternodeEntry ffi_free:masternodeEntry];
 }
 
@@ -548,7 +549,7 @@ void destroyMNList(MasternodeList *masternodeList) { // TODO: check destroyMaste
     if (!masternodeList) {
         return;
     }
-    
+
     [DSMasternodeList ffi_free:masternodeList];
 }
 
@@ -560,7 +561,7 @@ bool isBlockchainSynced(const void *context) {
 
 bool isMasternodeOrDisconnectRequested(uint8_t (*ip_address)[16], uint16_t port, const void *context) {
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    
+
     @synchronized (context) {
         return [AS_OBJC(context).manager isMasternodeOrDisconnectRequested:ipAddress port:port];
     }
@@ -568,7 +569,7 @@ bool isMasternodeOrDisconnectRequested(uint8_t (*ip_address)[16], uint16_t port,
 
 bool disconnectMasternode(uint8_t (*ip_address)[16], uint16_t port, const void *context) {
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    
+
     @synchronized (context) {
         return [AS_OBJC(context).manager disconnectMasternode:ipAddress port:port];
     }
@@ -577,7 +578,7 @@ bool disconnectMasternode(uint8_t (*ip_address)[16], uint16_t port, const void *
 bool sendMessage(char *message_type, ByteArray *byteArray, uint8_t (*ip_address)[16], uint16_t port, bool warn, const void *context) {
     NSString *messageType = [NSString stringWithUTF8String:message_type];
     UInt128 ipAddress = *((UInt128 *)ip_address);
-    
+
     @synchronized (context) {
         NSData *message = [NSData dataWithBytes:byteArray->ptr length:byteArray->len];
         return [AS_OBJC(context).manager sendMessageOfType:messageType message:message withPeerIP:ipAddress port:port warn:warn];
@@ -587,7 +588,7 @@ bool sendMessage(char *message_type, ByteArray *byteArray, uint8_t (*ip_address)
 bool addPendingMasternode(uint8_t (*pro_tx_hash)[32], uint8_t (*session_id)[32], const void *context) {
     UInt256 sessionId = *((UInt256 *)session_id);
     UInt256 proTxHash = *((UInt256 *)pro_tx_hash);
-    
+
     @synchronized (context) {
         return [AS_OBJC(context).manager addPendingMasternode:proTxHash clientSessionId:sessionId];
     }
@@ -624,7 +625,7 @@ void sessionLifecycleListener(bool is_complete,
     @synchronized (context) {
         UInt256 clientSessionId = *((UInt256 *)client_session_id);
         UInt128 ipAddress = *((UInt128 *)ip_address);
-        
+
         if (is_complete) {
             [AS_OBJC(context).manager onSessionComplete:base_session_id clientSessionId:clientSessionId denomination:denomination poolState:state poolMessage:message poolStatus:status ipAddress:ipAddress isJoined:joined];
         } else {
@@ -657,25 +658,26 @@ CoinJoinKeys* getCoinJoinKeys(bool used, const void *context) {
     @synchronized (context) {
         DSCoinJoinWrapper *wrapper = AS_OBJC(context);
         NSArray *addresses;
-        
+
         if (used) {
-            addresses = [wrapper.manager getIssuedReceiveAddresses];
-        } else {
             addresses = [wrapper.manager getUsedReceiveAddresses];
+        } else {
+            addresses = [wrapper.manager getIssuedReceiveAddresses];
         }
-        
+
         CoinJoinKeys *keys = malloc(sizeof(CoinJoinKeys));
         keys->item_count = addresses.count;
         keys->items = malloc(sizeof(ByteArray *) * keys->item_count);
-        
+
         for (NSUInteger i = 0; i < addresses.count; i++) {
             NSString *address = addresses[i];
+            ByteArray scriptPubKey = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType);
             ByteArray *byteArray = malloc(sizeof(ByteArray));
-            byteArray->ptr = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType).ptr;
-            byteArray->len = script_pubkey_for_address([address UTF8String], wrapper.chain.chainType).len;
+            byteArray->ptr = scriptPubKey.ptr;
+            byteArray->len = scriptPubKey.len;
             keys->items[i] = byteArray;
         }
-        
+
         return keys;
     }
 }
@@ -684,14 +686,14 @@ void destroyCoinJoinKeys(struct CoinJoinKeys *coinjoin_keys) {
     if (coinjoin_keys == NULL) {
         return;
     }
-    
+
     for (uintptr_t i = 0; i < coinjoin_keys->item_count; i++) {
         if (coinjoin_keys->items[i] != NULL) {
             free(coinjoin_keys->items[i]->ptr);
             free(coinjoin_keys->items[i]);
         }
     }
-    
+
     free(coinjoin_keys->items);
     free(coinjoin_keys);
 }
