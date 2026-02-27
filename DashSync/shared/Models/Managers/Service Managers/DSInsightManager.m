@@ -20,9 +20,9 @@
 #define TX_PATH @"rawtx"
 #define BLOCK_PATH @"block"
 
-#define INSIGHT_URL @"https://insight.dash.org/insight-api-dash"
-#define INSIGHT_FAILOVER_URL @"https://insight.dash.show/api"
-#define TESTNET_INSIGHT_URL @"https://testnet-insight.dashevo.org/insight-api-dash"
+#define INSIGHT_URL @"https://insight.dash.org/insight-api"
+#define INSIGHT_FAILOVER_URL @"https://insight.dash.org/insight-api"
+#define TESTNET_INSIGHT_URL @"https://insight.testnet.networks.dash.org/insight-api"
 
 @implementation DSInsightManager
 
