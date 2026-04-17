@@ -14,7 +14,7 @@
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionEntity+CoreDataClass.h"
-#import "DSTransactionHashEntity+CoreDataClass.m"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
