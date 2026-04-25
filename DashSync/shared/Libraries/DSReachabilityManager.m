@@ -30,7 +30,6 @@
 #import <ifaddrs.h>
 #import <netdb.h>
 #import <netinet/in.h>
-#import <netinet6/in6.h>
 
 NSString *const DSReachabilityDidChangeNotification = @"org.dash.networking.reachability.change";
 NSString *const DSReachabilityNotificationStatusItem = @"DSReachabilityNotificationStatusItem";
