@@ -584,8 +584,18 @@
                                     withFee:YES
                                 coinControl:coinControl];
     } else if (amount <= account.balance) {
-        tx = [account transactionForAmounts:@[@(requestedAmount)]
-                            toOutputScripts:@[protoReq.details.outputScripts.firstObject]
+        // Preserve any auxiliary outputs the request carried beyond the primary
+        // recipient (e.g. a BIP21 op_return data output). Without this, anything
+        // past index 0 in outputScripts is silently dropped from the broadcast tx.
+        NSMutableArray<NSNumber *> *amts = [@[@(requestedAmount)] mutableCopy];
+        NSMutableArray<NSData *> *scripts = [@[protoReq.details.outputScripts.firstObject] mutableCopy];
+        for (NSUInteger i = 1; i < protoReq.details.outputScripts.count; i++) {
+            NSNumber *outAmt = (i < protoReq.details.outputAmounts.count) ? protoReq.details.outputAmounts[i] : @(0);
+            [amts addObject:outAmt];
+            [scripts addObject:protoReq.details.outputScripts[i]];
+        }
+        tx = [account transactionForAmounts:amts
+                            toOutputScripts:scripts
                                     withFee:YES
                                 coinControl:coinControl];
     }

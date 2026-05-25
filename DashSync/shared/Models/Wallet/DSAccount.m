@@ -720,6 +720,9 @@
                 }
 
                 for (DSTransactionOutput *output in tx.outputs) { // check that no outputs are dust
+                    // OP_RETURN outputs are 0-value by design (provably-unspendable data) and must
+                    // not be flagged as dust, otherwise any tx carrying one stays pending forever.
+                    if (output.outScript.length > 0 && [output.outScript UInt8AtOffset:0] == OP_RETURN) continue;
                     if (output.amount < TX_MIN_OUTPUT_AMOUNT) {
                         pending = YES;
                         DSLogInfo(@"DSAccount", @"received dust output %llu for transaction %@", output.amount, uint256_reverse_hex(tx.txHash));
@@ -1554,6 +1557,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             lockTime > [NSDate timeIntervalSince1970]) return YES;
     }
     for (DSTransactionOutput *output in transaction.outputs) { // check that no outputs are dust
+        // OP_RETURN outputs are 0-value by design and must be exempt from the dust check.
+        if (output.outScript.length > 0 && [output.outScript UInt8AtOffset:0] == OP_RETURN) continue;
         if (output.amount < TX_MIN_OUTPUT_AMOUNT) return YES;
     }
     for (DSTransactionInput *input in transaction.inputs) { // check if any inputs are known to be pending

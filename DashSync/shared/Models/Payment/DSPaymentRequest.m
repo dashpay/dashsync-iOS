@@ -39,6 +39,7 @@
 #import "DSKeyManager.h"
 #import "DSPaymentProtocol.h"
 #import "DSPriceManager.h"
+#import "NSData+Dash.h"
 #import "NSError+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -87,6 +88,8 @@
     self.message = nil;
     self.amount = 0;
     self.callbackScheme = nil;
+    self.opReturnData = nil;
+    self.callback = nil;
     self.r = nil;
 
     if (string.length == 0) return;
@@ -162,6 +165,34 @@
                 self.requestedFiatCurrencyAmount = [value floatValue];
             } else if ([key isEqual:@"user"]) {
                 self.dashpayUsername = value;
+            } else if ([key isEqual:@"op_return"]) {
+                // 80-byte cap = Dash standard relay policy. Invalid payloads are silently
+                // dropped per BIP21 unknown-param convention; use req-op_return= to make
+                // an invalid value invalidate the whole request.
+                static NSCharacterSet *nonHex = nil;
+                static dispatch_once_t once = 0;
+                dispatch_once(&once, ^{
+                    nonHex = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"] invertedSet];
+                });
+                if (value.length > 0 && (value.length % 2 == 0) &&
+                    [value rangeOfCharacterFromSet:nonHex].location == NSNotFound) {
+                    NSData *decoded = [value hexToData];
+                    if (decoded.length > 0 && decoded.length <= 80) {
+                        self.opReturnData = decoded;
+                    } else {
+                        DSLog(@"DSPaymentRequest: dropping op_return param: payload size %lu out of range (1..80)", (unsigned long)decoded.length);
+                    }
+                } else {
+                    DSLog(@"DSPaymentRequest: dropping op_return param: not valid hex");
+                }
+            } else if ([key isEqual:@"callback"]) {
+                // https only: arbitrary schemes would let a URI invoke other app handlers.
+                NSURL *cb = [NSURL URLWithString:value];
+                if (cb && [cb.scheme.lowercaseString isEqualToString:@"https"]) {
+                    self.callback = cb;
+                } else {
+                    DSLog(@"DSPaymentRequest: dropping callback param: not a valid https URL");
+                }
             }
         }
     } else if (url)
@@ -209,6 +240,14 @@
 
     if (self.dashpayUsername.length > 0) {
         [q addObject:[@"user=" stringByAppendingString:self.dashpayUsername]];
+    }
+
+    if (self.opReturnData.length > 0) {
+        [q addObject:[@"op_return=" stringByAppendingString:self.opReturnData.hexString]];
+    }
+
+    if (self.callback) {
+        [q addObject:[@"callback=" stringByAppendingString:[self.callback.absoluteString stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
 
     if (q.count > 0) {
@@ -343,9 +382,17 @@
         }
     }
 
+    NSArray<NSNumber *> *outputAmounts = @[@(sendingAmount)];
+    NSArray<NSData *> *outputScripts = @[script];
+    NSData *opReturnScript = [self opReturnOutputScript];
+    if (opReturnScript) {
+        outputAmounts = [outputAmounts arrayByAddingObject:@(0)];
+        outputScripts = [outputScripts arrayByAddingObject:opReturnScript];
+    }
+
     DSPaymentProtocolDetails *details =
-        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(sendingAmount)]
-                                                  outputScripts:@[script]
+        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:outputAmounts
+                                                  outputScripts:outputScripts
                                                            time:0
                                                         expires:0
                                                            memo:self.message
@@ -361,6 +408,14 @@
                                            callbackScheme:self.callbackScheme];
 
     return request;
+}
+
+- (nullable NSData *)opReturnOutputScript {
+    if (self.opReturnData.length == 0) return nil;
+    NSMutableData *script = [NSMutableData data];
+    [script appendUInt8:OP_RETURN];
+    [script appendScriptPushData:self.opReturnData];
+    return script;
 }
 
 // receiver converted to BIP70 request object
@@ -389,9 +444,17 @@
         }
     }
 
+    NSArray<NSNumber *> *outputAmounts = @[@(sendingAmount)];
+    NSArray<NSData *> *outputScripts = @[script];
+    NSData *opReturnScript = [self opReturnOutputScript];
+    if (opReturnScript) {
+        outputAmounts = [outputAmounts arrayByAddingObject:@(0)];
+        outputScripts = [outputScripts arrayByAddingObject:opReturnScript];
+    }
+
     DSPaymentProtocolDetails *details =
-        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(sendingAmount)]
-                                                  outputScripts:@[script]
+        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:outputAmounts
+                                                  outputScripts:outputScripts
                                                            time:0
                                                         expires:0
                                                            memo:self.message

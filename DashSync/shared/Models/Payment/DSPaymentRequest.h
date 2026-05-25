@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 @property (nonatomic, strong, nullable) NSString *string;
 @property (nonatomic, strong, nullable) NSString *callbackScheme;
+@property (nonatomic, strong, nullable) NSData *opReturnData; // raw payload for an OP_RETURN output (BIP21 `op_return=<hex>`), max 80 bytes
+@property (nonatomic, strong, nullable) NSURL *callback; // https URL to open after successful payment (BIP21 `callback=<url>`)
 @property (nonatomic, strong, nullable) NSData *data;
 @property (nonatomic, strong, nullable) NSURL *url;
 @property (nonatomic, strong, nullable) NSString *requestedFiatCurrencyCode;
