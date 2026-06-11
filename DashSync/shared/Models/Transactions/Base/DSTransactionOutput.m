@@ -18,6 +18,7 @@
 #import "DSTransactionOutput.h"
 #import "DSChain.h"
 #import "DSKeyManager.h"
+#import "NSData+Dash.h"
 
 @interface DSTransactionOutput ()
 
@@ -53,6 +54,10 @@
     self.outScript = outScript;
     self.address = address;
     return self;
+}
+
+- (BOOL)isOpReturn {
+    return self.outScript.length > 0 && [self.outScript UInt8AtOffset:0] == OP_RETURN;
 }
 
 - (NSComparisonResult)compare:(DSTransactionOutput *)output2 {

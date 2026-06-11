@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) uint64_t amount;
 @property (nonatomic, readonly) NSData *outScript;
 @property (nonatomic, readonly, nullable) NSString *address;
+@property (nonatomic, readonly) BOOL isOpReturn;
 
 + (instancetype)transactionOutputWithAmount:(uint64_t)amount outScript:(NSData *)outScript onChain:(DSChain *)chain;
 + (instancetype)transactionOutputWithAmount:(uint64_t)amount address:(NSString *_Nullable)address outScript:(NSData *)outScript onChain:(DSChain *)chain;
