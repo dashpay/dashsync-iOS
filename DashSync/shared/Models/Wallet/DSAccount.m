@@ -720,6 +720,7 @@
                 }
 
                 for (DSTransactionOutput *output in tx.outputs) { // check that no outputs are dust
+                    if (output.isOpReturn) continue; // OP_RETURN is a data carrier, not dust
                     if (output.amount < TX_MIN_OUTPUT_AMOUNT) {
                         pending = YES;
                         DSLogInfo(@"DSAccount", @"received dust output %llu for transaction %@", output.amount, uint256_reverse_hex(tx.txHash));
@@ -727,39 +728,45 @@
                 }
             }
 
+            BOOL skipOutputs = NO;
+
             if (pending || [inputs intersectsSet:pendingTransactionHashes]) {
                 [pendingTransactionHashes addObject:uint256_obj(tx.txHash)];
-                continue;
-            }
-
-            uint32_t lockedBlockHeight = [self transactionOutputsAreLockedTill:tx];
-
-            if (lockedBlockHeight) {
-                if (![pendingCoinbaseLockedTransactionHashes objectForKey:@(lockedBlockHeight)]) {
-                    pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)] = [NSMutableSet set];
+                skipOutputs = YES;
+            } else {
+                uint32_t lockedBlockHeight = [self transactionOutputsAreLockedTill:tx];
+                if (lockedBlockHeight) {
+                    if (![pendingCoinbaseLockedTransactionHashes objectForKey:@(lockedBlockHeight)]) {
+                        pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)] = [NSMutableSet set];
+                    }
+                    [((NSMutableSet *)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
+                    skipOutputs = YES;
                 }
-                [((NSMutableSet *)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
-                continue;
             }
 
             //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
             //TODO: don't add coin generation outputs < 100 blocks deep
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
-            for (DSTransactionOutput *output in tx.outputs) {
-                for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
-                    if ([derivationPath containsAddress:output.address]) {
-                        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-                            [((DSFundsDerivationPath *)derivationPath) setHasKnownBalance];
+            if (!skipOutputs) {
+                for (DSTransactionOutput *output in tx.outputs) {
+                    for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
+                        if ([derivationPath containsAddress:output.address]) {
+                            if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                                [((DSFundsDerivationPath *)derivationPath) setHasKnownBalance];
+                            }
+                            uint64_t amount = output.amount;
+                            derivationPath.balance += amount;
+                            [utxos addObject:dsutxo_obj(((DSUTXO){tx.txHash, n}))];
+                            balance += amount;
                         }
-                        uint64_t amount = output.amount;
-                        derivationPath.balance += amount;
-                        [utxos addObject:dsutxo_obj(((DSUTXO){tx.txHash, n}))];
-                        balance += amount;
                     }
+                    n++;
                 }
-                n++;
             }
 
+            // Always reconcile spent outputs against the UTXO set — even when this tx's own
+            // outputs are withheld (pending/locked). Its inputs are still committed at the wallet
+            // level the moment we broadcast, and must not remain selectable for the next spend.
             // transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
             [spent setSet:utxos.set];
             [spent intersectSet:spentOutputs];
@@ -1074,6 +1081,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [output getValue:&o];
 
             if (coinControl && ![coinControl isSelected:o]) continue;
+            if ([self.spentOutputs containsObject:output]) continue; // never re-select a known-spent outpoint
             tx = self.allTx[uint256_obj(o.hash)];
             if ([self transactionOutputsAreLocked:tx]) continue;
             if (!tx) continue;
@@ -1784,6 +1792,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     @synchronized (self) {
         for (NSValue *output in self.utxos) {
             [output getValue:&o];
+            if ([self.spentOutputs containsObject:output]) continue; // never count a known-spent outpoint
             tx = self.allTx[uint256_obj(o.hash)];
             if (o.n >= tx.outputs.count) continue;
             if (confirmationCount && (tx.blockHeight >= (self.blockHeight - confirmationCount))) continue;
