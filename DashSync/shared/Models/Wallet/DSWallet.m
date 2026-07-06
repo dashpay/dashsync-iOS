@@ -850,6 +850,14 @@
     return rBalance;
 }
 
+- (uint64_t)lockedBalance {
+    uint64_t r = 0;
+    for (DSAccount *account in self.accounts) {
+        r += account.lockedBalance;
+    }
+    return r;
+}
+
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit coinJoinGapLimit:(NSUInteger)coinJoinGapLimit internal:(BOOL)internal error:(NSError **)error {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSAccount *account in self.accounts) {

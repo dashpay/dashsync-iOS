@@ -266,6 +266,7 @@
     }];
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
+    _lockedBalance = 0;
     [self updateBalance];
 }
 
@@ -652,7 +653,7 @@
 // MARK: - Balance
 
 - (void)updateBalance {
-    uint64_t balance = 0, prevBalance = 0, totalSent = 0, totalReceived = 0;
+    uint64_t balance = 0, lockedBalance = 0, prevBalance = 0, totalSent = 0, totalReceived = 0;
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTransactionHashes = [NSMutableSet set];
     NSMutableDictionary *pendingCoinbaseLockedTransactionHashes = [NSMutableDictionary dictionary];
@@ -741,6 +742,15 @@
                     }
                     [((NSMutableSet *)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
                     skipOutputs = YES;
+
+                    for (DSTransactionOutput *output in tx.outputs) {
+                        for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
+                            if ([derivationPath containsAddress:output.address]) {
+                                lockedBalance += output.amount;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -804,9 +814,12 @@
     _totalSent = totalSent;
     _totalReceived = totalReceived;
 
-    if (balance != _balance) {
-        // Only log if not the initial UINT64_MAX state (used to trigger notifications on first load)
-        if (_balance != UINT64_MAX) {
+    BOOL balanceChanged = (balance != _balance);
+    BOOL lockedChanged = (lockedBalance != _lockedBalance);
+    _lockedBalance = lockedBalance;
+
+    if (balanceChanged || lockedChanged) {
+        if (balanceChanged && _balance != UINT64_MAX) {
             DSLogInfo(@"DSAccount", @"Balance updated: %.8f -> %.8f DASH, UTXOs: %lu, totalSent: %.8f, totalReceived: %.8f",
                       (double)_balance / 100000000.0, (double)balance / 100000000.0,
                       (unsigned long)utxos.count,

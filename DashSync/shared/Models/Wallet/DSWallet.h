@@ -82,6 +82,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 
+// sum of immature coinbase outputs across all accounts (locked < 100 confirmations)
+@property (nonatomic, readonly) uint64_t lockedBalance;
+
 // all previously generated external addresses
 @property (nonatomic, readonly) NSSet<NSString *> *allReceiveAddresses;
 

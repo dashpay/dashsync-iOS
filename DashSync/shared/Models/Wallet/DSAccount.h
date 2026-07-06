@@ -67,6 +67,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 
+// sum of immature coinbase outputs (locked < 100 confirmations)
+@property (nonatomic, readonly) uint64_t lockedBalance;
+
 // NSValue objects containing UTXO structs
 @property (nonatomic, readonly) NSArray<NSValue *> *unspentOutputs;
 
